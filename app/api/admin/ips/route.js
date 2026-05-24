@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { isAdmin, adminEnabled } from "@/lib/admin";
+import { isAdminRequest, adminEnabled } from "@/lib/admin";
 import { blockIp, unblockIp } from "@/lib/db";
 
 export async function POST(req) {
   if (!adminEnabled()) return NextResponse.json({ error: "admin disabled" }, { status: 503 });
-  if (!(await isAdmin())) return NextResponse.json({ error: "auth required" }, { status: 401 });
+  if (!isAdminRequest(req)) return NextResponse.json({ error: "auth required" }, { status: 401 });
 
   const { ip, action, reason } = await req.json();
   const cleaned = String(ip || "").trim();

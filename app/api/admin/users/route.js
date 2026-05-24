@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { isAdmin, adminEnabled } from "@/lib/admin";
+import { isAdminRequest, adminEnabled } from "@/lib/admin";
 import { setUserStatus, deleteUser, getUserByUsername, blockIp } from "@/lib/db";
 
 // Aktionen auf einen Wartelisten-/User-Eintrag: approve | reject | block
 export async function POST(req) {
   if (!adminEnabled()) return NextResponse.json({ error: "admin disabled" }, { status: 503 });
-  if (!(await isAdmin())) return NextResponse.json({ error: "auth required" }, { status: 401 });
+  if (!isAdminRequest(req)) return NextResponse.json({ error: "auth required" }, { status: 401 });
 
   const { username, action, ip } = await req.json();
   const user = getUserByUsername(username);

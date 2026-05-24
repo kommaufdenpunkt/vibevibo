@@ -1,71 +1,62 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/lib/api";
 import { relTime } from "@/lib/format";
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [pw, setPw] = useState("");          // Eingabefeld
+  const [authedPw, setAuthedPw] = useState(null); // gültiges Passwort (im Memory)
   const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [checking, setChecking] = useState(true);
   const [ipInput, setIpInput] = useState("");
 
-  const load = useCallback(async () => {
-    try {
-      const d = await api.adminData();
-      setData(d);
-      setAuthed(true);
-    } catch (e) {
-      setAuthed(false);
-      if (e.status === 503) setError("Admin-Bereich nicht konfiguriert (VV_ADMIN_PASSWORD fehlt in Coolify).");
-    } finally {
-      setChecking(false);
-    }
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
+  async function reload(passwordToUse) {
+    const p = passwordToUse || authedPw;
+    if (!p) return;
+    const d = await api.adminData(p);
+    setData(d);
+    setAuthedPw(p);
+  }
 
   async function login(e) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
-      await api.adminLogin(password);
-      // Harter Reload: stellt sicher, dass das Admin-Cookie aktiv ist,
-      // bevor das Dashboard die geschützten Daten lädt.
-      window.location.reload();
+      await reload(pw);   // lädt Daten direkt mit dem eingegebenen Passwort
+      setPw("");
     } catch (err) {
       setError(err.message || "Login fehlgeschlagen");
+    } finally {
       setBusy(false);
     }
   }
 
-  async function logout() {
-    await api.adminLogout().catch(() => {});
-    setAuthed(false);
+  function logout() {
+    setAuthedPw(null);
     setData(null);
   }
 
   async function act(username, action, ip) {
     if (action === "reject" && !confirm(`Anmeldung von "${username}" ablehnen & löschen?`)) return;
-    await api.adminUserAction(username, action, ip).catch((e) => alert(e.message));
-    load();
+    try {
+      await api.adminUserAction(authedPw, username, action, ip);
+      await reload();
+    } catch (e) { alert(e.message); }
   }
 
   async function ipAct(ip, action, reason) {
-    await api.adminIpAction(ip, action, reason).catch((e) => alert(e.message));
-    setIpInput("");
-    load();
+    try {
+      await api.adminIpAction(authedPw, ip, action, reason);
+      setIpInput("");
+      await reload();
+    } catch (e) { alert(e.message); }
   }
 
-  if (checking) {
-    return <div className="vv-card vv-login-card"><h2>🔐 VibeVibo Admin</h2><p className="vv-muted">Lädt…</p></div>;
-  }
-
-  if (!authed) {
+  // ----- Login-Maske -----
+  if (!authedPw || !data) {
     return (
       <div className="vv-card vv-login-card">
         <h2>🔐 VibeVibo Admin</h2>
@@ -74,9 +65,10 @@ export default function AdminPage() {
           <input
             type="password"
             className="vv-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
             autoFocus
+            autoComplete="current-password"
           />
           {error && <div className="vv-mt-8" style={{ color: "#a00", fontWeight: "bold" }}>⚠ {error}</div>}
           <div className="vv-mt-12">
@@ -86,14 +78,13 @@ export default function AdminPage() {
           </div>
         </form>
         <p className="vv-muted vv-mt-12">
-          Das Admin-Passwort wird in Coolify als <code>VV_ADMIN_PASSWORD</code> gesetzt.
+          Das Passwort wird in Coolify als <code>VV_ADMIN_PASSWORD</code> gesetzt.
         </p>
       </div>
     );
   }
 
-  if (!data) return <div className="vv-card">Lädt...</div>;
-
+  // ----- Dashboard -----
   const { stats, pending, approved, blocked, blockedIps } = data;
 
   return (
@@ -101,6 +92,7 @@ export default function AdminPage() {
       <div className="vv-card">
         <div className="vv-row">
           <h2 style={{ flex: 1, margin: 0 }}>🔐 Admin-Dashboard</h2>
+          <button className="vv-btn" onClick={() => reload()}>↻ Aktualisieren</button>
           <button className="vv-btn" onClick={logout}>↩ Logout</button>
         </div>
         <ul className="vv-profile-stats vv-mt-12">
@@ -111,7 +103,6 @@ export default function AdminPage() {
         </ul>
       </div>
 
-      {/* Warteliste */}
       <div className="vv-card">
         <h3>⏳ Warteliste ({pending.length})</h3>
         {pending.length === 0 ? (
@@ -122,9 +113,7 @@ export default function AdminPage() {
               <div className="vv-avatar vv-avatar-sm">{u.emoji}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span>
-                <div className="vv-muted" style={{ fontSize: 11 }}>
-                  IP: {u.regIp || "?"} · {relTime(u.createdAt)}
-                </div>
+                <div className="vv-muted" style={{ fontSize: 11 }}>IP: {u.regIp || "?"} · {relTime(u.createdAt)}</div>
               </div>
               <button className="vv-btn vv-btn-pink" onClick={() => act(u.username, "approve")}>✓ Frei</button>
               <button className="vv-btn" onClick={() => act(u.username, "reject", u.regIp)}>✕ +IP-Sperre</button>
@@ -133,9 +122,9 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* Aktive */}
       <div className="vv-card">
         <h3>✅ Aktive Mitglieder ({approved.length})</h3>
+        {approved.length === 0 && <div className="vv-muted">Noch keine.</div>}
         {approved.map((u) => (
           <div className="vv-admin-row" key={u.username}>
             <div className="vv-avatar vv-avatar-sm">{u.emoji}</div>
@@ -147,40 +136,29 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {/* Gesperrte User */}
       {blocked.length > 0 && (
         <div className="vv-card">
           <h3>🚫 Gesperrte Accounts ({blocked.length})</h3>
           {blocked.map((u) => (
             <div className="vv-admin-row" key={u.username}>
-              <div style={{ flex: 1 }}>
-                <strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span>
-              </div>
+              <div style={{ flex: 1 }}><strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span></div>
               <button className="vv-btn vv-btn-pink" onClick={() => act(u.username, "approve")}>✓ Entsperren</button>
             </div>
           ))}
         </div>
       )}
 
-      {/* IP-Blacklist */}
       <div className="vv-card">
         <h3>⛔ IP-Blacklist ({blockedIps.length})</h3>
         <div className="vv-row vv-mt-8">
-          <input
-            className="vv-input"
-            placeholder="IP-Adresse sperren..."
-            value={ipInput}
-            onChange={(e) => setIpInput(e.target.value)}
-          />
+          <input className="vv-input" placeholder="IP-Adresse sperren..." value={ipInput} onChange={(e) => setIpInput(e.target.value)} />
           <button className="vv-btn vv-btn-pink" onClick={() => ipAct(ipInput, "block", "manuell")}>Sperren</button>
         </div>
         <div className="vv-mt-12">
           {blockedIps.length === 0 && <div className="vv-muted">Keine gesperrten IPs.</div>}
           {blockedIps.map((b) => (
             <div className="vv-admin-row" key={b.ip}>
-              <div style={{ flex: 1 }}>
-                <code>{b.ip}</code> <span className="vv-muted">{b.reason} · {relTime(b.at)}</span>
-              </div>
+              <div style={{ flex: 1 }}><code>{b.ip}</code> <span className="vv-muted">{b.reason} · {relTime(b.at)}</span></div>
               <button className="vv-btn" onClick={() => ipAct(b.ip, "unblock")}>Entsperren</button>
             </div>
           ))}

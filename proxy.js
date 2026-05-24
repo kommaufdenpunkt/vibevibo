@@ -18,14 +18,12 @@ export default function proxy(req) {
     return NextResponse.next();
   }
 
-  // Auf der Hauptdomain: /admin und /api/admin sind tabu -> weg damit
+  // Auf der Hauptdomain: die Admin-Seite verstecken -> zur Startseite.
+  // (Die /api/admin Endpoints sind durch das Passwort geschützt und bleiben erreichbar.)
   if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
     const u = url.clone();
     u.pathname = "/";
     return NextResponse.redirect(u);
-  }
-  if (url.pathname.startsWith("/api/admin")) {
-    return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
   return NextResponse.next();
