@@ -28,6 +28,8 @@ export async function GET() {
           id: msg.id,
           text: msg.text,
           at: msg.at,
+          kind: msg.kind || "text",
+          onceOnly: !!msg.onceOnly,
           from: fromUser ? { username: fromUser.username, displayName: fromUser.displayName, emoji: fromUser.emoji } : null,
           to: toUser ? { username: toUser.username, displayName: toUser.displayName, emoji: toUser.emoji } : null,
           fromMe: msg.fromUserId === me.id,

@@ -1,6 +1,7 @@
 import "./globals.css";
 import Layout from "@/components/Layout";
 import InstallPrompt from "@/components/InstallPrompt";
+import ScreenshotGuard from "@/components/ScreenshotGuard";
 import { MeProvider } from "@/lib/useMe";
 
 export const metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
         <MeProvider>
           <Layout>{children}</Layout>
           <InstallPrompt />
+          <ScreenshotGuard />
         </MeProvider>
       </body>
     </html>

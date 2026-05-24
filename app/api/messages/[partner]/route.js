@@ -13,6 +13,10 @@ export async function GET(_req, { params }) {
     text: m.text,
     at: m.at,
     fromMe: m.from_user_id === me.id,
+    kind: m.kind,
+    audioUrl: m.audioUrl,
+    onceOnly: m.onceOnly,
+    consumed: m.consumed,
   }));
   return NextResponse.json({
     partner: {

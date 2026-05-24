@@ -7,6 +7,8 @@ import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import { relTime } from "@/lib/format";
 import SmileyPicker from "@/components/SmileyPicker";
+import VoiceRecorder from "@/components/VoiceRecorder";
+import VoiceMessage from "@/components/VoiceMessage";
 import { useMessageStream } from "@/lib/useEventStream";
 
 export default function ChatPage() {
@@ -47,17 +49,28 @@ export default function ChatPage() {
   }, [me, loading, router, reload]);
 
   useMessageStream(!!me, (ev) => {
-    if (
+    const inThisChat =
       (ev.from?.username === partnerName && ev.to?.username === me?.username) ||
-      (ev.from?.username === me?.username && ev.to?.username === partnerName)
-    ) {
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === ev.id)) return prev;
-        return [...prev, { id: ev.id, text: ev.text, at: ev.at, fromMe: ev.fromMe }];
-      });
+      (ev.from?.username === me?.username && ev.to?.username === partnerName);
+    if (inThisChat) {
+      // Sprachnachrichten brauchen die Audio-Daten -> volle Konversation neu laden
+      if (ev.kind === "voice") {
+        api.getConversation(partnerName).then((d) => setMessages(d.messages)).catch(() => {});
+      } else {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === ev.id)) return prev;
+          return [...prev, { id: ev.id, text: ev.text, at: ev.at, fromMe: ev.fromMe, kind: "text" }];
+        });
+      }
     }
     api.listConversations().then((d) => setConversations(d.conversations)).catch(() => {});
   });
+
+  async function sendVoice(audioUrl, onceOnly) {
+    await api.sendVoice(partnerName, audioUrl, onceOnly);
+    const d = await api.getConversation(partnerName);
+    setMessages(d.messages);
+  }
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -129,7 +142,13 @@ export default function ChatPage() {
             {messages.map((m) => (
               <div key={m.id} className={`vv-chat-row${m.fromMe ? " vv-me" : ""}`}>
                 <div>
-                  <div className={`vv-chat-bubble${m.fromMe ? " vv-me" : ""}`}>{m.text}</div>
+                  <div className={`vv-chat-bubble${m.fromMe ? " vv-me" : ""}`}>
+                    {m.kind === "voice" ? (
+                      <VoiceMessage message={m} fromMe={m.fromMe} onConsumed={reload} />
+                    ) : (
+                      m.text
+                    )}
+                  </div>
                   <div className="vv-chat-meta" style={{ textAlign: m.fromMe ? "right" : "left" }}>{relTime(m.at)}</div>
                 </div>
               </div>
@@ -137,13 +156,14 @@ export default function ChatPage() {
           </div>
           <form className="vv-chat-input-row" onSubmit={submit}>
             <SmileyPicker onPick={(s) => setText((t) => t + s)} />
+            <VoiceRecorder onSend={sendVoice} />
             <input
               className="vv-input"
               placeholder={`Schreib was an ${partner.displayName}...`}
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
-            <button type="submit" className="vv-btn vv-btn-pink">▶ Senden</button>
+            <button type="submit" className="vv-btn vv-btn-pink">▶</button>
           </form>
         </div>
       </div>

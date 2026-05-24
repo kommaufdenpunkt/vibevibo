@@ -2255,3 +2255,92 @@ a:hover { background: var(--vv-yellow); color: #000; }
   font-size: 18px;
   text-shadow: 0 0 8px var(--vv-yellow);
 }
+
+/* ==========================================================================
+   MESSENGER v2 - breitere Bubbles, Sprachnachrichten
+   ========================================================================== */
+
+/* Breitere Sprechblasen */
+.vv-chat-bubble { max-width: 92%; font-size: 14px; padding: 9px 13px; }
+.vv-chat-window { max-height: 70vh; min-height: 400px; }
+.vv-chat-messages { padding: 6px; }
+
+/* Sprachnachricht-Bubble */
+.vv-voice-bubble {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+}
+.vv-voice-play {
+  width: 38px; height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: rgba(255,255,255,0.25);
+  color: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.vv-voice-play:disabled { opacity: 0.5; cursor: default; }
+.vv-voice-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 22px;
+  flex: 1;
+}
+.vv-voice-wave span {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.6;
+}
+.vv-voice-wave span:nth-child(1){height:30%}
+.vv-voice-wave span:nth-child(2){height:70%}
+.vv-voice-wave span:nth-child(3){height:100%}
+.vv-voice-wave span:nth-child(4){height:50%}
+.vv-voice-wave span:nth-child(5){height:85%}
+.vv-voice-wave span:nth-child(6){height:40%}
+.vv-voice-wave span:nth-child(7){height:65%}
+.vv-voice-label { font-size: 11px; white-space: nowrap; }
+.vv-voice-gone { font-style: italic; opacity: 0.75; }
+
+/* Voice-Recorder im Input */
+.vv-voice-rec { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.vv-voice-once {
+  display: flex; align-items: center; gap: 2px;
+  font-size: 11px; font-weight: bold; color: var(--vv-pink-deep);
+  cursor: pointer; white-space: nowrap;
+}
+.vv-voice-once input { width: 14px; height: 14px; }
+.vv-voice-stop {
+  background: linear-gradient(180deg, #ff4040, #c00) !important;
+  color: #fff !important;
+  animation: rec-blink 1s steps(2) infinite;
+}
+@keyframes rec-blink { 50% { opacity: 0.6; } }
+
+/* Screenshot-Schutz: Inhalt verbergen wenn Tab nicht aktiv / Screenshot-Geste */
+body.vv-hide-sensitive .vv-chat-messages {
+  filter: blur(18px);
+  transition: filter 0.1s;
+}
+
+/* Mobile-Feinschliff v2 */
+@media (max-width: 600px) {
+  .vv-chat-bubble { max-width: 88%; font-size: 15px; }
+  .vv-chat-window { max-height: 64vh; }
+  .vv-chat-input-row { gap: 4px; flex-wrap: wrap; }
+  .vv-chat-input-row .vv-input { font-size: 16px; } /* verhindert iOS-Zoom */
+  .vv-voice-once { font-size: 10px; }
+  .vv-conversation-list { max-height: 140px; }
+  .vv-msg-list { gap: 6px; }
+  .vv-splash-form { padding: 16px; }
+  .vv-splash-emoji { width: 30px; height: 30px; font-size: 16px; }
+  .vv-section { padding: 40px 14px; }
+  .vv-pillars { gap: 14px; }
+  .vv-gift-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+}
