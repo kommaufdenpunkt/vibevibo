@@ -35,6 +35,8 @@ export default function MyProfilePage() {
       profile={data.user}
       pinnwand={data.pinnwand}
       gifts={data.gifts}
+      visitCount={data.visitCount}
+      visitors={data.visitors}
       onChange={load}
     />
   );

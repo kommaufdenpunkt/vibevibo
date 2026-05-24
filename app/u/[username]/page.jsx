@@ -23,6 +23,11 @@ export default function PublicProfilePage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Profilbesuch registrieren (Backend ignoriert Selbstbesuche & Spam)
+  useEffect(() => {
+    if (username) api.recordVisit(username).catch(() => {});
+  }, [username]);
+
   if (data === undefined) return <div className="vv-card">Lädt...</div>;
   if (data === null) {
     return (
@@ -39,6 +44,8 @@ export default function PublicProfilePage() {
       profile={data.user}
       pinnwand={data.pinnwand}
       gifts={data.gifts}
+      visitCount={data.visitCount}
+      visitors={data.visitors}
       onChange={load}
     />
   );

@@ -24,6 +24,7 @@ export default function EditProfilePage() {
       aboutMe: me.aboutMe || "",
       interests: (me.interests || []).join(", "),
       bgMusic: me.bgMusic || "",
+      bgMusicUrl: me.bgMusicUrl || "",
     });
   }, [me, loading, router]);
 
@@ -42,6 +43,7 @@ export default function EditProfilePage() {
         aboutMe: form.aboutMe,
         interests: form.interests.split(",").map((s) => s.trim()).filter(Boolean),
         bgMusic: form.bgMusic.trim(),
+        bgMusicUrl: form.bgMusicUrl.trim(),
       });
       await refresh();
       router.push("/profile");
@@ -82,8 +84,15 @@ export default function EditProfilePage() {
         <label className="vv-mt-12"><strong>Interessen</strong> <span className="vv-muted">(Komma-getrennt)</span></label>
         <input className="vv-input" placeholder="z.B. Tokio Hotel, Skaten, Pizza" value={form.interests} onChange={(e) => up("interests", e.target.value)} />
 
-        <label className="vv-mt-12"><strong>Profil-Hintergrundmusik</strong> <span className="vv-muted">(Titel)</span></label>
-        <input className="vv-input" placeholder="Mein Lieblingssong" value={form.bgMusic} onChange={(e) => up("bgMusic", e.target.value)} />
+        <label className="vv-mt-12"><strong>🎵 Profil-Hintergrundmusik</strong> <span className="vv-muted">(Songtitel zum Anzeigen)</span></label>
+        <input className="vv-input" placeholder="z.B. Tokio Hotel - Durch den Monsun" value={form.bgMusic} onChange={(e) => up("bgMusic", e.target.value)} />
+
+        <label className="vv-mt-8"><strong>▶ YouTube-Link</strong> <span className="vv-muted">(damit der Song wirklich spielt - optional)</span></label>
+        <input className="vv-input" placeholder="https://www.youtube.com/watch?v=..." value={form.bgMusicUrl} onChange={(e) => up("bgMusicUrl", e.target.value)} />
+        <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>
+          💡 Kopier einfach den Link eines YouTube-Videos rein. Besucher deines Profils sehen dann
+          einen Play-Button und können deinen Song hören - wie früher bei MySpace!
+        </div>
 
         <div className="vv-row vv-mt-12">
           <Link href="/profile" className="vv-btn">↩ Abbrechen</Link>

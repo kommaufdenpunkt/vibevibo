@@ -181,9 +181,12 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
-    api.listUsers()
+    const load = () => api.listUsers()
       .then((d) => setStats({ users: d.users.length, online: d.users.filter((u) => u.online).length }))
       .catch(() => {});
+    load();
+    const t = setInterval(load, 20000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {

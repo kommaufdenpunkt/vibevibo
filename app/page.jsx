@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import Landing from "@/components/Landing";
+import Buschfunk from "@/components/Buschfunk";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 
@@ -12,9 +13,11 @@ export default function HomePage() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    if (me) {
-      api.listUsers().then((d) => setUsers(d.users)).catch(() => {});
-    }
+    if (!me) return;
+    const load = () => api.listUsers().then((d) => setUsers(d.users)).catch(() => {});
+    load();
+    const t = setInterval(load, 20000); // Online-Status live
+    return () => clearInterval(t);
   }, [me]);
 
   if (loading) return null;
@@ -45,6 +48,8 @@ export default function HomePage() {
               <Link href="/messenger" className="vv-btn">✉️ Nachrichten</Link>
             </div>
           </div>
+
+          <Buschfunk />
 
           <div className="vv-card">
             <h2>👥 Mitglieder</h2>

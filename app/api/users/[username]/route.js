@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser } from "@/lib/db";
+import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sanitizeCustomCss } from "@/lib/sanitizeCss";
 
@@ -11,6 +11,8 @@ export async function GET(_req, { params }) {
     user: { ...user, online: isOnline(user.lastSeen) },
     pinnwand: getPinnwand(user.id),
     gifts: getGifts(user.id),
+    visitCount: getVisitCount(user.id),
+    visitors: getRecentVisitors(user.id, 12).map((v) => ({ ...v, online: isOnline(v.lastSeen) })),
   });
 }
 
@@ -28,6 +30,7 @@ export async function PATCH(req, { params }) {
   if (typeof body.mood === "string") patch.mood = body.mood.slice(0, 120);
   if (typeof body.aboutMe === "string") patch.aboutMe = body.aboutMe.slice(0, 4000);
   if (typeof body.bgMusic === "string") patch.bgMusic = body.bgMusic.slice(0, 200);
+  if (typeof body.bgMusicUrl === "string") patch.bgMusicUrl = body.bgMusicUrl.slice(0, 400);
   if (typeof body.customCss === "string") patch.customCss = sanitizeCustomCss(body.customCss);
   if (Array.isArray(body.interests)) {
     patch.interests = body.interests.map((s) => String(s).slice(0, 60)).filter(Boolean).slice(0, 30);

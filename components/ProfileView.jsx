@@ -6,10 +6,11 @@ import MusicPlayer from "./MusicPlayer";
 import Pinnwand from "./Pinnwand";
 import GiftShelf from "./GiftShelf";
 import ProfileSkin from "./ProfileSkin";
+import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 
-export default function ProfileView({ profile, pinnwand, gifts, onChange }) {
+export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, visitors = [], onChange }) {
   const { me } = useMe();
   const [toast, setToast] = useState(null);
 
@@ -30,7 +31,9 @@ export default function ProfileView({ profile, pinnwand, gifts, onChange }) {
 
   return (
     <ProfileSkin css={profile.customCss}>
-      {profile.bgMusic && <MusicPlayer track={profile.bgMusic} />}
+      {(profile.bgMusic || profile.bgMusicUrl) && (
+        <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} />
+      )}
 
       <div className="vv-card">
         <div className="vv-profile-header">
@@ -51,9 +54,9 @@ export default function ProfileView({ profile, pinnwand, gifts, onChange }) {
               <span className="vv-mood">Stimmung: {profile.mood || "—"}</span>
             </div>
             <ul className="vv-profile-stats">
+              <li><strong>{visitCount}</strong>Besucher</li>
               <li><strong>{pinnwand.length}</strong>Pinnwand</li>
               <li><strong>{gifts.length}</strong>Geschenke</li>
-              <li><strong>{(profile.interests || []).length}</strong>Interessen</li>
               <li><strong>{new Date(profile.createdAt).toLocaleDateString("de-DE")}</strong>Dabei seit</li>
             </ul>
           </div>
@@ -99,6 +102,31 @@ export default function ProfileView({ profile, pinnwand, gifts, onChange }) {
 
         <div>
           <GiftShelf profile={profile} gifts={gifts} onChange={onChange} />
+
+          <div className="vv-card">
+            <h3>👀 Wer war hier?</h3>
+            <div className="vv-visit-counter">
+              Besucher-Nr. <strong>{visitCount + 1}</strong> bist du! 🎉
+            </div>
+            {visitors.length === 0 ? (
+              <div className="vv-muted vv-center" style={{ padding: "10px 0" }}>
+                Noch keine Besucher. Teile dein Profil!
+              </div>
+            ) : (
+              <div className="vv-friends-grid vv-mt-8">
+                {visitors.map((v) => (
+                  <Link key={v.username} className="vv-friend-tile" href={`/u/${v.username}`}>
+                    <div className="vv-avatar vv-avatar-md">{v.emoji}</div>
+                    <span className="vv-friend-name">
+                      {v.online && <span className="vv-online-dot" />}
+                      {v.displayName}
+                    </span>
+                    <span className="vv-muted">{relTime(v.at)}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

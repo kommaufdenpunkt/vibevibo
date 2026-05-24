@@ -11,7 +11,10 @@ export default function FriendsPage() {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    api.listUsers().then((d) => setUsers(d.users)).catch(() => {});
+    const load = () => api.listUsers().then((d) => setUsers(d.users)).catch(() => {});
+    load();
+    const t = setInterval(load, 20000); // Online-Status live halten
+    return () => clearInterval(t);
   }, []);
 
   const list = users.filter((u) => {
