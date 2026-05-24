@@ -9,6 +9,12 @@ export async function POST(req) {
     if (!user) {
       return NextResponse.json({ error: "Falscher Benutzername oder Passwort." }, { status: 401 });
     }
+    if (user.status === "pending") {
+      return NextResponse.json({ error: "Du stehst noch auf der Warteliste – wir schalten dich bald frei! 💌" }, { status: 403 });
+    }
+    if (user.status === "blocked") {
+      return NextResponse.json({ error: "Dieser Account wurde gesperrt." }, { status: 403 });
+    }
     const token = createSession(user.id);
     await setSessionCookie(token);
     return NextResponse.json({ user });

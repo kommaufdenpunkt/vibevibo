@@ -2344,3 +2344,32 @@ body.vv-hide-sensitive .vv-chat-messages {
   .vv-pillars { gap: 14px; }
   .vv-gift-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
 }
+
+/* Admin-Zeilen */
+.vv-admin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px dotted #999;
+  flex-wrap: wrap;
+}
+.vv-admin-row:last-child { border-bottom: none; }
+.vv-admin-row .vv-btn { font-size: 11px; padding: 5px 10px; }
+
+/* Warteliste-Box auf der Landing */
+.vv-waitlist-box {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 30px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px ridge var(--vv-pink);
+  border-radius: 16px;
+  backdrop-filter: blur(14px);
+  text-align: center;
+  color: #fff;
+  animation: form-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.vv-waitlist-emoji { font-size: 56px; margin-bottom: 8px; animation: wobble 1.5s ease-in-out infinite alternate; }
+.vv-waitlist-box h2 { color: var(--vv-yellow); text-shadow: 1px 1px 0 #000; margin: 0 0 10px; }
+.vv-waitlist-box p { color: rgba(255,255,255,0.9); line-height: 1.6; margin-bottom: 18px; }

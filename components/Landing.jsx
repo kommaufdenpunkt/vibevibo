@@ -172,6 +172,7 @@ export default function Landing() {
   const [form, setForm] = useState({ username: "", password: "", displayName: "", emoji: "🌸" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [waitlisted, setWaitlisted] = useState(false);
   const [stats, setStats] = useState({ users: 0, online: 0 });
   const inputRef = useRef(null);
 
@@ -201,33 +202,25 @@ export default function Landing() {
     setBusy(true);
     try {
       if (mode === "register") {
-        await api.register({
+        const res = await api.register({
           username: form.username.trim(),
           displayName: form.displayName.trim() || form.username.trim(),
           password: form.password,
           emoji: form.emoji,
         });
+        // Registrierung => Warteliste, kein direkter Login
+        if (res?.waitlist) {
+          setWaitlisted(true);
+          setBusy(false);
+          return;
+        }
       } else {
         await api.login(form.username.trim(), form.password);
+        await refresh();
+        router.push("/profile");
+        router.refresh();
+        return;
       }
-      await refresh();
-      router.push("/profile");
-      router.refresh();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function demoLogin(username) {
-    setBusy(true);
-    setError(null);
-    try {
-      await api.login(username, "vibe123");
-      await refresh();
-      router.push("/profile");
-      router.refresh();
     } catch (e) {
       setError(e.message);
     } finally {
@@ -280,21 +273,33 @@ export default function Landing() {
           <span key={hookIdx} className="vv-splash-hook">{HOOKS[hookIdx]}?</span>
         </div>
 
-        {mode === "idle" && (
-          <div className="vv-splash-cta">
-            <button type="button" className="vv-btn-cta vv-btn-cta-primary" onClick={() => setMode("register")}>
-              ⚡ Account erstellen
-            </button>
-            <button type="button" className="vv-btn-cta vv-btn-cta-ghost" onClick={() => setMode("login")}>
-              schon Mitglied? Einloggen
+        {waitlisted ? (
+          <div className="vv-waitlist-box">
+            <div className="vv-waitlist-emoji">💌</div>
+            <h2>Du stehst auf der Warteliste!</h2>
+            <p>
+              Schön dass du dabei sein willst! Wir schalten neue Mitglieder
+              nach und nach frei – du bekommst Zugang, sobald du dran bist.
+            </p>
+            <button type="button" className="vv-btn-cta vv-btn-cta-ghost" onClick={() => { setWaitlisted(false); setMode("idle"); }}>
+              ← zurück
             </button>
           </div>
-        )}
+        ) : mode === "idle" ? (
+          <div className="vv-splash-cta">
+            <button type="button" className="vv-btn-cta vv-btn-cta-primary" onClick={() => setMode("register")}>
+              ⚡ Auf die Warteliste
+            </button>
+            <button type="button" className="vv-btn-cta vv-btn-cta-ghost" onClick={() => setMode("login")}>
+              schon freigeschaltet? Einloggen
+            </button>
+          </div>
+        ) : null}
 
-        {(mode === "register" || mode === "login") && (
+        {!waitlisted && (mode === "register" || mode === "login") && (
           <form className="vv-splash-form" onSubmit={submit}>
             <div className="vv-splash-form-title">
-              {mode === "register" ? "✿ Profil in 10 Sekunden ✿" : "🔑 Welcome back"}
+              {mode === "register" ? "✿ Auf die Warteliste ✿" : "🔑 Welcome back"}
               <button type="button" className="vv-splash-form-close" onClick={() => { setMode("idle"); setError(null); }} aria-label="Schließen">×</button>
             </div>
 
@@ -345,42 +350,17 @@ export default function Landing() {
             {error && <div className="vv-splash-error">⚠ {error}</div>}
 
             <button type="submit" className="vv-btn-cta vv-btn-cta-primary" disabled={busy}>
-              {busy ? "..." : (mode === "register" ? "▶ Profil erstellen" : "▶ Einloggen")}
+              {busy ? "..." : (mode === "register" ? "▶ Auf die Warteliste" : "▶ Einloggen")}
             </button>
 
             <div className="vv-splash-switch">
               {mode === "register" ? (
-                <>schon dabei? <a href="#" onClick={(e) => { e.preventDefault(); setMode("login"); setError(null); }}>einloggen</a></>
+                <>schon freigeschaltet? <a href="#" onClick={(e) => { e.preventDefault(); setMode("login"); setError(null); }}>einloggen</a></>
               ) : (
-                <>neu hier? <a href="#" onClick={(e) => { e.preventDefault(); setMode("register"); setError(null); }}>Account anlegen</a></>
+                <>neu hier? <a href="#" onClick={(e) => { e.preventDefault(); setMode("register"); setError(null); }}>auf die Warteliste</a></>
               )}
             </div>
           </form>
-        )}
-
-        {mode === "idle" && stats.users > 0 && (
-          <div className="vv-splash-demos">
-            <div className="vv-splash-demos-label">… oder schnell mit einem Demo-Profil reinschauen:</div>
-            <div className="vv-splash-demo-row">
-              {[
-                { u: "anna_2003", e: "🌸", n: "Anna" },
-                { u: "kevin_skater", e: "🛹", n: "Kev" },
-                { u: "lisa_princess", e: "👑", n: "Lisa" },
-                { u: "max_zocker", e: "🎮", n: "MaX" },
-              ].map((d) => (
-                <button
-                  key={d.u}
-                  type="button"
-                  className="vv-splash-demo"
-                  onClick={() => demoLogin(d.u)}
-                  disabled={busy}
-                >
-                  <span className="vv-splash-demo-emoji">{d.e}</span>
-                  <span className="vv-splash-demo-name">{d.n}</span>
-                </button>
-              ))}
-            </div>
-          </div>
         )}
 
         <div className="vv-splash-mini-disclaimer">
