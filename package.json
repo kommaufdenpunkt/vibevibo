@@ -1,0 +1,18 @@
+{
+  "name": "vibevibo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nostalgische Social-Plattform im Geist von MySpace, SchuelerVZ, Jappy, Lokalisten & wer-kennt-wen",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.10.0",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  }
+}
