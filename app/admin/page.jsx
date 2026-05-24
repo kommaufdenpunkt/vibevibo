@@ -47,6 +47,7 @@ export default async function AdminPage({ searchParams }) {
     if (action === "approve" && uname) { const x = getUserByUsername(uname); if (x) setUserStatus(x.id, "approved"); }
     else if (action === "block" && uname) { const x = getUserByUsername(uname); if (x) { setUserStatus(x.id, "blocked"); if (ip) blockIp(ip, `User ${uname} gesperrt`); } }
     else if (action === "reject" && uname) { const x = getUserByUsername(uname); if (x) { if (ip) blockIp(ip, `Anmeldung ${uname} abgelehnt`); deleteUser(x.id); } }
+    else if (action === "delete" && uname) { const x = getUserByUsername(uname); if (x) deleteUser(x.id); }
     else if (action === "unblockip" && ip) unblockIp(ip);
     else if (action === "blockip" && ip) blockIp(ip, "manuell gesperrt");
     redirect(`/admin?pw=${encodeURIComponent(pw)}`);
@@ -102,6 +103,7 @@ export default async function AdminPage({ searchParams }) {
               <strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span>
             </div>
             <a className="vv-btn" href={`/admin?${q}&do=block&u=${encodeURIComponent(u.username)}&ip=${encodeURIComponent(u.regIp || "")}`}>🚫 Sperren</a>
+            <a className="vv-btn" style={{ color: "#a00", fontWeight: "bold" }} href={`/admin?${q}&do=delete&u=${encodeURIComponent(u.username)}`}>🗑 Löschen</a>
           </div>
         ))}
       </div>
@@ -113,6 +115,7 @@ export default async function AdminPage({ searchParams }) {
             <div className="vv-admin-row" key={u.username}>
               <div style={{ flex: 1 }}><strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span></div>
               <a className="vv-btn vv-btn-pink" href={`/admin?${q}&do=approve&u=${encodeURIComponent(u.username)}`}>✓ Entsperren</a>
+              <a className="vv-btn" style={{ color: "#a00", fontWeight: "bold" }} href={`/admin?${q}&do=delete&u=${encodeURIComponent(u.username)}`}>🗑 Löschen</a>
             </div>
           ))}
         </div>
