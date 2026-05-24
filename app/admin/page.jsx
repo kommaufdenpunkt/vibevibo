@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [ipInput, setIpInput] = useState("");
 
   const load = useCallback(async () => {
@@ -18,7 +19,10 @@ export default function AdminPage() {
       setData(d);
       setAuthed(true);
     } catch (e) {
-      if (e.status === 401 || e.status === 503) setAuthed(false);
+      setAuthed(false);
+      if (e.status === 503) setError("Admin-Bereich nicht konfiguriert (VV_ADMIN_PASSWORD fehlt in Coolify).");
+    } finally {
+      setChecking(false);
     }
   }, []);
 
@@ -30,11 +34,11 @@ export default function AdminPage() {
     setBusy(true);
     try {
       await api.adminLogin(password);
-      setPassword("");
-      await load();
+      // Harter Reload: stellt sicher, dass das Admin-Cookie aktiv ist,
+      // bevor das Dashboard die geschützten Daten lädt.
+      window.location.reload();
     } catch (err) {
-      setError(err.message);
-    } finally {
+      setError(err.message || "Login fehlgeschlagen");
       setBusy(false);
     }
   }
@@ -55,6 +59,10 @@ export default function AdminPage() {
     await api.adminIpAction(ip, action, reason).catch((e) => alert(e.message));
     setIpInput("");
     load();
+  }
+
+  if (checking) {
+    return <div className="vv-card vv-login-card"><h2>🔐 VibeVibo Admin</h2><p className="vv-muted">Lädt…</p></div>;
   }
 
   if (!authed) {
