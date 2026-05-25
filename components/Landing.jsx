@@ -17,7 +17,29 @@ const HOOKS = [
   "MSN-Nicknames mit ★彡 Symbolen ★彡",
 ];
 
-const EMOJIS = ["🙂","😎","🌸","🛹","👑","🎮","💅","🎧","🦄","🌈","🔥","🌟","💖","🎀"];
+// Bild im Browser auf 400x400 verkleinern (mittig beschnitten) -> kleines JPEG
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const size = 400;
+        const canvas = document.createElement("canvas");
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale, h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // Schwebende Nostalgie-Karten - jede sieht aus wie ein UI-Element aus der Zeit
 const NOSTALGIA_CARDS = [
@@ -169,7 +191,9 @@ export default function Landing() {
   const { refresh } = useMe();
   const [hookIdx, setHookIdx] = useState(0);
   const [mode, setMode] = useState("idle");
-  const [form, setForm] = useState({ username: "", password: "", displayName: "", emoji: "🌸" });
+  const [form, setForm] = useState({ username: "", password: "", displayName: "" });
+  const [pics, setPics] = useState([]);
+  const picInputRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [waitlisted, setWaitlisted] = useState(false);
@@ -196,6 +220,26 @@ export default function Landing() {
     }
   }, [mode]);
 
+  async function onPickPics(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!files.length) return;
+    try {
+      const added = [];
+      for (const f of files) {
+        if (pics.length + added.length >= 9) break;
+        added.push(await fileToDataUrl(f));
+      }
+      setPics((p) => [...p, ...added].slice(0, 9));
+    } catch {
+      setError("Bild konnte nicht geladen werden.");
+    }
+  }
+
+  function removePic(i) {
+    setPics((p) => p.filter((_, idx) => idx !== i));
+  }
+
   async function submit(e) {
     e.preventDefault();
     setError(null);
@@ -206,7 +250,7 @@ export default function Landing() {
           username: form.username.trim(),
           displayName: form.displayName.trim() || form.username.trim(),
           password: form.password,
-          emoji: form.emoji,
+          images: pics,
         });
         // Registrierung => Warteliste, kein direkter Login
         if (res?.waitlist) {
@@ -323,16 +367,36 @@ export default function Landing() {
                   value={form.displayName}
                   onChange={(e) => setForm({ ...form, displayName: e.target.value })}
                 />
-                <div className="vv-splash-emoji-row">
-                  <span className="vv-splash-emoji-label">Avatar:</span>
-                  {EMOJIS.map((e) => (
-                    <button
-                      key={e}
-                      type="button"
-                      className={`vv-splash-emoji${form.emoji === e ? " vv-active" : ""}`}
-                      onClick={() => setForm({ ...form, emoji: e })}
-                    >{e}</button>
-                  ))}
+
+                <div style={{ margin: "4px 0 2px" }}>
+                  <button
+                    type="button"
+                    onClick={() => picInputRef.current?.click()}
+                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "2px dashed #ff8fd0", background: "rgba(255,255,255,0.7)", color: "#c2185b", fontWeight: "bold", cursor: "pointer" }}
+                  >
+                    📷 Profilbild(er) wählen {pics.length > 0 ? `(${pics.length}/9)` : ""}
+                  </button>
+                  <input ref={picInputRef} type="file" accept="image/png,image/jpeg,image/webp" multiple hidden onChange={onPickPics} />
+                  {pics.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+                      {pics.map((src, i) => (
+                        <span key={i} style={{ position: "relative", width: 48, height: 48 }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={src} alt="" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8 }} />
+                          <button
+                            type="button"
+                            onClick={() => removePic(i)}
+                            aria-label="Entfernen"
+                            style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: "50%", border: "none", background: "#222", color: "#fff", fontSize: 12, lineHeight: "18px", cursor: "pointer", padding: 0 }}
+                          >×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11, color: "#7a4", marginTop: 6, lineHeight: 1.4 }}>
+                    🤖 Deine Profilbilder prüft <strong>Fidolin</strong> (unsere KI) oder unser Moderatoren-Team –
+                    sie werden danach <strong>freigeschaltet oder abgelehnt</strong>. Du kannst sie auch später jederzeit ändern.
+                  </div>
                 </div>
               </>
             )}

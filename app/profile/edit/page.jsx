@@ -6,8 +6,6 @@ import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 
-const EMOJIS = ["🙂","😎","🌸","🛹","👑","🎮","💅","🎧","🦄","🌈","🔥","🌟","💖","🎀","🍀","⚡","🦋","☕","🐱","🐶"];
-
 export default function EditProfilePage() {
   const router = useRouter();
   const { me, loading, refresh } = useMe();
@@ -19,7 +17,6 @@ export default function EditProfilePage() {
     if (!me) { router.push("/login"); return; }
     setForm({
       displayName: me.displayName || "",
-      emoji: me.emoji || "🙂",
       mood: me.mood || "",
       aboutMe: me.aboutMe || "",
       interests: (me.interests || []).join(", "),
@@ -40,7 +37,6 @@ export default function EditProfilePage() {
     try {
       await api.updateMe(me.username, {
         displayName: form.displayName.trim() || me.username,
-        emoji: form.emoji,
         mood: form.mood.trim(),
         aboutMe: form.aboutMe,
         interests: form.interests.split(",").map((s) => s.trim()).filter(Boolean),
@@ -65,7 +61,7 @@ export default function EditProfilePage() {
             {me.avatarUrl
               // eslint-disable-next-line @next/next/no-img-element
               ? <img src={me.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              : form.emoji}
+              : "👤"}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ margin: 0 }}>✎ Profil bearbeiten</h2>
@@ -81,21 +77,8 @@ export default function EditProfilePage() {
           <label><strong>Anzeigename</strong></label>
           <input className="vv-input" value={form.displayName} maxLength={100} onChange={(e) => up("displayName", e.target.value)} />
 
-          <label className="vv-mt-12"><strong>Avatar-Emoji</strong> <span className="vv-muted">(Ersatz, wenn kein Profilbild)</span></label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(42px, 1fr))", gap: 6, marginTop: 6 }}>
-            {EMOJIS.map((e) => (
-              <button
-                key={e}
-                type="button"
-                className="vv-smiley"
-                style={{ fontSize: 24, padding: 6, borderRadius: 10, outline: form.emoji === e ? "3px solid #ff3e9d" : "none" }}
-                onClick={() => up("emoji", e)}
-              >{e}</button>
-            ))}
-          </div>
-
           <div className="vv-muted vv-mt-12" style={{ fontSize: 12 }}>
-            📷 <strong>Profilbilder</strong> verwaltest du direkt auf deinem <Link href="/profile">Profil</Link> – mehrere Bilder, Hauptbild wählen, Fidolin prüft sie.
+            📷 <strong>Profilbilder</strong> verwaltest du direkt auf deinem <Link href="/profile">Profil</Link> – mehrere Bilder hochladen, Hauptbild wählen, Fidolin prüft sie.
           </div>
         </div>
 

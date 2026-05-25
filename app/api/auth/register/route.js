@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { createUser, isIpBlocked, countRecentRegistrationsByIp, isDeviceBanned, recordDevice } from "@/lib/db";
+import { createUser, isIpBlocked, countRecentRegistrationsByIp, isDeviceBanned, recordDevice, addProfilePic, MAX_PROFILE_PICS } from "@/lib/db";
 import { getClientIp } from "@/lib/ip";
 import { getOrCreateDeviceId } from "@/lib/device";
 
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
+const MAX_IMG_BYTES = 700_000;
+const IMG_RE = /^data:image\/(png|jpeg|jpg|webp);base64,/;
 
 export async function POST(req) {
   const ip = getClientIp(req);
@@ -29,9 +31,23 @@ export async function POST(req) {
   }
 
   try {
-    const { username, displayName, password, emoji } = await req.json();
+    const { username, displayName, password, emoji, images } = await req.json();
     const user = createUser({ username, displayName, password, emoji, regIp: ip });
     recordDevice(deviceId, { userId: user.id, username: user.username, userAgent: req.headers.get("user-agent") || "", ip });
+
+    // Optional bei der Registrierung hochgeladene Profilbilder -> in Prüfung (Fidolin/Moderation)
+    if (Array.isArray(images)) {
+      let n = 0;
+      for (const img of images) {
+        if (n >= MAX_PROFILE_PICS) break;
+        const s = String(img || "");
+        if (IMG_RE.test(s) && s.length <= MAX_IMG_BYTES) {
+          addProfilePic(user.id, s, "pending", "Bei Registrierung – wartet auf Freigabe");
+          n++;
+        }
+      }
+    }
+
     // KEINE Session - User ist auf der Warteliste
     return NextResponse.json({
       waitlist: true,
