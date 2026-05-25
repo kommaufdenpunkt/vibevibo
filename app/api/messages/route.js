@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
+import { checkTextPost, isMuted } from "@/lib/moderate";
 
 export async function GET() {
   const me = await getSessionUser();
@@ -22,6 +23,7 @@ const MAX_AUDIO_BYTES = 800_000; // ~0.8 MB Base64 (ca. 45-60 Sek Opus)
 export async function POST(req) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
+  if (isMuted(me.id)) return NextResponse.json({ error: "Du hast aktuell einen Kommunikationsbann und kannst nicht schreiben." }, { status: 403 });
   const body = await req.json();
   const target = getUserByUsername(body.to);
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -45,6 +47,8 @@ export async function POST(req) {
 
   const cleaned = String(body.text || "").trim().slice(0, 2000);
   if (!cleaned) return NextResponse.json({ error: "empty" }, { status: 400 });
+  const verdict = await checkTextPost(me.id, "nachricht", cleaned);
+  if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
   const row = sendMessage(me.id, target.id, cleaned);
   publishMessage(row);
   return NextResponse.json({ message: row });

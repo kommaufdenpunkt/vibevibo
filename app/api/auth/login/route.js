@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
-import { verifyPassword, createSession } from "@/lib/db";
+import { verifyPassword, createSession, isDeviceBanned, recordDevice, sanctionTypes } from "@/lib/db";
 import { setSessionCookie } from "@/lib/auth";
+import { getOrCreateDeviceId } from "@/lib/device";
+import { getClientIp } from "@/lib/ip";
 
 export async function POST(req) {
   try {
+    const deviceId = await getOrCreateDeviceId();
+    if (isDeviceBanned(deviceId)) {
+      return NextResponse.json({ error: "Dieses Gerät ist für VibeVibo gesperrt." }, { status: 403 });
+    }
+
     const { username, password } = await req.json();
     const user = verifyPassword(username, password);
     if (!user) {
@@ -15,6 +22,12 @@ export async function POST(req) {
     if (user.status === "blocked") {
       return NextResponse.json({ error: "Dieser Account wurde gesperrt." }, { status: 403 });
     }
+    // Komplett-Bann (full) sperrt den Login
+    if (sanctionTypes(user.id).has("full")) {
+      return NextResponse.json({ error: "Dein Zugang ist aktuell gesperrt." }, { status: 403 });
+    }
+
+    recordDevice(deviceId, { userId: user.id, username: user.username, userAgent: req.headers.get("user-agent") || "", ip: getClientIp(req) });
     const token = createSession(user.id);
     await setSessionCookie(token);
     return NextResponse.json({ user });

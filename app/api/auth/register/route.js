@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
-import { createUser, isIpBlocked, countRecentRegistrationsByIp } from "@/lib/db";
+import { createUser, isIpBlocked, countRecentRegistrationsByIp, isDeviceBanned, recordDevice } from "@/lib/db";
 import { getClientIp } from "@/lib/ip";
+import { getOrCreateDeviceId } from "@/lib/device";
 
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
 
 export async function POST(req) {
   const ip = getClientIp(req);
+  const deviceId = await getOrCreateDeviceId();
+
+  // 0) Gerät gesperrt? (Geräte-Bann von Fidolin/Admin)
+  if (isDeviceBanned(deviceId)) {
+    return NextResponse.json({ error: "Dieses Gerät ist für VibeVibo gesperrt." }, { status: 403 });
+  }
 
   // 1) IP gesperrt?
   if (isIpBlocked(ip)) {
@@ -23,7 +30,8 @@ export async function POST(req) {
 
   try {
     const { username, displayName, password, emoji } = await req.json();
-    createUser({ username, displayName, password, emoji, regIp: ip });
+    const user = createUser({ username, displayName, password, emoji, regIp: ip });
+    recordDevice(deviceId, { userId: user.id, username: user.username, userAgent: req.headers.get("user-agent") || "", ip });
     // KEINE Session - User ist auf der Warteliste
     return NextResponse.json({
       waitlist: true,
