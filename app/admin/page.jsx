@@ -7,7 +7,7 @@ import {
   addSanction, liftSanction, liftAllSanctions, listActiveSanctions,
   listDevices, banDevice, unbanDevice, listDeviceBans,
   getUserDossier, listRecentModLog,
-  listPendingPics, listRejectedPics, setPicStatus, autoApproveStalePics, getProfilePic,
+  listPendingPics, listRejectedPics, listApprovedPics, setPicStatus, autoApproveStalePics, getProfilePic,
   logMod,
 } from "@/lib/db";
 import { relTime } from "@/lib/format";
@@ -102,7 +102,7 @@ export default async function AdminPage({ searchParams }) {
     else if (action === "liftall" && uname) { const x = getUserByUsername(uname); if (x) { liftAllSanctions(x.id); logMod({ userId: x.id, kind: "unban", decision: "lifted", reason: "Admin hob alle Sanktionen auf", by: "admin" }); } }
     else if (action === "banDevice" && dev) banDevice(dev, "Admin-Gerätebann", null, "admin");
     else if (action === "unbanDevice" && dev) unbanDevice(dev);
-    else if (action === "avApprove" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "approved", ""); logMod({ userId: p.user_id, kind: "avatar", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
+    else if (action === "avApprove" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "approved", "Admin freigegeben"); logMod({ userId: p.user_id, kind: "avatar", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
     else if (action === "avReject" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "avatar", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
     else if (action === "unblockip" && ip) unblockIp(ip);
     else if (action === "blockip" && ip) blockIp(ip, "manuell gesperrt");
@@ -240,9 +240,17 @@ function Mitglieder({ q }) {
   );
 }
 
+function picSource(reason) {
+  if (!reason) return "Fidolin-KI";
+  if (reason.includes("Auto-Freigabe")) return "⚠ Auto (10-Min-Frist, ungeprüft)";
+  if (reason.includes("Admin")) return "Admin";
+  return "Fidolin-KI";
+}
+
 function Profilbilder({ q }) {
   const pending = listPendingPics();
   const rejected = listRejectedPics();
+  const approved = listApprovedPics(80);
   return (
     <>
       <div className="vv-card">
@@ -280,6 +288,22 @@ function Profilbilder({ q }) {
           </div>
         </div>
       )}
+      <div className="vv-card">
+        <h3>✅ Freigegebene Bilder ({approved.length})</h3>
+        <div className="vv-muted" style={{ fontSize: 12 }}>Kontrolle aller aktiven Profilbilder – auch die, die Fidolin automatisch durchgewinkt hat. Du kannst jedes nachträglich zurückziehen.</div>
+        {approved.length === 0 && <div className="vv-muted vv-mt-8">Noch keine freigegebenen Bilder.</div>}
+        <div className="vv-row" style={{ flexWrap: "wrap", gap: 12, marginTop: 12 }}>
+          {approved.map((p) => (
+            <div key={p.id} style={{ textAlign: "center", width: 130 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.url} alt={p.username} style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 10, border: p.isPrimary ? "2px solid #ff3e9d" : "2px solid #cfc" }} />
+              <div style={{ fontSize: 12 }}>{p.isPrimary ? "⭐ " : ""}<strong>@{p.username}</strong></div>
+              <div className="vv-muted" style={{ fontSize: 10 }}>{picSource(p.reason)}</div>
+              <a className="vv-btn vv-mt-8" style={{ color: "#a00" }} href={`/admin?${q}&tab=profilbilder&do=avReject&pic=${p.id}`}>✕ Zurückziehen</a>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   );
 }
