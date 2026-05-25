@@ -26,15 +26,24 @@ function renderEvent(ev, i) {
   } else if (ev.type === "newuser") {
     icon = "🎉";
     text = <>{actor} ist neu bei VibeVibo - sag Hallo!</>;
+  } else if (ev.type === "newpic") {
+    icon = "🖼️";
+    text = <>{actor} hat ein neues Profilbild!</>;
   }
 
   return (
     <div className="vv-feed-item" key={i}>
       <div className="vv-buschfunk-icon">{icon}</div>
-      <div>
+      <div style={{ flex: 1 }}>
         <div>{text}</div>
         <div className="vv-feed-meta">{relTime(ev.at)}</div>
       </div>
+      {ev.type === "newpic" && ev.picUrl && (
+        <Link href={`/u/${ev.actor.username}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={ev.picUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover" }} />
+        </Link>
+      )}
     </div>
   );
 }

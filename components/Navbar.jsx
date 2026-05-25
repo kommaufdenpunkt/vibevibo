@@ -52,7 +52,11 @@ export default function Navbar() {
         {me ? (
           <span className="vv-nav2-user">
             <span className="vv-online-dot" />
-            {me.emoji} {me.displayName}
+            {me.avatarUrl
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={me.avatarUrl} alt="" style={{ width: 20, height: 20, borderRadius: "50%", objectFit: "cover", verticalAlign: "middle", marginRight: 4 }} />
+              : <>{me.emoji} </>}
+            {me.displayName}
           </span>
         ) : (
           <Link href="/login" className="vv-nav2-loginbtn">🔑 Login</Link>

@@ -7,7 +7,7 @@ import {
   addSanction, liftSanction, liftAllSanctions, listActiveSanctions,
   listDevices, banDevice, unbanDevice, listDeviceBans,
   getUserDossier, listRecentModLog,
-  listPendingAvatars, listRejectedAvatars, setAvatarStatus, autoApproveStaleAvatars,
+  listPendingPics, listRejectedPics, setPicStatus, autoApproveStalePics, getProfilePic,
   logMod,
 } from "@/lib/db";
 import { relTime } from "@/lib/format";
@@ -74,13 +74,14 @@ export default async function AdminPage({ searchParams }) {
   const uParam = typeof sp?.u === "string" ? sp.u : "";
 
   // Fidolin-Frist: Profilbilder, die > 10 Min in Prüfung hängen, automatisch freigeben
-  autoApproveStaleAvatars(10 * 60 * 1000);
+  autoApproveStalePics(10 * 60 * 1000);
 
   // ---- Aktionen (GET-basiert) ----
   const action = typeof sp?.do === "string" ? sp.do : "";
   const uname = uParam;
   const ip = typeof sp?.ip === "string" ? sp.ip : "";
   const dev = typeof sp?.dev === "string" ? sp.dev : "";
+  const pic = typeof sp?.pic === "string" ? sp.pic : "";
   if (action) {
     if (action === "approve" && uname) { const x = getUserByUsername(uname); if (x) setUserStatus(x.id, "approved"); }
     else if (action === "block" && uname) { const x = getUserByUsername(uname); if (x) { setUserStatus(x.id, "blocked"); if (ip) blockIp(ip, `User ${uname} gesperrt`); } }
@@ -101,8 +102,8 @@ export default async function AdminPage({ searchParams }) {
     else if (action === "liftall" && uname) { const x = getUserByUsername(uname); if (x) { liftAllSanctions(x.id); logMod({ userId: x.id, kind: "unban", decision: "lifted", reason: "Admin hob alle Sanktionen auf", by: "admin" }); } }
     else if (action === "banDevice" && dev) banDevice(dev, "Admin-Gerätebann", null, "admin");
     else if (action === "unbanDevice" && dev) unbanDevice(dev);
-    else if (action === "avApprove" && uname) { const x = getUserByUsername(uname); if (x) { setAvatarStatus(x.id, "approved", ""); logMod({ userId: x.id, kind: "avatar", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
-    else if (action === "avReject" && uname) { const x = getUserByUsername(uname); if (x) { setAvatarStatus(x.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: x.id, kind: "avatar", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
+    else if (action === "avApprove" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "approved", ""); logMod({ userId: p.user_id, kind: "avatar", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
+    else if (action === "avReject" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "avatar", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
     else if (action === "unblockip" && ip) unblockIp(ip);
     else if (action === "blockip" && ip) blockIp(ip, "manuell gesperrt");
     const keepU = (tab === "userakte" && uname) ? `&u=${encodeURIComponent(uname)}` : "";
@@ -240,8 +241,8 @@ function Mitglieder({ q }) {
 }
 
 function Profilbilder({ q }) {
-  const pending = listPendingAvatars();
-  const rejected = listRejectedAvatars();
+  const pending = listPendingPics();
+  const rejected = listRejectedPics();
   return (
     <>
       <div className="vv-card">
@@ -249,14 +250,14 @@ function Profilbilder({ q }) {
         <div className="vv-muted" style={{ fontSize: 12 }}>Fidolin prüft automatisch; nach 10 Min ungeprüft erfolgt Auto-Freigabe. Du kannst jederzeit entscheiden.</div>
         {pending.length === 0 && <div className="vv-muted vv-mt-8">Keine offenen Profilbilder.</div>}
         <div className="vv-row" style={{ flexWrap: "wrap", gap: 12, marginTop: 12 }}>
-          {pending.map((u) => (
-            <div key={u.username} style={{ textAlign: "center", width: 130 }}>
+          {pending.map((p) => (
+            <div key={p.id} style={{ textAlign: "center", width: 130 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u.avatarUrlRaw} alt={u.username} style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 10, border: "2px solid #eee" }} />
-              <div style={{ fontSize: 12 }}><strong>@{u.username}</strong></div>
+              <img src={p.url} alt={p.username} style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 10, border: "2px solid #eee" }} />
+              <div style={{ fontSize: 12 }}><strong>@{p.username}</strong></div>
               <div className="vv-row" style={{ gap: 4, justifyContent: "center", marginTop: 4 }}>
-                <a className="vv-btn vv-btn-pink" href={`/admin?${q}&tab=profilbilder&do=avApprove&u=${encodeURIComponent(u.username)}`}>✓</a>
-                <a className="vv-btn" style={{ color: "#a00" }} href={`/admin?${q}&tab=profilbilder&do=avReject&u=${encodeURIComponent(u.username)}`}>✕</a>
+                <a className="vv-btn vv-btn-pink" href={`/admin?${q}&tab=profilbilder&do=avApprove&pic=${p.id}`}>✓</a>
+                <a className="vv-btn" style={{ color: "#a00" }} href={`/admin?${q}&tab=profilbilder&do=avReject&pic=${p.id}`}>✕</a>
               </div>
             </div>
           ))}
@@ -267,13 +268,13 @@ function Profilbilder({ q }) {
           <h3>🚫 Abgelehnte Bilder ({rejected.length})</h3>
           <div className="vv-muted" style={{ fontSize: 12 }}>Du kannst ein abgelehntes Bild nachträglich doch freigeben.</div>
           <div className="vv-row" style={{ flexWrap: "wrap", gap: 12, marginTop: 12 }}>
-            {rejected.map((u) => (
-              <div key={u.username} style={{ textAlign: "center", width: 130 }}>
+            {rejected.map((p) => (
+              <div key={p.id} style={{ textAlign: "center", width: 130 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={u.avatarUrlRaw} alt={u.username} style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 10, border: "2px solid #fdd", filter: "grayscale(0.4)" }} />
-                <div style={{ fontSize: 12 }}><strong>@{u.username}</strong></div>
-                <div className="vv-muted" style={{ fontSize: 10 }}>{u.avatarReason}</div>
-                <a className="vv-btn vv-btn-pink vv-mt-8" href={`/admin?${q}&tab=profilbilder&do=avApprove&u=${encodeURIComponent(u.username)}`}>✓ Doch freigeben</a>
+                <img src={p.url} alt={p.username} style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 10, border: "2px solid #fdd", filter: "grayscale(0.4)" }} />
+                <div style={{ fontSize: 12 }}><strong>@{p.username}</strong></div>
+                <div className="vv-muted" style={{ fontSize: 10 }}>{p.reason}</div>
+                <a className="vv-btn vv-btn-pink vv-mt-8" href={`/admin?${q}&tab=profilbilder&do=avApprove&pic=${p.id}`}>✓ Doch freigeben</a>
               </div>
             ))}
           </div>

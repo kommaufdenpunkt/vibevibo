@@ -62,7 +62,11 @@ export default function EditProfilePage() {
         <label><strong>Anzeigename</strong></label>
         <input className="vv-input" value={form.displayName} onChange={(e) => up("displayName", e.target.value)} />
 
-        <label className="vv-mt-12"><strong>Avatar-Emoji</strong></label>
+        <div className="vv-muted vv-mt-12" style={{ fontSize: 12 }}>
+          📷 <strong>Profilbilder</strong> verwaltest du direkt auf deinem <Link href="/profile">Profil</Link> (mehrere Bilder, Hauptbild wählen).
+        </div>
+
+        <label className="vv-mt-12"><strong>Avatar-Emoji</strong> <span className="vv-muted">(Ersatz, wenn kein Bild)</span></label>
         <div className="vv-row" style={{ flexWrap: "wrap" }}>
           {EMOJIS.map((e) => (
             <button

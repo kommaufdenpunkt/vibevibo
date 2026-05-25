@@ -6,6 +6,7 @@ import MusicPlayer from "./MusicPlayer";
 import Pinnwand from "./Pinnwand";
 import GiftShelf from "./GiftShelf";
 import ProfileSkin from "./ProfileSkin";
+import PicGallery from "./PicGallery";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
@@ -37,7 +38,12 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
 
       <div className="vv-card">
         <div className="vv-profile-header">
-          <div className="vv-avatar">{profile.emoji}</div>
+          <div className="vv-avatar" style={profile.avatarUrl ? { overflow: "hidden" } : undefined}>
+            {profile.avatarUrl
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={profile.avatarUrl} alt={profile.displayName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : profile.emoji}
+          </div>
           <div>
             <h2 style={{ margin: 0 }}>
               {profile.displayName}{" "}
@@ -78,6 +84,8 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
           </div>
         </div>
       </div>
+
+      <PicGallery username={profile.username} isOwner={isOwner} onAvatarChange={onChange} />
 
       <div className="vv-grid-2">
         <div>
