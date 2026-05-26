@@ -7,8 +7,8 @@ import {
   addSanction, liftSanction, liftAllSanctions, listActiveSanctions,
   listDevices, banDevice, unbanDevice, listDeviceBans,
   getUserDossier, listRecentModLog,
-  listPendingPics, listRejectedPics, listApprovedPics, setPicStatus, autoApproveStalePics, getProfilePic,
-  listPendingPhotos, listRejectedPhotos, setPhotoStatus, autoApproveStalePhotos, getPhoto,
+  listPendingPics, listRejectedPics, listApprovedPics, setPicStatus, getProfilePic,
+  listPendingPhotos, listRejectedPhotos, setPhotoStatus, getPhoto,
   logMod, updateUser, ageFromBirthdate,
 } from "@/lib/db";
 import GenderAge from "@/components/GenderAge";
@@ -77,9 +77,8 @@ export default async function AdminPage({ searchParams }) {
   const tab = typeof sp?.tab === "string" && TABS.some((t) => t[0] === sp.tab) ? sp.tab : "uebersicht";
   const uParam = typeof sp?.u === "string" ? sp.u : "";
 
-  // Fidolin-Frist: Profilbilder, die > 10 Min in Prüfung hängen, automatisch freigeben
-  autoApproveStalePics(10 * 60 * 1000);
-  autoApproveStalePhotos(10 * 60 * 1000);
+  // Streng: KEINE Auto-Freigabe. Bilder/Fotos bleiben in Prüfung, bis Fidolin (KI)
+  // beim Upload entscheidet oder ein Mensch sie freigibt – so rutscht nichts durch.
 
   // ---- Aktionen (GET-basiert) ----
   const action = typeof sp?.do === "string" ? sp.do : "";
@@ -276,7 +275,7 @@ function Profilbilder({ q }) {
     <>
       <div className="vv-card">
         <h3>🖼 Wartet auf Freigabe ({pending.length})</h3>
-        <div className="vv-muted" style={{ fontSize: 12 }}>Fidolin prüft automatisch; nach 10 Min ungeprüft erfolgt Auto-Freigabe. Du kannst jederzeit entscheiden.</div>
+        <div className="vv-muted" style={{ fontSize: 12 }}>Fidolin (KI) entscheidet beim Hochladen streng. Unklare/ungeprüfte Bilder bleiben hier in Prüfung, bis du freigibst – nichts wird automatisch öffentlich.</div>
         {pending.length === 0 && <div className="vv-muted vv-mt-8">Keine offenen Profilbilder.</div>}
         <div className="vv-row" style={{ flexWrap: "wrap", gap: 12, marginTop: 12 }}>
           {pending.map((p) => (
@@ -336,7 +335,7 @@ function Fotos({ q }) {
     <>
       <div className="vv-card">
         <h3>📷 Fotos – wartet auf Freigabe ({pending.length})</h3>
-        <div className="vv-muted" style={{ fontSize: 12 }}>Album-Fotos werden von Fidolin geprüft; nach 10 Min ungeprüft erfolgt Auto-Freigabe. Erst nach Freigabe öffentlich sichtbar.</div>
+        <div className="vv-muted" style={{ fontSize: 12 }}>Album-Fotos werden von Fidolin (KI) streng geprüft. Unklare/ungeprüfte Fotos bleiben in Prüfung, bis du freigibst – erst danach öffentlich sichtbar.</div>
         {pending.length === 0 && <div className="vv-muted vv-mt-8">Keine offenen Fotos.</div>}
         <div className="vv-row" style={{ flexWrap: "wrap", gap: 12, marginTop: 12 }}>
           {pending.map((p) => (
