@@ -55,15 +55,17 @@ export default function HomePage() {
 
           <div className="vv-card">
             <h2>👥 Mitglieder</h2>
-            <div className="vv-friends-grid">
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {users.slice(0, 12).map((u) => (
-                <Link key={u.username} className="vv-friend-tile" href={`/u/${u.username}`}>
-                  <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-md" />
-                  <span className="vv-friend-name">
-                    {u.online && <span className="vv-online-dot" />}
-                    <ColoredName gender={u.gender} age={u.age} name={u.displayName} size="0.95em" />
+                <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: "rgba(0,0,0,0.03)", textDecoration: "none" }}>
+                  <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
+                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                    <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {u.online && <span className="vv-online-dot" />}
+                      <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+                    </span>
+                    {u.mood && <span className="vv-muted" style={{ display: "block", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
                   </span>
-                  <span className="vv-muted">{u.mood}</span>
                 </Link>
               ))}
             </div>
