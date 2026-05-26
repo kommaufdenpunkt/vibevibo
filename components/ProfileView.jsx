@@ -7,7 +7,7 @@ import Pinnwand from "./Pinnwand";
 import GiftShelf from "./GiftShelf";
 import ProfileSkin from "./ProfileSkin";
 import PicGallery from "./PicGallery";
-import GenderAge from "./GenderAge";
+import { ColoredName } from "./GenderAge";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
@@ -47,8 +47,7 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
           </div>
           <div>
             <h2 style={{ margin: 0 }}>
-              <GenderAge gender={profile.gender} age={profile.age} size="0.7em" />{" "}
-              {profile.displayName}{" "}
+              <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} />{" "}
               {profile.online ? (
                 <span style={{ fontSize: 12, color: "#fff", background: "#0aff44", padding: "2px 6px", borderRadius: 8, textShadow: "1px 1px 0 #000" }}>
                   online
@@ -123,15 +122,20 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
                 Noch keine Besucher. Teile dein Profil!
               </div>
             ) : (
-              <div className="vv-friends-grid vv-mt-8">
-                {visitors.map((v) => (
-                  <Link key={v.username} className="vv-friend-tile" href={`/u/${v.username}`}>
-                    <div className="vv-avatar vv-avatar-md">{v.emoji}</div>
-                    <span className="vv-friend-name">
+              <div className="vv-mt-8" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {visitors.slice(0, 6).map((v) => (
+                  <Link key={v.username} href={`/u/${v.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: "rgba(0,0,0,0.03)", textDecoration: "none" }}>
+                    <div className="vv-avatar vv-avatar-sm" style={v.avatarUrl ? { overflow: "hidden", flexShrink: 0 } : { flexShrink: 0 }}>
+                      {v.avatarUrl
+                        // eslint-disable-next-line @next/next/no-img-element
+                        ? <img src={v.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : v.emoji}
+                    </div>
+                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {v.online && <span className="vv-online-dot" />}
-                      {v.displayName}
+                      <ColoredName gender={v.gender} age={v.age} name={v.displayName} />
                     </span>
-                    <span className="vv-muted">{relTime(v.at)}</span>
+                    <span className="vv-muted" style={{ fontSize: 11, flexShrink: 0 }}>{relTime(v.at)}</span>
                   </Link>
                 ))}
               </div>

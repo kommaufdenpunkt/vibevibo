@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
+import GenderAge from "@/components/GenderAge";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -17,8 +18,6 @@ export default function EditProfilePage() {
     if (!me) { router.push("/login"); return; }
     setForm({
       displayName: me.displayName || "",
-      gender: me.gender || "",
-      birthdate: me.birthdate || "",
       mood: me.mood || "",
       aboutMe: me.aboutMe || "",
       interests: (me.interests || []).join(", "),
@@ -39,8 +38,6 @@ export default function EditProfilePage() {
     try {
       await api.updateMe(me.username, {
         displayName: form.displayName.trim() || me.username,
-        gender: form.gender,
-        birthdate: form.birthdate,
         mood: form.mood.trim(),
         aboutMe: form.aboutMe,
         interests: form.interests.split(",").map((s) => s.trim()).filter(Boolean),
@@ -81,25 +78,12 @@ export default function EditProfilePage() {
           <label><strong>Anzeigename</strong></label>
           <input className="vv-input" value={form.displayName} maxLength={100} onChange={(e) => up("displayName", e.target.value)} />
 
-          <label className="vv-mt-12"><strong>Geschlecht &amp; Geburtsdatum</strong> <span className="vv-muted">(ab 18 · zeigt z.B. „m 21")</span></label>
-          <div className="vv-row" style={{ gap: 8, alignItems: "center" }}>
-            {[["m", "♂ m"], ["w", "♀ w"]].map(([val, label]) => (
-              <button
-                key={val}
-                type="button"
-                className="vv-btn"
-                style={{ fontWeight: "bold", background: form.gender === val ? (val === "m" ? "#2a7fff" : "#ff3e9d") : undefined, color: form.gender === val ? "#fff" : undefined }}
-                onClick={() => up("gender", val)}
-              >{label}</button>
-            ))}
-            <input
-              type="date"
-              className="vv-input"
-              style={{ flex: 1, margin: 0 }}
-              value={form.birthdate}
-              max={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => up("birthdate", e.target.value)}
-            />
+          <label className="vv-mt-12"><strong>Geschlecht &amp; Alter</strong></label>
+          <div className="vv-row" style={{ alignItems: "center", gap: 8 }}>
+            <GenderAge gender={me.gender} age={me.age} size="1em" />
+            <span className="vv-muted" style={{ fontSize: 12 }}>
+              🔒 Geschlecht &amp; Alter sind nach der Anmeldung fest – nur das Team kann sie ändern.
+            </span>
           </div>
 
           <div className="vv-muted vv-mt-12" style={{ fontSize: 12 }}>

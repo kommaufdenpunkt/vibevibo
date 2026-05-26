@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
-import GenderAge from "@/components/GenderAge";
+import { ColoredName } from "@/components/GenderAge";
 
 export default function FriendsPage() {
   const { me } = useMe();
@@ -48,8 +48,7 @@ export default function FriendsPage() {
             </div>
             <span className="vv-friend-name">
               {u.online && <span className="vv-online-dot" />}
-              <GenderAge gender={u.gender} age={u.age} size="0.8em" />{" "}
-              {u.displayName}
+              <ColoredName gender={u.gender} age={u.age} name={u.displayName} size="0.95em" />
             </span>
             <span className="vv-muted">{u.mood}</span>
           </Link>

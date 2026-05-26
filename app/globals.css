@@ -27,7 +27,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  font-family: Tahoma, Verdana, "MS Sans Serif", Geneva, sans-serif;
+  font-family: Arial, Helvetica, "Liberation Sans", sans-serif;
   font-size: 13px;
   color: var(--vv-text);
   min-height: 100vh;

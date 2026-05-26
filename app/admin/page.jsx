@@ -8,8 +8,9 @@ import {
   listDevices, banDevice, unbanDevice, listDeviceBans,
   getUserDossier, listRecentModLog,
   listPendingPics, listRejectedPics, listApprovedPics, setPicStatus, autoApproveStalePics, getProfilePic,
-  logMod,
+  logMod, updateUser, ageFromBirthdate,
 } from "@/lib/db";
+import GenderAge from "@/components/GenderAge";
 import { relTime } from "@/lib/format";
 import { deviceLabel } from "@/lib/device";
 
@@ -104,6 +105,18 @@ export default async function AdminPage({ searchParams }) {
     else if (action === "unbanDevice" && dev) unbanDevice(dev);
     else if (action === "avApprove" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "approved", "Admin freigegeben"); logMod({ userId: p.user_id, kind: "avatar", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
     else if (action === "avReject" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "avatar", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
+    else if (action === "setvitals" && uname) {
+      const x = getUserByUsername(uname);
+      if (x) {
+        const patch = {};
+        if (sp.g === "m" || sp.g === "w") patch.gender = sp.g;
+        if (typeof sp.bd === "string" && sp.bd) { const a = ageFromBirthdate(sp.bd); if (a != null && a >= 18) patch.birthdate = sp.bd; }
+        if (Object.keys(patch).length) {
+          updateUser(x.id, patch);
+          logMod({ userId: x.id, kind: "note", decision: "stammdaten", reason: `Admin setzte ${patch.gender ? "Geschlecht=" + patch.gender + " " : ""}${patch.birthdate ? "Geburtsdatum=" + patch.birthdate : ""}`.trim(), by: "admin" });
+        }
+      }
+    }
     else if (action === "unblockip" && ip) unblockIp(ip);
     else if (action === "blockip" && ip) blockIp(ip, "manuell gesperrt");
     const keepU = (tab === "userakte" && uname) ? `&u=${encodeURIComponent(uname)}` : "";
@@ -414,10 +427,32 @@ function Userakte({ q, pw, uParam }) {
       {user && (
         <>
           <div className="vv-row vv-mt-12" style={{ alignItems: "center", gap: 8 }}>
-            <div className="vv-avatar vv-avatar-sm">{user.emoji}</div>
-            <div style={{ flex: 1 }}><strong>{user.displayName}</strong> <span className="vv-muted">@{user.username}</span> · Status: {user.status}</div>
+            <div className="vv-avatar vv-avatar-sm" style={user.avatarUrl ? { overflow: "hidden" } : undefined}>
+              {user.avatarUrl
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : user.emoji}
+            </div>
+            <div style={{ flex: 1 }}>
+              <strong>{user.displayName}</strong> <span className="vv-muted">@{user.username}</span> · <GenderAge gender={user.gender} age={user.age} /> · Status: {user.status}
+            </div>
             <a className="vv-btn" href={`/admin?${q}&tab=userakte&do=liftall&u=${encodeURIComponent(user.username)}`}>Alle Banns aufheben</a>
           </div>
+
+          <form method="GET" action="/admin" className="vv-row vv-mt-8" style={{ flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+            <input type="hidden" name="pw" value={pw} />
+            <input type="hidden" name="tab" value="userakte" />
+            <input type="hidden" name="u" value={user.username} />
+            <input type="hidden" name="do" value="setvitals" />
+            <span className="vv-muted" style={{ fontSize: 12 }}>Stammdaten ändern:</span>
+            <select name="g" className="vv-input" defaultValue={user.gender || ""}>
+              <option value="">– Geschlecht –</option>
+              <option value="m">m</option>
+              <option value="w">w</option>
+            </select>
+            <input type="date" name="bd" className="vv-input" defaultValue={user.birthdate || ""} max={new Date().toISOString().slice(0, 10)} />
+            <button type="submit" className="vv-btn">Speichern</button>
+          </form>
           <div className="vv-mt-12">
             {log.length === 0 && <div className="vv-muted">Keine Einträge – sauberer Nutzer. 🌟</div>}
             {log.map((m) => (
