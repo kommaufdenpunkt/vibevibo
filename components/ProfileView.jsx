@@ -43,18 +43,22 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
           <Avatar url={profile.avatarUrl} name={profile.displayName} />
           <div>
             <h2 style={{ margin: 0 }}>
-              <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} />{" "}
+              <span style={{ display: "inline-block", background: "rgba(0,0,0,0.62)", padding: "4px 12px", borderRadius: 12 }}>
+                <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} fallbackColor="#ffffff" />
+              </span>{" "}
               {profile.online ? (
                 <span style={{ fontSize: 12, color: "#fff", background: "#0aff44", padding: "2px 6px", borderRadius: 8, textShadow: "1px 1px 0 #000" }}>
                   online
                 </span>
               ) : (
-                <span className="vv-muted" style={{ fontSize: 12 }}>offline</span>
+                <span style={{ fontSize: 12, color: "#fff", background: "rgba(0,0,0,0.45)", padding: "2px 8px", borderRadius: 8 }}>offline</span>
               )}
             </h2>
-            <div className="vv-muted">@{profile.username}</div>
             <div className="vv-mt-8">
-              <span className="vv-mood">Stimmung: {profile.mood || "—"}</span>
+              <span style={{ background: "rgba(0,0,0,0.5)", color: "#e8e8f0", padding: "2px 9px", borderRadius: 8, fontSize: 12 }}>@{profile.username}</span>
+            </div>
+            <div className="vv-mt-8">
+              <span style={{ display: "inline-block", background: "rgba(0,0,0,0.5)", color: "#fff", padding: "3px 10px", borderRadius: 8 }}>Stimmung: {profile.mood || "—"}</span>
             </div>
             <ul className="vv-profile-stats">
               <li><strong>{visitCount}</strong>Besucher</li>
