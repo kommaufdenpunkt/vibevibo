@@ -7,6 +7,7 @@ import Landing from "@/components/Landing";
 import Buschfunk from "@/components/Buschfunk";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
+import { ColoredName } from "@/components/GenderAge";
 
 export default function HomePage() {
   const { me, loading } = useMe();
@@ -56,10 +57,15 @@ export default function HomePage() {
             <div className="vv-friends-grid">
               {users.slice(0, 12).map((u) => (
                 <Link key={u.username} className="vv-friend-tile" href={`/u/${u.username}`}>
-                  <div className="vv-avatar vv-avatar-md">{u.emoji}</div>
+                  <div className="vv-avatar vv-avatar-md" style={u.avatarUrl ? { overflow: "hidden" } : undefined}>
+                    {u.avatarUrl
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={u.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : u.emoji}
+                  </div>
                   <span className="vv-friend-name">
                     {u.online && <span className="vv-online-dot" />}
-                    {u.displayName}
+                    <ColoredName gender={u.gender} age={u.age} name={u.displayName} size="0.95em" />
                   </span>
                   <span className="vv-muted">{u.mood}</span>
                 </Link>
@@ -78,13 +84,21 @@ export default function HomePage() {
             {onlineUsers.length === 0 ? (
               <div className="vv-muted">Niemand online :(</div>
             ) : (
-              <div className="vv-friends-grid">
-                {onlineUsers.slice(0, 8).map((u) => (
-                  <Link key={u.username} className="vv-friend-tile" href={`/u/${u.username}`}>
-                    <div className="vv-avatar vv-avatar-md">{u.emoji}</div>
-                    <span className="vv-friend-name">
-                      <span className="vv-online-dot" />
-                      {u.displayName}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {onlineUsers.slice(0, 15).map((u) => (
+                  <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: "rgba(0,0,0,0.03)", textDecoration: "none" }}>
+                    <div className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0, ...(u.avatarUrl ? { overflow: "hidden" } : {}) }}>
+                      {u.avatarUrl
+                        // eslint-disable-next-line @next/next/no-img-element
+                        ? <img src={u.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : u.emoji}
+                    </div>
+                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                      <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span className="vv-online-dot" />
+                        <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+                      </span>
+                      {u.mood && <span className="vv-muted" style={{ display: "block", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
                     </span>
                   </Link>
                 ))}

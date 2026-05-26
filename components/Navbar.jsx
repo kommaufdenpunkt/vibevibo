@@ -119,7 +119,6 @@ export default function Navbar() {
               }}
               title="Status ändern"
             >
-              <span className="vv-online-dot" />
               <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
                 {me.mood ? me.mood : "Status setzen"}
               </span>

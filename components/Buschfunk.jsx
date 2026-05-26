@@ -5,10 +5,11 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { relTime } from "@/lib/format";
 import { findGift } from "@/lib/gifts";
+import { ColoredName } from "./GenderAge";
 
 function renderEvent(ev, i) {
   const actor = (
-    <Link href={`/u/${ev.actor.username}`}><strong>{ev.actor.displayName}</strong> {ev.actor.emoji}</Link>
+    <Link href={`/u/${ev.actor.username}`}><ColoredName gender={ev.actor.gender} age={ev.actor.age} name={ev.actor.displayName} /></Link>
   );
   let icon = "✨";
   let text = null;
