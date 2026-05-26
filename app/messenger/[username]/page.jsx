@@ -9,6 +9,7 @@ import { relTime } from "@/lib/format";
 import SmileyPicker from "@/components/SmileyPicker";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import VoiceMessage from "@/components/VoiceMessage";
+import Avatar from "@/components/Avatar";
 import { useMessageStream } from "@/lib/useEventStream";
 
 export default function ChatPage() {
@@ -102,7 +103,7 @@ export default function ChatPage() {
 
   return (
     <div className="vv-card">
-      <h2>✉️ Chat mit {partner.displayName} {partner.emoji}</h2>
+      <h2>✉️ Chat mit {partner.displayName}</h2>
       <div className="vv-msg-list">
         <div className="vv-conversation-list">
           {conversations.length === 0 && <div className="vv-muted">Noch keine Gespräche.</div>}
@@ -112,7 +113,7 @@ export default function ChatPage() {
               href={`/messenger/${c.partnerUsername}`}
               className={`vv-conv-entry${c.partnerUsername === partnerName ? " active" : ""}`}
             >
-              <div className="vv-avatar vv-avatar-sm">{c.partnerEmoji}</div>
+              <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar vv-avatar-sm" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="vv-conv-name">{c.partnerDisplayName}</div>
                 <div className="vv-conv-preview" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -126,7 +127,7 @@ export default function ChatPage() {
         <div className="vv-chat-window">
           <div className="vv-row" style={{ paddingBottom: 6, borderBottom: "1px dotted #999" }}>
             <Link href={`/u/${partner.username}`}>
-              <div className="vv-avatar vv-avatar-sm">{partner.emoji}</div>
+              <Avatar url={partner.avatarUrl} name={partner.displayName} className="vv-avatar vv-avatar-sm" />
             </Link>
             <div>
               <strong>{partner.displayName}</strong>

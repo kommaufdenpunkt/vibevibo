@@ -7,6 +7,7 @@ import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import { relTime } from "@/lib/format";
 import { useMessageStream } from "@/lib/useEventStream";
+import Avatar from "@/components/Avatar";
 
 export default function MessengerListPage() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function MessengerListPage() {
           ) : (
             conversations.map((c) => (
               <Link key={c.partnerUsername} href={`/messenger/${c.partnerUsername}`} className="vv-conv-entry">
-                <div className="vv-avatar vv-avatar-sm">{c.partnerEmoji}</div>
+                <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar vv-avatar-sm" />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="vv-conv-name">{c.partnerDisplayName}</div>
                   <div className="vv-conv-preview" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -61,7 +62,7 @@ export default function MessengerListPage() {
           <div className="vv-friends-grid">
             {users.map((u) => (
               <Link key={u.username} href={`/messenger/${u.username}`} className="vv-friend-tile">
-                <div className="vv-avatar vv-avatar-md">{u.emoji}</div>
+                <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-md" />
                 <span className="vv-friend-name">
                   {u.online && <span className="vv-online-dot" />}
                   {u.displayName}

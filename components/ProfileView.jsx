@@ -8,6 +8,7 @@ import GiftShelf from "./GiftShelf";
 import ProfileSkin from "./ProfileSkin";
 import PicGallery from "./PicGallery";
 import { ColoredName } from "./GenderAge";
+import Avatar from "./Avatar";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
@@ -39,12 +40,7 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
 
       <div className="vv-card">
         <div className="vv-profile-header">
-          <div className="vv-avatar" style={profile.avatarUrl ? { overflow: "hidden" } : undefined}>
-            {profile.avatarUrl
-              // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={profile.avatarUrl} alt={profile.displayName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              : profile.emoji}
-          </div>
+          <Avatar url={profile.avatarUrl} name={profile.displayName} />
           <div>
             <h2 style={{ margin: 0 }}>
               <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} />{" "}
@@ -125,12 +121,7 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
               <div className="vv-mt-8" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {visitors.slice(0, 6).map((v) => (
                   <Link key={v.username} href={`/u/${v.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: "rgba(0,0,0,0.03)", textDecoration: "none" }}>
-                    <div className="vv-avatar vv-avatar-sm" style={v.avatarUrl ? { overflow: "hidden", flexShrink: 0 } : { flexShrink: 0 }}>
-                      {v.avatarUrl
-                        // eslint-disable-next-line @next/next/no-img-element
-                        ? <img src={v.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        : v.emoji}
-                    </div>
+                    <Avatar url={v.avatarUrl} name={v.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {v.online && <span className="vv-online-dot" />}

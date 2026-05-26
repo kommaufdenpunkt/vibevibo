@@ -11,6 +11,7 @@ import {
   logMod, updateUser, ageFromBirthdate,
 } from "@/lib/db";
 import GenderAge from "@/components/GenderAge";
+import Avatar from "@/components/Avatar";
 import { relTime } from "@/lib/format";
 import { deviceLabel } from "@/lib/device";
 
@@ -203,7 +204,7 @@ function Warteliste({ q }) {
         <div className="vv-muted vv-center" style={{ padding: 14 }}>Niemand wartet gerade.</div>
       ) : pending.map((u) => (
         <div className="vv-admin-row" key={u.username}>
-          <div className="vv-avatar vv-avatar-sm">{u.emoji}</div>
+          <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span>
             <div className="vv-muted" style={{ fontSize: 11 }}>IP: {u.regIp || "?"} · {relTime(u.createdAt)}</div>
@@ -226,7 +227,7 @@ function Mitglieder({ q }) {
         {approved.length === 0 && <div className="vv-muted">Noch keine.</div>}
         {approved.map((u) => (
           <div className="vv-admin-row" key={u.username}>
-            <div className="vv-avatar vv-avatar-sm">{u.emoji}</div>
+            <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" />
             <div style={{ flex: 1, minWidth: 0 }}>
               <strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span>
             </div>
@@ -427,12 +428,7 @@ function Userakte({ q, pw, uParam }) {
       {user && (
         <>
           <div className="vv-row vv-mt-12" style={{ alignItems: "center", gap: 8 }}>
-            <div className="vv-avatar vv-avatar-sm" style={user.avatarUrl ? { overflow: "hidden" } : undefined}>
-              {user.avatarUrl
-                // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                : user.emoji}
-            </div>
+            <Avatar url={user.avatarUrl} name={user.displayName} className="vv-avatar vv-avatar-sm" />
             <div style={{ flex: 1 }}>
               <strong>{user.displayName}</strong> <span className="vv-muted">@{user.username}</span> · <GenderAge gender={user.gender} age={user.age} /> · Status: {user.status}
             </div>

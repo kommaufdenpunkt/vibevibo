@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "@/components/GenderAge";
+import Avatar from "@/components/Avatar";
 
 export default function FriendsPage() {
   const { me } = useMe();
@@ -40,12 +41,7 @@ export default function FriendsPage() {
       <div className="vv-friends-grid vv-mt-12">
         {list.map((u) => (
           <Link key={u.username} className="vv-friend-tile" href={`/u/${u.username}`}>
-            <div className="vv-avatar vv-avatar-md" style={u.avatarUrl ? { overflow: "hidden" } : undefined}>
-              {u.avatarUrl
-                // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={u.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                : u.emoji}
-            </div>
+            <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-md" />
             <span className="vv-friend-name">
               {u.online && <span className="vv-online-dot" />}
               <ColoredName gender={u.gender} age={u.age} name={u.displayName} size="0.95em" />

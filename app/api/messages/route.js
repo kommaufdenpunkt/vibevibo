@@ -10,6 +10,7 @@ export async function GET() {
     partnerUsername: c.partner_username,
     partnerDisplayName: c.partner_display_name,
     partnerEmoji: c.partner_emoji,
+    partnerAvatar: c.partner_avatar_status === "approved" ? (c.partner_avatar_url || "") : "",
     partnerLastSeen: c.partner_last_seen,
     lastText: c.last_text,
     at: c.at,
