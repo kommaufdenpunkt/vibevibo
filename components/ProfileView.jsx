@@ -120,16 +120,16 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
             ) : (
               <div className="vv-mt-8" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {visitors.slice(0, 6).map((v) => (
-                  <Link key={v.username} href={`/u/${v.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: "rgba(0,0,0,0.03)", textDecoration: "none" }}>
+                  <Link key={v.username} href={`/u/${v.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, background: "#23232f", textDecoration: "none" }}>
                     <Avatar url={v.avatarUrl} name={v.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {v.online && <span className="vv-online-dot" />}
-                        <ColoredName gender={v.gender} age={v.age} name={v.displayName} />
+                        <ColoredName gender={v.gender} age={v.age} name={v.displayName} fallbackColor="#e8e8f0" />
                       </span>
-                      {v.mood && <span className="vv-muted" style={{ display: "block", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.mood}</span>}
+                      {v.mood && <span style={{ display: "block", fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.mood}</span>}
                     </span>
-                    <span className="vv-muted" style={{ fontSize: 11, flexShrink: 0 }}>{relTime(v.at)}</span>
+                    <span style={{ fontSize: 11, color: "#8e96a8", flexShrink: 0 }}>{relTime(v.at)}</span>
                   </Link>
                 ))}
               </div>
