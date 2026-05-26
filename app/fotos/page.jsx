@@ -15,6 +15,7 @@ export default function MyPhotosPage() {
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [caption, setCaption] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState("");
   const fileRef = useRef(null);
 
   const reload = useCallback(async () => {
@@ -44,12 +45,16 @@ export default function MyPhotosPage() {
   async function uploadFile(file) {
     if (!file) return;
     if (!file.type.startsWith("image/")) { alert("Bitte ein Bild auswählen."); return; }
-    setBusy(true);
+    setBusy(true); setUploadMsg("");
     try {
       const dataUrl = await downscale(file, 1024);
-      await api.uploadPhoto(me.username, { dataUrl, caption, albumId: selectedAlbum });
+      const res = await api.uploadPhoto(me.username, { dataUrl, caption, albumId: selectedAlbum });
+      if (res.status === "approved") setUploadMsg("✅ Foto ist online!");
+      else if (res.status === "pending") setUploadMsg("⏳ Foto in Prüfung – wird nach Freigabe durch Fidolin/Team sichtbar.");
+      else setUploadMsg("🚫 Abgelehnt: " + (res.reason || "verstößt gegen die Regeln"));
       setCaption("");
       reload();
+      setTimeout(() => setUploadMsg(""), 6000);
     } catch (e) {
       alert(e.message);
     } finally {
@@ -95,6 +100,8 @@ export default function MyPhotosPage() {
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Bildunterschrift (optional) – z.B. Sommer 2008 💕"
         />
+        {uploadMsg && <div className="vv-mt-8" style={{ fontWeight: "bold" }}>{uploadMsg}</div>}
+        <div className="vv-muted" style={{ fontSize: 11, marginTop: 4 }}>🤖 Jedes Foto wird von Fidolin geprüft und erst nach Freigabe öffentlich sichtbar.</div>
 
         {/* Album-Filter als Chips */}
         <div className="vv-row" style={{ flexWrap: "wrap", gap: 6, marginTop: 12 }}>
@@ -116,9 +123,11 @@ export default function MyPhotosPage() {
         ) : (
           <div className="vv-photo-grid">
             {filtered.map((p) => (
-              <div key={p.id} className="vv-photo-tile">
+              <div key={p.id} className="vv-photo-tile" style={{ position: "relative" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.data_url} alt={p.caption || "Foto"} loading="lazy" />
+                <img src={p.data_url} alt={p.caption || "Foto"} loading="lazy" style={{ opacity: p.status && p.status !== "approved" ? 0.55 : 1 }} />
+                {p.status === "pending" && <span style={{ position: "absolute", top: 6, left: 6, fontSize: 10, color: "#fff", background: "#a70", borderRadius: 6, padding: "1px 6px" }}>🕓 in Prüfung</span>}
+                {p.status === "rejected" && <span style={{ position: "absolute", top: 6, left: 6, fontSize: 10, color: "#fff", background: "#a00", borderRadius: 6, padding: "1px 6px" }}>🚫 abgelehnt</span>}
                 <div className="vv-photo-caption">
                   <div>{p.caption || <em className="vv-muted">ohne Titel</em>}</div>
                   <div className="vv-muted" style={{ fontSize: 10 }}>{relTime(p.at)}</div>

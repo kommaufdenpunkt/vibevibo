@@ -8,6 +8,7 @@ import {
   listDevices, banDevice, unbanDevice, listDeviceBans,
   getUserDossier, listRecentModLog,
   listPendingPics, listRejectedPics, listApprovedPics, setPicStatus, autoApproveStalePics, getProfilePic,
+  listPendingPhotos, listRejectedPhotos, setPhotoStatus, autoApproveStalePhotos, getPhoto,
   logMod, updateUser, ageFromBirthdate,
 } from "@/lib/db";
 import GenderAge from "@/components/GenderAge";
@@ -37,6 +38,7 @@ const TABS = [
   ["warteliste", "⏳ Warteliste"],
   ["mitglieder", "👥 Mitglieder"],
   ["profilbilder", "🖼 Profilbilder"],
+  ["fotos", "📷 Fotos"],
   ["banns", "🔨 Banns"],
   ["geraete", "📱 Geräte"],
   ["userakte", "📁 Userakte"],
@@ -77,6 +79,7 @@ export default async function AdminPage({ searchParams }) {
 
   // Fidolin-Frist: Profilbilder, die > 10 Min in Prüfung hängen, automatisch freigeben
   autoApproveStalePics(10 * 60 * 1000);
+  autoApproveStalePhotos(10 * 60 * 1000);
 
   // ---- Aktionen (GET-basiert) ----
   const action = typeof sp?.do === "string" ? sp.do : "";
@@ -84,6 +87,7 @@ export default async function AdminPage({ searchParams }) {
   const ip = typeof sp?.ip === "string" ? sp.ip : "";
   const dev = typeof sp?.dev === "string" ? sp.dev : "";
   const pic = typeof sp?.pic === "string" ? sp.pic : "";
+  const pid = typeof sp?.pid === "string" ? sp.pid : "";
   if (action) {
     if (action === "approve" && uname) { const x = getUserByUsername(uname); if (x) setUserStatus(x.id, "approved"); }
     else if (action === "block" && uname) { const x = getUserByUsername(uname); if (x) { setUserStatus(x.id, "blocked"); if (ip) blockIp(ip, `User ${uname} gesperrt`); } }
@@ -106,6 +110,8 @@ export default async function AdminPage({ searchParams }) {
     else if (action === "unbanDevice" && dev) unbanDevice(dev);
     else if (action === "avApprove" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "approved", "Admin freigegeben"); logMod({ userId: p.user_id, kind: "avatar", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
     else if (action === "avReject" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "avatar", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
+    else if (action === "phApprove" && pid) { const p = getPhoto(Number(pid)); if (p) { setPhotoStatus(p.id, "approved", "Admin freigegeben"); logMod({ userId: p.user_id, kind: "foto", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
+    else if (action === "phReject" && pid) { const p = getPhoto(Number(pid)); if (p) { setPhotoStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "foto", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
     else if (action === "setvitals" && uname) {
       const x = getUserByUsername(uname);
       if (x) {
@@ -147,6 +153,7 @@ export default async function AdminPage({ searchParams }) {
       {tab === "warteliste" && <Warteliste q={q} />}
       {tab === "mitglieder" && <Mitglieder q={q} />}
       {tab === "profilbilder" && <Profilbilder q={q} />}
+      {tab === "fotos" && <Fotos q={q} />}
       {tab === "banns" && <Banns q={q} pw={pw} />}
       {tab === "geraete" && <Geraete q={q} />}
       {tab === "userakte" && <Userakte q={q} pw={pw} uParam={uParam} />}
@@ -318,6 +325,50 @@ function Profilbilder({ q }) {
           ))}
         </div>
       </div>
+    </>
+  );
+}
+
+function Fotos({ q }) {
+  const pending = listPendingPhotos();
+  const rejected = listRejectedPhotos();
+  return (
+    <>
+      <div className="vv-card">
+        <h3>📷 Fotos – wartet auf Freigabe ({pending.length})</h3>
+        <div className="vv-muted" style={{ fontSize: 12 }}>Album-Fotos werden von Fidolin geprüft; nach 10 Min ungeprüft erfolgt Auto-Freigabe. Erst nach Freigabe öffentlich sichtbar.</div>
+        {pending.length === 0 && <div className="vv-muted vv-mt-8">Keine offenen Fotos.</div>}
+        <div className="vv-row" style={{ flexWrap: "wrap", gap: 12, marginTop: 12 }}>
+          {pending.map((p) => (
+            <div key={p.id} style={{ textAlign: "center", width: 150 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.url} alt="" style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 10, border: "2px solid #eee" }} />
+              <div style={{ fontSize: 12 }}><strong>@{p.username}</strong></div>
+              {p.caption && <div className="vv-muted" style={{ fontSize: 10 }}>{p.caption}</div>}
+              <div className="vv-row" style={{ gap: 4, justifyContent: "center", marginTop: 4 }}>
+                <a className="vv-btn vv-btn-pink" href={`/admin?${q}&tab=fotos&do=phApprove&pid=${p.id}`}>✓</a>
+                <a className="vv-btn" style={{ color: "#a00" }} href={`/admin?${q}&tab=fotos&do=phReject&pid=${p.id}`}>✕</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {rejected.length > 0 && (
+        <div className="vv-card">
+          <h3>🚫 Abgelehnte Fotos ({rejected.length})</h3>
+          <div className="vv-row" style={{ flexWrap: "wrap", gap: 12, marginTop: 12 }}>
+            {rejected.map((p) => (
+              <div key={p.id} style={{ textAlign: "center", width: 150 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.url} alt="" style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 10, border: "2px solid #fdd", filter: "grayscale(0.4)" }} />
+                <div style={{ fontSize: 12 }}><strong>@{p.username}</strong></div>
+                <div className="vv-muted" style={{ fontSize: 10 }}>{p.reason}</div>
+                <a className="vv-btn vv-btn-pink vv-mt-8" href={`/admin?${q}&tab=fotos&do=phApprove&pid=${p.id}`}>✓ Doch freigeben</a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 }
