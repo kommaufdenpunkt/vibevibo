@@ -31,8 +31,8 @@ export async function POST(req) {
   }
 
   try {
-    const { username, displayName, password, emoji, images } = await req.json();
-    const user = createUser({ username, displayName, password, emoji, regIp: ip });
+    const { username, displayName, password, emoji, images, gender, birthdate } = await req.json();
+    const user = createUser({ username, displayName, password, emoji, regIp: ip, gender, birthdate });
     recordDevice(deviceId, { userId: user.id, username: user.username, userAgent: req.headers.get("user-agent") || "", ip });
 
     // Optional bei der Registrierung hochgeladene Profilbilder -> in Prüfung (Fidolin/Moderation)

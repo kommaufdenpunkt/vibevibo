@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors } from "@/lib/db";
+import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors, ageFromBirthdate } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sanitizeCustomCss } from "@/lib/sanitizeCss";
 
@@ -32,6 +32,12 @@ export async function PATCH(req, { params }) {
   if (typeof body.bgMusic === "string") patch.bgMusic = body.bgMusic.slice(0, 200);
   if (typeof body.bgMusicUrl === "string") patch.bgMusicUrl = body.bgMusicUrl.slice(0, 400);
   if (typeof body.customCss === "string") patch.customCss = sanitizeCustomCss(body.customCss);
+  if (body.gender === "m" || body.gender === "w") patch.gender = body.gender;
+  if (typeof body.birthdate === "string" && body.birthdate) {
+    const age = ageFromBirthdate(body.birthdate);
+    if (age == null || age < 18) return NextResponse.json({ error: "Ungültiges Geburtsdatum (Mindestalter 18)." }, { status: 400 });
+    patch.birthdate = body.birthdate;
+  }
   if (Array.isArray(body.interests)) {
     patch.interests = body.interests.map((s) => String(s).slice(0, 60)).filter(Boolean).slice(0, 30);
   }

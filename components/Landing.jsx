@@ -191,7 +191,7 @@ export default function Landing() {
   const { refresh } = useMe();
   const [hookIdx, setHookIdx] = useState(0);
   const [mode, setMode] = useState("idle");
-  const [form, setForm] = useState({ username: "", password: "", displayName: "" });
+  const [form, setForm] = useState({ username: "", password: "", displayName: "", gender: "", birthdate: "" });
   const [pics, setPics] = useState([]);
   const picInputRef = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -250,6 +250,8 @@ export default function Landing() {
           username: form.username.trim(),
           displayName: form.displayName.trim() || form.username.trim(),
           password: form.password,
+          gender: form.gender,
+          birthdate: form.birthdate,
           images: pics,
         });
         // Registrierung => Warteliste, kein direkter Login
@@ -367,6 +369,35 @@ export default function Landing() {
                   value={form.displayName}
                   onChange={(e) => setForm({ ...form, displayName: e.target.value })}
                 />
+
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {[["m", "♂ m"], ["w", "♀ w"]].map(([val, label]) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setForm({ ...form, gender: val })}
+                        style={{
+                          padding: "8px 12px", borderRadius: 10, cursor: "pointer", fontWeight: "bold",
+                          border: form.gender === val ? "2px solid #ff3e9d" : "2px solid #ddd",
+                          background: form.gender === val ? (val === "m" ? "#2a7fff" : "#ff3e9d") : "#fff",
+                          color: form.gender === val ? "#fff" : "#555",
+                        }}
+                      >{label}</button>
+                    ))}
+                  </div>
+                  <input
+                    type="date"
+                    className="vv-splash-input"
+                    style={{ flex: 1, margin: 0 }}
+                    value={form.birthdate}
+                    max={new Date().toISOString().slice(0, 10)}
+                    onChange={(e) => setForm({ ...form, birthdate: e.target.value })}
+                    required
+                    aria-label="Geburtsdatum"
+                  />
+                </div>
+                <div style={{ fontSize: 11, color: "#888", marginTop: -2 }}>Geschlecht &amp; Geburtsdatum – <strong>VibeVibo ist ab 18</strong> (dein Alter wird angezeigt, z.B. „w 21")</div>
 
                 <div style={{ margin: "4px 0 2px" }}>
                   <button

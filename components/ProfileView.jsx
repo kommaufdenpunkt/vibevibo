@@ -7,6 +7,7 @@ import Pinnwand from "./Pinnwand";
 import GiftShelf from "./GiftShelf";
 import ProfileSkin from "./ProfileSkin";
 import PicGallery from "./PicGallery";
+import GenderAge from "./GenderAge";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
@@ -46,6 +47,7 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
           </div>
           <div>
             <h2 style={{ margin: 0 }}>
+              <GenderAge gender={profile.gender} age={profile.age} size="0.7em" />{" "}
               {profile.displayName}{" "}
               {profile.online ? (
                 <span style={{ fontSize: 12, color: "#fff", background: "#0aff44", padding: "2px 6px", borderRadius: 8, textShadow: "1px 1px 0 #000" }}>
