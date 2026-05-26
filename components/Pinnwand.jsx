@@ -5,6 +5,7 @@ import { relTime } from "@/lib/format";
 import SmileyPicker from "./SmileyPicker";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
+import { ColoredName } from "./GenderAge";
 
 export default function Pinnwand({ profile, entries, onChange }) {
   const { me } = useMe();
@@ -74,7 +75,7 @@ export default function Pinnwand({ profile, entries, onChange }) {
           return (
             <div className="vv-pinnwand-entry" key={entry.id}>
               <div className="vv-pinnwand-meta">
-                <strong>{entry.from_display_name}</strong> {entry.from_emoji}
+                <ColoredName gender={entry.from_gender} age={entry.from_age} name={entry.from_display_name} />
                 {" · "}
                 <span>{relTime(entry.at)}</span>
                 {canDelete && (

@@ -96,18 +96,25 @@ export default function PicGallery({ username, isOwner, onAvatarChange }) {
 
   return (
     <div className="vv-card">
-      <div className="vv-row" style={{ alignItems: "center" }}>
-        <h3 style={{ flex: 1, margin: 0 }}>📸 Profilbilder</h3>
-        {isOwner && pics.length < max && (
-          <>
-            <button type="button" className="vv-btn vv-btn-pink" disabled={busy} onClick={() => fileRef.current?.click()}>
-              {busy ? "…" : "+ Bild hinzufügen"}
+      <h3 style={{ marginTop: 0 }}>📸 Profilbilder</h3>
+      {isOwner && (
+        <>
+          {pics.length < max ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => fileRef.current?.click()}
+              style={{ width: "100%", padding: "16px", borderRadius: 12, border: "2px dashed #ff8fd0", background: "#fff5fb", color: "#c2185b", fontWeight: "bold", fontSize: 16, cursor: "pointer" }}
+            >
+              {busy ? "⏳ wird hochgeladen…" : "📸 Foto hochladen"}
             </button>
-            <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={onPick} />
-          </>
-        )}
-      </div>
-      {isOwner && <div className="vv-muted" style={{ fontSize: 11 }}>{pics.length} / {max} Slots · Fidolin prüft jedes Bild · ⭐ = Hauptbild</div>}
+          ) : (
+            <div className="vv-muted">Maximal {max} Profilbilder erreicht.</div>
+          )}
+          <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={onPick} />
+          <div className="vv-muted" style={{ fontSize: 11, marginTop: 6 }}>Antippen zum Hochladen · Fidolin prüft jedes Bild · auf ein Bild tippen zum Verwalten</div>
+        </>
+      )}
       {msg && <div className="vv-mt-8" style={{ fontWeight: "bold" }}>{msg}</div>}
 
       {visible.length === 0 ? (
@@ -122,20 +129,14 @@ export default function PicGallery({ username, isOwner, onAvatarChange }) {
               <div key={p.id} style={{ position: "relative" }}>
                 <button
                   type="button"
-                  onClick={() => p.status === "approved" && setOpen(open === p.id ? null : p.id)}
-                  style={{ width: "100%", aspectRatio: "1/1", padding: 0, border: p.isPrimary ? "3px solid #ff3e9d" : "2px solid #eee", borderRadius: 10, overflow: "hidden", cursor: p.status === "approved" ? "pointer" : "default", background: "#f7f7f7" }}
+                  onClick={() => (p.status === "approved" || isOwner) && setOpen(open === p.id ? null : p.id)}
+                  style={{ width: "100%", aspectRatio: "1/1", padding: 0, border: p.isPrimary ? "3px solid #ff3e9d" : "2px solid #eee", borderRadius: 10, overflow: "hidden", cursor: (p.status === "approved" || isOwner) ? "pointer" : "default", background: "#f7f7f7" }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: p.status === "approved" ? 1 : 0.5 }} />
                 </button>
                 {p.isPrimary && <span style={{ position: "absolute", top: 4, left: 4, fontSize: 16 }}>⭐</span>}
                 {badge.t && <span style={{ position: "absolute", bottom: 4, left: 4, right: 4, fontSize: 10, color: "#fff", background: badge.c, borderRadius: 6, textAlign: "center" }}>{badge.t}</span>}
-                {isOwner && (
-                  <div className="vv-row" style={{ gap: 2, justifyContent: "center", marginTop: 2 }}>
-                    {p.status === "approved" && !p.isPrimary && <button type="button" className="vv-btn" style={{ padding: "2px 6px", fontSize: 11 }} disabled={busy} onClick={() => makePrimary(p.id)}>⭐ Haupt</button>}
-                    <button type="button" className="vv-btn" style={{ padding: "2px 6px", fontSize: 11, color: "#a00" }} disabled={busy} onClick={() => removePic(p.id)}>🗑</button>
-                  </div>
-                )}
               </div>
             );
           })}
@@ -148,7 +149,20 @@ export default function PicGallery({ username, isOwner, onAvatarChange }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={openPic.url} alt="" style={{ width: 180, maxWidth: "45%", borderRadius: 10 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <PicComments picId={openPic.id} canComment={!!me} />
+              {isOwner && (
+                <div className="vv-row" style={{ gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                  {openPic.status === "approved" && !openPic.isPrimary && <button type="button" className="vv-btn vv-btn-pink" disabled={busy} onClick={() => makePrimary(openPic.id)}>⭐ Als Hauptbild</button>}
+                  {openPic.isPrimary && <span className="vv-muted" style={{ fontSize: 12, alignSelf: "center" }}>⭐ ist Hauptbild</span>}
+                  <button type="button" className="vv-btn" style={{ color: "#a00" }} disabled={busy} onClick={() => removePic(openPic.id)}>🗑 Löschen</button>
+                </div>
+              )}
+              {openPic.status === "approved" ? (
+                <PicComments picId={openPic.id} canComment={!!me} />
+              ) : (
+                <div className="vv-muted" style={{ fontSize: 12 }}>
+                  Dieses Bild ist {openPic.status === "pending" ? "noch in Prüfung 🕓" : "abgelehnt 🚫"} – Kommentare gibt es erst nach Freigabe.
+                </div>
+              )}
             </div>
           </div>
           <button type="button" className="vv-btn vv-mt-8" onClick={() => setOpen(null)}>Schließen</button>
