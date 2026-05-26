@@ -2,6 +2,7 @@ import "./globals.css";
 import Layout from "@/components/Layout";
 import InstallPrompt from "@/components/InstallPrompt";
 import ScreenshotGuard from "@/components/ScreenshotGuard";
+import MessageNotifier from "@/components/MessageNotifier";
 import { MeProvider } from "@/lib/useMe";
 
 export const metadata = {
@@ -18,6 +19,7 @@ export default function RootLayout({ children }) {
           <Layout>{children}</Layout>
           <InstallPrompt />
           <ScreenshotGuard />
+          <MessageNotifier />
         </MeProvider>
       </body>
     </html>
