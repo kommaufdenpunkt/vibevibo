@@ -29,6 +29,9 @@ function renderEvent(ev, i) {
   } else if (ev.type === "newpic") {
     icon = "🖼️";
     text = <>{actor} hat ein neues Profilbild!</>;
+  } else if (ev.type === "status") {
+    icon = "💬";
+    text = <>{actor} ist jetzt: <strong>{ev.detail}</strong></>;
   }
 
   return (

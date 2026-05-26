@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 
@@ -16,19 +16,22 @@ const LINKS = [
   { href: "/geschenke", icon: "🎁", label: "Geschenke" },
 ];
 
-// Jappy-Status nach Kategorien
+// Vorgefertigte Status nach Kategorien (Jappy-Stil)
 const STATUS_CATS = [
   { title: "📍 Wo bin ich?", items: [
     ["🏠", "zu Hause"], ["🚗", "unterwegs"], ["🏢", "auf der Arbeit"], ["🎓", "Schule/Uni"],
-    ["🛏️", "im Bett"], ["🏖️", "im Urlaub"], ["🌳", "draußen"], ["👯", "bei Freunden"], ["🛒", "einkaufen"],
+    ["🛏️", "im Bett"], ["🏖️", "im Urlaub"], ["🌳", "draußen"], ["👯", "bei Freunden"],
+    ["🛒", "einkaufen"], ["☕", "im Café"], ["🏙️", "in der Stadt"], ["🚆", "im Zug"],
   ] },
   { title: "🎯 Was mache ich?", items: [
     ["😎", "chillen"], ["🎮", "zocken"], ["📚", "lernen"], ["💼", "arbeiten"], ["😴", "schlafen"],
     ["🎧", "Musik hören"], ["📺", "Serie gucken"], ["🍕", "essen"], ["🎉", "feiern"], ["📱", "am Handy"],
+    ["📖", "lesen"], ["🍳", "kochen"], ["🏃", "Sport"], ["🚶", "spazieren"], ["☎️", "telefonieren"],
   ] },
   { title: "💭 Wie geht's mir?", items: [
     ["🤩", "super drauf"], ["😊", "glücklich"], ["😍", "verliebt"], ["😫", "gestresst"], ["🥱", "müde"],
     ["😢", "traurig"], ["😐", "gelangweilt"], ["😡", "wütend"], ["😌", "entspannt"], ["🤔", "verträumt"],
+    ["🤒", "krank"], ["💪", "motiviert"], ["🥳", "gut gelaunt"], ["😅", "verpeilt"],
   ] },
 ];
 
@@ -38,10 +41,13 @@ export default function Navbar() {
   const { me, logout, refresh } = useMe();
   const [open, setOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [pending, setPending] = useState(null); // ausgewählter Status, wartet auf "posten/setzen"
   const [saving, setSaving] = useState(false);
-  const [custom, setCustom] = useState("");
 
-  useEffect(() => { setOpen(false); setStatusOpen(false); }, [pathname]);
+  useEffect(() => { setOpen(false); closeStatus(); }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function closeStatus() { setStatusOpen(false); setQuery(""); setPending(null); }
 
   async function handleLogout() {
     setOpen(false);
@@ -50,19 +56,37 @@ export default function Navbar() {
     router.refresh();
   }
 
-  async function setStatus(text) {
+  async function applyStatus(text, isPublic) {
     setSaving(true);
     try {
-      await api.updateMe(me.username, { mood: text.slice(0, 60) });
+      await api.setStatus(text, isPublic);
       await refresh();
-      setStatusOpen(false);
-      setCustom("");
+      closeStatus();
     } catch (e) {
       alert(e.message);
     } finally {
       setSaving(false);
     }
   }
+
+  // Suche: flache, gefilterte Liste über alle Kategorien
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return null;
+    const out = [];
+    for (const cat of STATUS_CATS) {
+      for (const [em, lbl] of cat.items) {
+        if (lbl.toLowerCase().includes(q)) out.push([em, lbl]);
+      }
+    }
+    return out;
+  }, [query]);
+
+  const chipStyle = (active) => ({
+    fontSize: 14, padding: "9px 12px", borderRadius: 16, cursor: "pointer",
+    border: active ? "2px solid #ff3e9d" : "1px solid #ddd",
+    background: active ? "#ffe6f2" : "#f6f6f6", whiteSpace: "nowrap",
+  });
 
   return (
     <nav className="vv-nav2">
@@ -86,11 +110,11 @@ export default function Navbar() {
           <div style={{ position: "relative" }}>
             <button
               type="button"
-              onClick={() => setStatusOpen((o) => !o)}
+              onClick={() => (statusOpen ? closeStatus() : setStatusOpen(true))}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6, maxWidth: "55vw",
                 background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.35)",
-                color: "#fff", borderRadius: 20, padding: "5px 12px", cursor: "pointer",
+                color: "#fff", borderRadius: 20, padding: "6px 12px", cursor: "pointer",
                 fontFamily: "Arial, sans-serif", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden",
               }}
               title="Status ändern"
@@ -106,57 +130,74 @@ export default function Navbar() {
               <div
                 style={{
                   position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 60,
-                  width: 300, maxWidth: "90vw", maxHeight: "70vh", overflowY: "auto",
-                  background: "#fff", color: "#222", borderRadius: 12,
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)", padding: 12,
+                  width: "min(380px, 94vw)", maxHeight: "72vh", overflowY: "auto",
+                  background: "#fff", color: "#222", borderRadius: 14,
+                  boxShadow: "0 12px 34px rgba(0,0,0,0.28)", padding: 14,
                   fontFamily: "Arial, sans-serif",
                 }}
               >
-                <div style={{ fontWeight: "bold", marginBottom: 6 }}>Status wählen</div>
-                {STATUS_CATS.map((cat) => (
-                  <div key={cat.title} style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: "bold", color: "#c2185b", margin: "4px 0" }}>{cat.title}</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                      {cat.items.map(([em, lbl]) => {
-                        const val = `${em} ${lbl}`;
-                        const active = me.mood === val;
-                        return (
-                          <button
-                            key={lbl}
-                            type="button"
-                            disabled={saving}
-                            onClick={() => setStatus(val)}
-                            style={{
-                              fontSize: 12, padding: "4px 8px", borderRadius: 14, cursor: "pointer",
-                              border: active ? "2px solid #ff3e9d" : "1px solid #ddd",
-                              background: active ? "#ffe6f2" : "#f6f6f6", whiteSpace: "nowrap",
-                            }}
-                          >{em} {lbl}</button>
-                        );
-                      })}
-                    </div>
+                {pending ? (
+                  // Schritt 2: posten oder nur setzen?
+                  <div>
+                    <div style={{ fontSize: 13, color: "#666" }}>Dein Status:</div>
+                    <div style={{ fontSize: 22, fontWeight: "bold", margin: "6px 0 14px" }}>{pending}</div>
+                    <button type="button" disabled={saving} onClick={() => applyStatus(pending, true)}
+                      style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "#ff3e9d", color: "#fff", fontWeight: "bold", fontSize: 15, cursor: "pointer", marginBottom: 8 }}>
+                      📢 Öffentlich posten
+                    </button>
+                    <button type="button" disabled={saving} onClick={() => applyStatus(pending, false)}
+                      style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid #ccc", background: "#f6f6f6", fontWeight: "bold", fontSize: 15, cursor: "pointer", marginBottom: 8 }}>
+                      🔒 Nur für mich setzen
+                    </button>
+                    <button type="button" disabled={saving} onClick={() => setPending(null)}
+                      style={{ width: "100%", padding: "8px", borderRadius: 12, border: "none", background: "none", color: "#888", cursor: "pointer" }}>
+                      ← zurück
+                    </button>
                   </div>
-                ))}
-                <div style={{ borderTop: "1px solid #eee", paddingTop: 8, marginTop: 4 }}>
-                  <div style={{ fontSize: 12, fontWeight: "bold", margin: "0 0 4px" }}>✏️ Eigener Status</div>
-                  <div style={{ display: "flex", gap: 6 }}>
+                ) : (
+                  // Schritt 1: Suche + Auswahl
+                  <div>
                     <input
                       className="vv-input"
-                      style={{ flex: 1, margin: 0, fontSize: 13 }}
-                      placeholder="z.B. verträumt 🌙"
-                      value={custom}
-                      maxLength={60}
-                      onChange={(e) => setCustom(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && custom.trim()) setStatus(custom.trim()); }}
+                      style={{ margin: "0 0 10px", fontSize: 15, padding: "10px" }}
+                      placeholder="🔍 Status suchen… (z.B. zocken)"
+                      value={query}
+                      autoFocus
+                      onChange={(e) => setQuery(e.target.value)}
                     />
-                    <button type="button" className="vv-btn vv-btn-pink" disabled={saving || !custom.trim()} onClick={() => setStatus(custom.trim())}>OK</button>
+                    {filtered ? (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {filtered.length === 0 && <div className="vv-muted" style={{ fontSize: 13 }}>Nichts gefunden.</div>}
+                        {filtered.map(([em, lbl]) => {
+                          const val = `${em} ${lbl}`;
+                          return (
+                            <button key={lbl} type="button" onClick={() => setPending(val)} style={chipStyle(me.mood === val)}>{em} {lbl}</button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      STATUS_CATS.map((cat) => (
+                        <div key={cat.title} style={{ marginBottom: 10 }}>
+                          <div style={{ fontSize: 13, fontWeight: "bold", color: "#c2185b", margin: "4px 0 6px" }}>{cat.title}</div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                            {cat.items.map(([em, lbl]) => {
+                              const val = `${em} ${lbl}`;
+                              return (
+                                <button key={lbl} type="button" onClick={() => setPending(val)} style={chipStyle(me.mood === val)}>{em} {lbl}</button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {me.mood && (
+                      <button type="button" disabled={saving} onClick={() => applyStatus("", false)}
+                        style={{ marginTop: 6, width: "100%", padding: "9px", borderRadius: 12, border: "1px solid #f3c", background: "#fff", color: "#a00", cursor: "pointer" }}>
+                        ✖ Status entfernen
+                      </button>
+                    )}
                   </div>
-                  {me.mood && (
-                    <button type="button" className="vv-btn" style={{ marginTop: 8, color: "#a00" }} disabled={saving} onClick={() => setStatus("")}>
-                      ✖ Status entfernen
-                    </button>
-                  )}
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -165,7 +206,6 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Aufklappendes Menü - wie damals das Startmenü */}
       <div className={`vv-nav2-panel${open ? " vv-open" : ""}`}>
         <div className="vv-nav2-panel-inner">
           {LINKS.map((l) => (
@@ -192,9 +232,8 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Klick-Fänger zum Schließen */}
       {open && <div className="vv-nav2-backdrop" onClick={() => setOpen(false)} />}
-      {statusOpen && <div className="vv-nav2-backdrop" onClick={() => setStatusOpen(false)} />}
+      {statusOpen && <div className="vv-nav2-backdrop" onClick={closeStatus} />}
     </nav>
   );
 }

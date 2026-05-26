@@ -131,9 +131,12 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
                         ? <img src={v.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         : v.emoji}
                     </div>
-                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {v.online && <span className="vv-online-dot" />}
-                      <ColoredName gender={v.gender} age={v.age} name={v.displayName} />
+                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                      <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {v.online && <span className="vv-online-dot" />}
+                        <ColoredName gender={v.gender} age={v.age} name={v.displayName} />
+                      </span>
+                      {v.mood && <span className="vv-muted" style={{ display: "block", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.mood}</span>}
                     </span>
                     <span className="vv-muted" style={{ fontSize: 11, flexShrink: 0 }}>{relTime(v.at)}</span>
                   </Link>
