@@ -458,8 +458,47 @@ export default function Landing() {
           </form>
         )}
 
+        {/* "Wie früher" – Feature-Galerie der Pre-Facebook-Ära */}
+        <div style={{
+          marginTop: 36, padding: "20px 18px", borderRadius: 18,
+          background: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.18)", maxWidth: 760, marginLeft: "auto", marginRight: "auto",
+        }}>
+          <div style={{ textAlign: "center", marginBottom: 4 }}>
+            <span style={{ display: "inline-block", padding: "3px 10px", background: "#ff3e9d", color: "#fff", borderRadius: 12, fontSize: 11, fontWeight: "bold", letterSpacing: 1 }}>VOR FACEBOOK</span>
+          </div>
+          <h2 style={{ textAlign: "center", margin: "8px 0 2px", color: "#222", fontFamily: "Arial, sans-serif" }}>📼 Alles, was wir vermisst haben</h2>
+          <p style={{ textAlign: "center", color: "#666", fontSize: 13, marginTop: 0, marginBottom: 16 }}>Kein Algorithmus. Keine Werbung. Nur Menschen.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
+            {[
+              ["📌", "Pinnwand", "Glitzer-Smileys & Memories"],
+              ["🫶", "*gruscheln*", "Der kleine anonyme Gruß"],
+              ["🎁", "Geschenke", "Rose, Bier, Glücksklee"],
+              ["🎵", "Profil-Musik", "Dein Lieblingssong im Hintergrund"],
+              ["🟢", "ICQ-Status", "Wo bin ich? Was mache ich?"],
+              ["💬", "Oh-Oh-Sound", "Bei jeder neuen Nachricht"],
+              ["📸", "Foto-Alben", "Erinnerungen sortiert"],
+              ["🎨", "Profil-Skin", "Eigenes CSS, wie damals"],
+              ["⭐", "Top-Freunde", "Bald wieder anpinnbar"],
+              ["📖", "Gästebuch", "Klassisch, kommt zurück"],
+            ].map(([icon, title, sub]) => (
+              <div key={title} style={{
+                padding: "10px 8px", borderRadius: 12, background: "#fff7fc", border: "1px solid #fde4f0",
+                textAlign: "center", display: "flex", flexDirection: "column", gap: 2, color: "#222",
+              }}>
+                <div style={{ fontSize: 22 }}>{icon}</div>
+                <div style={{ fontWeight: "bold", fontSize: 13, color: "#c2185b" }}>{title}</div>
+                <div style={{ fontSize: 11, color: "#777" }}>{sub}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 14, fontSize: 12, color: "#888", fontStyle: "italic" }}>
+            ✿ Profil-Hintergrund mit Lieblingssong · Pinnwand · gruscheln · Geschenke · ICQ-Status ✿
+          </div>
+        </div>
+
         <div className="vv-splash-mini-disclaimer">
-          Erinnert an MySpace, SchülerVZ, Jappy, Lokalisten, wer-kennt-wen &amp; Co. – nicht angeschlossen, nur inspiriert.
+          Erinnert an MySpace, SchülerVZ, Jappy, Lokalisten, wer-kennt-wen, Knuddels &amp; Co. – nicht angeschlossen, nur inspiriert. ★
         </div>
       </div>
     </div>

@@ -77,15 +77,21 @@ export default function HomePage() {
       <div className="vv-grid-2">
         <div>
           <div className="vv-card">
-            <h2>🌟 Hey {me.displayName}!</h2>
-            <p>
-              Schön dass du da bist. Schau wer online ist, schreib auf die Pinnwand
-              deiner Freunde, oder geh in eine Gruppe.
+            <h2 style={{ marginTop: 0 }}>💌 Willkommen zurück, {me.displayName}!</h2>
+            <p style={{ lineHeight: 1.6 }}>
+              Erinnerst du dich noch? <strong>Pinnwand-Einträge</strong> mit Glitzer-Smileys,
+              ein <strong>*gruscheln*</strong> ohne Algorithmus, das eigene Profil mit
+              <strong> Lieblingssong</strong> dahinter — und das <strong>ICQ-Oh-Oh</strong>,
+              wenn dir jemand schreibt. Genau das machen wir hier wieder.
             </p>
+            <div className="vv-muted" style={{ fontSize: 12, fontStyle: "italic" }}>
+              ✿ Memories zählen. Diese eine Nachricht. Diese eine Rose. Diese eine Top-8-Platzierung. ✿
+            </div>
             <div className="vv-row vv-mt-12" style={{ flexWrap: "wrap" }}>
               <Link href="/profile" className="vv-btn vv-btn-pink">👤 Mein Profil</Link>
-              <Link href="/profile/skin" className="vv-btn vv-btn-cyan">🎨 Skin gestalten</Link>
+              <Link href="/freunde" className="vv-btn vv-btn-cyan">👯 Wer ist online?</Link>
               <Link href="/messenger" className="vv-btn">✉️ Nachrichten</Link>
+              <Link href="/profile/skin" className="vv-btn">🎨 Skin gestalten</Link>
             </div>
           </div>
 
