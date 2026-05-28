@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
+import NotificationsBell from "./NotificationsBell";
 
 const LINKS = [
   { href: "/", icon: "🏠", label: "Start" },
@@ -107,6 +108,8 @@ export default function Navbar() {
         <div className="vv-spacer" />
 
         {me ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <NotificationsBell />
           <div style={{ position: "relative" }}>
             <button
               type="button"
@@ -199,6 +202,7 @@ export default function Navbar() {
                 )}
               </div>
             )}
+          </div>
           </div>
         ) : (
           <Link href="/login" className="vv-nav2-loginbtn">🔑 Login</Link>

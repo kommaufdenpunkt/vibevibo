@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addGift, getGifts } from "@/lib/db";
+import { getUserByUsername, addGift, getGifts, addNotification } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { findGift } from "@/lib/gifts";
 
@@ -11,7 +11,9 @@ export async function POST(req, { params }) {
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });
   if (target.id === me.id) return NextResponse.json({ error: "self gift" }, { status: 400 });
   const { giftId } = await req.json();
-  if (!findGift(giftId)) return NextResponse.json({ error: "unknown gift" }, { status: 400 });
+  const g = findGift(giftId);
+  if (!g) return NextResponse.json({ error: "unknown gift" }, { status: 400 });
   addGift(target.id, me.id, giftId);
+  addNotification({ userId: target.id, actorId: me.id, type: "gift", targetType: "gift", targetId: null, preview: `${g.icon} ${g.name}` });
   return NextResponse.json({ gifts: getGifts(target.id) });
 }

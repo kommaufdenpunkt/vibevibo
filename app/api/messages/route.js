@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage } from "@/lib/db";
+import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 
@@ -43,6 +43,7 @@ export async function POST(req) {
       onceOnly: !!body.onceOnly,
     });
     publishMessage(row);
+    addNotification({ userId: target.id, actorId: me.id, type: "message", targetType: "message", targetId: row.id, preview: "🎤 Sprachnachricht" });
     return NextResponse.json({ message: { ...row, audioUrl: undefined } });
   }
 
@@ -52,5 +53,6 @@ export async function POST(req) {
   if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
   const row = sendMessage(me.id, target.id, cleaned);
   publishMessage(row);
+  addNotification({ userId: target.id, actorId: me.id, type: "message", targetType: "message", targetId: row.id, preview: cleaned });
   return NextResponse.json({ message: row });
 }

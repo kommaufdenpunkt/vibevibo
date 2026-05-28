@@ -6,6 +6,7 @@ import SmileyPicker from "./SmileyPicker";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "./GenderAge";
+import MentionText from "./MentionText";
 
 export default function Pinnwand({ profile, entries, onChange }) {
   const { me } = useMe();
@@ -88,7 +89,7 @@ export default function Pinnwand({ profile, entries, onChange }) {
                   </a>
                 )}
               </div>
-              <div style={{ whiteSpace: "pre-wrap" }}>{entry.text}</div>
+              <div style={{ whiteSpace: "pre-wrap" }}><MentionText text={entry.text} /></div>
               <div style={{ marginTop: 6 }}>
                 {me ? (
                   <button

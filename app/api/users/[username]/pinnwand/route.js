@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addPinnwand, getPinnwand } from "@/lib/db";
+import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 
@@ -15,6 +15,9 @@ export async function POST(req, { params }) {
   if (!cleaned) return NextResponse.json({ error: "empty" }, { status: 400 });
   const verdict = await checkTextPost(me.id, "pinnwand", cleaned);
   if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
-  addPinnwand(target.id, me.id, cleaned);
+  const newId = addPinnwand(target.id, me.id, cleaned);
+  // Profil-Inhaber benachrichtigen + @-Markierte
+  addNotification({ userId: target.id, actorId: me.id, type: "pinnwand", targetType: "pinnwand", targetId: newId, preview: cleaned });
+  notifyMentions(me.id, cleaned, "pinnwand", newId);
   return NextResponse.json({ pinnwand: getPinnwand(target.id, { byUserId: me.id }) });
 }

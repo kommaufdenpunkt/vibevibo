@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { relTime } from "@/lib/format";
 import { findGift } from "@/lib/gifts";
 import { ColoredName } from "./GenderAge";
+import MentionText from "./MentionText";
 
 // Farbe des Zeitstrahl-Punkts je Ereignis-Typ
 const NODE_COLOR = {
@@ -44,7 +45,7 @@ function renderEvent(ev, i, isLast) {
     text = <>{actor} hat ein neues Profilbild!</>;
   } else if (ev.type === "status") {
     icon = "💬";
-    text = <>{actor} ist jetzt: <strong>{ev.detail}</strong></>;
+    text = <>{actor}: <strong><MentionText text={ev.detail} /></strong></>;
   }
 
   return (
@@ -62,10 +63,10 @@ function renderEvent(ev, i, isLast) {
         <div style={{ fontSize: 13, lineHeight: 1.45 }}>{text}</div>
         <div style={{ fontSize: 11, color: "#9a9aa8", marginTop: 2 }}>{relTime(ev.at)}</div>
       </div>
-      {ev.type === "newpic" && ev.picUrl && (
+      {ev.picUrl && (
         <Link href={`/u/${ev.actor.username}`} style={{ flexShrink: 0 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={ev.picUrl} alt="" style={{ width: 42, height: 42, borderRadius: 8, objectFit: "cover" }} />
+          <img src={ev.picUrl} alt="" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover" }} />
         </Link>
       )}
     </div>
