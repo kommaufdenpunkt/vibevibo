@@ -7,9 +7,10 @@ export async function GET(_req, { params }) {
   const { username } = await params;
   const user = getUserByUsername(username);
   if (!user) return NextResponse.json({ error: "not found" }, { status: 404 });
+  const me = await getSessionUser();
   return NextResponse.json({
     user: { ...user, online: isOnline(user.lastSeen) },
-    pinnwand: getPinnwand(user.id),
+    pinnwand: getPinnwand(user.id, { byUserId: me?.id }),
     gifts: getGifts(user.id),
     visitCount: getVisitCount(user.id),
     visitors: getRecentVisitors(user.id, 6).map((v) => ({ ...v, online: isOnline(v.lastSeen) })),

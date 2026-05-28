@@ -10,9 +10,47 @@ import { useMe } from "@/lib/useMe";
 import { ColoredName } from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
 
+function StatusBox({ onPosted }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit() {
+    const t = text.trim();
+    if (!t) return;
+    setBusy(true);
+    try {
+      await api.setStatus(t, true);
+      setText("");
+      onPosted?.();
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="vv-card">
+      <h3 style={{ marginTop: 0 }}>📝 Was machst du gerade?</h3>
+      <textarea
+        className="vv-textarea"
+        rows={2}
+        value={text}
+        maxLength={60}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={'Erzähl was – z.B. „🎮 zocke gleich was" oder „endlich Wochenende!"'}
+      />
+      <div className="vv-row vv-mt-8" style={{ alignItems: "center" }}>
+        <span className="vv-muted" style={{ fontSize: 11 }}>Erscheint im Buschfunk-Feed.</span>
+        <div className="vv-spacer" />
+        <button type="button" className="vv-btn vv-btn-pink" disabled={busy || !text.trim()} onClick={submit}>📢 Posten</button>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const { me, loading } = useMe();
   const [users, setUsers] = useState([]);
+  const [feedTick, setFeedTick] = useState(0);
 
   useEffect(() => {
     if (!me) return;
@@ -51,7 +89,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          <Buschfunk />
+          <StatusBox onPosted={() => setFeedTick((t) => t + 1)} />
+
+          <Buschfunk key={feedTick} />
 
           <div className="vv-card">
             <h2>👥 Mitglieder</h2>

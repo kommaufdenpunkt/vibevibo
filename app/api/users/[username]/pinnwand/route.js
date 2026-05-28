@@ -16,5 +16,5 @@ export async function POST(req, { params }) {
   const verdict = await checkTextPost(me.id, "pinnwand", cleaned);
   if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
   addPinnwand(target.id, me.id, cleaned);
-  return NextResponse.json({ pinnwand: getPinnwand(target.id) });
+  return NextResponse.json({ pinnwand: getPinnwand(target.id, { byUserId: me.id }) });
 }

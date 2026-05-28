@@ -89,6 +89,22 @@ export default function Pinnwand({ profile, entries, onChange }) {
                 )}
               </div>
               <div style={{ whiteSpace: "pre-wrap" }}>{entry.text}</div>
+              <div style={{ marginTop: 6 }}>
+                {me ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try { await api.toggleReaction("pinnwand", entry.id); onChange?.(); }
+                      catch (e) { alert(e.message); }
+                    }}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: entry.iLiked ? "#ff3e9d" : "#666", padding: 0, fontSize: 13 }}
+                  >
+                    {entry.iLiked ? "❤️ Gefällt dir" : "🤍 Gefällt mir"}{entry.likeCount ? ` · ${entry.likeCount}` : ""}
+                  </button>
+                ) : entry.likeCount > 0 ? (
+                  <span className="vv-muted" style={{ fontSize: 12 }}>❤️ {entry.likeCount}</span>
+                ) : null}
+              </div>
             </div>
           );
         })}
