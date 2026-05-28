@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import Landing from "@/components/Landing";
@@ -10,23 +10,64 @@ import { useMe } from "@/lib/useMe";
 import { ColoredName } from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
 
+// Bild im Browser auf 600px verkleinern -> kleines JPEG
+function fileToPostImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const maxDim = 600;
+        let { width, height } = img;
+        const ratio = Math.min(1, maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function StatusBox({ onPosted }) {
   const [text, setText] = useState("");
+  const [image, setImage] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const fileRef = useRef(null);
+
+  async function onPickImage(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setMsg("Bitte ein Bild auswählen."); return; }
+    try { setImage(await fileToPostImage(file)); } catch { setMsg("Bild konnte nicht geladen werden."); }
+  }
+
   async function submit() {
     const t = text.trim();
-    if (!t) return;
-    setBusy(true);
+    if (!t && !image) return;
+    setBusy(true); setMsg("");
     try {
-      await api.setStatus(t, true);
-      setText("");
+      const res = await api.setStatus(t, true, image);
+      setText(""); setImage(null);
+      if (res?.imageNote) setMsg("⏳ " + res.imageNote);
+      else setMsg("✅ Gepostet!");
       onPosted?.();
+      setTimeout(() => setMsg(""), 4500);
     } catch (e) {
-      alert(e.message);
+      setMsg(e.message);
     } finally {
       setBusy(false);
     }
   }
+
   return (
     <div className="vv-card">
       <h3 style={{ marginTop: 0 }}>📝 Was machst du gerade?</h3>
@@ -34,15 +75,33 @@ function StatusBox({ onPosted }) {
         className="vv-textarea"
         rows={2}
         value={text}
-        maxLength={60}
+        maxLength={280}
         onChange={(e) => setText(e.target.value)}
         placeholder={'Erzähl was – z.B. „🎮 zocke gleich was" oder „endlich Wochenende!"'}
       />
-      <div className="vv-row vv-mt-8" style={{ alignItems: "center" }}>
-        <span className="vv-muted" style={{ fontSize: 11 }}>Erscheint im Buschfunk-Feed.</span>
+      {image && (
+        <div style={{ position: "relative", marginTop: 8, display: "inline-block" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image} alt="" style={{ maxHeight: 160, maxWidth: "100%", borderRadius: 10 }} />
+          <button
+            type="button"
+            onClick={() => setImage(null)}
+            aria-label="Bild entfernen"
+            style={{ position: "absolute", top: -8, right: -8, width: 22, height: 22, borderRadius: "50%", border: "none", background: "#222", color: "#fff", cursor: "pointer", padding: 0 }}
+          >×</button>
+        </div>
+      )}
+      <div className="vv-row vv-mt-8" style={{ alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+        <button type="button" className="vv-btn" onClick={() => fileRef.current?.click()} disabled={busy}>📷 Foto anhängen</button>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPickImage} />
+        <span className="vv-muted" style={{ fontSize: 11 }}>Erscheint im Buschfunk-Feed</span>
         <div className="vv-spacer" />
-        <button type="button" className="vv-btn vv-btn-pink" disabled={busy || !text.trim()} onClick={submit}>📢 Posten</button>
+        <button type="button" className="vv-btn vv-btn-pink" disabled={busy || (!text.trim() && !image)} onClick={submit}>
+          {busy ? "…" : "📢 Posten"}
+        </button>
       </div>
+      {msg && <div className="vv-mt-8" style={{ fontWeight: "bold", fontSize: 13 }}>{msg}</div>}
+      <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>🤖 Fidolin prüft Text und Bild streng – nichts Rechtswidriges/Anrüchiges.</div>
     </div>
   );
 }
