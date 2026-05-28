@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors } from "@/lib/db";
+import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors, getGuestbookEntries } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sanitizeCustomCss } from "@/lib/sanitizeCss";
 
@@ -11,6 +11,7 @@ export async function GET(_req, { params }) {
   return NextResponse.json({
     user: { ...user, online: isOnline(user.lastSeen) },
     pinnwand: getPinnwand(user.id, { byUserId: me?.id }),
+    guestbook: getGuestbookEntries(user.id),
     gifts: getGifts(user.id),
     visitCount: getVisitCount(user.id),
     visitors: getRecentVisitors(user.id, 6).map((v) => ({ ...v, online: isOnline(v.lastSeen) })),

@@ -34,6 +34,7 @@ export default function MyProfilePage() {
     <ProfileView
       profile={data.user}
       pinnwand={data.pinnwand}
+      guestbook={data.guestbook}
       gifts={data.gifts}
       visitCount={data.visitCount}
       visitors={data.visitors}

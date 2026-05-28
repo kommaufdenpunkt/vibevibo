@@ -1,36 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { relTime } from "@/lib/format";
-import SmileyPicker from "./SmileyPicker";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "./GenderAge";
 import MentionText from "./MentionText";
+import WallComposer from "./WallComposer";
 
 export default function Pinnwand({ profile, entries, onChange }) {
   const { me } = useMe();
-  const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
 
   const isOwner = me?.username === profile.username;
-
-  async function submit(e) {
-    e.preventDefault();
-    if (!me) { alert("Bitte einloggen."); return; }
-    const v = text.trim();
-    if (!v) return;
-    setBusy(true);
-    try {
-      await api.postPinnwand(profile.username, v);
-      setText("");
-      onChange?.();
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  const placeholder = isOwner ? "Was machst du gerade?" : `Schreib was Liebes an ${profile.displayName}…`;
 
   async function remove(id) {
     if (!confirm("Eintrag löschen?")) return;
@@ -44,23 +25,9 @@ export default function Pinnwand({ profile, entries, onChange }) {
 
   return (
     <div className="vv-card">
-      <h3>📌 Pinnwand von {profile.displayName}</h3>
+      <h3 style={{ marginTop: 0 }}>📌 Wall von {profile.displayName}</h3>
       {me ? (
-        <form onSubmit={submit}>
-          <textarea
-            className="vv-textarea"
-            placeholder={`Schreib was Liebes an ${profile.displayName}... :*`}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-          <div className="vv-row vv-mt-8">
-            <SmileyPicker onPick={(s) => setText((t) => t + s)} />
-            <div className="vv-spacer" />
-            <button type="submit" className="vv-btn vv-btn-pink" disabled={busy}>
-              ✎ An die Pinnwand
-            </button>
-          </div>
-        </form>
+        <WallComposer targetUsername={profile.username} onPosted={onChange} placeholder={placeholder} />
       ) : (
         <div className="vv-muted">Logge dich ein, um auf die Pinnwand zu schreiben.</div>
       )}
@@ -89,7 +56,11 @@ export default function Pinnwand({ profile, entries, onChange }) {
                   </a>
                 )}
               </div>
-              <div style={{ whiteSpace: "pre-wrap" }}><MentionText text={entry.text} /></div>
+              {entry.text && <div style={{ whiteSpace: "pre-wrap" }}><MentionText text={entry.text} /></div>}
+              {entry.imageUrl && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={entry.imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 320, borderRadius: 10, marginTop: 6 }} />
+              )}
               <div style={{ marginTop: 6 }}>
                 {me ? (
                   <button

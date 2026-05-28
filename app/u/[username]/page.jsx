@@ -43,6 +43,7 @@ export default function PublicProfilePage() {
     <ProfileView
       profile={data.user}
       pinnwand={data.pinnwand}
+      guestbook={data.guestbook}
       gifts={data.gifts}
       visitCount={data.visitCount}
       visitors={data.visitors}

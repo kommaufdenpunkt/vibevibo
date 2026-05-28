@@ -29,7 +29,10 @@ function renderEvent(ev, i, isLast) {
 
   if (ev.type === "pinnwand") {
     icon = "📌";
-    text = <>{actor} schrieb an <Link href={`/u/${ev.target.username}`}>{ev.target.displayName}</Link>: „{truncate(ev.detail, 60)}"</>;
+    const self = ev.actor.username === ev.target.username;
+    text = self
+      ? <>{actor} postet: „<MentionText text={truncate(ev.detail, 80)} />"</>
+      : <>{actor} schrieb an <Link href={`/u/${ev.target.username}`}>{ev.target.displayName}</Link>: „<MentionText text={truncate(ev.detail, 60)} />"</>;
   } else if (ev.type === "gift") {
     const g = findGift(ev.gift);
     icon = g?.icon || "🎁";

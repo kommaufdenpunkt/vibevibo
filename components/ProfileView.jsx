@@ -9,13 +9,15 @@ import ProfileSkin from "./ProfileSkin";
 import PicGallery from "./PicGallery";
 import { ColoredName } from "./GenderAge";
 import Avatar from "./Avatar";
+import Gaestebuch from "./Gaestebuch";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 
-export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, visitors = [], onChange }) {
+export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, visitCount = 0, visitors = [], onChange }) {
   const { me } = useMe();
   const [toast, setToast] = useState(null);
+  const [wallTab, setWallTab] = useState("pinnwand");
 
   const isOwner = me?.username === profile.username;
 
@@ -106,7 +108,13 @@ export default function ProfileView({ profile, pinnwand, gifts, visitCount = 0, 
             </div>
           )}
 
-          <Pinnwand profile={profile} entries={pinnwand} onChange={onChange} />
+          <div className="vv-row" style={{ gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+            <button type="button" className={`vv-btn${wallTab === "pinnwand" ? " vv-btn-pink" : ""}`} onClick={() => setWallTab("pinnwand")}>📌 Pinnwand</button>
+            <button type="button" className={`vv-btn${wallTab === "gaestebuch" ? " vv-btn-pink" : ""}`} onClick={() => setWallTab("gaestebuch")}>📖 Gästebuch</button>
+          </div>
+          {wallTab === "pinnwand"
+            ? <Pinnwand profile={profile} entries={pinnwand} onChange={onChange} />
+            : <Gaestebuch profile={profile} initialEntries={guestbook} />}
         </div>
 
         <div>
