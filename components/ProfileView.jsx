@@ -14,6 +14,22 @@ import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 
+function StatPill({ icon, label, value }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 999, background: "#f0f1f6", color: "#222", fontSize: 12 }}>
+      <span style={{ fontSize: 14 }}>{icon}</span>
+      <strong style={{ fontSize: 13 }}>{value}</strong>
+      <span style={{ color: "#777" }}>{label}</span>
+    </div>
+  );
+}
+
+function bannerByGender(g) {
+  if (g === "m") return "linear-gradient(135deg, #2d7dd2 0%, #5fb0ff 60%, #8ec9ff 100%)";
+  if (g === "w") return "linear-gradient(135deg, #ff3e9d 0%, #ff8fd0 60%, #ffc1e0 100%)";
+  return "linear-gradient(135deg, #7c5cf5 0%, #a87bff 60%, #c8a8ff 100%)";
+}
+
 export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, visitCount = 0, visitors = [], onChange }) {
   const { me } = useMe();
   const [toast, setToast] = useState(null);
@@ -40,36 +56,47 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
         <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} />
       )}
 
-      <div className="vv-card">
-        <div className="vv-profile-header">
-          <Avatar url={profile.avatarUrl} name={profile.displayName} />
-          <div>
-            <h2 style={{ margin: 0 }}>
-              <span style={{ display: "inline-block", background: "rgba(0,0,0,0.62)", padding: "4px 12px", borderRadius: 12 }}>
-                <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} fallbackColor="#ffffff" />
-              </span>{" "}
-              {profile.online ? (
-                <span style={{ fontSize: 12, color: "#fff", background: "#0aff44", padding: "2px 6px", borderRadius: 8, textShadow: "1px 1px 0 #000" }}>
-                  online
-                </span>
-              ) : (
-                <span style={{ fontSize: 12, color: "#fff", background: "rgba(0,0,0,0.45)", padding: "2px 8px", borderRadius: 8 }}>offline</span>
-              )}
-            </h2>
-            <div className="vv-mt-8">
-              <span style={{ background: "rgba(0,0,0,0.5)", color: "#e8e8f0", padding: "2px 9px", borderRadius: 8, fontSize: 12 }}>@{profile.username}</span>
-            </div>
-            <div className="vv-mt-8">
-              <span style={{ display: "inline-block", background: "rgba(0,0,0,0.5)", color: "#fff", padding: "3px 10px", borderRadius: 8 }}>Stimmung: {profile.mood || "—"}</span>
-            </div>
-            <ul className="vv-profile-stats">
-              <li><strong>{visitCount}</strong>Besucher</li>
-              <li><strong>{pinnwand.length}</strong>Pinnwand</li>
-              <li><strong>{gifts.length}</strong>Geschenke</li>
-              <li><strong>{new Date(profile.createdAt).toLocaleDateString("de-DE")}</strong>Dabei seit</li>
-            </ul>
+      {/* === Profil-Kopf mit Banner === */}
+      <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div style={{ height: 90, background: bannerByGender(profile.gender) }} />
+        <div style={{ padding: "0 18px 16px", display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: 16 }}>
+          {/* Avatar-Kreis ueberlappt das Banner */}
+          <div style={{ marginTop: -54, width: 108, height: 108, borderRadius: "50%", border: "4px solid #fff", overflow: "hidden", boxShadow: "0 4px 14px rgba(0,0,0,0.22)", flexShrink: 0, position: "relative", background: "#f4f4f7" }}>
+            <Avatar
+              url={profile.avatarUrl}
+              name={profile.displayName}
+              className=""
+              style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}
+            />
+            {profile.online && (
+              <span style={{ position: "absolute", bottom: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "#0aff44", border: "3px solid #fff", boxShadow: "0 0 8px rgba(10,255,68,0.7)" }} />
+            )}
           </div>
-          <div className="vv-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 6 }}>
+
+          {/* Identitaet */}
+          <div style={{ flex: "1 1 240px", paddingTop: 12, minWidth: 0 }}>
+            <h2 style={{ margin: 0, lineHeight: 1.2, fontSize: 22 }}>
+              <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} fallbackColor="#222" size="1em" />
+            </h2>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6, alignItems: "center" }}>
+              <span style={{ background: "#e3e6f1", color: "#444", padding: "3px 10px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>@{profile.username}</span>
+              {profile.mood && (
+                <span style={{ background: "linear-gradient(90deg, #ffd6e7, #ffeaf3)", color: "#a01062", padding: "3px 10px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>💭 {profile.mood}</span>
+              )}
+              <span style={{ background: profile.online ? "#0aff44" : "#bbb", color: "#fff", padding: "2px 9px", borderRadius: 10, fontSize: 11, fontWeight: "bold", textShadow: "0 1px 0 rgba(0,0,0,0.2)" }}>
+                {profile.online ? "online" : "offline"}
+              </span>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+              <StatPill icon="👀" label="Besucher" value={visitCount} />
+              <StatPill icon="📌" label="Wall" value={pinnwand.length} />
+              <StatPill icon="🎁" label="Geschenke" value={gifts.length} />
+              <StatPill icon="✨" label="Dabei seit" value={new Date(profile.createdAt).toLocaleDateString("de-DE")} />
+            </div>
+          </div>
+
+          {/* Aktions-Knoepfe */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 12, minWidth: 150 }}>
             {!isOwner && me && (
               <>
                 <button type="button" className="vv-btn vv-btn-pink" onClick={gruscheln}>🫶 Gruscheln</button>
@@ -88,28 +115,14 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
         </div>
       </div>
 
+      {/* === Profilbild-Galerie === */}
       <PicGallery username={profile.username} isOwner={isOwner} onAvatarChange={onChange} />
 
+      {/* === Hauptbereich: Tabs links, Sidebar rechts === */}
       <div className="vv-grid-2">
         <div>
-          <div className="vv-card">
-            <h3>📖 Über mich</h3>
-            <p style={{ whiteSpace: "pre-wrap" }}>{profile.aboutMe || <em className="vv-muted">Noch nichts geschrieben.</em>}</p>
-          </div>
-
-          {(profile.interests || []).length > 0 && (
-            <div className="vv-card">
-              <h3>💜 Interessen</h3>
-              <div className="vv-row">
-                {profile.interests.map((it, i) => (
-                  <span key={i} className="vv-mood" style={{ background: "linear-gradient(90deg, #c4f4ff, #00e5ff)" }}>{it}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div className="vv-row" style={{ gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
-            <button type="button" className={`vv-btn${wallTab === "pinnwand" ? " vv-btn-pink" : ""}`} onClick={() => setWallTab("pinnwand")}>📌 Pinnwand</button>
+            <button type="button" className={`vv-btn${wallTab === "pinnwand" ? " vv-btn-pink" : ""}`} onClick={() => setWallTab("pinnwand")}>📌 Wall</button>
             <button type="button" className={`vv-btn${wallTab === "gaestebuch" ? " vv-btn-pink" : ""}`} onClick={() => setWallTab("gaestebuch")}>📖 Gästebuch</button>
           </div>
           {wallTab === "pinnwand"
@@ -118,10 +131,28 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
         </div>
 
         <div>
+          {/* Ueber mich + Interessen vereint */}
+          <div className="vv-card">
+            <h3 style={{ marginTop: 0 }}>📖 Über mich</h3>
+            <p style={{ whiteSpace: "pre-wrap", marginTop: 0 }}>
+              {profile.aboutMe || <em className="vv-muted">Noch nichts geschrieben.</em>}
+            </p>
+            {(profile.interests || []).length > 0 && (
+              <>
+                <div style={{ marginTop: 14, marginBottom: 6, fontWeight: "bold", fontSize: 13, color: "#666" }}>💜 Interessen</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {profile.interests.map((it, i) => (
+                    <span key={i} className="vv-mood" style={{ background: "linear-gradient(90deg, #c4f4ff, #00e5ff)" }}>{it}</span>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
           <GiftShelf profile={profile} gifts={gifts} onChange={onChange} />
 
           <div className="vv-card">
-            <h3>👀 Wer war hier?</h3>
+            <h3 style={{ marginTop: 0 }}>👀 Wer war hier?</h3>
             <div className="vv-visit-counter">
               Besucher-Nr. <strong>{visitCount + 1}</strong> bist du! 🎉
             </div>
