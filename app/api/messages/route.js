@@ -59,6 +59,7 @@ export async function POST(req) {
       tag: `vv-msg-${me.username}`,
       fromUsername: me.username,
       fromDisplayName: me.displayName || me.username,
+      fromUserId: me.id,
       kind: "voice",
     }).catch(() => {});
     return NextResponse.json({ message: { ...row, audioUrl: undefined } });
@@ -104,6 +105,7 @@ export async function POST(req) {
     tag: `vv-msg-${me.username}`,
     fromUsername: me.username,
     fromDisplayName: me.displayName || me.username,
+    fromUserId: me.id,
     kind: storedImage ? "image" : "text",
   }).catch(() => {});
 

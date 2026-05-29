@@ -10,9 +10,11 @@ import SmileyPicker from "@/components/SmileyPicker";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import VoiceMessage from "@/components/VoiceMessage";
 import Avatar from "@/components/Avatar";
+import PresenceAvatar from "@/components/PresenceAvatar";
 import { ColoredName } from "@/components/GenderAge";
 import MentionText from "@/components/MentionText";
 import { useMessageStream } from "@/lib/useEventStream";
+import { getPresence } from "@/lib/presence";
 
 function timeShort(ts) {
   if (!ts) return "";
@@ -64,6 +66,9 @@ export default function ChatPage() {
   const [error, setError] = useState(null);
   const [retention, setRetention] = useState({ retentionDays: 0, setBy: 0 });
   const [showRetentionMenu, setShowRetentionMenu] = useState(false);
+  const [muteUntil, setMuteUntil] = useState(null); // null = nicht stumm, 0 = immer, ms = bis
+  const [partnerTyping, setPartnerTyping] = useState(0);
+  const typingTimer = useRef(0);
 
   const scrollRef = useRef(null);
   const imageRef = useRef(null);
@@ -102,13 +107,36 @@ export default function ChatPage() {
   }, [me, loading, router, reload]);
 
   // Beim SSE-Event in diesem Chat -> neu laden (markiert auch als gelesen)
-  useMessageStream(!!me, (ev) => {
-    const inThisChat =
-      (ev.from?.username === partnerName && ev.to?.username === me?.username) ||
-      (ev.from?.username === me?.username && ev.to?.username === partnerName);
-    if (inThisChat) reload();
-    else api.listConversations().then((d) => setConversations(d.conversations)).catch(() => {});
+  useMessageStream(!!me, {
+    onMessage: (ev) => {
+      const inThisChat =
+        (ev.from?.username === partnerName && ev.to?.username === me?.username) ||
+        (ev.from?.username === me?.username && ev.to?.username === partnerName);
+      if (inThisChat) reload();
+      else api.listConversations().then((d) => setConversations(d.conversations)).catch(() => {});
+    },
+    onTyping: (data) => {
+      // Wir interessieren uns nur für Typing vom Partner (Partner-ID vergleichen)
+      if (partner && data.fromUserId === partner.id && !data.roomId) {
+        setPartnerTyping(Date.now());
+      }
+    },
   });
+
+  useEffect(() => {
+    if (!partnerTyping) return;
+    const t = setTimeout(() => setPartnerTyping(0), 4000);
+    return () => clearTimeout(t);
+  }, [partnerTyping]);
+
+  // Lade Mute-Status nach
+  useEffect(() => {
+    if (!me) return;
+    api.listMutes().then((d) => {
+      const m = (d.mutes || []).find((x) => x.targetType === "user" && partner && x.targetId === partner.id);
+      setMuteUntil(m ? m.untilAt : null);
+    }).catch(() => {});
+  }, [me, partner]);
 
   async function sendVoice(audioUrl, onceOnly) {
     await api.sendVoice(partnerName, audioUrl, onceOnly);
@@ -131,6 +159,40 @@ export default function ChatPage() {
       if (res?.imageNote) alert(res.imageNote);
     } catch (err) {
       alert(err.message);
+    }
+  }
+
+  async function muteFor(durationMs) {
+    if (!partner) return;
+    try {
+      const res = await api.setMute("user", partner.id, durationMs);
+      setMuteUntil(res.untilAt ?? 0);
+      setShowRetentionMenu(false);
+    } catch (err) { alert(err.message); }
+  }
+  async function unmute() {
+    if (!partner) return;
+    try {
+      await api.removeMute("user", partner.id);
+      setMuteUntil(null);
+      setShowRetentionMenu(false);
+    } catch (err) { alert(err.message); }
+  }
+
+  async function nudgePartner() {
+    try {
+      await api.sendNudge(partnerName);
+      // Eigenes Fenster auch leicht wackeln zur Bestätigung
+      document.body?.animate?.([{ transform: "translate(0,0)" }, { transform: "translate(-4px,1px)" }, { transform: "translate(4px,-1px)" }, { transform: "translate(0,0)" }], { duration: 240, iterations: 1 });
+    } catch (err) { alert(err.message); }
+  }
+
+  function onTextChange(v) {
+    setText(v);
+    const now = Date.now();
+    if (now - typingTimer.current > 2000) {
+      typingTimer.current = now;
+      api.sendTyping(partnerName, null).catch(() => {});
     }
   }
 
@@ -228,7 +290,13 @@ export default function ChatPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "linear-gradient(180deg, #5fb0ff 0%, #2d7dd2 55%, #1f5fa8 100%)", color: "#fff", textShadow: "0 1px 0 rgba(0,0,0,0.25)", fontFamily: "Arial, sans-serif", borderBottom: "1px solid rgba(0,0,0,0.15)" }}>
               <Link href="/messenger" style={{ color: "#fff", fontSize: 18, textDecoration: "none" }} aria-label="Zurück">←</Link>
               <Link href={`/u/${partner.username}`} style={{ flexShrink: 0 }}>
-                <Avatar url={partner.avatarUrl} name={partner.displayName} className="vv-avatar vv-avatar-sm" />
+                <PresenceAvatar
+                  url={partner.avatarUrl}
+                  name={partner.displayName}
+                  presenceInfo={getPresence({ statusText: partner.mood, presence: partner.presence, online: partner.online })}
+                  size={38}
+                  className="vv-avatar vv-avatar-sm"
+                />
               </Link>
               <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
                 <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "Arial, sans-serif" }}>
@@ -240,9 +308,17 @@ export default function ChatPage() {
                   </strong>
                 </div>
                 <div style={{ fontSize: 11, opacity: 0.9, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: partner.online ? "#0aff44" : "#bbb", boxShadow: partner.online ? "0 0 5px #0aff44" : "none" }} />
-                  {partner.online ? "online" : presenceLabel(partner.lastSeen)}
+                  {(() => {
+                    const p = getPresence({ statusText: partner.mood, presence: partner.presence, online: partner.online });
+                    return <span style={{ color: p.color === "#cbd5e1" ? "#ffffff" : p.color, fontWeight: "bold" }}>● {p.label}</span>;
+                  })()}
+                  {!partner.online && <> · {presenceLabel(partner.lastSeen)}</>}
                   {partner.mood ? <> · <em style={{ opacity: 0.9 }}>{partner.mood}</em></> : null}
+                  {muteUntil !== null && (
+                    <span title="Du hast diesen Chat stummgeschaltet" style={{ marginLeft: 4, background: "rgba(255,255,255,0.18)", padding: "1px 6px", borderRadius: 8 }}>
+                      🔕 {muteUntil === 0 ? "stumm" : `bis ${new Date(muteUntil).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                    </span>
+                  )}
                   {retention.retentionDays > 0 && (
                     <span title="Nachrichten werden in diesem Chat automatisch gelöscht" style={{ marginLeft: 4, background: "rgba(255,255,255,0.18)", padding: "1px 6px", borderRadius: 8 }}>
                       ⏳ {retention.retentionDays === 1 ? "24h" : `${retention.retentionDays} Tage`}
@@ -250,6 +326,12 @@ export default function ChatPage() {
                   )}
                 </div>
               </div>
+              <button
+                type="button" onClick={nudgePartner}
+                title="Anklopfen (MSN-Nudge) — wackelt drüben das Fenster"
+                aria-label="Anklopfen"
+                style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 14, marginRight: 4 }}
+              >👋</button>
               <div style={{ position: "relative" }}>
                 <button
                   type="button"
@@ -261,8 +343,31 @@ export default function ChatPage() {
                 {showRetentionMenu && (
                   <>
                     <div onClick={() => setShowRetentionMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 5 }} />
-                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 10, background: "#fff", color: "#222", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", minWidth: 230, padding: 8, fontFamily: "Arial, sans-serif", textShadow: "none" }}>
+                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 10, background: "#fff", color: "#222", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", minWidth: 240, padding: 8, fontFamily: "Arial, sans-serif", textShadow: "none" }}>
                       <div style={{ padding: "6px 8px", fontSize: 12, color: "#555", borderBottom: "1px solid #eee" }}>
+                        🔕 Diesen Chat stumm schalten
+                      </div>
+                      {[
+                        { ms: 15 * 60_000, label: "15 Minuten" },
+                        { ms: 60 * 60_000, label: "1 Stunde" },
+                        { ms: 8 * 3600_000, label: "8 Stunden" },
+                        { ms: 24 * 3600_000, label: "24 Stunden" },
+                        { ms: 7 * 24 * 3600_000, label: "7 Tage" },
+                        { ms: 0, label: "Bis ich's wieder anmache" },
+                      ].map((o) => (
+                        <button key={o.label} type="button" onClick={() => muteFor(o.ms)}
+                          style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", background: "none", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13, color: "#222", marginTop: 2 }}>
+                          {o.label}
+                        </button>
+                      ))}
+                      {muteUntil !== null && (
+                        <button type="button" onClick={unmute}
+                          style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", background: "none", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13, color: "#11a047", marginTop: 4 }}>
+                          🔔 Wieder anmachen
+                        </button>
+                      )}
+
+                      <div style={{ padding: "6px 8px", fontSize: 12, color: "#555", borderTop: "1px solid #eee", marginTop: 4 }}>
                         ⏳ Chat-Verlauf automatisch löschen
                       </div>
                       {[
@@ -360,6 +465,11 @@ export default function ChatPage() {
             </div>
 
             <form className="vv-chat-input-row" onSubmit={submit} style={{ background: "#fff", borderTop: "1px solid #eee", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
+              {partnerTyping > 0 && (
+                <div style={{ fontSize: 11, color: "#1f5fa8", padding: "2px 8px", fontStyle: "italic" }}>
+                  {partner.displayName} schreibt<span className="vv-typing-dots">…</span>
+                </div>
+              )}
               {pendingImage && (
                 <div style={{ position: "relative", margin: "4px 6px", display: "inline-block", maxWidth: 160 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -377,7 +487,7 @@ export default function ChatPage() {
                   className="vv-input"
                   placeholder={`Schreib an ${partner.displayName}…`}
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => onTextChange(e.target.value)}
                 />
                 <button type="submit" className="vv-btn vv-btn-pink">▶</button>
               </div>

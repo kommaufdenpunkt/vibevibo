@@ -23,6 +23,8 @@ export default function EditProfilePage() {
       interests: (me.interests || []).join(", "),
       bgMusic: me.bgMusic || "",
       bgMusicUrl: me.bgMusicUrl || "",
+      soundPack: me.soundPack || "icq",
+      presence: me.presence || "online",
     });
   }, [me, loading, router]);
 
@@ -44,6 +46,7 @@ export default function EditProfilePage() {
         bgMusic: form.bgMusic.trim(),
         bgMusicUrl: form.bgMusicUrl.trim(),
       });
+      await api.updateMyPrefs({ soundPack: form.soundPack, presence: form.presence });
       await refresh();
       router.push("/profile");
       router.refresh();
@@ -121,6 +124,45 @@ export default function EditProfilePage() {
           <input className="vv-input" placeholder="https://www.youtube.com/watch?v=..." value={form.bgMusicUrl} onChange={(e) => up("bgMusicUrl", e.target.value)} />
           <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>
             💡 Kopier den Link eines YouTube-Videos rein. Besucher deines Profils sehen einen Play-Button und können deinen Song hören.
+          </div>
+        </div>
+
+        <div className="vv-card">
+          <h3>🔔 Sounds &amp; Status</h3>
+
+          <label><strong>Benachrichtigungs-Sound</strong></label>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8, marginTop: 6 }}>
+            {[
+              { v: "icq", label: "ICQ „Oh-Oh“" },
+              { v: "msn", label: "MSN „Pling“" },
+              { v: "aim", label: "AIM Tür" },
+              { v: "silent", label: "Stille" },
+            ].map((o) => (
+              <label key={o.v} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${form.soundPack === o.v ? "#ff3e9d" : "#ddd"}`, borderRadius: 10, background: form.soundPack === o.v ? "#fff5fb" : "#fff", cursor: "pointer", fontSize: 13 }}>
+                <input type="radio" name="soundPack" value={o.v} checked={form.soundPack === o.v} onChange={() => up("soundPack", o.v)} />
+                {o.label}
+              </label>
+            ))}
+          </div>
+          <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>Gruppen-Nachrichten kommen immer im MSN-Pling, egal welcher Pack — außer du wählst „Stille".</div>
+
+          <label className="vv-mt-12"><strong>MSN-Status</strong></label>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8, marginTop: 6 }}>
+            {[
+              { v: "online",    label: "🟢 Online" },
+              { v: "away",      label: "🟡 Abwesend" },
+              { v: "busy",      label: "🔴 Beschäftigt" },
+              { v: "invisible", label: "⚪ Unsichtbar" },
+            ].map((o) => (
+              <label key={o.v} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${form.presence === o.v ? "#ff3e9d" : "#ddd"}`, borderRadius: 10, background: form.presence === o.v ? "#fff5fb" : "#fff", cursor: "pointer", fontSize: 13 }}>
+                <input type="radio" name="presence" value={o.v} checked={form.presence === o.v} onChange={() => up("presence", o.v)} />
+                {o.label}
+              </label>
+            ))}
+          </div>
+          <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>
+            Dein Status-Text („chillen", „lernen", „im Bett"…) färbt den Avatar-Ring automatisch ein.
+            Mit „Unsichtbar" siehst du für andere wie offline aus, kannst aber selber sehen, wer online ist.
           </div>
         </div>
 

@@ -34,10 +34,12 @@ export async function GET(_req, { params }) {
   const retention = getConversationRetention(me.id, other.id);
   return NextResponse.json({
     partner: {
+      id: other.id,
       username: other.username,
       displayName: other.displayName,
       emoji: other.emoji,
       mood: other.mood,
+      presence: other.presence,
       lastSeen: other.lastSeen,
       online: isOnline(other.lastSeen),
       gender: other.gender,
