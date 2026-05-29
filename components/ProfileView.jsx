@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import MusicPlayer from "./MusicPlayer";
 import Pinnwand from "./Pinnwand";
 import GiftShelf from "./GiftShelf";
@@ -13,6 +13,30 @@ import Gaestebuch from "./Gaestebuch";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
+
+// Bild im Browser auf 400x400 verkleinern (mittig beschnitten) -> kleines JPEG
+function fileToAvatarDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const size = 400;
+        const canvas = document.createElement("canvas");
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale, h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 function StatPill({ icon, label, value }) {
   return (
@@ -34,8 +58,40 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
   const { me } = useMe();
   const [toast, setToast] = useState(null);
   const [wallTab, setWallTab] = useState("pinnwand");
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const fileRef = useRef(null);
 
   const isOwner = me?.username === profile.username;
+
+  function showToast(msg, ms = 2500) {
+    setToast(msg);
+    setTimeout(() => setToast(null), ms);
+  }
+
+  async function onAvatarPick(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadBusy(true);
+    try {
+      const dataUrl = await fileToAvatarDataUrl(file);
+      const res = await api.uploadPic(profile.username, dataUrl);
+      if (res.status === "approved") {
+        // Neu hochgeladenes Bild automatisch als Hauptbild (⭐) setzen
+        try { await api.setPrimaryPic(res.id); } catch { /* ignore */ }
+        showToast("⭐ Neues Hauptbild!");
+      } else if (res.status === "pending") {
+        showToast("⏳ In Prüfung – wird nach Freigabe sichtbar.", 4000);
+      } else {
+        showToast("🚫 Abgelehnt: " + (res.reason || "verstößt gegen die Regeln"), 4500);
+      }
+      onChange?.();
+    } catch (err) {
+      showToast("Fehler: " + err.message, 4000);
+    } finally {
+      setUploadBusy(false);
+    }
+  }
 
   async function gruscheln() {
     if (!me) { alert("Bitte einloggen."); return; }
@@ -61,17 +117,65 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
         <div style={{ height: 90, background: bannerByGender(profile.gender) }} />
         <div style={{ padding: "0 18px 16px", display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: 16 }}>
           {/* Avatar-Kreis ueberlappt das Banner */}
-          <div style={{ marginTop: -54, width: 108, height: 108, borderRadius: "50%", border: "4px solid #fff", overflow: "hidden", boxShadow: "0 4px 14px rgba(0,0,0,0.22)", flexShrink: 0, position: "relative", background: "#f4f4f7" }}>
+          <div
+            onClick={isOwner && !uploadBusy ? () => fileRef.current?.click() : undefined}
+            title={isOwner ? "Klicken zum Hochladen eines neuen Profilbilds" : undefined}
+            style={{
+              marginTop: -54, width: 108, height: 108, borderRadius: "50%",
+              border: "4px solid #fff", overflow: "hidden",
+              boxShadow: "0 4px 14px rgba(0,0,0,0.22)",
+              flexShrink: 0, position: "relative", background: "#f4f4f7",
+              cursor: isOwner && !uploadBusy ? "pointer" : "default",
+            }}
+          >
             <Avatar
               url={profile.avatarUrl}
               name={profile.displayName}
               className=""
               style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}
             />
+            {/* Pulsierender Online-Punkt (klassisch ICQ-gruen) */}
             {profile.online && (
-              <span style={{ position: "absolute", bottom: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "#0aff44", border: "3px solid #fff", boxShadow: "0 0 8px rgba(10,255,68,0.7)" }} />
+              <span aria-hidden="true" style={{
+                position: "absolute", bottom: 6, right: 6,
+                width: 18, height: 18, borderRadius: "50%",
+                background: "#0aff44",
+                border: "3px solid #fff",
+                boxShadow: "0 0 0 1px rgba(10,255,68,0.45), 0 0 10px rgba(10,255,68,0.7)",
+                animation: "pulse 1.5s infinite",
+              }} />
+            )}
+            {/* Owner: Kamera-Badge (klickbar via Wrapper) */}
+            {isOwner && (
+              <span aria-hidden="true" style={{
+                position: "absolute", top: 4, right: 4,
+                width: 30, height: 30, borderRadius: "50%",
+                background: "#ff3e9d", color: "#fff",
+                border: "2px solid #fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 14, boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                pointerEvents: "none",
+              }}>{uploadBusy ? "…" : "📷"}</span>
+            )}
+            {/* Hover-Hint am Fuss des Avatars */}
+            {isOwner && !uploadBusy && (
+              <span style={{
+                position: "absolute", left: 0, right: 0, bottom: 0,
+                padding: "2px 0", background: "rgba(0,0,0,0.55)", color: "#fff",
+                fontSize: 9, textAlign: "center", letterSpacing: 0.5,
+                pointerEvents: "none",
+              }}>📷 ÄNDERN</span>
             )}
           </div>
+          {isOwner && (
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              onChange={onAvatarPick}
+            />
+          )}
 
           {/* Identitaet */}
           <div style={{ flex: "1 1 240px", paddingTop: 12, minWidth: 0 }}>
