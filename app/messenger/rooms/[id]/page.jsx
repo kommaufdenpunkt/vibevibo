@@ -194,6 +194,13 @@ export default function RoomChatPage() {
               )}
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("vv-start-call", { detail: { type: "group", roomId, withVideo: true } }))}
+            title="Live starten (Video, bis 6)"
+            aria-label="Live"
+            style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 14, marginRight: 4 }}
+          >🎥</button>
           <div style={{ position: "relative" }}>
             <button type="button" onClick={() => setMuteMenu((v) => !v)} title="Optionen"
               style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 16 }}>⋮</button>

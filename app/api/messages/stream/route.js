@@ -67,6 +67,14 @@ export async function GET() {
           });
         } else if (type === "rtc") {
           send("rtc", data);
+        } else if (type === "call-incoming") {
+          send("call-incoming", data);
+        } else if (type === "call-peer-joined") {
+          send("call-peer-joined", data);
+        } else if (type === "call-peer-left") {
+          send("call-peer-left", data);
+        } else if (type === "call-ended") {
+          send("call-ended", data);
         }
       });
 

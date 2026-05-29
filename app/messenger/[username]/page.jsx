@@ -327,6 +327,20 @@ export default function ChatPage() {
                 </div>
               </div>
               <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("vv-start-call", { detail: { type: "1on1", partnerUsername: partnerName, withVideo: false } }))}
+                title="Audio-Anruf"
+                aria-label="Anrufen"
+                style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 14, marginRight: 4 }}
+              >📞</button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("vv-start-call", { detail: { type: "1on1", partnerUsername: partnerName, withVideo: true } }))}
+                title="Video-Anruf"
+                aria-label="Video"
+                style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 14, marginRight: 4 }}
+              >📹</button>
+              <button
                 type="button" onClick={nudgePartner}
                 title="Anklopfen (MSN-Nudge) — wackelt drüben das Fenster"
                 aria-label="Anklopfen"
