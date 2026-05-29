@@ -62,9 +62,15 @@ export default function PicGallery({ username, isOwner, onAvatarChange }) {
     try {
       const dataUrl = await fileToDataUrl(file);
       const res = await api.uploadPic(username, dataUrl);
-      if (res.status === "approved") setMsg("✅ Bild ist freigegeben!");
-      else if (res.status === "pending") setMsg("⏳ Bild in Prüfung – Fidolin/Admin gibt es bald frei.");
-      else setMsg("🚫 Abgelehnt: " + (res.reason || "verstößt gegen die Regeln"));
+      if (res.status === "approved") {
+        // Neues Bild automatisch als Hauptbild setzen (konsistent mit Avatar-Klick)
+        try { await api.setPrimaryPic(res.id); } catch { /* ignore */ }
+        setMsg("⭐ Neues Hauptbild!");
+      } else if (res.status === "pending") {
+        setMsg("⏳ Bild in Prüfung – Fidolin/Admin gibt es bald frei.");
+      } else {
+        setMsg("🚫 Abgelehnt: " + (res.reason || "verstößt gegen die Regeln"));
+      }
       await load();
       onAvatarChange?.();
       setTimeout(() => setMsg(""), 4000);
