@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
+import InstallTeaser from "./InstallTeaser";
 
 const HOOKS = [
   "Tokio Hotel auf einem Klapphandy",
@@ -517,6 +518,7 @@ export default function Landing() {
           <div style={{ fontSize: 11, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,0.4)", marginTop: 6, opacity: 0.92 }}>
             Für iPhone &amp; Android – mit Schritt-für-Schritt-Anleitung
           </div>
+          <InstallTeaser />
         </div>
 
         <div className="vv-splash-mini-disclaimer">
