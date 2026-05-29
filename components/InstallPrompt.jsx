@@ -29,16 +29,19 @@ export default function InstallPrompt() {
       setShow(true);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
+    // Manueller Trigger (z.B. vom Messenger-Button)
+    const onManual = () => { setShow(true); try { sessionStorage.removeItem("vv_install_dismissed"); } catch {} };
+    window.addEventListener("vv-pwa-install", onManual);
 
     // iOS Safari: kein beforeinstallprompt -> eigene Anleitung
     const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
     const isSafari = /safari/i.test(window.navigator.userAgent) && !/crios|fxios/i.test(window.navigator.userAgent);
     if (isIos && isSafari) {
       const t = setTimeout(() => { setIosHint(true); setShow(true); }, 2500);
-      return () => { clearTimeout(t); window.removeEventListener("beforeinstallprompt", onPrompt); };
+      return () => { clearTimeout(t); window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("vv-pwa-install", onManual); };
     }
 
-    return () => window.removeEventListener("beforeinstallprompt", onPrompt);
+    return () => { window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("vv-pwa-install", onManual); };
   }, []);
 
   function dismiss() {

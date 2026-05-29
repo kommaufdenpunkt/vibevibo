@@ -10,7 +10,20 @@ import SmileyPicker from "@/components/SmileyPicker";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import VoiceMessage from "@/components/VoiceMessage";
 import Avatar from "@/components/Avatar";
+import { ColoredName } from "@/components/GenderAge";
+import MentionText from "@/components/MentionText";
 import { useMessageStream } from "@/lib/useEventStream";
+
+function timeShort(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  return d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+}
+function presenceLabel(lastSeen) {
+  const diff = Date.now() - (lastSeen || 0);
+  if (diff < 90 * 1000) return "online";
+  return "zuletzt " + relTime(lastSeen);
+}
 
 export default function ChatPage() {
   const params = useParams();
@@ -49,28 +62,18 @@ export default function ChatPage() {
     reload();
   }, [me, loading, router, reload]);
 
+  // Beim SSE-Event in diesem Chat -> neu laden (markiert auch als gelesen)
   useMessageStream(!!me, (ev) => {
     const inThisChat =
       (ev.from?.username === partnerName && ev.to?.username === me?.username) ||
       (ev.from?.username === me?.username && ev.to?.username === partnerName);
-    if (inThisChat) {
-      // Sprachnachrichten brauchen die Audio-Daten -> volle Konversation neu laden
-      if (ev.kind === "voice") {
-        api.getConversation(partnerName).then((d) => setMessages(d.messages)).catch(() => {});
-      } else {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === ev.id)) return prev;
-          return [...prev, { id: ev.id, text: ev.text, at: ev.at, fromMe: ev.fromMe, kind: "text" }];
-        });
-      }
-    }
-    api.listConversations().then((d) => setConversations(d.conversations)).catch(() => {});
+    if (inThisChat) reload();
+    else api.listConversations().then((d) => setConversations(d.conversations)).catch(() => {});
   });
 
   async function sendVoice(audioUrl, onceOnly) {
     await api.sendVoice(partnerName, audioUrl, onceOnly);
-    const d = await api.getConversation(partnerName);
-    setMessages(d.messages);
+    await reload();
   }
 
   useEffect(() => {
@@ -99,73 +102,140 @@ export default function ChatPage() {
       </div>
     );
   }
-  if (!partner) return <div className="vv-card">Lädt...</div>;
+  if (!partner) return <div className="vv-card">Lädt…</div>;
+
+  // Zeitstempel nur anzeigen, wenn Gruppe wechselt (>5 Min Pause oder Wechsel des Sprechers)
+  function showTimeBetween(prev, cur) {
+    if (!prev) return true;
+    if (prev.fromMe !== cur.fromMe) return true;
+    return cur.at - prev.at > 5 * 60 * 1000;
+  }
 
   return (
-    <div className="vv-card">
-      <h2>✉️ Chat mit {partner.displayName}</h2>
-      <div className="vv-msg-list">
-        <div className="vv-conversation-list">
-          {conversations.length === 0 && <div className="vv-muted">Noch keine Gespräche.</div>}
-          {conversations.map((c) => (
-            <Link
-              key={c.partnerUsername}
-              href={`/messenger/${c.partnerUsername}`}
-              className={`vv-conv-entry${c.partnerUsername === partnerName ? " active" : ""}`}
-            >
-              <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar vv-avatar-sm" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="vv-conv-name">{c.partnerDisplayName}</div>
-                <div className="vv-conv-preview" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {c.lastText}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        <div className="vv-chat-window">
-          <div className="vv-row" style={{ paddingBottom: 6, borderBottom: "1px dotted #999" }}>
-            <Link href={`/u/${partner.username}`}>
-              <Avatar url={partner.avatarUrl} name={partner.displayName} className="vv-avatar vv-avatar-sm" />
-            </Link>
-            <div>
-              <strong>{partner.displayName}</strong>
-              <div className="vv-muted">@{partner.username} · {partner.mood}</div>
-            </div>
-          </div>
-          <div className="vv-chat-messages" ref={scrollRef}>
-            {messages.length === 0 && (
-              <div className="vv-muted vv-center" style={{ marginTop: 30 }}>
-                Sag „Hi 👋"!
-              </div>
-            )}
-            {messages.map((m) => (
-              <div key={m.id} className={`vv-chat-row${m.fromMe ? " vv-me" : ""}`}>
-                <div>
-                  <div className={`vv-chat-bubble${m.fromMe ? " vv-me" : ""}`}>
-                    {m.kind === "voice" ? (
-                      <VoiceMessage message={m} fromMe={m.fromMe} onConsumed={reload} />
-                    ) : (
-                      m.text
+    <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 0 }}>
+        <div className="vv-msg-list" style={{ gridTemplateColumns: "230px minmax(0,1fr)" }}>
+          {/* Sidebar: Gespraeche */}
+          <div className="vv-conversation-list">
+            <div style={{ padding: "8px 10px", fontWeight: "bold", borderBottom: "1px solid #eee" }}>✉️ Chats</div>
+            {conversations.length === 0 && <div className="vv-muted" style={{ padding: 10 }}>Keine Gespräche.</div>}
+            {conversations.map((c) => {
+              const isActive = c.partnerUsername === partnerName;
+              return (
+                <Link
+                  key={c.partnerUsername}
+                  href={`/messenger/${c.partnerUsername}`}
+                  className={`vv-conv-entry${isActive ? " active" : ""}`}
+                  style={{ alignItems: "center" }}
+                >
+                  <div style={{ position: "relative", flexShrink: 0 }}>
+                    <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar vv-avatar-sm" />
+                    {c.unread > 0 && (
+                      <span style={{ position: "absolute", top: -4, right: -4, minWidth: 18, height: 18, padding: "0 5px", background: "#ff3e9d", color: "#fff", borderRadius: 9, fontSize: 11, fontWeight: "bold", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+                        {c.unread > 99 ? "99+" : c.unread}
+                      </span>
                     )}
                   </div>
-                  <div className="vv-chat-meta" style={{ textAlign: m.fromMe ? "right" : "left" }}>{relTime(m.at)}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="vv-conv-name" style={{ display: "flex", justifyContent: "space-between", gap: 4 }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <ColoredName gender={c.partnerGender} age={c.partnerAge} name={c.partnerDisplayName} />
+                      </span>
+                      <span className="vv-muted" style={{ fontSize: 10, flexShrink: 0 }}>{relTime(c.at)}</span>
+                    </div>
+                    <div className="vv-conv-preview" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: c.unread > 0 ? "bold" : "normal" }}>
+                      {c.fromMe ? "Du: " : ""}{c.lastText}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Chat-Fenster */}
+          <div className="vv-chat-window">
+            {/* Header (sticky-fühlend) */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "linear-gradient(180deg, #5fb0ff 0%, #2d7dd2 55%, #1f5fa8 100%)", color: "#fff", textShadow: "0 1px 0 rgba(0,0,0,0.25)", fontFamily: "Arial, sans-serif", borderBottom: "1px solid rgba(0,0,0,0.15)" }}>
+              <Link href="/messenger" style={{ color: "#fff", fontSize: 18, textDecoration: "none" }} aria-label="Zurück">←</Link>
+              <Link href={`/u/${partner.username}`} style={{ flexShrink: 0 }}>
+                <Avatar url={partner.avatarUrl} name={partner.displayName} className="vv-avatar vv-avatar-sm" />
+              </Link>
+              <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
+                <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "Arial, sans-serif" }}>
+                  <strong>
+                    {(partner.gender === "m" || partner.gender === "w") && (
+                      <span style={{ marginRight: 4 }}>{partner.gender}{partner.age != null ? ` ${partner.age}` : ""}</span>
+                    )}
+                    {partner.displayName}
+                  </strong>
+                </div>
+                <div style={{ fontSize: 11, opacity: 0.9, display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: partner.online ? "#0aff44" : "#bbb", boxShadow: partner.online ? "0 0 5px #0aff44" : "none" }} />
+                  {partner.online ? "online" : presenceLabel(partner.lastSeen)}
+                  {partner.mood ? <> · <em style={{ opacity: 0.9 }}>{partner.mood}</em></> : null}
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Nachrichten – heller ICQ/MSN-Hintergrund */}
+            <div className="vv-chat-messages" ref={scrollRef} style={{ background: "linear-gradient(180deg, #eef3fb 0%, #f8fafc 100%)" }}>
+              {messages.length === 0 && (
+                <div className="vv-muted vv-center" style={{ marginTop: 30 }}>Sag „Hi 👋"!</div>
+              )}
+              {messages.map((m, idx) => {
+                const prev = messages[idx - 1];
+                const showTime = showTimeBetween(prev, m);
+                const groupStart = !prev || prev.fromMe !== m.fromMe;
+                return (
+                  <div key={m.id} style={{ marginBottom: 2 }}>
+                    {showTime && (
+                      <div style={{ textAlign: "center", fontSize: 10, color: "#888", margin: "10px 0 4px" }}>{timeShort(m.at)}</div>
+                    )}
+                    <div style={{ display: "flex", justifyContent: m.fromMe ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 6 }}>
+                      {!m.fromMe && (
+                        <span style={{ width: 26, flexShrink: 0, visibility: groupStart ? "visible" : "hidden" }}>
+                          <Avatar url={partner.avatarUrl} name={partner.displayName} className="vv-avatar" style={{ width: 26, height: 26 }} />
+                        </span>
+                      )}
+                      <div style={{
+                        maxWidth: "72%", padding: m.kind === "voice" ? "6px 8px" : "8px 12px", borderRadius: 16,
+                        background: m.fromMe ? "linear-gradient(135deg, #2d7dd2, #5fb0ff)" : "#fff",
+                        color: m.fromMe ? "#fff" : "#222",
+                        border: m.fromMe ? "none" : "1px solid #d8def0",
+                        boxShadow: m.fromMe ? "0 2px 6px rgba(45,125,210,0.28)" : "0 1px 2px rgba(0,0,0,0.06)",
+                        borderBottomRightRadius: m.fromMe ? 4 : 16,
+                        borderBottomLeftRadius: m.fromMe ? 16 : 4,
+                        wordBreak: "break-word", fontFamily: "Arial, sans-serif", fontSize: 14, lineHeight: 1.35,
+                      }}>
+                        {m.kind === "voice" ? (
+                          <VoiceMessage message={m} fromMe={m.fromMe} onConsumed={reload} />
+                        ) : (
+                          <MentionText text={m.text} color={m.fromMe ? "#e6f0ff" : "#c2185b"} />
+                        )}
+                      </div>
+                      {m.fromMe && (
+                        <span style={{ fontSize: 10, color: m.readAt ? "#2a7fff" : "#bbb", marginBottom: 2 }}>
+                          {m.readAt ? "✓✓" : "✓"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <form className="vv-chat-input-row" onSubmit={submit} style={{ background: "#fff", borderTop: "1px solid #eee" }}>
+              <SmileyPicker onPick={(s) => setText((t) => t + s)} />
+              <VoiceRecorder onSend={sendVoice} />
+              <input
+                className="vv-input"
+                placeholder={`Schreib an ${partner.displayName}…`}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+              <button type="submit" className="vv-btn vv-btn-pink">▶</button>
+            </form>
           </div>
-          <form className="vv-chat-input-row" onSubmit={submit}>
-            <SmileyPicker onPick={(s) => setText((t) => t + s)} />
-            <VoiceRecorder onSend={sendVoice} />
-            <input
-              className="vv-input"
-              placeholder={`Schreib was an ${partner.displayName}...`}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <button type="submit" className="vv-btn vv-btn-pink">▶</button>
-          </form>
         </div>
       </div>
     </div>

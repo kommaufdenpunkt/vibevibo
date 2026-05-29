@@ -12,9 +12,12 @@ export async function GET() {
     partnerEmoji: c.partner_emoji,
     partnerAvatar: c.partner_avatar_status === "approved" ? (c.partner_avatar_url || "") : "",
     partnerLastSeen: c.partner_last_seen,
+    partnerGender: c.partner_gender,
+    partnerAge: c.partner_age,
     lastText: c.last_text,
     at: c.at,
     fromMe: c.last_from === me.id,
+    unread: c.unread || 0,
   }));
   return NextResponse.json({ conversations });
 }
