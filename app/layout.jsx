@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import InstallPrompt from "@/components/InstallPrompt";
 import ScreenshotGuard from "@/components/ScreenshotGuard";
 import MessageNotifier from "@/components/MessageNotifier";
+import ChatOverlay from "@/components/ChatOverlay";
 import { MeProvider } from "@/lib/useMe";
 
 export const metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
           <InstallPrompt />
           <ScreenshotGuard />
           <MessageNotifier />
+          <ChatOverlay />
         </MeProvider>
       </body>
     </html>
