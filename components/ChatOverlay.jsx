@@ -212,9 +212,7 @@ export default function ChatOverlay() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, view]);
 
-  if (!me || hide) return null;
-
-  /* ---------- Filterung + Sortierung ---------- */
+  /* ---------- Filterung + Sortierung (alle Hooks VOR dem early return) ---------- */
 
   const q = query.trim().toLowerCase();
   const convoMap = useMemo(() => {
@@ -243,6 +241,8 @@ export default function ChatOverlay() {
     if (!q) return rooms;
     return rooms.filter((r) => (r.name || "").toLowerCase().includes(q));
   }, [rooms, q]);
+
+  if (!me || hide) return null;
 
   const totalUnread =
     conversations.reduce((s, c) => s + (c.unread || 0), 0) +
