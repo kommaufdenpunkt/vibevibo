@@ -5,6 +5,7 @@ import ScreenshotGuard from "@/components/ScreenshotGuard";
 import MessageNotifier from "@/components/MessageNotifier";
 import ChatOverlay from "@/components/ChatOverlay";
 import InstallHelp from "@/components/InstallHelp";
+import PushSetup from "@/components/PushSetup";
 import { MeProvider } from "@/lib/useMe";
 
 export const metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
           <MessageNotifier />
           <ChatOverlay />
           <InstallHelp />
+          <PushSetup />
         </MeProvider>
       </body>
     </html>

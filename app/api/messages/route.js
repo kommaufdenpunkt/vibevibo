@@ -3,6 +3,7 @@ import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
+import { sendPushToUser } from "@/lib/push";
 
 const MAX_IMG_BYTES = 700_000;
 const IMG_RE = /^data:image\/(png|jpeg|jpg|webp);base64,/;
@@ -51,6 +52,15 @@ export async function POST(req) {
     });
     publishMessage(row);
     addNotification({ userId: target.id, actorId: me.id, type: "message", targetType: "message", targetId: row.id, preview: "🎤 Sprachnachricht" });
+    sendPushToUser(target.id, {
+      title: me.displayName || me.username,
+      body: "🎤 Sprachnachricht",
+      url: `/messenger/${encodeURIComponent(me.username)}`,
+      tag: `vv-msg-${me.username}`,
+      fromUsername: me.username,
+      fromDisplayName: me.displayName || me.username,
+      kind: "voice",
+    }).catch(() => {});
     return NextResponse.json({ message: { ...row, audioUrl: undefined } });
   }
 
@@ -83,5 +93,19 @@ export async function POST(req) {
   const row = sendMessage(me.id, target.id, cleaned, { imageUrl: storedImage });
   publishMessage(row);
   addNotification({ userId: target.id, actorId: me.id, type: "message", targetType: "message", targetId: row.id, preview: cleaned || "📷 Bild" });
+
+  const previewText = cleaned
+    ? cleaned.slice(0, 140)
+    : (storedImage ? "📷 Bild" : "Nachricht");
+  sendPushToUser(target.id, {
+    title: me.displayName || me.username,
+    body: previewText,
+    url: `/messenger/${encodeURIComponent(me.username)}`,
+    tag: `vv-msg-${me.username}`,
+    fromUsername: me.username,
+    fromDisplayName: me.displayName || me.username,
+    kind: storedImage ? "image" : "text",
+  }).catch(() => {});
+
   return NextResponse.json({ message: row, imageNote });
 }

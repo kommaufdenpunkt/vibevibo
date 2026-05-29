@@ -62,6 +62,8 @@ export default function ChatPage() {
   const [text, setText] = useState("");
   const [pendingImage, setPendingImage] = useState(null);
   const [error, setError] = useState(null);
+  const [retention, setRetention] = useState({ retentionDays: 0, setBy: 0 });
+  const [showRetentionMenu, setShowRetentionMenu] = useState(false);
 
   const scrollRef = useRef(null);
   const imageRef = useRef(null);
@@ -84,6 +86,7 @@ export default function ChatPage() {
       ]);
       setPartner(chat.partner);
       setMessages(chat.messages);
+      setRetention(chat.retention || { retentionDays: 0, setBy: 0 });
       setConversations(list.conversations);
       setError(null);
     } catch (e) {
@@ -126,6 +129,24 @@ export default function ChatPage() {
       setText("");
       setPendingImage(null);
       if (res?.imageNote) alert(res.imageNote);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function updateRetention(days) {
+    if (days > 0) {
+      const label = days === 1 ? "24 Stunden" : days === 7 ? "7 Tagen" : "30 Tagen";
+      const ok = window.confirm(
+        `Chat-Verlauf nach ${label} automatisch löschen? Das gilt für beide Seiten und löscht auch ältere Nachrichten sofort.`
+      );
+      if (!ok) return;
+    }
+    try {
+      const res = await api.setChatRetention(partnerName, days);
+      setRetention(res.retention || { retentionDays: days, setBy: me?.id });
+      setShowRetentionMenu(false);
+      await reload();
     } catch (err) {
       alert(err.message);
     }
@@ -218,11 +239,61 @@ export default function ChatPage() {
                     {partner.displayName}
                   </strong>
                 </div>
-                <div style={{ fontSize: 11, opacity: 0.9, display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ fontSize: 11, opacity: 0.9, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: partner.online ? "#0aff44" : "#bbb", boxShadow: partner.online ? "0 0 5px #0aff44" : "none" }} />
                   {partner.online ? "online" : presenceLabel(partner.lastSeen)}
                   {partner.mood ? <> · <em style={{ opacity: 0.9 }}>{partner.mood}</em></> : null}
+                  {retention.retentionDays > 0 && (
+                    <span title="Nachrichten werden in diesem Chat automatisch gelöscht" style={{ marginLeft: 4, background: "rgba(255,255,255,0.18)", padding: "1px 6px", borderRadius: 8 }}>
+                      ⏳ {retention.retentionDays === 1 ? "24h" : `${retention.retentionDays} Tage`}
+                    </span>
+                  )}
                 </div>
+              </div>
+              <div style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowRetentionMenu((v) => !v)}
+                  title="Chat-Einstellungen"
+                  aria-label="Chat-Einstellungen"
+                  style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 16 }}
+                >⋮</button>
+                {showRetentionMenu && (
+                  <>
+                    <div onClick={() => setShowRetentionMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 5 }} />
+                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 10, background: "#fff", color: "#222", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", minWidth: 230, padding: 8, fontFamily: "Arial, sans-serif", textShadow: "none" }}>
+                      <div style={{ padding: "6px 8px", fontSize: 12, color: "#555", borderBottom: "1px solid #eee" }}>
+                        ⏳ Chat-Verlauf automatisch löschen
+                      </div>
+                      {[
+                        { d: 0, label: "Aus (manuell)" },
+                        { d: 1, label: "Nach 24 Stunden" },
+                        { d: 7, label: "Nach 7 Tagen" },
+                        { d: 30, label: "Nach 30 Tagen" },
+                      ].map((opt) => {
+                        const active = retention.retentionDays === opt.d;
+                        return (
+                          <button
+                            key={opt.d}
+                            type="button"
+                            onClick={() => updateRetention(opt.d)}
+                            style={{
+                              display: "block", width: "100%", textAlign: "left",
+                              padding: "8px 10px", background: active ? "#eef3fb" : "none",
+                              border: "none", borderRadius: 6, cursor: "pointer",
+                              fontSize: 13, color: "#222", marginTop: 2,
+                            }}
+                          >
+                            {active ? "✓ " : ""}{opt.label}
+                          </button>
+                        );
+                      })}
+                      <div style={{ padding: "6px 8px", fontSize: 11, color: "#888", borderTop: "1px solid #eee", marginTop: 4 }}>
+                        Gilt für beide Seiten dieses Chats. Sprachnachrichten mit „nur einmal anhören" verschwinden sofort nach dem Abspielen.
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
