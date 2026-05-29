@@ -6,12 +6,28 @@ import MessageNotifier from "@/components/MessageNotifier";
 import ChatOverlay from "@/components/ChatOverlay";
 import InstallHelp from "@/components/InstallHelp";
 import PushSetup from "@/components/PushSetup";
+import LiveCallShell from "@/components/LiveCallShell";
 import { MeProvider } from "@/lib/useMe";
 
 export const metadata = {
   title: "VibeVibo - die nostalgische Community",
   description:
     "VibeVibo bringt das Gefühl von MySpace, SchülerVZ, Jappy, Lokalisten und wer-kennt-wen zurück. Profile mit Hintergrundmusik, Pinnwand, Geschenke, Fotos, Gruppen und Echtzeit-Messenger.",
+  applicationName: "VibeVibo",
+  appleWebApp: {
+    capable: true,
+    title: "VibeVibo",
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: { telephone: false },
+};
+
+export const viewport = {
+  themeColor: "#ff3e9d",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }) {
@@ -26,6 +42,7 @@ export default function RootLayout({ children }) {
           <ChatOverlay />
           <InstallHelp />
           <PushSetup />
+          <LiveCallShell />
         </MeProvider>
       </body>
     </html>
