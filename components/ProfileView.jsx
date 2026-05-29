@@ -49,9 +49,10 @@ function StatPill({ icon, label, value }) {
 }
 
 function bannerByGender(g) {
-  if (g === "m") return "linear-gradient(135deg, #2d7dd2 0%, #5fb0ff 60%, #8ec9ff 100%)";
-  if (g === "w") return "linear-gradient(135deg, #ff3e9d 0%, #ff8fd0 60%, #ffc1e0 100%)";
-  return "linear-gradient(135deg, #7c5cf5 0%, #a87bff 60%, #c8a8ff 100%)";
+  // weichere, weniger grelle Farbverlaeufe
+  if (g === "m") return "linear-gradient(135deg, #4ea1e6 0%, #7fc2ff 60%, #a8d4ff 100%)";
+  if (g === "w") return "linear-gradient(135deg, #ff7fbf 0%, #ffa6d2 60%, #ffd3e6 100%)";
+  return "linear-gradient(135deg, #9d83f5 0%, #c0a6ff 60%, #ddc7ff 100%)";
 }
 
 export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, visitCount = 0, visitors = [], onChange }) {
@@ -114,16 +115,16 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
 
       {/* === Profil-Kopf mit Banner === */}
       <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ height: 90, background: bannerByGender(profile.gender) }} />
+        <div style={{ height: 80, background: bannerByGender(profile.gender) }} />
         <div style={{ padding: "0 18px 16px", display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: 16 }}>
           {/* Avatar-Kreis ueberlappt das Banner */}
           <div
             onClick={isOwner && !uploadBusy ? () => fileRef.current?.click() : undefined}
-            title={isOwner ? "Klicken zum Hochladen eines neuen Profilbilds" : undefined}
+            title={isOwner ? "Klicken um ein neues Profilbild hochzuladen" : undefined}
             style={{
-              marginTop: -54, width: 108, height: 108, borderRadius: "50%",
-              border: "4px solid #fff", overflow: "hidden",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.22)",
+              marginTop: -46, width: 96, height: 96, borderRadius: "50%",
+              border: "3px solid #fff", overflow: "hidden",
+              boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
               flexShrink: 0, position: "relative", background: "#f4f4f7",
               cursor: isOwner && !uploadBusy ? "pointer" : "default",
             }}
@@ -132,39 +133,30 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
               url={profile.avatarUrl}
               name={profile.displayName}
               className=""
-              style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}
+              style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}
             />
-            {/* Pulsierender Online-Punkt (klassisch ICQ-gruen) */}
+            {/* Klassischer pulsierender Online-Punkt */}
             {profile.online && (
               <span aria-hidden="true" style={{
-                position: "absolute", bottom: 6, right: 6,
-                width: 18, height: 18, borderRadius: "50%",
+                position: "absolute", bottom: 4, right: 4,
+                width: 14, height: 14, borderRadius: "50%",
                 background: "#0aff44",
-                border: "3px solid #fff",
-                boxShadow: "0 0 0 1px rgba(10,255,68,0.45), 0 0 10px rgba(10,255,68,0.7)",
+                border: "2px solid #fff",
+                boxShadow: "0 0 6px rgba(10,255,68,0.7)",
                 animation: "pulse 1.5s infinite",
               }} />
             )}
-            {/* Owner: Kamera-Badge (klickbar via Wrapper) */}
+            {/* Owner: kleine Kamera als Klick-Hint (Klick laeuft ueber Wrapper) */}
             {isOwner && (
               <span aria-hidden="true" style={{
-                position: "absolute", top: 4, right: 4,
-                width: 30, height: 30, borderRadius: "50%",
+                position: "absolute", top: 2, right: 2,
+                width: 24, height: 24, borderRadius: "50%",
                 background: "#ff3e9d", color: "#fff",
                 border: "2px solid #fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 14, boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                fontSize: 12, boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
                 pointerEvents: "none",
               }}>{uploadBusy ? "…" : "📷"}</span>
-            )}
-            {/* Hover-Hint am Fuss des Avatars */}
-            {isOwner && !uploadBusy && (
-              <span style={{
-                position: "absolute", left: 0, right: 0, bottom: 0,
-                padding: "2px 0", background: "rgba(0,0,0,0.55)", color: "#fff",
-                fontSize: 9, textAlign: "center", letterSpacing: 0.5,
-                pointerEvents: "none",
-              }}>📷 ÄNDERN</span>
             )}
           </div>
           {isOwner && (
@@ -182,14 +174,11 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
             <h2 style={{ margin: 0, lineHeight: 1.2, fontSize: 22 }}>
               <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} fallbackColor="#222" size="1em" />
             </h2>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6, alignItems: "center" }}>
-              <span style={{ background: "#e3e6f1", color: "#444", padding: "3px 10px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>@{profile.username}</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
+              <span style={{ background: "#e3e6f1", color: "#555", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>@{profile.username}</span>
               {profile.mood && (
-                <span style={{ background: "linear-gradient(90deg, #ffd6e7, #ffeaf3)", color: "#a01062", padding: "3px 10px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>💭 {profile.mood}</span>
+                <span style={{ background: "linear-gradient(90deg, #ffd6e7, #ffeaf3)", color: "#a01062", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>💭 {profile.mood}</span>
               )}
-              <span style={{ background: profile.online ? "#0aff44" : "#bbb", color: "#fff", padding: "2px 9px", borderRadius: 10, fontSize: 11, fontWeight: "bold", textShadow: "0 1px 0 rgba(0,0,0,0.2)" }}>
-                {profile.online ? "online" : "offline"}
-              </span>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
               <StatPill icon="👀" label="Besucher" value={visitCount} />
