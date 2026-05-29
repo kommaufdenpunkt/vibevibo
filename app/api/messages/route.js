@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
+import { moderateImage } from "@/lib/fidolin";
+
+const MAX_IMG_BYTES = 700_000;
+const IMG_RE = /^data:image\/(png|jpeg|jpg|webp);base64,/;
 
 export async function GET() {
   const me = await getSessionUser();
@@ -51,11 +55,33 @@ export async function POST(req) {
   }
 
   const cleaned = String(body.text || "").trim().slice(0, 2000);
-  if (!cleaned) return NextResponse.json({ error: "empty" }, { status: 400 });
-  const verdict = await checkTextPost(me.id, "nachricht", cleaned);
-  if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
-  const row = sendMessage(me.id, target.id, cleaned);
+  const rawImage = body.image ? String(body.image) : "";
+  if (!cleaned && !rawImage) return NextResponse.json({ error: "empty" }, { status: 400 });
+
+  if (cleaned) {
+    const verdict = await checkTextPost(me.id, "nachricht", cleaned);
+    if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
+  }
+
+  let storedImage = "";
+  let imageNote = "";
+  if (rawImage) {
+    if (!IMG_RE.test(rawImage) || rawImage.length > MAX_IMG_BYTES) {
+      return NextResponse.json({ error: "Ungültiges Bild (PNG/JPG/WEBP, max ~0.7 MB)." }, { status: 400 });
+    }
+    const v = await moderateImage(rawImage);
+    if (v.block) return NextResponse.json({ error: `Fidolin hat das Bild abgelehnt: ${v.reason || "Verstoß"}` }, { status: 422 });
+    if (v.undecided) imageNote = "Bild konnte nicht von der KI geprüft werden – nur Text gesendet.";
+    else storedImage = rawImage;
+  }
+
+  if (!cleaned && !storedImage) {
+    // Falls Text leer und Bild verworfen -> nichts senden
+    return NextResponse.json({ error: imageNote || "Nichts zu senden." }, { status: 422 });
+  }
+
+  const row = sendMessage(me.id, target.id, cleaned, { imageUrl: storedImage });
   publishMessage(row);
-  addNotification({ userId: target.id, actorId: me.id, type: "message", targetType: "message", targetId: row.id, preview: cleaned });
-  return NextResponse.json({ message: row });
+  addNotification({ userId: target.id, actorId: me.id, type: "message", targetType: "message", targetId: row.id, preview: cleaned || "📷 Bild" });
+  return NextResponse.json({ message: row, imageNote });
 }

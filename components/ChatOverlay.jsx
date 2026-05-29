@@ -9,6 +9,30 @@ import { useMessageStream } from "@/lib/useEventStream";
 import { relTime } from "@/lib/format";
 import Avatar from "./Avatar";
 import { ColoredName } from "./GenderAge";
+import SmileyPicker from "./SmileyPicker";
+
+function fileToChatImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const maxDim = 600;
+        let { width, height } = img;
+        const ratio = Math.min(1, maxDim / width, maxDim / height);
+        width = Math.round(width * ratio); height = Math.round(height * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function ChatOverlay() {
   const pathname = usePathname();
@@ -18,17 +42,24 @@ export default function ChatOverlay() {
   const [activePartner, setActivePartner] = useState(null);
   const [partnerInfo, setPartnerInfo] = useState(null);
   const [conversations, setConversations] = useState([]);
+  const [users, setUsers] = useState([]);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const [pendingImage, setPendingImage] = useState(null);
   const scrollRef = useRef(null);
+  const imageRef = useRef(null);
 
-  // Auf den eigentlichen Messenger-Seiten verstecken (sonst doppelt)
   const hide = !!pathname && pathname.startsWith("/messenger");
 
-  // Konversationsliste laden + alle 25s aktualisieren
   useEffect(() => {
     if (!me || hide) return;
-    const load = () => api.listConversations().then((d) => setConversations(d.conversations || [])).catch(() => {});
+    const load = async () => {
+      try {
+        const [c, u] = await Promise.all([api.listConversations(), api.listUsers()]);
+        setConversations(c.conversations || []);
+        setUsers((u.users || []).filter((x) => x.username !== me.username));
+      } catch { /* ignore */ }
+    };
     load();
     const t = setInterval(load, 25000);
     return () => clearInterval(t);
@@ -38,6 +69,7 @@ export default function ChatOverlay() {
     if (!partnerUsername) return;
     setActivePartner(partnerUsername);
     setView("chat");
+    setText(""); setPendingImage(null);
     try {
       const d = await api.getConversation(partnerUsername);
       setMessages(d.messages || []);
@@ -50,10 +82,10 @@ export default function ChatOverlay() {
     setActivePartner(null);
     setMessages([]);
     setPartnerInfo(null);
+    setText(""); setPendingImage(null);
     api.listConversations().then((d) => setConversations(d.conversations || [])).catch(() => {});
   }
 
-  // SSE: neue eingehende Nachricht -> Overlay aufploppen + den Chat aufmachen
   useMessageStream(!!me && !hide, (ev) => {
     if (!ev || ev.fromMe !== false) return;
     if (view === "chat" && ev.from?.username === activePartner) {
@@ -73,10 +105,11 @@ export default function ChatOverlay() {
   async function send(e) {
     e.preventDefault();
     const v = text.trim();
-    if (!v || !activePartner) return;
+    if ((!v && !pendingImage) || !activePartner) return;
     try {
-      await api.sendMessage(activePartner, v);
-      setText("");
+      const res = await api.sendMessage(activePartner, v, pendingImage);
+      setText(""); setPendingImage(null);
+      if (res?.imageNote) alert(res.imageNote);
       const d = await api.getConversation(activePartner);
       setMessages(d.messages || []);
     } catch (err) {
@@ -84,13 +117,35 @@ export default function ChatOverlay() {
     }
   }
 
+  async function onPickImage(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { alert("Bitte ein Bild auswählen."); return; }
+    try { setPendingImage(await fileToChatImage(file)); }
+    catch { alert("Bild konnte nicht geladen werden."); }
+  }
+
   if (!me || hide) return null;
 
+  // Konversations-Map fuer schnellen Lookup
+  const convoMap = {};
+  for (const c of conversations) convoMap[c.partnerUsername] = c;
+
+  // Merge: jeder User mit optionalem Convo-Info; sortieren: online > recency
+  const merged = users.map((u) => ({ user: u, convo: convoMap[u.username] || null }))
+    .sort((a, b) => {
+      if (a.user.online !== b.user.online) return a.user.online ? -1 : 1;
+      const aT = a.convo?.at || a.user.lastSeen || 0;
+      const bT = b.convo?.at || b.user.lastSeen || 0;
+      return bT - aT;
+    });
+
   const totalUnread = conversations.reduce((s, c) => s + (c.unread || 0), 0);
+  const onlineCount = users.filter((u) => u.online).length;
 
   return (
     <>
-      {/* Floating Chat-Button */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -118,13 +173,13 @@ export default function ChatOverlay() {
       {open && (
         <div style={{
           position: "fixed", bottom: 86, right: 18, zIndex: 99,
-          width: "min(360px, 92vw)", maxHeight: "75vh", height: view === "chat" ? "75vh" : "auto",
+          width: "min(360px, 92vw)", height: view === "chat" ? "75vh" : "min(72vh, 560px)",
           background: "#fff", borderRadius: 14, overflow: "hidden",
           boxShadow: "0 16px 50px rgba(0,0,0,0.34)",
           display: "flex", flexDirection: "column",
           fontFamily: "Arial, sans-serif",
         }}>
-          {/* Kopfleiste */}
+          {/* Kopfleiste (MSN-blau) */}
           <div style={{
             display: "flex", alignItems: "center", gap: 8, padding: "10px 12px",
             background: "linear-gradient(180deg, #5fb0ff 0%, #2d7dd2 55%, #1f5fa8 100%)",
@@ -136,7 +191,8 @@ export default function ChatOverlay() {
             )}
             {view === "list" ? (
               <div style={{ flex: 1, fontWeight: "bold", fontSize: 14 }}>
-                💬 Chats{totalUnread > 0 ? ` · ${totalUnread} ungelesen` : ""}
+                💬 Freunde · <span style={{ color: "#bff5cc" }}>{onlineCount} online</span>
+                {totalUnread > 0 && <> · {totalUnread} ungelesen</>}
               </div>
             ) : (
               <>
@@ -146,9 +202,7 @@ export default function ChatOverlay() {
                     {partnerInfo?.gender ? `${partnerInfo.gender}${partnerInfo.age != null ? ` ${partnerInfo.age}` : ""} ` : ""}
                     {partnerInfo?.displayName || activePartner}
                   </div>
-                  <div style={{ fontSize: 10, opacity: 0.95 }}>
-                    {partnerInfo?.online ? "🟢 online" : "offline"}
-                  </div>
+                  <div style={{ fontSize: 10, opacity: 0.95 }}>{partnerInfo?.online ? "🟢 online" : "offline"}</div>
                 </div>
               </>
             )}
@@ -157,40 +211,51 @@ export default function ChatOverlay() {
           </div>
 
           {view === "list" ? (
-            <div style={{ overflowY: "auto", maxHeight: "60vh" }}>
-              {conversations.length === 0 ? (
+            <div style={{ overflowY: "auto", flex: 1 }}>
+              {merged.length === 0 ? (
                 <div className="vv-muted" style={{ padding: 16, textAlign: "center", fontSize: 13 }}>
-                  Noch keine Chats. <Link href="/messenger" onClick={() => setOpen(false)}>jemandem schreiben</Link>
+                  Noch keine Mitglieder.
                 </div>
               ) : (
-                conversations.slice(0, 20).map((c) => (
+                merged.map(({ user: u, convo }) => (
                   <button
-                    key={c.partnerUsername}
+                    key={u.username}
                     type="button"
-                    onClick={() => openChat(c.partnerUsername)}
+                    onClick={() => openChat(u.username)}
                     style={{
                       width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                      background: c.unread > 0 ? "#fff5fb" : "#fff", border: "none",
+                      background: convo?.unread > 0 ? "#fff5fb" : "#fff", border: "none",
                       borderBottom: "1px solid #f0f0f5", cursor: "pointer", textAlign: "left",
                     }}
                   >
+                    {/* Gruener Punkt VOR dem Mini-Avatar, wenn online */}
+                    <span style={{
+                      width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+                      background: u.online ? "#0aff44" : "transparent",
+                      boxShadow: u.online ? "0 0 5px rgba(10,255,68,0.7)" : "none",
+                      visibility: u.online ? "visible" : "hidden",
+                    }} />
                     <div style={{ position: "relative", flexShrink: 0 }}>
-                      <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar vv-avatar-sm" />
-                      {c.unread > 0 && (
+                      <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" />
+                      {convo?.unread > 0 && (
                         <span style={{ position: "absolute", top: -4, right: -4, minWidth: 18, height: 18, padding: "0 5px", background: "#ff3e9d", color: "#fff", borderRadius: 9, fontSize: 11, fontWeight: "bold", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                          {c.unread > 99 ? "99+" : c.unread}
+                          {convo.unread > 99 ? "99+" : convo.unread}
                         </span>
                       )}
                     </div>
                     <span style={{ flex: 1, minWidth: 0, color: "#222" }}>
                       <span style={{ display: "block", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        <ColoredName gender={c.partnerGender} age={c.partnerAge} name={c.partnerDisplayName} />
+                        <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
                       </span>
-                      <span style={{ display: "block", fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: c.unread > 0 ? "bold" : "normal" }}>
-                        {c.fromMe ? "Du: " : ""}{c.lastText}
-                      </span>
+                      {convo ? (
+                        <span style={{ display: "block", fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: convo.unread > 0 ? "bold" : "normal" }}>
+                          {convo.fromMe ? "Du: " : ""}{convo.lastText}
+                        </span>
+                      ) : (
+                        u.mood && <span style={{ display: "block", fontSize: 11, color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>
+                      )}
                     </span>
-                    <span style={{ fontSize: 10, color: "#aaa", flexShrink: 0 }}>{relTime(c.at)}</span>
+                    <span style={{ fontSize: 10, color: "#aaa", flexShrink: 0 }}>{convo ? relTime(convo.at) : ""}</span>
                   </button>
                 ))
               )}
@@ -204,7 +269,7 @@ export default function ChatOverlay() {
                 {messages.map((m) => (
                   <div key={m.id} style={{ display: "flex", justifyContent: m.fromMe ? "flex-end" : "flex-start", marginBottom: 4 }}>
                     <div style={{
-                      maxWidth: "78%", padding: "6px 10px", borderRadius: 14,
+                      maxWidth: "82%", padding: m.imageUrl ? "4px" : "6px 10px", borderRadius: 14,
                       background: m.fromMe ? "linear-gradient(135deg, #2d7dd2, #5fb0ff)" : "#fff",
                       color: m.fromMe ? "#fff" : "#222",
                       border: m.fromMe ? "none" : "1px solid #d8def0",
@@ -213,20 +278,39 @@ export default function ChatOverlay() {
                       borderBottomLeftRadius: m.fromMe ? 14 : 4,
                       fontSize: 13, lineHeight: 1.3, wordBreak: "break-word",
                     }}>
-                      {m.kind === "voice" ? "🎤 Sprachnachricht (im großen Messenger anhören)" : m.text}
+                      {m.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.imageUrl} alt="" style={{ display: "block", maxWidth: "100%", maxHeight: 220, borderRadius: 10, marginBottom: m.text ? 4 : 0 }} />
+                      )}
+                      {m.kind === "voice"
+                        ? "🎤 Sprachnachricht (im großen Messenger anhören)"
+                        : (m.text || null)}
                     </div>
                   </div>
                 ))}
               </div>
-              <form onSubmit={send} style={{ display: "flex", gap: 4, padding: 8, borderTop: "1px solid #eee", background: "#fff" }}>
-                <input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  className="vv-input"
-                  style={{ flex: 1, margin: 0, fontSize: 13 }}
-                  placeholder={`An ${partnerInfo?.displayName || activePartner}…`}
-                />
-                <button type="submit" className="vv-btn vv-btn-pink" disabled={!text.trim()}>▶</button>
+              <form onSubmit={send} style={{ borderTop: "1px solid #eee", background: "#fff", padding: 6 }}>
+                {pendingImage && (
+                  <div style={{ position: "relative", display: "inline-block", margin: "0 4px 4px", maxWidth: 140 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={pendingImage} alt="" style={{ maxHeight: 80, maxWidth: "100%", borderRadius: 8 }} />
+                    <button type="button" onClick={() => setPendingImage(null)} aria-label="Entfernen"
+                      style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", border: "none", background: "#222", color: "#fff", cursor: "pointer", padding: 0, fontSize: 12 }}>×</button>
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                  <SmileyPicker onPick={(s) => setText((t) => t + s)} />
+                  <button type="button" className="vv-btn" onClick={() => imageRef.current?.click()} title="Foto" aria-label="Foto">📷</button>
+                  <input ref={imageRef} type="file" accept="image/*" hidden onChange={onPickImage} />
+                  <input
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className="vv-input"
+                    style={{ flex: 1, margin: 0, fontSize: 13 }}
+                    placeholder={`An ${partnerInfo?.displayName || activePartner}…`}
+                  />
+                  <button type="submit" className="vv-btn vv-btn-pink" disabled={!text.trim() && !pendingImage}>▶</button>
+                </div>
               </form>
               <div style={{ padding: "6px 10px", borderTop: "1px solid #eee", background: "#fafafd", fontSize: 11, textAlign: "right" }}>
                 <Link href={`/messenger/${activePartner}`} onClick={() => setOpen(false)}>↗ Im großen Messenger öffnen</Link>

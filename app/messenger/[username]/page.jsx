@@ -19,6 +19,31 @@ function timeShort(ts) {
   const d = new Date(ts);
   return d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
+
+// Bild im Browser auf 600px verkleinern (mittig beschnitten) -> kleines JPEG
+function fileToChatImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const maxDim = 600;
+        let { width, height } = img;
+        const ratio = Math.min(1, maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 function presenceLabel(lastSeen) {
   const diff = Date.now() - (lastSeen || 0);
   if (diff < 90 * 1000) return "online";
@@ -35,9 +60,20 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [text, setText] = useState("");
+  const [pendingImage, setPendingImage] = useState(null);
   const [error, setError] = useState(null);
 
   const scrollRef = useRef(null);
+  const imageRef = useRef(null);
+
+  async function onPickChatImage(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { alert("Bitte ein Bild auswählen."); return; }
+    try { setPendingImage(await fileToChatImage(file)); }
+    catch { alert("Bild konnte nicht geladen werden."); }
+  }
 
   const reload = useCallback(async () => {
     if (!me) return;
@@ -84,10 +120,12 @@ export default function ChatPage() {
   async function submit(e) {
     e.preventDefault();
     const v = text.trim();
-    if (!v) return;
+    if (!v && !pendingImage) return;
     try {
-      await api.sendMessage(partnerName, v);
+      const res = await api.sendMessage(partnerName, v, pendingImage);
       setText("");
+      setPendingImage(null);
+      if (res?.imageNote) alert(res.imageNote);
     } catch (err) {
       alert(err.message);
     }
@@ -210,7 +248,13 @@ export default function ChatPage() {
                         {m.kind === "voice" ? (
                           <VoiceMessage message={m} fromMe={m.fromMe} onConsumed={reload} />
                         ) : (
-                          <MentionText text={m.text} color={m.fromMe ? "#e6f0ff" : "#c2185b"} />
+                          <>
+                            {m.imageUrl && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={m.imageUrl} alt="" style={{ display: "block", maxWidth: "100%", maxHeight: 280, borderRadius: 10, marginBottom: m.text ? 6 : 0 }} />
+                            )}
+                            {m.text && <MentionText text={m.text} color={m.fromMe ? "#e6f0ff" : "#c2185b"} />}
+                          </>
                         )}
                       </div>
                       {m.fromMe && (
@@ -224,16 +268,28 @@ export default function ChatPage() {
               })}
             </div>
 
-            <form className="vv-chat-input-row" onSubmit={submit} style={{ background: "#fff", borderTop: "1px solid #eee" }}>
-              <SmileyPicker onPick={(s) => setText((t) => t + s)} />
-              <VoiceRecorder onSend={sendVoice} />
-              <input
-                className="vv-input"
-                placeholder={`Schreib an ${partner.displayName}…`}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-              />
-              <button type="submit" className="vv-btn vv-btn-pink">▶</button>
+            <form className="vv-chat-input-row" onSubmit={submit} style={{ background: "#fff", borderTop: "1px solid #eee", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
+              {pendingImage && (
+                <div style={{ position: "relative", margin: "4px 6px", display: "inline-block", maxWidth: 160 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={pendingImage} alt="" style={{ maxHeight: 110, maxWidth: "100%", borderRadius: 8 }} />
+                  <button type="button" onClick={() => setPendingImage(null)} aria-label="Bild entfernen"
+                    style={{ position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: "50%", border: "none", background: "#222", color: "#fff", cursor: "pointer", padding: 0 }}>×</button>
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <SmileyPicker onPick={(s) => setText((t) => t + s)} />
+                <VoiceRecorder onSend={sendVoice} />
+                <button type="button" className="vv-btn" onClick={() => imageRef.current?.click()} title="Foto senden" aria-label="Foto senden">📷</button>
+                <input ref={imageRef} type="file" accept="image/*" hidden onChange={onPickChatImage} />
+                <input
+                  className="vv-input"
+                  placeholder={`Schreib an ${partner.displayName}…`}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                />
+                <button type="submit" className="vv-btn vv-btn-pink">▶</button>
+              </div>
             </form>
           </div>
         </div>
