@@ -14,5 +14,20 @@ export default function manifest() {
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
+    shortcuts: [
+      {
+        name: "Messenger",
+        short_name: "Messenger",
+        description: "Direkt zum VibeVibo-Messenger",
+        url: "/messenger",
+        icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
+        name: "Mein Profil",
+        short_name: "Profil",
+        url: "/profile",
+        icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+    ],
   };
 }

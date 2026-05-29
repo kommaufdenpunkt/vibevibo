@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { relTime } from "@/lib/format";
+import { playPing } from "@/lib/sound";
 import Avatar from "./Avatar";
 
 const TYPE_LABEL = {
@@ -36,10 +37,18 @@ export default function NotificationsBell() {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
   const [unread, setUnread] = useState(0);
+  const prevUnreadRef = useRef(null); // null = noch nicht geladen, dann Zahl
 
   useEffect(() => {
     if (!me) return;
-    const load = () => api.notifications().then((d) => { setNotifs(d.notifications || []); setUnread(d.unread || 0); }).catch(() => {});
+    const load = () => api.notifications().then((d) => {
+      setNotifs(d.notifications || []);
+      const next = d.unread || 0;
+      // Beim ersten Laden NICHT pingen, danach nur wenn die Zahl steigt
+      if (prevUnreadRef.current != null && next > prevUnreadRef.current) playPing();
+      prevUnreadRef.current = next;
+      setUnread(next);
+    }).catch(() => {});
     load();
     const t = setInterval(load, 25000);
     return () => clearInterval(t);
