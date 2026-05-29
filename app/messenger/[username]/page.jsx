@@ -131,6 +131,17 @@ export default function ChatPage() {
     }
   }
 
+  async function reportMessage(id) {
+    const reason = window.prompt("Warum meldest du diese Nachricht? (Optional)") ?? null;
+    if (reason === null) return;
+    try {
+      await api.reportMessage(id, reason);
+      alert("Danke! Die Nachricht wurde gemeldet und wird vom Team geprüft.");
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
   if (!me) return null;
   if (error) {
     return (
@@ -261,6 +272,15 @@ export default function ChatPage() {
                         <span style={{ fontSize: 10, color: m.readAt ? "#2a7fff" : "#bbb", marginBottom: 2 }}>
                           {m.readAt ? "✓✓" : "✓"}
                         </span>
+                      )}
+                      {!m.fromMe && (
+                        <button
+                          type="button"
+                          onClick={() => reportMessage(m.id)}
+                          title="Diese Nachricht melden"
+                          aria-label="Melden"
+                          style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: 11, padding: 0, alignSelf: "center" }}
+                        >🚩</button>
                       )}
                     </div>
                   </div>

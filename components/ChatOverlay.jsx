@@ -10,6 +10,7 @@ import { relTime } from "@/lib/format";
 import Avatar from "./Avatar";
 import { ColoredName } from "./GenderAge";
 import SmileyPicker from "./SmileyPicker";
+import VoiceRecorder from "./VoiceRecorder";
 
 function fileToChatImage(file) {
   return new Promise((resolve, reject) => {
@@ -124,6 +125,28 @@ export default function ChatOverlay() {
     if (!file.type.startsWith("image/")) { alert("Bitte ein Bild auswählen."); return; }
     try { setPendingImage(await fileToChatImage(file)); }
     catch { alert("Bild konnte nicht geladen werden."); }
+  }
+
+  async function sendVoice(audioUrl, onceOnly) {
+    if (!activePartner) return;
+    try {
+      await api.sendVoice(activePartner, audioUrl, onceOnly);
+      const d = await api.getConversation(activePartner);
+      setMessages(d.messages || []);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function reportMessage(id) {
+    const reason = window.prompt("Warum meldest du diese Nachricht? (Optional)") ?? null;
+    if (reason === null) return;
+    try {
+      await api.reportMessage(id, reason);
+      alert("Danke! Die Nachricht wurde gemeldet und wird vom Team geprüft.");
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   if (!me || hide) return null;
@@ -267,9 +290,9 @@ export default function ChatOverlay() {
                   <div className="vv-muted vv-center" style={{ marginTop: 30 }}>Sag „Hi 👋"!</div>
                 )}
                 {messages.map((m) => (
-                  <div key={m.id} style={{ display: "flex", justifyContent: m.fromMe ? "flex-end" : "flex-start", marginBottom: 4 }}>
+                  <div key={m.id} style={{ display: "flex", justifyContent: m.fromMe ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 4, marginBottom: 4 }}>
                     <div style={{
-                      maxWidth: "82%", padding: m.imageUrl ? "4px" : "6px 10px", borderRadius: 14,
+                      maxWidth: "78%", padding: m.imageUrl ? "4px" : "6px 10px", borderRadius: 14,
                       background: m.fromMe ? "linear-gradient(135deg, #2d7dd2, #5fb0ff)" : "#fff",
                       color: m.fromMe ? "#fff" : "#222",
                       border: m.fromMe ? "none" : "1px solid #d8def0",
@@ -286,6 +309,10 @@ export default function ChatOverlay() {
                         ? "🎤 Sprachnachricht (im großen Messenger anhören)"
                         : (m.text || null)}
                     </div>
+                    {!m.fromMe && (
+                      <button type="button" onClick={() => reportMessage(m.id)} title="Melden" aria-label="Melden"
+                        style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: 11, padding: 0 }}>🚩</button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -298,15 +325,16 @@ export default function ChatOverlay() {
                       style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", border: "none", background: "#222", color: "#fff", cursor: "pointer", padding: 0, fontSize: 12 }}>×</button>
                   </div>
                 )}
-                <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
                   <SmileyPicker onPick={(s) => setText((t) => t + s)} />
+                  <VoiceRecorder onSend={sendVoice} />
                   <button type="button" className="vv-btn" onClick={() => imageRef.current?.click()} title="Foto" aria-label="Foto">📷</button>
                   <input ref={imageRef} type="file" accept="image/*" hidden onChange={onPickImage} />
                   <input
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     className="vv-input"
-                    style={{ flex: 1, margin: 0, fontSize: 13 }}
+                    style={{ flex: "1 1 100px", margin: 0, fontSize: 13, minWidth: 80 }}
                     placeholder={`An ${partnerInfo?.displayName || activePartner}…`}
                   />
                   <button type="submit" className="vv-btn vv-btn-pink" disabled={!text.trim() && !pendingImage}>▶</button>

@@ -497,6 +497,28 @@ export default function Landing() {
           </div>
         </div>
 
+        {/* App-Install CTA – auch fuer Nicht-Eingeloggte sichtbar */}
+        <div style={{ textAlign: "center", marginTop: 24 }}>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("vv-pwa-install"))}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "10px 18px", borderRadius: 999,
+              background: "rgba(255,255,255,0.95)", color: "#1f5fa8",
+              border: "2px solid rgba(255,255,255,0.6)",
+              fontWeight: "bold", fontSize: 14, cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
+              fontFamily: "Arial, sans-serif",
+            }}
+          >
+            📱 Als App installieren (Haupt-App + Messenger)
+          </button>
+          <div style={{ fontSize: 11, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,0.4)", marginTop: 6, opacity: 0.92 }}>
+            Für iPhone &amp; Android – mit Schritt-für-Schritt-Anleitung
+          </div>
+        </div>
+
         <div className="vv-splash-mini-disclaimer">
           Erinnert an MySpace, SchülerVZ, Jappy, Lokalisten, wer-kennt-wen, Knuddels &amp; Co. – nicht angeschlossen, nur inspiriert. ★
         </div>

@@ -9,6 +9,7 @@ import {
   getUserDossier, listRecentModLog,
   listPendingPics, listRejectedPics, listApprovedPics, setPicStatus, getProfilePic,
   listPendingPhotos, listRejectedPhotos, setPhotoStatus, getPhoto,
+  listOpenReports, getReportSnippet, resolveReport,
   logMod, updateUser, ageFromBirthdate,
 } from "@/lib/db";
 import GenderAge from "@/components/GenderAge";
@@ -39,6 +40,7 @@ const TABS = [
   ["mitglieder", "👥 Mitglieder"],
   ["profilbilder", "🖼 Profilbilder"],
   ["fotos", "📷 Fotos"],
+  ["meldungen", "🚩 Meldungen"],
   ["banns", "🔨 Banns"],
   ["geraete", "📱 Geräte"],
   ["userakte", "📁 Userakte"],
@@ -87,6 +89,7 @@ export default async function AdminPage({ searchParams }) {
   const dev = typeof sp?.dev === "string" ? sp.dev : "";
   const pic = typeof sp?.pic === "string" ? sp.pic : "";
   const pid = typeof sp?.pid === "string" ? sp.pid : "";
+  const rid = typeof sp?.rid === "string" ? sp.rid : "";
   if (action) {
     if (action === "approve" && uname) { const x = getUserByUsername(uname); if (x) setUserStatus(x.id, "approved"); }
     else if (action === "block" && uname) { const x = getUserByUsername(uname); if (x) { setUserStatus(x.id, "blocked"); if (ip) blockIp(ip, `User ${uname} gesperrt`); } }
@@ -111,6 +114,8 @@ export default async function AdminPage({ searchParams }) {
     else if (action === "avReject" && pic) { const p = getProfilePic(Number(pic)); if (p) { setPicStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "avatar", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
     else if (action === "phApprove" && pid) { const p = getPhoto(Number(pid)); if (p) { setPhotoStatus(p.id, "approved", "Admin freigegeben"); logMod({ userId: p.user_id, kind: "foto", decision: "approved", reason: "Admin-Freigabe", by: "admin" }); } }
     else if (action === "phReject" && pid) { const p = getPhoto(Number(pid)); if (p) { setPhotoStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "foto", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
+    else if (action === "resolveReport" && rid) { resolveReport(Number(rid), "resolved"); }
+    else if (action === "dismissReport" && rid) { resolveReport(Number(rid), "dismissed"); }
     else if (action === "setvitals" && uname) {
       const x = getUserByUsername(uname);
       if (x) {
@@ -153,6 +158,7 @@ export default async function AdminPage({ searchParams }) {
       {tab === "mitglieder" && <Mitglieder q={q} />}
       {tab === "profilbilder" && <Profilbilder q={q} />}
       {tab === "fotos" && <Fotos q={q} />}
+      {tab === "meldungen" && <Meldungen q={q} />}
       {tab === "banns" && <Banns q={q} pw={pw} />}
       {tab === "geraete" && <Geraete q={q} />}
       {tab === "userakte" && <Userakte q={q} pw={pw} uParam={uParam} />}
@@ -369,6 +375,55 @@ function Fotos({ q }) {
         </div>
       )}
     </>
+  );
+}
+
+function Meldungen({ q }) {
+  const reports = listOpenReports(60);
+  return (
+    <div className="vv-card">
+      <h3 style={{ marginTop: 0 }}>🚩 Gemeldete Nachrichten ({reports.length})</h3>
+      {reports.length === 0 && <div className="vv-muted vv-mt-8">Keine offenen Meldungen. ✨</div>}
+      {reports.map((r) => {
+        const snippet = getReportSnippet(r.messageId, 5);
+        return (
+          <div key={r.id} style={{ borderTop: "1px solid #eee", paddingTop: 10, marginTop: 10 }}>
+            <div style={{ fontSize: 12, marginBottom: 4 }}>
+              Gemeldet von <strong>@{r.reporterUsername}</strong> · {relTime(r.at)}
+              {r.reason ? <> · Grund: <em>„{r.reason}"</em></> : null}
+            </div>
+            <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>
+              Konversation: <strong>@{r.senderUsername}</strong> ↔ <strong>@{r.receiverUsername}</strong>
+            </div>
+            <div style={{ background: "#f6f6fa", padding: 8, borderRadius: 8 }}>
+              {snippet.map((m) => {
+                const isReported = m.id === r.messageId;
+                return (
+                  <div key={m.id} style={{
+                    fontSize: 12, padding: "3px 6px",
+                    borderLeft: isReported ? "3px solid #ff3e9d" : "3px solid transparent",
+                    background: isReported ? "#fff5fb" : "transparent",
+                  }}>
+                    <strong>@{m.from_user_id === r.senderId ? r.senderUsername : r.receiverUsername}</strong>:{" "}
+                    {m.kind === "voice" ? <em>🎤 Sprachnachricht</em> : null}
+                    {m.imageUrl ? <em>📷 [Bild]</em> : null}
+                    {m.text || ""}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="vv-row vv-mt-8" style={{ flexWrap: "wrap", gap: 6 }}>
+              <a className="vv-btn" style={{ color: "#a00" }} href={`/admin?${q}&tab=banns&do=ban&u=${encodeURIComponent(r.senderUsername)}&btype=comm&dur=1d`}>🔇 1 Tag mute (@{r.senderUsername})</a>
+              <a className="vv-btn" style={{ color: "#a00", fontWeight: "bold" }} href={`/admin?${q}&tab=banns&do=ban&u=${encodeURIComponent(r.senderUsername)}&btype=full&dur=perm`}>⛔ Permanent bannen</a>
+              <a className="vv-btn" href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(r.senderUsername)}`}>📁 Userakte</a>
+              <div className="vv-spacer" />
+              <a className="vv-btn vv-btn-pink" href={`/admin?${q}&tab=meldungen&do=resolveReport&rid=${r.id}`}>✓ Erledigt</a>
+              <a className="vv-btn" href={`/admin?${q}&tab=meldungen&do=dismissReport&rid=${r.id}`}>✕ Verwerfen</a>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
