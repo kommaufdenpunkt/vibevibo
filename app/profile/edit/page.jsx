@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import GenderAge from "@/components/GenderAge";
+import TwoFactorSetup from "@/components/TwoFactorSetup";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -165,6 +166,8 @@ export default function EditProfilePage() {
             Mit „Unsichtbar" siehst du für andere wie offline aus, kannst aber selber sehen, wer online ist.
           </div>
         </div>
+
+        <TwoFactorSetup has2fa={!!me?.has2fa} onChanged={refresh} />
 
         <div className="vv-card vv-row" style={{ position: "sticky", bottom: 8, alignItems: "center" }}>
           <Link href="/profile" className="vv-btn">↩ Abbrechen</Link>
