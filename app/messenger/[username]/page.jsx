@@ -15,6 +15,9 @@ import { ColoredName } from "@/components/GenderAge";
 import MentionText from "@/components/MentionText";
 import { useMessageStream } from "@/lib/useEventStream";
 import { getPresence } from "@/lib/presence";
+import ActivityBars from "@/components/ActivityBars";
+import OnlineName from "@/components/OnlineName";
+import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
 
 function timeShort(ts) {
   if (!ts) return "";
@@ -307,12 +310,11 @@ export default function ChatPage() {
                     {partner.displayName}
                   </strong>
                 </div>
-                <div style={{ fontSize: 11, opacity: 0.9, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
-                  {(() => {
-                    const p = getPresence({ statusText: partner.mood, presence: partner.presence, online: partner.online });
-                    return <span style={{ color: p.color === "#cbd5e1" ? "#ffffff" : p.color, fontWeight: "bold" }}>● {p.label}</span>;
-                  })()}
-                  {!partner.online && <> · {presenceLabel(partner.lastSeen)}</>}
+                <div style={{ fontSize: 11, opacity: 0.95, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  <ActivityBars lastSeen={partner.lastSeen} size="sm" title={activityLabel(activityLevel(partner.lastSeen))} />
+                  {isOnlineActivity(partner.lastSeen)
+                    ? <span style={{ fontWeight: "bold" }}>{activityLabel(activityLevel(partner.lastSeen))}</span>
+                    : <span>zuletzt {formatLastActive(partner.lastSeen)}</span>}
                   {partner.mood ? <> · <em style={{ opacity: 0.9 }}>{partner.mood}</em></> : null}
                   {muteUntil !== null && (
                     <span title="Du hast diesen Chat stummgeschaltet" style={{ marginLeft: 4, background: "rgba(255,255,255,0.18)", padding: "1px 6px", borderRadius: 8 }}>
