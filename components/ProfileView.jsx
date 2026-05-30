@@ -260,7 +260,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
                         </OnlineName>
                         <ActivityBars lastSeen={v.lastSeen} size="sm" />
                       </span>
-                      {v.mood && <span style={{ display: "block", fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.mood}</span>}
+                      {v.mood && <span style={{ display: "block", marginTop: 7, fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.mood}</span>}
                     </span>
                     <span style={{ fontSize: 11, color: "#8e96a8", flexShrink: 0 }}>{relTime(v.at)}</span>
                   </Link>

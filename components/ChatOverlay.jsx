@@ -63,6 +63,7 @@ export default function ChatOverlay() {
   const [partnerTyping, setPartnerTyping] = useState(0);
   const [creatingRoom, setCreatingRoom] = useState(false);
   const [inCall, setInCall] = useState(false);
+  const [vibes, setVibes] = useState(null);
   const scrollRef = useRef(null);
   const imageRef = useRef(null);
   const typingTimer = useRef(0);
@@ -73,14 +74,16 @@ export default function ChatOverlay() {
 
   const loadAll = useCallback(async () => {
     try {
-      const [c, u, r, ac] = await Promise.all([
+      const [c, u, r, ac, v] = await Promise.all([
         api.listConversations(), api.listUsers(), api.listRooms(),
         api.activeCalls().catch(() => ({ calls: [] })),
+        api.credits().catch(() => null),
       ]);
       setConversations(c.conversations || []);
       setUsers((u.users || []).filter((x) => x.username !== me?.username));
       setRooms(r.rooms || []);
       setInCall((ac.calls || []).length > 0);
+      setVibes(v);
     } catch {}
   }, [me]);
 
@@ -306,6 +309,12 @@ export default function ChatOverlay() {
                   💬 Chats · <span style={{ color: "#bff5cc" }}>{onlineCount} online</span>
                   {totalUnread > 0 && <> · {totalUnread} ungelesen</>}
                 </div>
+                {vibes && (
+                  <span title={`Du hast ${vibes.balance} Vibes`}
+                    style={{ background: "rgba(255,255,255,0.18)", padding: "3px 8px", borderRadius: 999, fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                    ✨ {vibes.balance}
+                  </span>
+                )}
                 <button type="button" onClick={() => setCreatingRoom(true)} title="Gruppe erstellen"
                   style={{ color: "#fff", background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 12, fontWeight: "bold" }}>
                   + Gruppe
@@ -448,11 +457,11 @@ export default function ChatOverlay() {
                           <ActivityBars lastSeen={u.lastSeen} size="xs" />
                         </span>
                         {convo ? (
-                          <span style={{ display: "block", fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: convo.unread > 0 ? "bold" : "normal" }}>
+                          <span style={{ display: "block", marginTop: 6, fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: convo.unread > 0 ? "bold" : "normal" }}>
                             {convo.fromMe ? "Du: " : ""}{convo.lastText}
                           </span>
                         ) : (
-                          <span style={{ display: "block", fontSize: 11, color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <span style={{ display: "block", marginTop: 6, fontSize: 11, color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {onlineNow ? (u.mood || "online") : `zuletzt ${formatLastActive(u.lastSeen)}`}
                           </span>
                         )}

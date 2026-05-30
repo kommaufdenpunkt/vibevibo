@@ -1,5 +1,5 @@
-// Name mit zartem hellgrünem Hintergrund wenn online — Jappy-Klassiker.
-// Verwendet activityLevel: online = Stufe 3+ (höchstens 10 Min weg).
+// Name mit hellem, kräftigem Grün-Hintergrund wenn online — gut sichtbar
+// auf hellem UND dunklem Theme. Jappy-Klassiker.
 import { isOnlineActivity } from "@/lib/activity";
 
 export default function OnlineName({ lastSeen, children, style = {} }) {
@@ -8,10 +8,11 @@ export default function OnlineName({ lastSeen, children, style = {} }) {
   return (
     <span
       style={{
-        background: "rgba(76, 217, 100, 0.22)",
-        padding: "1px 6px",
-        borderRadius: 5,
-        boxShadow: "inset 0 0 0 1px rgba(76,217,100,0.35)",
+        background: "#86efac",                         // green-300 — saftig hell
+        padding: "2px 8px",
+        borderRadius: 6,
+        boxShadow: "inset 0 0 0 1.5px #4ade80",        // grüner Innenrahmen
+        textShadow: "0 1px 0 rgba(255,255,255,0.6)",   // bessere Lesbarkeit aller Namensfarben
         ...style,
       }}
     >
