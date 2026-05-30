@@ -83,7 +83,7 @@ export default function HomePage() {
                       </OnlineName>
                       <ActivityBars lastSeen={u.lastSeen} size="sm" />
                     </span>
-                    {u.mood && <span style={{ display: "block", fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
+                    {u.mood && <span style={{ display: "block", marginTop: 7, fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
                   </span>
                 </Link>
               ))}
@@ -112,7 +112,7 @@ export default function HomePage() {
                         </OnlineName>
                         <ActivityBars lastSeen={u.lastSeen} size="sm" />
                       </span>
-                      {u.mood && <span style={{ display: "block", fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
+                      {u.mood && <span style={{ display: "block", marginTop: 7, fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
                     </span>
                   </Link>
                 ))}

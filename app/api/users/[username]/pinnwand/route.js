@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions } from "@/lib/db";
+import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits } from "@/lib/db";
+import { EARN } from "@/lib/credits";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
@@ -40,6 +41,14 @@ export async function POST(req, { params }) {
   // Profil-Inhaber benachrichtigen (nicht bei Self-Post) + @-Markierte
   if (target.id !== me.id) {
     addNotification({ userId: target.id, actorId: me.id, type: "pinnwand", targetType: "pinnwand", targetId: newId, preview: cleaned || "📷 Foto" });
+    // Credits für aktive Community-Beiträge
+    // Anti-Multi-Account-Farming: ref ist der GEGENPART. Damit zählt der SAME_REF
+    // Cooldown korrekt → max 1x Vibes pro Person und Tag, egal wie viele Posts.
+    const isGruscheln = /gruschelt/i.test(cleaned);
+    awardCredits(me.id, isGruscheln ? EARN.gruscheln_send : EARN.pinnwand_post,
+      isGruscheln ? "gruscheln_send" : "pinnwand", { type: "to", id: target.id });
+    awardCredits(target.id, isGruscheln ? EARN.gruscheln_recv : EARN.pinnwand_post,
+      isGruscheln ? "gruscheln_recv" : "pinnwand", { type: "from", id: me.id });
   }
   notifyMentions(me.id, cleaned, "pinnwand", newId);
 
