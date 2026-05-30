@@ -2485,12 +2485,15 @@ input[type="number"], input[type="tel"], textarea, select {
   flex-direction: column;
 }
 
-/* .vv-msg-list ist ein Grid (Sidebar + Chat) — bleibt Grid, füllt Höhe */
+/* .vv-msg-list ist ein Grid (Sidebar + Chat). Auf Mobile single column,
+   damit die Chat-Window die volle Breite einnimmt. Inline-Style 230px wird
+   per !important überstimmt. */
 .vv-app-fullscreen .vv-msg-list {
   flex: 1 1 0;
   min-height: 0;
   height: 100%;
-  display: grid;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
 }
 
 /* Chat-Container im Fullscreen-Modus: füllt die ganze Höhe der Grid-Spalte */
@@ -2589,6 +2592,47 @@ input[type="number"], input[type="tel"], textarea, select {
   line-height: 1.4 !important;
 }
 
+/* Eingabezeile im Fullscreen: kompakt, mit Wrap für Mobile. */
+.vv-app-fullscreen .vv-chat-window form {
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+}
+/* Die innere Row mit allen Buttons + Input darf umbrechen */
+.vv-app-fullscreen .vv-chat-window form > div:last-child {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+/* Text-Input bekommt mindestens 100% Breite → eigene Zeile auf Mobile */
+.vv-app-fullscreen .vv-chat-window form .vv-input {
+  flex: 1 1 100% !important;
+  min-width: 0 !important;
+  font-size: 16px !important;
+  padding: 10px 14px !important;
+  border-radius: 18px !important;
+  order: 10;
+}
+/* Send-Button folgt direkt nach Input → wrappt mit ihm in die zweite Zeile */
+.vv-app-fullscreen .vv-chat-window form .vv-btn-pink {
+  order: 11;
+  min-width: 48px; min-height: 44px;
+  border-radius: 12px !important;
+  font-size: 18px !important;
+  flex-shrink: 0;
+}
+/* Auf Mobile: Input ist 100% breit, Send-Button absolut rechts */
+@media (max-width: 700px) {
+  .vv-app-fullscreen .vv-chat-window form .vv-input {
+    flex-basis: calc(100% - 60px) !important;
+  }
+}
+/* Action-Buttons (Smiley/Voice/Cam) bleiben in Zeile 1, gleiche Größe */
+.vv-app-fullscreen .vv-chat-window form .vv-btn:not(.vv-btn-pink),
+.vv-app-fullscreen .vv-chat-window form button:not(.vv-btn-pink):not(.vv-input) {
+  min-width: 40px; min-height: 40px;
+  border-radius: 12px !important;
+  font-size: 18px !important;
+  order: 1;
+}
+
 /* iOS PWA Standalone: extra Notch-Polster */
 @media (display-mode: standalone) {
   .vv-app-fullscreen .vv-chat-window > div:first-child {
@@ -2606,8 +2650,35 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-conv-name { font-size: 14px; }
   .vv-conv-preview { font-size: 12px; }
   .vv-friends-grid {
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)) !important;
+    gap: 8px !important;
   }
+}
+
+/* Friends-Tile-Namen: clean truncation statt hässlichem Umbruch */
+.vv-friend-tile {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  min-width: 0;
+}
+.vv-friend-name {
+  display: block;
+  width: 100%;
+  font-size: 12px;
+  line-height: 1.2;
+  max-height: 2.4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* =====================================================
