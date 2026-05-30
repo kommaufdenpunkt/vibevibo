@@ -13,6 +13,7 @@ import { ColoredName } from "@/components/GenderAge";
 import CreateRoomDialog from "@/components/CreateRoomDialog";
 import ActivityBars from "@/components/ActivityBars";
 import OnlineName from "@/components/OnlineName";
+import ViboPet from "@/components/ViboPet";
 import { getPresence } from "@/lib/presence";
 import { useTheme } from "@/lib/useTheme";
 import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
@@ -24,7 +25,7 @@ export default function MessengerHome() {
   const [conversations, setConversations] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
-  const [tab, setTab] = useState("chats"); // chats | freunde | profil
+  const [tab, setTab] = useState("chats"); // chats | freunde | vibo | profil
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
   const [theme, setTheme] = useTheme();
@@ -89,6 +90,7 @@ export default function MessengerHome() {
         <div className="vv-msgapp-header-title">
           {tab === "chats" && "💬 Nachrichten"}
           {tab === "freunde" && "👥 Freunde"}
+          {tab === "vibo" && "🥚 Mein VIBO"}
           {tab === "profil" && "🌟 Mein VibeVibo"}
         </div>
         <div className="vv-msgapp-header-actions">
@@ -218,6 +220,8 @@ export default function MessengerHome() {
           </>
         )}
 
+        {tab === "vibo" && <ViboPet />}
+
         {tab === "profil" && (
           <div style={{ padding: "16px 14px" }}>
             <div style={{ textAlign: "center", marginBottom: 20 }}>
@@ -291,7 +295,7 @@ export default function MessengerHome() {
         )}
       </main>
 
-      <nav className="vv-msgapp-tabbar">
+      <nav className="vv-msgapp-tabbar" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
         <button type="button" onClick={() => setTab("chats")} className={tab === "chats" ? "active" : ""}>
           <span className="vv-tab-icon">💬</span>
           <span>Chats</span>
@@ -301,6 +305,10 @@ export default function MessengerHome() {
           <span className="vv-tab-icon">👥</span>
           <span>Freunde</span>
           {onlineCount > 0 && <span className="vv-tab-badge" style={{ background: "#10b981" }}>{onlineCount}</span>}
+        </button>
+        <button type="button" onClick={() => setTab("vibo")} className={tab === "vibo" ? "active" : ""}>
+          <span className="vv-tab-icon">🥚</span>
+          <span>VIBO</span>
         </button>
         <button type="button" onClick={() => setTab("profil")} className={tab === "profil" ? "active" : ""}>
           <span className="vv-tab-icon">🌟</span>
