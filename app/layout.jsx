@@ -8,6 +8,7 @@ import InstallHelp from "@/components/InstallHelp";
 import PushSetup from "@/components/PushSetup";
 import LiveCallShell from "@/components/LiveCallShell";
 import { MeProvider } from "@/lib/useMe";
+import { THEME_BOOTSTRAP } from "@/lib/useTheme";
 
 export const metadata = {
   title: "VibeVibo - die nostalgische Community",
@@ -33,6 +34,9 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="de">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+      </head>
       <body>
         <MeProvider>
           <Layout>{children}</Layout>

@@ -5,6 +5,7 @@
 // Subscription an /api/push/subscribe. Beim Logout wird die Subscription gelöst.
 
 import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 
@@ -29,6 +30,11 @@ function isStandalone() {
 
 export default function PushSetup() {
   const { me } = useMe();
+  const pathname = usePathname();
+  // In der Messenger-App sitzt unten eine Tab-Bar – darüber positionieren statt drauflegen
+  const inMessenger = !!pathname && pathname.startsWith("/messenger");
+  const bottomOffset = inMessenger ? 78 : 12;
+
   const [perm, setPerm] = useState("default");
   const [subscribed, setSubscribed] = useState(false);
   const [supported, setSupported] = useState(false);
@@ -164,7 +170,7 @@ export default function PushSetup() {
     return (
       <div
         style={{
-          position: "fixed", right: 12, bottom: 12, zIndex: 110,
+          position: "fixed", right: 12, bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom, 0px))`, zIndex: 110,
           background: "#fff", borderRadius: 999, padding: "8px 12px",
           boxShadow: "0 6px 18px rgba(0,0,0,0.18)", fontFamily: "Arial, sans-serif",
           fontSize: 12, display: "flex", alignItems: "center", gap: 8, border: "1px solid #eee",
@@ -195,7 +201,7 @@ export default function PushSetup() {
       role="region"
       aria-label="Benachrichtigungen aktivieren"
       style={{
-        position: "fixed", left: 12, right: 12, bottom: 12, zIndex: 110, maxWidth: 460, margin: "0 auto",
+        position: "fixed", left: 12, right: 12, bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom, 0px))`, zIndex: 110, maxWidth: 460, margin: "0 auto",
         background: "linear-gradient(135deg, #ff3e9d 0%, #b91e7c 100%)", color: "#fff",
         borderRadius: 14, padding: 14, boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
         fontFamily: "Arial, sans-serif",

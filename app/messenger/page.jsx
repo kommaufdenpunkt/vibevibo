@@ -12,6 +12,7 @@ import PresenceAvatar from "@/components/PresenceAvatar";
 import { ColoredName } from "@/components/GenderAge";
 import CreateRoomDialog from "@/components/CreateRoomDialog";
 import { getPresence } from "@/lib/presence";
+import { useTheme } from "@/lib/useTheme";
 
 export default function MessengerHome() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function MessengerHome() {
   const [tab, setTab] = useState("chats"); // chats | freunde | profil
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
+  const [theme, setTheme] = useTheme();
 
   async function reload() {
     if (!me) return;
@@ -208,14 +210,38 @@ export default function MessengerHome() {
               {me.mood && <div style={{ marginTop: 8, fontSize: 14, fontStyle: "italic", color: "#666" }}>„{me.mood}"</div>}
             </div>
 
-            <Link href="/profile" className="vv-msgapp-link-row">🌟 <span>Mein Profil</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
-            <Link href="/profile/edit" className="vv-msgapp-link-row">✏️ <span>Profil bearbeiten</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
-            <Link href="/freunde" className="vv-msgapp-link-row">👥 <span>Freunde</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
-            <Link href="/gruppen" className="vv-msgapp-link-row">👯 <span>Gruppen (Foren)</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
-            <Link href="/" className="vv-msgapp-link-row">🏠 <span>Zur Hauptseite</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
+            <div className="vv-msgapp-section">Aussehen</div>
+            <div className="vv-msgapp-link-row" style={{ borderBottom: "0.5px solid var(--vv-border)" }}>
+              <span style={{ fontSize: 18 }}>🎨</span>
+              <span style={{ flex: 1 }}>Erscheinungsbild</span>
+              <div style={{ display: "inline-flex", background: "var(--vv-input-bg)", borderRadius: 10, padding: 2, gap: 0 }}>
+                {[
+                  { v: "light",  label: "☀️" },
+                  { v: "system", label: "Auto" },
+                  { v: "dark",   label: "🌙" },
+                ].map((o) => (
+                  <button key={o.v} type="button" onClick={() => setTheme(o.v)}
+                    style={{
+                      border: "none", cursor: "pointer", padding: "6px 12px",
+                      borderRadius: 8, fontSize: 13, fontWeight: 600,
+                      background: theme === o.v ? "var(--vv-card)" : "transparent",
+                      color: theme === o.v ? "var(--vv-accent)" : "var(--vv-muted)",
+                      boxShadow: theme === o.v ? "0 1px 2px rgba(0,0,0,0.15)" : "none",
+                      font: "inherit", fontWeight: 600,
+                    }}>{o.label}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="vv-msgapp-section">Konto</div>
+            <Link href="/profile" className="vv-msgapp-link-row">🌟 <span>Mein Profil</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
+            <Link href="/profile/edit" className="vv-msgapp-link-row">✏️ <span>Profil bearbeiten</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
+            <Link href="/freunde" className="vv-msgapp-link-row">👥 <span>Freunde</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
+            <Link href="/gruppen" className="vv-msgapp-link-row">👯 <span>Gruppen (Foren)</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
+            <Link href="/" className="vv-msgapp-link-row">🏠 <span>Zur Hauptseite</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
             <button type="button" onClick={() => window.dispatchEvent(new Event("vv-pwa-install"))}
               className="vv-msgapp-link-row" style={{ background: "none", border: "none", width: "100%", textAlign: "left", cursor: "pointer", font: "inherit" }}>
-              📱 <span>Als App installieren</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span>
+              📱 <span>Als App installieren</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span>
             </button>
           </div>
         )}
