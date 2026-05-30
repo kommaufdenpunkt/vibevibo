@@ -8,6 +8,9 @@ import { api } from "@/lib/api";
 import { useMessageStream } from "@/lib/useEventStream";
 import { relTime } from "@/lib/format";
 import { getPresence } from "@/lib/presence";
+import ActivityBars from "./ActivityBars";
+import OnlineName from "./OnlineName";
+import { activityLevel, isOnlineActivity, formatLastActive } from "@/lib/activity";
 import Avatar from "./Avatar";
 import PresenceAvatar from "./PresenceAvatar";
 import { ColoredName } from "./GenderAge";
@@ -230,7 +233,9 @@ export default function ChatOverlay() {
           (u.mood || "").toLowerCase().includes(q))
       : merged;
     return filtered.sort((a, b) => {
-      if (a.user.online !== b.user.online) return a.user.online ? -1 : 1;
+      const la = activityLevel(a.user.lastSeen);
+      const lb = activityLevel(b.user.lastSeen);
+      if (la !== lb) return lb - la;
       const aT = a.convo?.at || a.user.lastSeen || 0;
       const bT = b.convo?.at || b.user.lastSeen || 0;
       return bT - aT;
@@ -247,8 +252,8 @@ export default function ChatOverlay() {
   const totalUnread =
     conversations.reduce((s, c) => s + (c.unread || 0), 0) +
     rooms.reduce((s, r) => s + (r.unread || 0), 0);
-  const onlineCount = users.filter((u) => u.online).length;
-  const partnerPresence = partnerInfo ? getPresence({ statusText: partnerInfo.mood, presence: partnerInfo.presence, online: partnerInfo.online }) : null;
+  const onlineCount = users.filter((u) => isOnlineActivity(u.lastSeen)).length;
+  const partnerPresence = partnerInfo ? getPresence({ statusText: partnerInfo.mood, presence: partnerInfo.presence, online: isOnlineActivity(partnerInfo.lastSeen) }) : null;
 
   return (
     <>
@@ -320,8 +325,11 @@ export default function ChatOverlay() {
                     {partnerInfo?.gender ? `${partnerInfo.gender}${partnerInfo.age != null ? ` ${partnerInfo.age}` : ""} ` : ""}
                     {partnerInfo?.displayName || activePartner}
                   </div>
-                  <div style={{ fontSize: 10, opacity: 0.95, display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {partnerPresence && <span style={{ color: "#fff" }}>● {partnerPresence.label}</span>}
+                  <div style={{ fontSize: 10, opacity: 0.95, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                    <ActivityBars lastSeen={partnerInfo?.lastSeen} size="sm" />
+                    {isOnlineActivity(partnerInfo?.lastSeen)
+                      ? <span style={{ fontWeight: "bold" }}>online</span>
+                      : <span>{formatLastActive(partnerInfo?.lastSeen)}</span>}
                     {muteUntil !== null && <span title="Stumm">🔕</span>}
                     {partnerInfo?.mood && <em style={{ opacity: 0.95 }}>· {partnerInfo.mood}</em>}
                   </div>
@@ -418,7 +426,8 @@ export default function ChatOverlay() {
                   <div style={{ padding: "6px 12px", fontSize: 11, color: "#555", background: "#f6f8fc", fontWeight: "bold" }}>💬 Freunde</div>
                 )}
                 {filteredUsers.map(({ user: u, convo }) => {
-                  const presenceInfo = getPresence({ statusText: u.mood, presence: u.presence, online: u.online });
+                  const onlineNow = isOnlineActivity(u.lastSeen);
+                  const presenceInfo = getPresence({ statusText: u.mood, presence: u.presence, online: onlineNow });
                   return (
                     <button
                       key={u.username}
@@ -432,15 +441,20 @@ export default function ChatOverlay() {
                     >
                       <PresenceAvatar url={u.avatarUrl} name={u.displayName} presenceInfo={presenceInfo} size={34} className="vv-avatar vv-avatar-sm" />
                       <span style={{ flex: 1, minWidth: 0, color: "#222" }}>
-                        <span style={{ display: "block", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+                        <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <OnlineName lastSeen={u.lastSeen}>
+                            <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+                          </OnlineName>
+                          <ActivityBars lastSeen={u.lastSeen} size="xs" />
                         </span>
                         {convo ? (
                           <span style={{ display: "block", fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: convo.unread > 0 ? "bold" : "normal" }}>
                             {convo.fromMe ? "Du: " : ""}{convo.lastText}
                           </span>
                         ) : (
-                          u.mood && <span style={{ display: "block", fontSize: 11, color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>
+                          <span style={{ display: "block", fontSize: 11, color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {onlineNow ? (u.mood || "online") : `zuletzt ${formatLastActive(u.lastSeen)}`}
+                          </span>
                         )}
                       </span>
                       {convo?.unread > 0 && (

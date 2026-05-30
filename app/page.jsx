@@ -10,6 +10,9 @@ import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
+import ActivityBars from "@/components/ActivityBars";
+import OnlineName from "@/components/OnlineName";
+import { isOnlineActivity } from "@/lib/activity";
 
 export default function HomePage() {
   const { me, loading } = useMe();
@@ -30,7 +33,7 @@ export default function HomePage() {
   if (!me) return <Landing />;
 
   // Eingeloggt: Klassische Feed-Startseite
-  const onlineUsers = users.filter((u) => u.online);
+  const onlineUsers = users.filter((u) => isOnlineActivity(u.lastSeen));
 
   return (
     <>
@@ -74,9 +77,11 @@ export default function HomePage() {
                 <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, background: "#23232f", textDecoration: "none" }}>
                   <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-                    <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {u.online && <span className="vv-online-dot" />}
-                      <ColoredName gender={u.gender} age={u.age} name={u.displayName} fallbackColor="#e8e8f0" />
+                    <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <OnlineName lastSeen={u.lastSeen}>
+                        <ColoredName gender={u.gender} age={u.age} name={u.displayName} fallbackColor="#e8e8f0" />
+                      </OnlineName>
+                      <ActivityBars lastSeen={u.lastSeen} size="sm" />
                     </span>
                     {u.mood && <span style={{ display: "block", fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
                   </span>
@@ -101,9 +106,11 @@ export default function HomePage() {
                   <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, background: "#23232f", textDecoration: "none" }}>
                     <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-                      <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        <span className="vv-online-dot" />
-                        <ColoredName gender={u.gender} age={u.age} name={u.displayName} fallbackColor="#e8e8f0" />
+                      <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <OnlineName lastSeen={u.lastSeen}>
+                          <ColoredName gender={u.gender} age={u.age} name={u.displayName} fallbackColor="#e8e8f0" />
+                        </OnlineName>
+                        <ActivityBars lastSeen={u.lastSeen} size="sm" />
                       </span>
                       {u.mood && <span style={{ display: "block", fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
                     </span>

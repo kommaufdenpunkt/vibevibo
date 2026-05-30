@@ -9,6 +9,8 @@ import ProfileSkin from "./ProfileSkin";
 import PicGallery from "./PicGallery";
 import { ColoredName } from "./GenderAge";
 import Avatar from "./Avatar";
+import ActivityBars from "./ActivityBars";
+import OnlineName from "./OnlineName";
 import Gaestebuch from "./Gaestebuch";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
@@ -165,14 +167,10 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
             </h2>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
               <span style={{ background: "#e3e6f1", color: "#555", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>@{profile.username}</span>
-              {profile.online ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#e8fff0", color: "#0a7a31", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: "bold", border: "1px solid #a8ecbf" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#0aff44", boxShadow: "0 0 6px rgba(10,255,68,0.75)", animation: "pulse 1.5s infinite" }} />
-                  online
-                </span>
-              ) : (
-                <span style={{ background: "#f1f1f5", color: "#888", padding: "2px 9px", borderRadius: 10, fontSize: 12 }}>offline</span>
-              )}
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: profile.online ? "#e8fff0" : "#f1f1f5", color: profile.online ? "#0a7a31" : "#888", padding: "3px 10px", borderRadius: 10, fontSize: 12, fontWeight: profile.online ? "bold" : 400, border: profile.online ? "1px solid #a8ecbf" : "1px solid #e5e5ea" }}>
+                <ActivityBars lastSeen={profile.lastSeen} size="sm" />
+                {profile.online ? "online" : "offline"}
+              </span>
               {profile.mood && (
                 <span style={{ background: "linear-gradient(90deg, #ffd6e7, #ffeaf3)", color: "#a01062", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>💭 {profile.mood}</span>
               )}
@@ -256,9 +254,11 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
                   <Link key={v.username} href={`/u/${v.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, background: "#23232f", textDecoration: "none" }}>
                     <Avatar url={v.avatarUrl} name={v.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-                      <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {v.online && <span className="vv-online-dot" />}
-                        <ColoredName gender={v.gender} age={v.age} name={v.displayName} fallbackColor="#e8e8f0" />
+                      <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <OnlineName lastSeen={v.lastSeen}>
+                          <ColoredName gender={v.gender} age={v.age} name={v.displayName} fallbackColor="#e8e8f0" />
+                        </OnlineName>
+                        <ActivityBars lastSeen={v.lastSeen} size="sm" />
                       </span>
                       {v.mood && <span style={{ display: "block", fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.mood}</span>}
                     </span>

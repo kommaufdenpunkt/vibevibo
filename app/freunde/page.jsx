@@ -6,6 +6,9 @@ import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
+import ActivityBars from "@/components/ActivityBars";
+import OnlineName from "@/components/OnlineName";
+import { activityLevel, isOnlineActivity, formatLastActive } from "@/lib/activity";
 
 export default function FriendsPage() {
   const { me } = useMe();
@@ -27,6 +30,11 @@ export default function FriendsPage() {
       (u.displayName || "").toLowerCase().includes(f) ||
       (u.mood || "").toLowerCase().includes(f)
     );
+  }).sort((a, b) => {
+    const la = activityLevel(a.lastSeen);
+    const lb = activityLevel(b.lastSeen);
+    if (la !== lb) return lb - la;
+    return (b.lastSeen || 0) - (a.lastSeen || 0);
   });
 
   return (
@@ -43,10 +51,14 @@ export default function FriendsPage() {
           <Link key={u.username} className="vv-friend-tile" href={`/u/${u.username}`}>
             <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-md" />
             <span className="vv-friend-name">
-              {u.online && <span className="vv-online-dot" />}
-              <ColoredName gender={u.gender} age={u.age} name={u.displayName} size="0.95em" />
+              <OnlineName lastSeen={u.lastSeen}>
+                <ColoredName gender={u.gender} age={u.age} name={u.displayName} size="0.95em" />
+              </OnlineName>
             </span>
-            <span className="vv-muted">{u.mood}</span>
+            <ActivityBars lastSeen={u.lastSeen} size="xs" />
+            <span className="vv-muted" style={{ fontSize: 11 }}>
+              {isOnlineActivity(u.lastSeen) ? (u.mood || "online") : `zuletzt ${formatLastActive(u.lastSeen)}`}
+            </span>
           </Link>
         ))}
         {list.length === 0 && <div className="vv-muted">Keine Treffer.</div>}
