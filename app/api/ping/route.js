@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { autoApproveStalePics, purgeOldFailedLogins } from "@/lib/db";
+import { maybeScanForFarming } from "@/lib/vibesAi";
 
 // Leichter Heartbeat-Endpoint: getSessionUser ruft intern touchUser auf,
 // hält damit den last_seen / Online-Status aktuell.
@@ -15,6 +16,7 @@ export async function POST() {
     try {
       autoApproveStalePics(30 * 60_000); // Pending-Profilbilder älter als 30 Min freigeben
       purgeOldFailedLogins(7 * 24 * 3600_000);
+      maybeScanForFarming(); // Vibes-KI: Bot-/Multi-Account-/Burst-Erkennung
     } catch {}
   }
   return NextResponse.json({ online: !!user });

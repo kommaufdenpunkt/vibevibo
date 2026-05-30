@@ -11,6 +11,8 @@ import {
   listPendingPhotos, listRejectedPhotos, setPhotoStatus, getPhoto,
   listOpenReports, getReportSnippet, resolveReport,
   logMod, updateUser, ageFromBirthdate,
+  listAllVibesTx, listAuditLog, topVibesEarners, suspiciousVibesPatterns, vibesGiftPairs,
+  adminGrantCredits, getCredits, listEarnBlockedUsers, unblockEarnForUser, getUserIdByUsername,
 } from "@/lib/db";
 import GenderAge from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
@@ -45,6 +47,8 @@ const TABS = [
   ["geraete", "📱 Geräte"],
   ["userakte", "📁 Userakte"],
   ["ips", "⛔ IP-Sperren"],
+  ["vibeslog", "✨ Vibes-Log"],
+  ["audit", "📜 Audit-Log"],
 ];
 
 export default async function AdminPage({ searchParams }) {
@@ -130,6 +134,19 @@ export default async function AdminPage({ searchParams }) {
     }
     else if (action === "unblockip" && ip) unblockIp(ip);
     else if (action === "blockip" && ip) blockIp(ip, "manuell gesperrt");
+    else if (action === "grantVibes" && uname) {
+      const x = getUserByUsername(uname);
+      const n = Number(sp.amt) || 0;
+      const reason = typeof sp.r === "string" ? sp.r : "Admin-Gutschrift";
+      if (x && n !== 0) {
+        adminGrantCredits(x.id, n, reason);
+        logMod({ userId: x.id, kind: "vibes", decision: n > 0 ? "+" + n : String(n), reason, by: "admin" });
+      }
+    }
+    else if (action === "unblockEarn" && uname) {
+      const uid = getUserIdByUsername(uname);
+      if (uid) { unblockEarnForUser(uid); logMod({ userId: uid, kind: "vibes", decision: "earn_unblocked", reason: "Admin", by: "admin" }); }
+    }
     const keepU = (tab === "userakte" && uname) ? `&u=${encodeURIComponent(uname)}` : "";
     redirect(`/admin?pw=${encodeURIComponent(pw)}&tab=${tab}${keepU}`);
   }
@@ -163,6 +180,8 @@ export default async function AdminPage({ searchParams }) {
       {tab === "geraete" && <Geraete q={q} />}
       {tab === "userakte" && <Userakte q={q} pw={pw} uParam={uParam} />}
       {tab === "ips" && <IpSperren q={q} pw={pw} />}
+      {tab === "vibeslog" && <VibesLog q={q} pw={pw} />}
+      {tab === "audit" && <AuditLog q={q} />}
     </>
   );
 }
@@ -595,6 +614,194 @@ function IpSperren({ q, pw }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+const VIBES_REASON_LABEL = {
+  daily: "🎁 Tages-Bonus",
+  gruscheln_send: "🫶 Gegruschelt",
+  gruscheln_recv: "🫶 Wurde gegruschelt",
+  pinnwand: "📌 Pinnwand-Beitrag",
+  gift_send: "🎀 Geschenk verschickt",
+  gift_recv: "🎀 Geschenk bekommen",
+  like_recv: "❤️ Like bekommen",
+  photo_upload: "📷 Foto hochgeladen",
+  admin_grant: "👑 Admin-Gutschrift",
+};
+
+function VibesLog({ q, pw }) {
+  const recent = listAllVibesTx({ limit: 80 });
+  const top = topVibesEarners(15);
+  const suspicious = suspiciousVibesPatterns();
+  const pairs = vibesGiftPairs(20);
+  const blocked = listEarnBlockedUsers();
+
+  return (
+    <>
+      {/* KI-Block-Liste */}
+      {blocked.length > 0 && (
+        <div className="vv-card" style={{ background: "#fffbeb", borderColor: "#fde68a" }}>
+          <h3>🤖 Von KI gesperrte Earn-Konten ({blocked.length})</h3>
+          <p className="vv-muted" style={{ fontSize: 12 }}>
+            Diese User dürfen aktuell keine Vibes durch Aktivität verdienen. Daily-Bonus + Admin-Gutschrift gehen weiter.
+          </p>
+          {blocked.map((b) => (
+            <div key={b.userId} className="vv-admin-row">
+              <a href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(b.username)}`} style={{ color: "#92400e", flex: 1, fontWeight: 600 }}>@{b.username}</a>
+              <span style={{ fontSize: 12, color: "#92400e" }}>{b.reason || "—"}</span>
+              <span style={{ fontSize: 11, color: "#666" }}>bis {new Date(b.until).toLocaleString("de-DE")}</span>
+              <a className="vv-btn" href={`/admin?${q}&tab=vibeslog&do=unblockEarn&u=${encodeURIComponent(b.username)}`}>Aufheben</a>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Manueller Buchungs-Block */}
+      <div className="vv-card">
+        <h3>👑 Vibes manuell buchen</h3>
+        <p className="vv-muted" style={{ fontSize: 12, marginTop: 4 }}>
+          Positiver Betrag = gutschreiben. Negativ = abziehen. Umgeht alle Anti-Inflation-Limits.
+        </p>
+        <form method="GET" action="/admin" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 2fr auto", gap: 6, marginTop: 8 }}>
+          <input type="hidden" name="pw" value={pw} />
+          <input type="hidden" name="tab" value="vibeslog" />
+          <input type="hidden" name="do" value="grantVibes" />
+          <input className="vv-input" name="u" placeholder="Username" required />
+          <input className="vv-input" name="amt" type="number" placeholder="±N" required />
+          <input className="vv-input" name="r" placeholder="Grund (optional)" />
+          <button type="submit" className="vv-btn vv-btn-pink">✨ Buchen</button>
+        </form>
+      </div>
+
+      {/* Top-Sammler */}
+      <div className="vv-card">
+        <h3>🏆 Top-Sammler ({top.length})</h3>
+        {top.length === 0 ? <div className="vv-muted">Noch keine Daten.</div> : (
+          <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
+            <thead><tr style={{ textAlign: "left", color: "#666" }}>
+              <th>User</th><th>Saldo</th><th>Total</th><th>Streak</th>
+            </tr></thead>
+            <tbody>
+              {top.map((t) => (
+                <tr key={t.userId} style={{ borderTop: "1px solid #eee" }}>
+                  <td style={{ padding: "6px 0" }}>
+                    <a href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(t.username)}`} style={{ color: "#1f5fa8" }}>
+                      {t.displayName} <span className="vv-muted">@{t.username}</span>
+                    </a>
+                  </td>
+                  <td>✨ {t.balance}</td>
+                  <td>{t.totalEarned}</td>
+                  <td>🔥 {t.streak || 0}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Verdächtige Muster */}
+      {suspicious.length > 0 && (
+        <div className="vv-card" style={{ background: "#fff5f5", borderColor: "#fecaca" }}>
+          <h3 style={{ color: "#b91c1c" }}>🚨 Verdächtige Vibes-Muster (24h)</h3>
+          <p className="vv-muted" style={{ fontSize: 12 }}>
+            Mehr als 20 Earns in 24h. Multi-Account-Verdacht prüfen.
+          </p>
+          {suspicious.map((s) => (
+            <div key={s.userId} className="vv-admin-row">
+              <a href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(s.username)}`} style={{ color: "#b91c1c", flex: 1, fontWeight: 600 }}>
+                @{s.username}
+              </a>
+              <span style={{ fontSize: 12, color: "#666" }}>
+                {s.earnCount} Earns · +{s.totalEarned24h} ✨ · {s.uniqueRefs} eindeutige Quellen
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Häufigste Sender→Empfänger-Paare (Multi-Account-Detector) */}
+      {pairs.length > 0 && (
+        <div className="vv-card">
+          <h3>🔗 Häufige Sender→Empfänger (7 Tage)</h3>
+          <p className="vv-muted" style={{ fontSize: 12 }}>
+            Wenn dieselbe Person sehr oft Vibes von derselben Quelle bekommt: Multi-Account-Check.
+          </p>
+          <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
+            <thead><tr style={{ textAlign: "left", color: "#666" }}>
+              <th>Empfänger</th><th>Sender</th><th>Anzahl</th><th>Summe</th>
+            </tr></thead>
+            <tbody>
+              {pairs.map((p, i) => (
+                <tr key={i} style={{ borderTop: "1px solid #eee" }}>
+                  <td>@{p.recipient}</td>
+                  <td>@{p.sender || "?"}</td>
+                  <td>{p.gifts}</td>
+                  <td>+{p.sumAmount} ✨</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Letzte Transaktionen */}
+      <div className="vv-card">
+        <h3>📜 Letzte 80 Transaktionen</h3>
+        <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+          <thead><tr style={{ textAlign: "left", color: "#666" }}>
+            <th>Zeit</th><th>User</th><th>Grund</th><th style={{ textAlign: "right" }}>Betrag</th>
+          </tr></thead>
+          <tbody>
+            {recent.map((t) => (
+              <tr key={t.id} style={{ borderTop: "1px solid #eee" }}>
+                <td style={{ padding: "5px 0", color: "#888", whiteSpace: "nowrap" }}>{relTime(t.at)}</td>
+                <td>
+                  <a href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(t.username)}`} style={{ color: "#1f5fa8" }}>
+                    @{t.username}
+                  </a>
+                </td>
+                <td>{VIBES_REASON_LABEL[t.reason] || t.reason}</td>
+                <td style={{ textAlign: "right", color: t.amount > 0 ? "#0d8a3f" : "#c2185b", fontWeight: 600 }}>
+                  {t.amount > 0 ? "+" : ""}{t.amount}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function AuditLog({ q }) {
+  const recent = listAuditLog({ limit: 150 });
+  return (
+    <div className="vv-card">
+      <h3>📜 Audit-Log ({recent.length})</h3>
+      <p className="vv-muted" style={{ fontSize: 12 }}>
+        Sicherheits- und Aktivitäts-Events: Login, 2FA, Push, Anrufe, Sanktionen.
+      </p>
+      <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+        <thead><tr style={{ textAlign: "left", color: "#666" }}>
+          <th>Zeit</th><th>User</th><th>Aktion</th><th>IP</th><th>Detail</th>
+        </tr></thead>
+        <tbody>
+          {recent.map((a) => (
+            <tr key={a.id} style={{ borderTop: "1px solid #eee" }}>
+              <td style={{ padding: "5px 4px", color: "#888", whiteSpace: "nowrap" }}>{relTime(a.at)}</td>
+              <td>
+                {a.username
+                  ? <a href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(a.username)}`} style={{ color: "#1f5fa8" }}>@{a.username}</a>
+                  : <span className="vv-muted">—</span>}
+              </td>
+              <td><code style={{ fontSize: 11, color: a.action.includes("fail") ? "#c2185b" : a.action.includes(".ok") ? "#0d8a3f" : "#444" }}>{a.action}</code></td>
+              <td style={{ color: "#666", fontSize: 11 }}>{a.ip || "—"}</td>
+              <td style={{ color: "#666", fontSize: 11 }}>{a.detail || "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
