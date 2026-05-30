@@ -7,11 +7,16 @@ import Footer from "@/components/Footer";
 import { useMe } from "@/lib/useMe";
 
 // Entscheidet ob Banner/Navbar gezeigt werden.
-// Auf der Landing (/) ohne Login: nur die nackte Landing, ohne Page-Container.
+// - Landing (/) ohne Login: nur die nackte Landing
+// - Messenger-Detail (/messenger/USERNAME oder /messenger/rooms/ID): vollflächig, kein Navbar/Footer
 export default function Layout({ children }) {
   const { me, loading } = useMe();
   const pathname = usePathname();
   const isLanding = pathname === "/" && !me && !loading;
+  const isMessengerDetail =
+    !!pathname &&
+    pathname.startsWith("/messenger/") &&
+    pathname !== "/messenger/manifest.webmanifest";
 
   if (isLanding) {
     return (
@@ -20,6 +25,11 @@ export default function Layout({ children }) {
         <Footer />
       </div>
     );
+  }
+
+  if (isMessengerDetail) {
+    // Vollflächiger PWA-Modus: Chat-Seite kümmert sich um alles selbst.
+    return <div className="vv-app-fullscreen">{children}</div>;
   }
 
   return (
@@ -31,3 +41,4 @@ export default function Layout({ children }) {
     </div>
   );
 }
+

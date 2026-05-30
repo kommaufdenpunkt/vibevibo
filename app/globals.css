@@ -2447,3 +2447,165 @@ input[type="number"], input[type="tel"], textarea, select {
 
 /* Längere Texte / Mention-Hervorhebungen brechen sauber */
 .vv-msg-text, .vv-conv-preview, .vv-conv-name { overflow-wrap: anywhere; word-break: break-word; }
+
+/* =====================================================
+   Vollflächiger Messenger-PWA-Modus (Mobile + Desktop)
+   /messenger/USERNAME und /messenger/rooms/ID
+   ===================================================== */
+
+.vv-app-fullscreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #eef3fb 0%, #f8fafc 100%);
+  overflow: hidden;
+  /* dvh ist iPhone-Safari-tauglich (URL-Leiste wird berücksichtigt) */
+  height: 100vh;
+  height: 100dvh;
+}
+
+.vv-app-fullscreen .vv-card {
+  flex: 1 1 0;
+  margin: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Eine ggf. dazwischenliegende generische Grid-/Wrapper-Schicht (wie in
+   /messenger/[username]) flach klopfen, damit die Höhe sauber durchgereicht wird. */
+.vv-app-fullscreen .vv-card > div {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* .vv-msg-list ist ein Grid (Sidebar + Chat) — bleibt Grid, füllt Höhe */
+.vv-app-fullscreen .vv-msg-list {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+}
+
+/* Chat-Container im Fullscreen-Modus: füllt die ganze Höhe der Grid-Spalte */
+.vv-app-fullscreen .vv-chat-window {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+/* Sidebar mit Chatliste ab >900px sichtbar, sonst weg */
+.vv-app-fullscreen .vv-conversation-list { display: none; }
+
+@media (min-width: 900px) {
+  .vv-app-fullscreen .vv-conversation-list {
+    display: block;
+    flex-shrink: 0;
+    width: 260px;
+    border-right: 1px solid #e2e6ee;
+    background: #fff;
+    overflow-y: auto;
+  }
+  .vv-app-fullscreen .vv-msg-list {
+    grid-template-columns: 260px minmax(0,1fr) !important;
+    height: 100%;
+  }
+}
+
+/* Chat-Header: oben fixiert, mit Notch-Polster */
+.vv-app-fullscreen .vv-chat-window > div:first-child {
+  flex-shrink: 0;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px)) !important;
+}
+
+/* Nachrichten-Bereich: scrollt, nimmt den Rest des Raums */
+.vv-app-fullscreen .vv-chat-messages {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 8px;
+}
+
+/* Eingabe-Formular: unten verankert mit Home-Indikator-Polster */
+.vv-app-fullscreen .vv-chat-window form {
+  flex-shrink: 0;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  border-top: 1px solid #e2e6ee;
+  background: #fff;
+}
+
+/* Letzte Zeile (Optional, z.B. "Großer Messenger"-Link) */
+.vv-app-fullscreen .vv-chat-window > div:last-child {
+  flex-shrink: 0;
+}
+
+/* Mobile-Spezifika: Header kompakter, Buttons größere Touch-Targets */
+@media (max-width: 700px) {
+  .vv-app-fullscreen .vv-chat-window > div:first-child {
+    gap: 6px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  /* Avatar im Header etwas kleiner */
+  .vv-app-fullscreen .vv-chat-window > div:first-child .vv-avatar {
+    width: 34px !important; height: 34px !important;
+  }
+  /* Action-Buttons (📞 📹 👋 ⋮) als runde 36px-Icons mit mehr Tap-Fläche */
+  .vv-app-fullscreen .vv-chat-window > div:first-child button {
+    min-width: 36px; min-height: 36px;
+    padding: 6px !important;
+    border-radius: 50% !important;
+    font-size: 16px !important;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-right: 2px !important;
+  }
+  /* Mood/Mute/Retention-Pills auf kleinen Geräten kompakter */
+  .vv-app-fullscreen .vv-chat-window > div:first-child em {
+    display: none;
+  }
+}
+
+/* Sehr schmale Bildschirme (iPhone SE): noch sparsamer */
+@media (max-width: 380px) {
+  .vv-app-fullscreen .vv-chat-window > div:first-child button {
+    min-width: 32px; min-height: 32px; font-size: 14px !important;
+  }
+}
+
+/* Bubble-Größe & Lesbarkeit im Fullscreen */
+.vv-app-fullscreen .vv-chat-messages > div > div > div {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+}
+
+/* iOS PWA Standalone: extra Notch-Polster */
+@media (display-mode: standalone) {
+  .vv-app-fullscreen .vv-chat-window > div:first-child {
+    padding-top: calc(14px + env(safe-area-inset-top, 0px)) !important;
+  }
+}
+
+/* Messenger-Liste auf Mobile: jeder Conversation/Room-Eintrag ist groß genug zum Tippen */
+@media (max-width: 700px) {
+  .vv-conv-entry {
+    padding: 12px 10px !important;
+    min-height: 60px;
+    gap: 10px !important;
+  }
+  .vv-conv-name { font-size: 14px; }
+  .vv-conv-preview { font-size: 12px; }
+  .vv-friends-grid {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)) !important;
+  }
+}
