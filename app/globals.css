@@ -2609,3 +2609,211 @@ input[type="number"], input[type="tel"], textarea, select {
     grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)) !important;
   }
 }
+
+/* =====================================================
+   Messenger-PWA Home (/messenger): iOS-App-Look
+   ===================================================== */
+
+.vv-msgapp {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  background: #f2f2f7;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1c1c1e;
+}
+
+.vv-msgapp-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 10px;
+  background: rgba(255,255,255,0.85);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid rgba(60,60,67,0.12);
+}
+.vv-msgapp-header-title {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.vv-msgapp-header-actions button {
+  width: 36px; height: 36px;
+  border: none; border-radius: 50%;
+  background: rgba(0,122,255,0.12);
+  color: #007aff;
+  font-size: 22px; font-weight: 300;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.vv-msgapp-search {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: #f2f2f7;
+}
+.vv-msgapp-search-input {
+  width: 100%;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(118,118,128,0.12);
+  font-size: 16px;
+  color: #1c1c1e;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.vv-msgapp-search-input::placeholder { color: rgba(60,60,67,0.6); }
+
+.vv-msgapp-main {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+  border-radius: 14px 14px 0 0;
+  margin: 4px 0 0;
+}
+
+.vv-msgapp-status {
+  padding: 10px 16px 4px;
+  font-size: 12px;
+  color: rgba(60,60,67,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.vv-msgapp-section {
+  padding: 14px 16px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(60,60,67,0.6);
+}
+
+.vv-msgapp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid rgba(60,60,67,0.1);
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  transition: background 0.12s;
+}
+.vv-msgapp-row:active { background: rgba(0,0,0,0.04); }
+.vv-msgapp-row-icon {
+  position: relative;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(118,118,128,0.08);
+  flex-shrink: 0;
+  overflow: visible;
+}
+.vv-msgapp-row-icon .vv-avatar {
+  border-radius: 50%;
+  overflow: hidden;
+}
+.vv-msgapp-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 20px; height: 20px;
+  padding: 0 6px;
+  background: #ff3b30;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 11px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+}
+.vv-msgapp-row-body {
+  flex: 1; min-width: 0;
+}
+.vv-msgapp-row-top {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 2px;
+}
+.vv-msgapp-row-name {
+  flex: 1;
+  font-size: 16px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+.vv-msgapp-row-time {
+  font-size: 13px;
+  color: rgba(60,60,67,0.6);
+  flex-shrink: 0;
+}
+.vv-msgapp-row-preview {
+  font-size: 14px;
+  color: rgba(60,60,67,0.7);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  line-height: 1.3;
+}
+
+.vv-msgapp-empty {
+  text-align: center;
+  padding: 60px 30px;
+  color: rgba(60,60,67,0.6);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.vv-msgapp-link-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border-bottom: 0.5px solid rgba(60,60,67,0.1);
+  text-decoration: none;
+  color: inherit;
+  font-size: 16px;
+}
+.vv-msgapp-link-row:first-child { border-radius: 10px 10px 0 0; }
+.vv-msgapp-link-row:last-child  { border-radius: 0 0 10px 10px; border-bottom: none; }
+
+.vv-msgapp-tabbar {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(255,255,255,0.92);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid rgba(60,60,67,0.12);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.vv-msgapp-tabbar button {
+  position: relative;
+  background: none; border: none; cursor: pointer;
+  padding: 8px 4px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: rgba(60,60,67,0.6);
+  font-size: 11px; font-weight: 500;
+  font-family: inherit;
+  transition: color 0.1s;
+}
+.vv-msgapp-tabbar button.active { color: #007aff; }
+.vv-msgapp-tabbar .vv-tab-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+.vv-msgapp-tabbar .vv-tab-badge {
+  position: absolute;
+  top: 4px; right: calc(50% - 22px);
+  min-width: 18px; height: 18px;
+  padding: 0 5px;
+  background: #ff3b30;
+  color: #fff;
+  border-radius: 9px;
+  font-size: 10px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+}

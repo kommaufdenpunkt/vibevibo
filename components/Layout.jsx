@@ -13,9 +13,9 @@ export default function Layout({ children }) {
   const { me, loading } = useMe();
   const pathname = usePathname();
   const isLanding = pathname === "/" && !me && !loading;
-  const isMessengerDetail =
+  const isMessengerApp =
     !!pathname &&
-    pathname.startsWith("/messenger/") &&
+    pathname.startsWith("/messenger") &&
     pathname !== "/messenger/manifest.webmanifest";
 
   if (isLanding) {
@@ -27,7 +27,7 @@ export default function Layout({ children }) {
     );
   }
 
-  if (isMessengerDetail) {
+  if (isMessengerApp) {
     // Vollflächiger PWA-Modus: Chat-Seite kümmert sich um alles selbst.
     return <div className="vv-app-fullscreen">{children}</div>;
   }

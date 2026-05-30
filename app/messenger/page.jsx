@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMe } from "@/lib/useMe";
@@ -13,44 +13,24 @@ import { ColoredName } from "@/components/GenderAge";
 import CreateRoomDialog from "@/components/CreateRoomDialog";
 import { getPresence } from "@/lib/presence";
 
-function RoomMosaicAvatar({ room }) {
-  const members = (room.members || []).slice(0, 4);
-  if (!members.length) {
-    return (
-      <div className="vv-avatar vv-avatar-sm" style={{ background: "linear-gradient(135deg,#a1c4fd,#c2e9fb)", color: "#fff", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {room.emoji || "💬"}
-      </div>
-    );
-  }
-  if (members.length === 1) {
-    return <Avatar url={members[0].avatarUrl} name={members[0].displayName} className="vv-avatar vv-avatar-sm" />;
-  }
-  // 2-4 Mitglieder als Mosaik
-  const cols = members.length === 2 ? "1fr 1fr" : "1fr 1fr";
-  const rows = members.length === 2 ? "1fr" : "1fr 1fr";
-  return (
-    <div className="vv-avatar vv-avatar-sm" style={{ overflow: "hidden", display: "grid", gridTemplateColumns: cols, gridTemplateRows: rows, gap: 1, background: "#fff" }}>
-      {members.map((m, i) => (
-        <Avatar key={m.id || i} url={m.avatarUrl} name={m.displayName} className="" style={{ width: "100%", height: "100%", borderRadius: 0 }} />
-      ))}
-    </div>
-  );
-}
-
-export default function MessengerListPage() {
+export default function MessengerHome() {
   const router = useRouter();
   const { me, loading } = useMe();
   const [conversations, setConversations] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
+  const [tab, setTab] = useState("chats"); // chats | freunde | profil
+  const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
 
   async function reload() {
     if (!me) return;
-    const [c, u, r] = await Promise.all([api.listConversations(), api.listUsers(), api.listRooms()]);
-    setConversations(c.conversations);
-    setUsers(u.users.filter((x) => x.username !== me.username));
-    setRooms(r.rooms || []);
+    try {
+      const [c, u, r] = await Promise.all([api.listConversations(), api.listUsers(), api.listRooms()]);
+      setConversations(c.conversations || []);
+      setUsers((u.users || []).filter((x) => x.username !== me.username));
+      setRooms(r.rooms || []);
+    } catch {}
   }
 
   useEffect(() => {
@@ -62,109 +42,201 @@ export default function MessengerListPage() {
 
   useMessageStream(!!me, { onMessage: reload, onRoomMessage: reload });
 
+  const q = query.trim().toLowerCase();
+  const filteredConvs = useMemo(() =>
+    !q ? conversations : conversations.filter((c) =>
+      (c.partnerDisplayName || "").toLowerCase().includes(q) ||
+      (c.partnerUsername || "").toLowerCase().includes(q) ||
+      (c.lastText || "").toLowerCase().includes(q)),
+    [conversations, q]);
+  const filteredRooms = useMemo(() =>
+    !q ? rooms : rooms.filter((r) => (r.name || "").toLowerCase().includes(q)),
+    [rooms, q]);
+  const filteredUsers = useMemo(() => {
+    const f = !q ? users : users.filter((u) =>
+      (u.displayName || "").toLowerCase().includes(q) ||
+      (u.username || "").toLowerCase().includes(q) ||
+      (u.mood || "").toLowerCase().includes(q));
+    return [...f].sort((a, b) => {
+      if (a.online !== b.online) return a.online ? -1 : 1;
+      return (b.lastSeen || 0) - (a.lastSeen || 0);
+    });
+  }, [users, q]);
+
   if (!me) return null;
 
   const totalUnread =
     conversations.reduce((s, c) => s + (c.unread || 0), 0) +
     rooms.reduce((s, r) => s + (r.unread || 0), 0);
+  const onlineCount = users.filter((u) => u.online).length;
 
   return (
-    <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10,
-        padding: "10px 14px",
-        background: "linear-gradient(180deg, #5fb0ff 0%, #2d7dd2 55%, #1f5fa8 100%)",
-        color: "#fff", fontFamily: "Arial, sans-serif",
-        borderBottom: "1px solid rgba(0,0,0,0.15)",
-        textShadow: "0 1px 0 rgba(0,0,0,0.25)",
-      }}>
-        <span style={{ fontSize: 22 }}>💬</span>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: "bold", fontSize: 16 }}>VibeVibo Messenger</div>
-          <div style={{ fontSize: 11, opacity: 0.95 }}>
-            {totalUnread > 0 ? <><strong>{totalUnread}</strong> ungelesen</> : "Alles gelesen ✓"}
-            {" · "}{conversations.length} Chats · {rooms.length} Gruppen
-          </div>
+    <div className="vv-msgapp">
+      {/* iOS-Style Header */}
+      <header className="vv-msgapp-header">
+        <div className="vv-msgapp-header-title">
+          {tab === "chats" && "💬 Nachrichten"}
+          {tab === "freunde" && "👥 Freunde"}
+          {tab === "profil" && "🌟 Mein VibeVibo"}
         </div>
-        <button type="button" onClick={() => setCreating(true)} style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 12, fontWeight: "bold" }}>+ Gruppe</button>
-        <a href="#install" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new Event("vv-pwa-install")); }}
-           style={{ color: "#fff", textDecoration: "underline", fontSize: 12, opacity: 0.95 }}>📱 als App</a>
-      </div>
+        <div className="vv-msgapp-header-actions">
+          {tab === "chats" && (
+            <button type="button" onClick={() => setCreating(true)} title="Neue Gruppe" aria-label="Neue Gruppe">+</button>
+          )}
+        </div>
+      </header>
 
-      <div style={{ padding: 14 }}>
-        {rooms.length > 0 && (
-          <div style={{ marginBottom: 14 }}>
-            <h3 style={{ marginTop: 0 }}>👯 Gruppen</h3>
-            {rooms.map((r) => (
-              <Link key={r.id} href={`/messenger/rooms/${r.id}`} className="vv-conv-entry">
-                <div style={{ position: "relative", flexShrink: 0, fontSize: 22, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#f7e0b0,#ffd9ec)", borderRadius: 10 }}>
-                  <span>{r.emoji || "💬"}</span>
-                  {r.unread > 0 && (
-                    <span style={{ position: "absolute", top: -4, right: -4, minWidth: 18, height: 18, padding: "0 5px", background: "#ff3e9d", color: "#fff", borderRadius: 9, fontSize: 11, fontWeight: "bold", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                      {r.unread > 99 ? "99+" : r.unread}
-                    </span>
-                  )}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="vv-conv-name">{r.name} <span className="vv-muted" style={{ fontWeight: "normal", fontSize: 11 }}>· {r.memberCount} dabei</span></div>
-                  <div className="vv-conv-preview" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: r.unread > 0 ? "bold" : "normal" }}>
-                    {r.lastText || <span className="vv-muted">Noch nichts geschrieben.</span>}
-                  </div>
-                </div>
-                {r.lastAt && <div className="vv-muted" style={{ fontSize: 11 }}>{relTime(r.lastAt)}</div>}
-              </Link>
-            ))}
-          </div>
+      {(tab === "chats" || tab === "freunde") && (
+        <div className="vv-msgapp-search">
+          <input
+            type="search" value={query} onChange={(e) => setQuery(e.target.value)}
+            placeholder={tab === "chats" ? "🔍 In Chats suchen…" : "🔍 Person suchen…"}
+            className="vv-msgapp-search-input"
+          />
+        </div>
+      )}
+
+      <main className="vv-msgapp-main">
+        {tab === "chats" && (
+          <>
+            <div className="vv-msgapp-status">
+              {totalUnread > 0
+                ? <><strong>{totalUnread}</strong> ungelesen · {onlineCount} online</>
+                : <>Alles gelesen · {onlineCount} online</>}
+            </div>
+
+            {filteredRooms.length > 0 && (
+              <>
+                <div className="vv-msgapp-section">Gruppen</div>
+                {filteredRooms.map((r) => (
+                  <Link key={r.id} href={`/messenger/rooms/${r.id}`} className="vv-msgapp-row">
+                    <div className="vv-msgapp-row-icon" style={{ background: "linear-gradient(135deg,#f7e0b0,#ffd9ec)" }}>
+                      <span style={{ fontSize: 22 }}>{r.emoji || "💬"}</span>
+                      {r.unread > 0 && <span className="vv-msgapp-badge">{r.unread > 99 ? "99+" : r.unread}</span>}
+                    </div>
+                    <div className="vv-msgapp-row-body">
+                      <div className="vv-msgapp-row-top">
+                        <span className="vv-msgapp-row-name">{r.name}</span>
+                        {r.lastAt && <span className="vv-msgapp-row-time">{relTime(r.lastAt)}</span>}
+                      </div>
+                      <div className="vv-msgapp-row-preview">
+                        {r.lastText || <span style={{ color: "#aaa" }}>noch nichts geschrieben</span>}
+                        <span style={{ marginLeft: 6, color: "#aaa", fontSize: 11 }}>· {r.memberCount}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </>
+            )}
+
+            {filteredConvs.length > 0 && (
+              <>
+                <div className="vv-msgapp-section">Chats</div>
+                {filteredConvs.map((c) => (
+                  <Link key={c.partnerUsername} href={`/messenger/${c.partnerUsername}`} className="vv-msgapp-row">
+                    <div className="vv-msgapp-row-icon" style={{ background: "transparent" }}>
+                      <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar" style={{ width: 48, height: 48 }} />
+                      {c.unread > 0 && <span className="vv-msgapp-badge">{c.unread > 99 ? "99+" : c.unread}</span>}
+                    </div>
+                    <div className="vv-msgapp-row-body">
+                      <div className="vv-msgapp-row-top">
+                        <span className="vv-msgapp-row-name">
+                          <ColoredName gender={c.partnerGender} age={c.partnerAge} name={c.partnerDisplayName} />
+                        </span>
+                        <span className="vv-msgapp-row-time">{relTime(c.at)}</span>
+                      </div>
+                      <div className="vv-msgapp-row-preview" style={{ fontWeight: c.unread > 0 ? 600 : 400 }}>
+                        {c.fromMe ? "Du: " : ""}{c.lastText}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </>
+            )}
+
+            {filteredRooms.length === 0 && filteredConvs.length === 0 && (
+              <div className="vv-msgapp-empty">
+                {q ? "Nichts gefunden." : (
+                  <>
+                    <div style={{ fontSize: 50, marginBottom: 8 }}>💬</div>
+                    Noch keine Chats. Wechsel auf <strong>Freunde</strong> und schreib jemandem!
+                  </>
+                )}
+              </div>
+            )}
+          </>
         )}
 
-        <div className="vv-grid-2">
-          <div>
-            <h3 style={{ marginTop: 0 }}>Aktive Gespräche</h3>
-            {conversations.length === 0 ? (
-              <div className="vv-muted">Noch keine Nachrichten. Schreib jemandem!</div>
-            ) : (
-              conversations.map((c) => (
-                <Link key={c.partnerUsername} href={`/messenger/${c.partnerUsername}`} className="vv-conv-entry">
-                  <div style={{ position: "relative", flexShrink: 0 }}>
-                    <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar vv-avatar-sm" />
-                    {c.unread > 0 && (
-                      <span style={{ position: "absolute", top: -4, right: -4, minWidth: 18, height: 18, padding: "0 5px", background: "#ff3e9d", color: "#fff", borderRadius: 9, fontSize: 11, fontWeight: "bold", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                        {c.unread > 99 ? "99+" : c.unread}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="vv-conv-name">
-                      <ColoredName gender={c.partnerGender} age={c.partnerAge} name={c.partnerDisplayName} />
-                    </div>
-                    <div className="vv-conv-preview" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: c.unread > 0 ? "bold" : "normal" }}>
-                      {c.fromMe ? "Du: " : ""}{c.lastText}
-                    </div>
-                  </div>
-                  <div className="vv-muted" style={{ fontSize: 11 }}>{relTime(c.at)}</div>
-                </Link>
-              ))
-            )}
-          </div>
-
-          <div>
-            <h3 style={{ marginTop: 0 }}>Neue Nachricht an…</h3>
-            <div className="vv-friends-grid">
-              {users.map((u) => {
-                const presenceInfo = getPresence({ statusText: u.mood, presence: u.presence, online: u.online });
-                return (
-                  <Link key={u.username} href={`/messenger/${u.username}`} className="vv-friend-tile">
-                    <PresenceAvatar url={u.avatarUrl} name={u.displayName} presenceInfo={presenceInfo} size={46} className="vv-avatar vv-avatar-md" />
-                    <span className="vv-friend-name">
-                      <ColoredName gender={u.gender} age={u.age} name={u.displayName} size="0.9em" />
-                    </span>
-                  </Link>
-                );
-              })}
+        {tab === "freunde" && (
+          <>
+            <div className="vv-msgapp-status">
+              {onlineCount} von {users.length} online
             </div>
+            {filteredUsers.map((u) => {
+              const presenceInfo = getPresence({ statusText: u.mood, presence: u.presence, online: u.online });
+              return (
+                <Link key={u.username} href={`/messenger/${u.username}`} className="vv-msgapp-row">
+                  <div className="vv-msgapp-row-icon" style={{ background: "transparent" }}>
+                    <PresenceAvatar url={u.avatarUrl} name={u.displayName} presenceInfo={presenceInfo} size={48} className="vv-avatar" />
+                  </div>
+                  <div className="vv-msgapp-row-body">
+                    <div className="vv-msgapp-row-top">
+                      <span className="vv-msgapp-row-name">
+                        <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+                      </span>
+                      <span className="vv-msgapp-row-time" style={{ color: presenceInfo.color }}>● {presenceInfo.label}</span>
+                    </div>
+                    <div className="vv-msgapp-row-preview">
+                      {u.mood || <span style={{ color: "#aaa" }}>@{u.username}</span>}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+            {filteredUsers.length === 0 && (
+              <div className="vv-msgapp-empty">Niemand gefunden.</div>
+            )}
+          </>
+        )}
+
+        {tab === "profil" && (
+          <div style={{ padding: "16px 14px" }}>
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 80, height: 80, margin: "0 auto" }} />
+              <h2 style={{ margin: "10px 0 2px" }}>{me.displayName}</h2>
+              <div className="vv-muted" style={{ fontSize: 13 }}>@{me.username}</div>
+              {me.mood && <div style={{ marginTop: 8, fontSize: 14, fontStyle: "italic", color: "#666" }}>„{me.mood}"</div>}
+            </div>
+
+            <Link href="/profile" className="vv-msgapp-link-row">🌟 <span>Mein Profil</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
+            <Link href="/profile/edit" className="vv-msgapp-link-row">✏️ <span>Profil bearbeiten</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
+            <Link href="/freunde" className="vv-msgapp-link-row">👥 <span>Freunde</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
+            <Link href="/gruppen" className="vv-msgapp-link-row">👯 <span>Gruppen (Foren)</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
+            <Link href="/" className="vv-msgapp-link-row">🏠 <span>Zur Hauptseite</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span></Link>
+            <button type="button" onClick={() => window.dispatchEvent(new Event("vv-pwa-install"))}
+              className="vv-msgapp-link-row" style={{ background: "none", border: "none", width: "100%", textAlign: "left", cursor: "pointer", font: "inherit" }}>
+              📱 <span>Als App installieren</span> <span style={{ marginLeft: "auto", color: "#aaa" }}>›</span>
+            </button>
           </div>
-        </div>
-      </div>
+        )}
+      </main>
+
+      <nav className="vv-msgapp-tabbar">
+        <button type="button" onClick={() => setTab("chats")} className={tab === "chats" ? "active" : ""}>
+          <span className="vv-tab-icon">💬</span>
+          <span>Chats</span>
+          {totalUnread > 0 && <span className="vv-tab-badge">{totalUnread > 99 ? "99+" : totalUnread}</span>}
+        </button>
+        <button type="button" onClick={() => setTab("freunde")} className={tab === "freunde" ? "active" : ""}>
+          <span className="vv-tab-icon">👥</span>
+          <span>Freunde</span>
+          {onlineCount > 0 && <span className="vv-tab-badge" style={{ background: "#10b981" }}>{onlineCount}</span>}
+        </button>
+        <button type="button" onClick={() => setTab("profil")} className={tab === "profil" ? "active" : ""}>
+          <span className="vv-tab-icon">🌟</span>
+          <span>Profil</span>
+        </button>
+      </nav>
 
       {creating && (
         <CreateRoomDialog
