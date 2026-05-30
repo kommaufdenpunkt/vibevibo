@@ -13,6 +13,7 @@ import {
   logMod, updateUser, ageFromBirthdate,
   listAllVibesTx, listAuditLog, topVibesEarners, suspiciousVibesPatterns, vibesGiftPairs,
   adminGrantCredits, getCredits, listEarnBlockedUsers, unblockEarnForUser, getUserIdByUsername,
+  listAllSeasonEvents, upsertSeasonEvent, deleteSeasonEvent,
 } from "@/lib/db";
 import GenderAge from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
@@ -48,6 +49,7 @@ const TABS = [
   ["userakte", "📁 Userakte"],
   ["ips", "⛔ IP-Sperren"],
   ["vibeslog", "✨ Vibes-Log"],
+  ["events", "🎉 Saison-Events"],
   ["audit", "📜 Audit-Log"],
 ];
 
@@ -147,6 +149,27 @@ export default async function AdminPage({ searchParams }) {
       const uid = getUserIdByUsername(uname);
       if (uid) { unblockEarnForUser(uid); logMod({ userId: uid, kind: "vibes", decision: "earn_unblocked", reason: "Admin", by: "admin" }); }
     }
+    else if (action === "saveEvent") {
+      try {
+        upsertSeasonEvent({
+          id: sp.eid ? Number(sp.eid) : undefined,
+          slug: sp.slug, name: sp.ename, description: sp.edesc || "", emoji: sp.eemo || "🎉",
+          multiplier: Number(sp.emul) || 100,
+          startsAt: sp.estart ? Date.parse(sp.estart) : Date.now(),
+          endsAt:   sp.eend   ? Date.parse(sp.eend)   : Date.now() + 7 * 86400_000,
+          enabled: sp.eon === "1",
+        });
+      } catch {}
+    }
+    else if (action === "deleteEvent" && sp.eid) deleteSeasonEvent(Number(sp.eid));
+    else if (action === "toggleEvent" && sp.eid) {
+      const events = listAllSeasonEvents();
+      const e = events.find((x) => x.id === Number(sp.eid));
+      if (e) upsertSeasonEvent({
+        id: e.id, slug: e.slug, name: e.name, description: e.description, emoji: e.emoji,
+        multiplier: e.multiplier, startsAt: e.startsAt, endsAt: e.endsAt, enabled: !e.enabled,
+      });
+    }
     const keepU = (tab === "userakte" && uname) ? `&u=${encodeURIComponent(uname)}` : "";
     redirect(`/admin?pw=${encodeURIComponent(pw)}&tab=${tab}${keepU}`);
   }
@@ -181,6 +204,7 @@ export default async function AdminPage({ searchParams }) {
       {tab === "userakte" && <Userakte q={q} pw={pw} uParam={uParam} />}
       {tab === "ips" && <IpSperren q={q} pw={pw} />}
       {tab === "vibeslog" && <VibesLog q={q} pw={pw} />}
+      {tab === "events" && <SeasonEvents q={q} pw={pw} />}
       {tab === "audit" && <AuditLog q={q} />}
     </>
   );
@@ -769,6 +793,75 @@ function VibesLog({ q, pw }) {
             ))}
           </tbody>
         </table>
+      </div>
+    </>
+  );
+}
+
+function SeasonEvents({ q, pw }) {
+  const events = listAllSeasonEvents();
+  const now = Date.now();
+  function fmtInput(ts) { return new Date(ts).toISOString().slice(0, 16); }
+
+  return (
+    <>
+      <div className="vv-card">
+        <h3>🎉 Neues Saison-Event anlegen</h3>
+        <p className="vv-muted" style={{ fontSize: 12 }}>
+          Während aktive Events laufen werden ALLE Vibes-Earns automatisch mit dem
+          Multiplikator hochgerechnet (z.B. 200 = ×2.0).
+        </p>
+        <form method="GET" action="/admin" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <input type="hidden" name="pw" value={pw} />
+          <input type="hidden" name="tab" value="events" />
+          <input type="hidden" name="do" value="saveEvent" />
+          <input className="vv-input" name="slug" placeholder="slug (z.B. halloween26)" required />
+          <input className="vv-input" name="ename" placeholder="Name (z.B. Halloween-Spuk)" required />
+          <input className="vv-input" name="eemo" placeholder="Emoji (🎃)" defaultValue="🎉" maxLength={6} />
+          <input className="vv-input" name="emul" type="number" min="50" max="500" placeholder="Multiplier ×100 (200=2.0x)" defaultValue="150" required />
+          <input className="vv-input" name="estart" type="datetime-local" defaultValue={fmtInput(now)} required />
+          <input className="vv-input" name="eend" type="datetime-local" defaultValue={fmtInput(now + 7 * 86400_000)} required />
+          <input className="vv-input" name="edesc" placeholder="Beschreibung (kurz)" style={{ gridColumn: "1 / -1" }} />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, gridColumn: "1 / -1" }}>
+            <input type="checkbox" name="eon" value="1" defaultChecked /> Direkt aktiv
+          </label>
+          <button type="submit" className="vv-btn vv-btn-pink" style={{ gridColumn: "1 / -1" }}>🎉 Event speichern</button>
+        </form>
+      </div>
+
+      <div className="vv-card">
+        <h3>📅 Vorhandene Events ({events.length})</h3>
+        {events.length === 0 ? <div className="vv-muted">Noch keine Events.</div> : (
+          events.map((e) => {
+            const active = e.enabled && e.startsAt <= now && e.endsAt >= now;
+            const upcoming = e.enabled && e.startsAt > now;
+            return (
+              <div key={e.id} className="vv-admin-row" style={{
+                background: active ? "#e8fff0" : "#fff",
+                borderLeft: active ? "4px solid #10b981" : "4px solid transparent",
+                padding: 10, marginBottom: 6, borderRadius: 8,
+              }}>
+                <span style={{ fontSize: 24 }}>{e.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>
+                    {e.name} <span className="vv-muted" style={{ fontSize: 11 }}>({e.slug})</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#666" }}>
+                    ×{(e.multiplier / 100).toFixed(2)} · {new Date(e.startsAt).toLocaleString("de-DE")} → {new Date(e.endsAt).toLocaleString("de-DE")}
+                    {active && <span style={{ color: "#0d8a3f", fontWeight: 700, marginLeft: 6 }}>● JETZT AKTIV</span>}
+                    {upcoming && <span style={{ color: "#1f5fa8", marginLeft: 6 }}>(geplant)</span>}
+                  </div>
+                  {e.description && <div style={{ fontSize: 11, color: "#999", fontStyle: "italic" }}>{e.description}</div>}
+                </div>
+                <a className="vv-btn" href={`/admin?${q}&tab=events&do=toggleEvent&eid=${e.id}`}>
+                  {e.enabled ? "🔴 Aus" : "🟢 An"}
+                </a>
+                <a className="vv-btn" href={`/admin?${q}&tab=events&do=deleteEvent&eid=${e.id}`}
+                  style={{ color: "#c2185b" }}>🗑</a>
+              </div>
+            );
+          })
+        )}
       </div>
     </>
   );

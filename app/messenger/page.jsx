@@ -14,6 +14,7 @@ import CreateRoomDialog from "@/components/CreateRoomDialog";
 import ActivityBars from "@/components/ActivityBars";
 import OnlineName from "@/components/OnlineName";
 import ViboPet from "@/components/ViboPet";
+import CreditsPanel from "@/components/CreditsPanel";
 import { getPresence } from "@/lib/presence";
 import { useTheme } from "@/lib/useTheme";
 import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
@@ -220,7 +221,12 @@ export default function MessengerHome() {
           </>
         )}
 
-        {tab === "vibo" && <ViboPet />}
+        {tab === "vibo" && (
+          <>
+            <CreditsPanel />
+            <ViboPet />
+          </>
+        )}
 
         {tab === "profil" && (
           <div style={{ padding: "16px 14px" }}>
@@ -291,6 +297,37 @@ export default function MessengerHome() {
               className="vv-msgapp-link-row" style={{ background: "none", border: "none", width: "100%", textAlign: "left", cursor: "pointer", font: "inherit" }}>
               📱 <span>Als App installieren</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span>
             </button>
+
+            {/* Spenden-Box */}
+            <div style={{
+              marginTop: 20, padding: 16, borderRadius: 14,
+              background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+              border: "1px solid #fbbf24",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: 32 }}>💛</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "#92400e", marginTop: 6 }}>
+                VibeVibo am Leben halten
+              </div>
+              <div style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5, marginTop: 4 }}>
+                Server kostet Geld. Wenn dir VibeVibo gefällt, spende einen Kaffee.
+                <strong> Keine Gegenleistung, keine Vibes-Boost — einfach Danke.</strong>
+              </div>
+              <a
+                href="https://ko-fi.com/vibevibo"
+                target="_blank" rel="noopener noreferrer"
+                style={{
+                  display: "inline-block", marginTop: 10,
+                  background: "#92400e", color: "#fff",
+                  padding: "8px 16px", borderRadius: 10,
+                  textDecoration: "none", fontWeight: 700, fontSize: 13,
+                }}>
+                ☕ Bei Ko-fi unterstützen
+              </a>
+              <div style={{ fontSize: 10, color: "#92400e", opacity: 0.7, marginTop: 8 }}>
+                Freiwillige Zuwendung an den Plattform-Betreiber · keine Spende im steuerlichen Sinne
+              </div>
+            </div>
           </div>
         )}
       </main>

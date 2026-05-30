@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import NotificationsBell from "./NotificationsBell";
+import VibesNavBadge from "./VibesNavBadge";
 
 const LINKS = [
   { href: "/", icon: "🏠", label: "Start" },
@@ -108,7 +109,8 @@ export default function Navbar() {
         <div className="vv-spacer" />
 
         {me ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <VibesNavBadge />
             <NotificationsBell />
           <div style={{ position: "relative" }}>
             <button

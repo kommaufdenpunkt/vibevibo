@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import ViboSprite from "./ViboSprite";
+import ViboCemetery from "./ViboCemetery";
 import { ACTIONS, SPECIES, stageInfo } from "@/lib/vibo";
 
 function Stat({ label, value, color }) {
@@ -156,6 +157,7 @@ export default function ViboPet() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionBusy, setActionBusy] = useState("");
+  const [showCemetery, setShowCemetery] = useState(false);
 
   async function load() {
     try {
@@ -182,11 +184,23 @@ export default function ViboPet() {
     } finally { setActionBusy(""); }
   }
 
+  if (showCemetery) return <ViboCemetery onBack={() => setShowCemetery(false)} />;
+
   if (loading) return <div style={{ textAlign: "center", padding: 30 }}>Lade dein VIBO…</div>;
 
   // Noch keins → Hatchery
   if (!vibo) {
-    return <Hatchery onHatched={(v) => setVibo(v)} />;
+    return (
+      <>
+        <Hatchery onHatched={(v) => setVibo(v)} />
+        <div style={{ textAlign: "center", marginTop: 8 }}>
+          <button type="button" onClick={() => setShowCemetery(true)}
+            style={{ background: "none", border: "none", color: "var(--vv-accent, #007aff)", fontSize: 13, cursor: "pointer" }}>
+            🏆 Friedhof besuchen
+          </button>
+        </div>
+      </>
+    );
   }
 
   const isDead = vibo.stage === "dead";
