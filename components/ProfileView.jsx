@@ -135,17 +135,6 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
               className=""
               style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}
             />
-            {/* Klassischer pulsierender Online-Punkt */}
-            {profile.online && (
-              <span aria-hidden="true" style={{
-                position: "absolute", bottom: 4, right: 4,
-                width: 14, height: 14, borderRadius: "50%",
-                background: "#0aff44",
-                border: "2px solid #fff",
-                boxShadow: "0 0 6px rgba(10,255,68,0.7)",
-                animation: "pulse 1.5s infinite",
-              }} />
-            )}
             {/* Owner: kleine Kamera als Klick-Hint (Klick laeuft ueber Wrapper) */}
             {isOwner && (
               <span aria-hidden="true" style={{
@@ -176,6 +165,14 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
             </h2>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
               <span style={{ background: "#e3e6f1", color: "#555", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>@{profile.username}</span>
+              {profile.online ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#e8fff0", color: "#0a7a31", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: "bold", border: "1px solid #a8ecbf" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#0aff44", boxShadow: "0 0 6px rgba(10,255,68,0.75)", animation: "pulse 1.5s infinite" }} />
+                  online
+                </span>
+              ) : (
+                <span style={{ background: "#f1f1f5", color: "#888", padding: "2px 9px", borderRadius: 10, fontSize: 12 }}>offline</span>
+              )}
               {profile.mood && (
                 <span style={{ background: "linear-gradient(90deg, #ffd6e7, #ffeaf3)", color: "#a01062", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>💭 {profile.mood}</span>
               )}

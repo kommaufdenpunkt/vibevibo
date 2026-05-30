@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
 import SmileyPicker from "./SmileyPicker";
+import MentionTextarea from "./MentionTextarea";
 
 // Bild im Browser auf 600px verkleinern -> kleines JPEG
 function fileToPostImage(file) {
@@ -65,12 +66,11 @@ export default function WallComposer({ targetUsername, onPosted, placeholder = "
 
   return (
     <form onSubmit={submit}>
-      <textarea
-        className="vv-textarea"
+      <MentionTextarea
         rows={2}
         value={text}
         maxLength={1000}
-        onChange={(e) => setText(e.target.value)}
+        onChange={setText}
         placeholder={placeholder}
       />
       {image && (
