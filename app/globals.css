@@ -2373,3 +2373,77 @@ body.vv-hide-sensitive .vv-chat-messages {
 .vv-waitlist-emoji { font-size: 56px; margin-bottom: 8px; animation: wobble 1.5s ease-in-out infinite alternate; }
 .vv-waitlist-box h2 { color: var(--vv-yellow); text-shadow: 1px 1px 0 #000; margin: 0 0 10px; }
 .vv-waitlist-box p { color: rgba(255,255,255,0.9); line-height: 1.6; margin-bottom: 18px; }
+
+/* =====================================================
+   Mobile-Optimierungen: iPhone-Notch, Touch-Targets,
+   bessere Lesbarkeit auf kleinen Bildschirmen.
+   ===================================================== */
+
+:root {
+  --vv-safe-top:    env(safe-area-inset-top, 0px);
+  --vv-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --vv-safe-left:   env(safe-area-inset-left, 0px);
+  --vv-safe-right:  env(safe-area-inset-right, 0px);
+}
+
+html, body {
+  -webkit-tap-highlight-color: rgba(255, 62, 157, 0.15);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+* { -webkit-touch-callout: none; }
+input, textarea, [contenteditable] { -webkit-touch-callout: default; user-select: text; }
+
+/* Schwebende UI an Safe-Area-Inset anpassen (iPhone-Notch / Home-Indikator) */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: var(--vv-safe-top);
+    padding-bottom: var(--vv-safe-bottom);
+    padding-left: var(--vv-safe-left);
+    padding-right: var(--vv-safe-right);
+  }
+}
+
+/* Touch-Targets mindestens 44x44 px – Apple HIG / WCAG */
+.vv-btn,
+button:not(.vv-link),
+.vv-conv-entry,
+.vv-friend-tile,
+.vv-input,
+input[type="text"], input[type="search"], input[type="password"], input[type="email"],
+select, textarea {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Schrift in Eingabefeldern mind. 16px – verhindert Auto-Zoom auf iOS Safari */
+input[type="text"], input[type="search"], input[type="password"], input[type="email"],
+input[type="number"], input[type="tel"], textarea, select {
+  font-size: 16px;
+}
+
+/* Schmale Mobil-Breite: Layout-Korrekturen */
+@media (max-width: 520px) {
+  .vv-card { padding: 12px; border-radius: 12px; }
+  .vv-grid-2 { grid-template-columns: 1fr; }
+  .vv-friends-grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 6px;
+  }
+  h1 { font-size: 22px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 15px; }
+  .vv-muted { font-size: 12px; }
+}
+
+/* Floating Chat-Button etwas tiefer wenn iPhone-Home-Indikator da ist */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body > button[aria-label="Chats öffnen"] {
+    bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Längere Texte / Mention-Hervorhebungen brechen sauber */
+.vv-msg-text, .vv-conv-preview, .vv-conv-name { overflow-wrap: anywhere; word-break: break-word; }
