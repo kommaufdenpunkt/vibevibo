@@ -505,19 +505,23 @@ export default function ChatOverlay() {
                       style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", border: "none", background: "#222", color: "#fff", cursor: "pointer", padding: 0, fontSize: 12 }}>×</button>
                   </div>
                 )}
-                <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" }}>
+                {/* Zeile 1: Aktions-Buttons */}
+                <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 6 }}>
                   <SmileyPicker onPick={(s) => setText((t) => t + s)} />
                   <VoiceRecorder onSend={sendVoice} />
                   <button type="button" className="vv-btn" onClick={() => imageRef.current?.click()} title="Foto" aria-label="Foto">📷</button>
                   <input ref={imageRef} type="file" accept="image/*" hidden onChange={onPickImage} />
+                </div>
+                {/* Zeile 2: Eingabefeld + Senden */}
+                <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
                   <input
                     value={text}
                     onChange={(e) => onTextChange(e.target.value)}
                     className="vv-input"
-                    style={{ flex: "1 1 100px", margin: 0, fontSize: 13, minWidth: 80 }}
+                    style={{ flex: 1, margin: 0, fontSize: 14, minWidth: 0 }}
                     placeholder={`An ${partnerInfo?.displayName || activePartner}…`}
                   />
-                  <button type="submit" className="vv-btn vv-btn-pink" disabled={!text.trim() && !pendingImage}>▶</button>
+                  <button type="submit" className="vv-btn vv-btn-pink" disabled={!text.trim() && !pendingImage} style={{ flexShrink: 0 }}>▶</button>
                 </div>
               </form>
               <div style={{ padding: "6px 10px", borderTop: "1px solid #eee", background: "#fafafd", fontSize: 11, textAlign: "right" }}>
