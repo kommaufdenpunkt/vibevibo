@@ -218,6 +218,19 @@ export default function ChatOverlay() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, view]);
 
+  // ESC schließt das Overlay
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        if (view === "chat") backToList();
+        else setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, view]);
+
   /* ---------- Filterung + Sortierung (alle Hooks VOR dem early return) ---------- */
 
   const q = query.trim().toLowerCase();
@@ -288,10 +301,13 @@ export default function ChatOverlay() {
         <div style={{
           position: "fixed", bottom: 86, right: 18, zIndex: 99,
           width: "min(380px, 94vw)", height: view === "chat" ? "78vh" : "min(78vh, 620px)",
-          background: "#fff", borderRadius: 14, overflow: "hidden",
-          boxShadow: "0 16px 50px rgba(0,0,0,0.34)",
+          background: "var(--vv-card, #fff)", borderRadius: 18, overflow: "hidden",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.42), 0 4px 12px rgba(0,0,0,0.12)",
           display: "flex", flexDirection: "column",
-          fontFamily: "Arial, sans-serif",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+          animation: "vv-overlay-in 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28)",
+          transformOrigin: "bottom right",
+          border: "1px solid var(--vv-border, rgba(0,0,0,0.08))",
         }}>
           {/* Kopfleiste */}
           <div style={{

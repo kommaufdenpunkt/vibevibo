@@ -7,6 +7,7 @@ import Pinnwand from "./Pinnwand";
 import GiftShelf from "./GiftShelf";
 import ProfileSkin from "./ProfileSkin";
 import PicGallery from "./PicGallery";
+import ViboProfileWidget from "./ViboProfileWidget";
 import { ColoredName } from "./GenderAge";
 import Avatar from "./Avatar";
 import ActivityBars from "./ActivityBars";
@@ -202,6 +203,9 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
           </div>
         </div>
       </div>
+
+      {/* === VIBO-Widget === */}
+      <ViboProfileWidget username={profile.username} isOwner={isOwner} />
 
       {/* === Profilbild-Galerie === */}
       <PicGallery username={profile.username} isOwner={isOwner} onAvatarChange={onChange} />

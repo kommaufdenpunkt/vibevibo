@@ -4,6 +4,7 @@ import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "./GenderAge";
+import OnlineName from "./OnlineName";
 import MentionText from "./MentionText";
 import WallComposer from "./WallComposer";
 
@@ -43,7 +44,9 @@ export default function Pinnwand({ profile, entries, onChange }) {
           return (
             <div className="vv-pinnwand-entry" key={entry.id}>
               <div className="vv-pinnwand-meta">
-                <ColoredName gender={entry.from_gender} age={entry.from_age} name={entry.from_display_name} />
+                <OnlineName lastSeen={entry.from_last_seen}>
+                  <ColoredName gender={entry.from_gender} age={entry.from_age} name={entry.from_display_name} />
+                </OnlineName>
                 {" · "}
                 <span>{relTime(entry.at)}</span>
                 {canDelete && (
