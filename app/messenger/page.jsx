@@ -35,6 +35,13 @@ export default function MessengerHome() {
   const [theme, setTheme] = useTheme();
   const [autoLogout, setAutoLogout] = useState(0);
 
+  // Initialen Tab aus ?tab=... lesen (z.B. Link vom Profil-Widget)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t && ["chats", "freunde", "vibo", "profil"].includes(t)) setTab(t);
+  }, []);
+
   useEffect(() => { setAutoLogout(getAutoLogoutMinutes()); }, []);
 
   async function reload() {
