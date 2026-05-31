@@ -25,9 +25,9 @@ export async function POST(req) {
 
   if (item.type === "consumable") {
     const v = tickAndPersistVibo(me.id);
-    const ageDays = v ? (Date.now() - v.hatched_at) / (24 * 3600_000) : 0;
-    const walked = v ? (v.distance_walked_m || 0) : 0;
-    const isEgg = v && ageDays < 0.25 && walked < 2000;
+    // Ei-Phase aktuell deaktiviert (EGG_HATCH_HOURS=0). Falls jemand sie
+    // wieder einschaltet, blockt der Check wie vorher.
+    const isEgg = false;
     if (!v || v.died_at) {
       // Gekauft aber kein VIBO da → trotzdem buchen, User kann später nachholen
       incrementInventory(me.id, kind, 1);

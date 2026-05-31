@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { loadVibo, tickAndPersistVibo, hatchVibo } from "@/lib/db";
+import { loadVibo, tickAndPersistVibo, hatchVibo, getViboCooldowns } from "@/lib/db";
 import { getStage, stageInfo, moodFromStats, ageDaysFrom, eggProgress, EGG_HATCH_HOURS, EGG_HATCH_DISTANCE_M } from "@/lib/vibo";
 
-function shape(v) {
+function shape(v, cooldowns = null) {
   if (!v) return null;
   const ageDays = ageDaysFrom(v.hatched_at);
   const walked = v.distance_walked_m || 0;
@@ -23,6 +23,7 @@ function shape(v) {
     sleeping,
     birthdayJustHappened: !!v._birthdayJustHappened,
     distanceWalkedM: walked,
+    cooldowns: cooldowns || {},
     egg: egg ? {
       timePct: Math.round(egg.time * 100),
       distancePct: Math.round(egg.distance * 100),
@@ -38,7 +39,7 @@ export async function GET() {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
   const v = tickAndPersistVibo(me.id) || loadVibo(me.id);
-  return NextResponse.json({ vibo: shape(v) });
+  return NextResponse.json({ vibo: shape(v, getViboCooldowns(me.id)) });
 }
 
 // POST { name, species } – schlüpfen lassen
