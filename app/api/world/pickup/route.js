@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
   getWorldItem, markItemPickedUp, getUserLocation, recordPickup,
-  incrementInventory, awardCredits, updateUserLocation,
+  incrementInventory, awardCredits, updateUserLocation, addUserCard, bumpQuestProgress,
 } from "@/lib/db";
 import {
   distanceMeters, PICKUP_RADIUS_M, PICKUP_COOLDOWN_MS, MAX_PICKUPS_PER_DAY, MAX_SPEED_KMH, ITEMS,
 } from "@/lib/world";
+import { drawRandomCard, CARDS_MAP } from "@/lib/cards";
 
 // POST { itemId, lat, lng } – Item einsammeln. Server prüft alles selbst.
 export async function POST(req) {
@@ -67,19 +68,26 @@ export async function POST(req) {
   // Wirkung verteilen
   const def = ITEMS[item.kind] || { name: item.kind, emoji: "?" };
   let viboBoost = 0;
+  let cardDrawn = null;
   if (item.kind === "vibe_coin") {
     awardCredits(me.id, 2, "world_pickup", { type: "item", id: item.id });
   } else if (item.kind === "crystal") {
     awardCredits(me.id, 10, "world_pickup_crystal", { type: "item", id: item.id });
   } else if (item.kind === "apple") {
-    // VIBO bekommt direkt +10 Hunger (über DB)
     incrementInventory(me.id, item.kind, 1);
     viboBoost = 10;
+  } else if (item.kind === "card") {
+    // Zufällige Sammelkarte ziehen
+    const c = drawRandomCard();
+    addUserCard(me.id, c.id);
+    cardDrawn = c;
+    incrementInventory(me.id, "card", 1);
   } else {
     incrementInventory(me.id, item.kind, 1);
   }
 
   const total = recordPickup(me.id, lat, lng);
+  try { bumpQuestProgress(me.id, "world_pickup"); } catch {}
   return NextResponse.json({
     ok: true,
     kind: item.kind,
@@ -88,5 +96,6 @@ export async function POST(req) {
     description: def.description || "",
     todayCount: total,
     viboBoost,
+    card: cardDrawn,
   });
 }

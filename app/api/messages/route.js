@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification } from "@/lib/db";
+import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification, bumpQuestProgress } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
@@ -109,5 +109,6 @@ export async function POST(req) {
     kind: storedImage ? "image" : "text",
   }).catch(() => {});
 
+  try { bumpQuestProgress(me.id, "message"); } catch {}
   return NextResponse.json({ message: row, imageNote });
 }

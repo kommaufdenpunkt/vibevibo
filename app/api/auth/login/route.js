@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import {
   verifyPassword, createSession, isDeviceBanned, recordDevice, sanctionTypes,
   recordFailedLogin, countRecentFailedLogins, countRecentFailedLoginsByIp, clearFailedLogins,
-  audit, getUserTotpSecret, isTotpEnabled,
+  audit, getUserTotpSecret, isTotpEnabled, bumpQuestProgress,
 } from "@/lib/db";
 import { setSessionCookie } from "@/lib/auth";
 import { getOrCreateDeviceId } from "@/lib/device";
@@ -117,6 +117,7 @@ export async function POST(req) {
     const token = createSession(user.id);
     await setSessionCookie(token);
     audit({ userId: user.id, action: "login.ok", ip, ua, detail: `device=${deviceId.slice(0, 8)},2fa=${isTotpEnabled(user.id) ? "yes" : "no"}` });
+    try { bumpQuestProgress(user.id, "login"); } catch {}
     return respond(200, { user });
   } catch (e) {
     return respond(400, { error: e.message || "Login fehlgeschlagen." });
