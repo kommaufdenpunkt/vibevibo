@@ -8,6 +8,8 @@ import { api } from "@/lib/api";
 import ViboSprite from "./ViboSprite";
 import ViboCemetery from "./ViboCemetery";
 import ViboNeighbors from "./ViboNeighbors";
+import ViboRoom from "./ViboRoom";
+import ViboMinigame from "./ViboMinigame";
 import { ACTIONS, SPECIES, stageInfo } from "@/lib/vibo";
 
 function actionBig(id) {
@@ -179,6 +181,8 @@ export default function ViboPet() {
   const [actionBusy, setActionBusy] = useState("");
   const [showCemetery, setShowCemetery] = useState(false);
   const [showNeighbors, setShowNeighbors] = useState(false);
+  const [showRoom, setShowRoom] = useState(false);
+  const [showGame, setShowGame] = useState(false);
 
   async function load() {
     try {
@@ -207,6 +211,8 @@ export default function ViboPet() {
 
   if (showCemetery) return <ViboCemetery onBack={() => setShowCemetery(false)} />;
   if (showNeighbors) return <ViboNeighbors onBack={() => setShowNeighbors(false)} />;
+  if (showRoom) return <ViboRoom vibo={vibo} onClose={() => setShowRoom(false)} />;
+  if (showGame) return <ViboMinigame vibo={vibo} onClose={() => { setShowGame(false); load(); }} />;
 
   if (loading) return <div style={{ textAlign: "center", padding: 30 }}>Lade dein VIBO…</div>;
 
@@ -295,12 +301,30 @@ export default function ViboPet() {
         </button>
       )}
 
-      {/* Footer: Nachbarn + Friedhof */}
+      {/* Footer-Zeile 1: Zimmer + Mini-Game */}
+      {!isDead && (
+        <div style={{ display: "flex", gap: 10, width: "100%", maxWidth: 380 }}>
+          <button type="button" onClick={() => setShowRoom(true)}
+            className="vv-btn-big vv-btn-big-yellow"
+            style={{ flex: 1, padding: "14px 12px" }}>
+            <span className="vv-btn-icon" style={{ fontSize: 20 }}>🏠</span>
+            Zuhause
+          </button>
+          <button type="button" onClick={() => setShowGame(true)}
+            className="vv-btn-big vv-btn-big-orange"
+            style={{ flex: 1, padding: "14px 12px" }}>
+            <span className="vv-btn-icon" style={{ fontSize: 20 }}>🍕</span>
+            Snack-Game
+          </button>
+        </div>
+      )}
+
+      {/* Footer-Zeile 2: Nachbarn + Friedhof */}
       <div style={{ display: "flex", gap: 10, marginTop: 4, width: "100%", maxWidth: 380 }}>
         <button type="button" onClick={() => setShowNeighbors(true)}
           className="vv-btn-big vv-btn-big-cyan"
           style={{ flex: 1 }}>
-          <span className="vv-btn-icon">🏠</span> Nachbarn
+          <span className="vv-btn-icon">👋</span> Nachbarn
         </button>
         <button type="button" onClick={() => setShowCemetery(true)}
           className="vv-btn-big vv-btn-big-ghost"
