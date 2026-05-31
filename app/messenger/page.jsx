@@ -15,6 +15,9 @@ import ActivityBars from "@/components/ActivityBars";
 import OnlineName from "@/components/OnlineName";
 import ViboPet from "@/components/ViboPet";
 import CreditsPanel from "@/components/CreditsPanel";
+import QuestPanel from "@/components/QuestPanel";
+import ShopPanel from "@/components/ShopPanel";
+import CardCollection from "@/components/CardCollection";
 import { getPresence } from "@/lib/presence";
 import { useTheme } from "@/lib/useTheme";
 import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
@@ -224,7 +227,10 @@ export default function MessengerHome() {
         {tab === "vibo" && (
           <>
             <CreditsPanel />
+            <QuestPanel />
             <ViboPet />
+            <ShopPanel />
+            <CardCollection />
           </>
         )}
 
