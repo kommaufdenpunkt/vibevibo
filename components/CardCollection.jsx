@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import HelpCard from "./HelpCard";
 
 export default function CardCollection() {
   const [data, setData] = useState(null);
@@ -18,6 +19,16 @@ export default function CardCollection() {
 
   return (
     <div style={{ padding: 14 }}>
+      <HelpCard id="cards-intro" title="Wie funktionieren Sammelkarten?" emoji="🎴" color="#8b5cf6">
+        20 verschiedene Karten in 4 Seltenheiten: <b>gewöhnlich</b>,
+        <b> ungewöhnlich</b>, <b>selten</b>, <b>legendär</b>.
+        <br/><br/>
+        Karten kommen aus dem <b>Sammelkarten-Pack</b> im Shop (25 ✨ = 3
+        zufällige Karten) oder als <b>seltener Fund</b> auf der
+        Realitätskarte.
+        <br/><br/>
+        Filter oben (Alle/Meine/Fehlend) hilft beim Komplettieren.
+      </HelpCard>
       <h3 style={{ margin: "0 0 4px" }}>🎴 Sammelkarten</h3>
       <div style={{ fontSize: 12, color: "var(--vv-muted,#666)", marginBottom: 10 }}>
         {data.stats.owned} / {data.stats.total} gesammelt ·

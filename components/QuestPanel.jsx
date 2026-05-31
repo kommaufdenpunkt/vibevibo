@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import HelpCard from "./HelpCard";
 
 export default function QuestPanel() {
   const [quests, setQuests] = useState([]);
@@ -33,6 +34,14 @@ export default function QuestPanel() {
 
   return (
     <div style={{ padding: 14 }}>
+      <HelpCard id="quest-intro" title="Was sind Quests?" emoji="🎯" color="#3b82f6">
+        Drei kleine Aufgaben pro Tag. Erfüllst du sie, klickst auf
+        <b> "Abholen"</b> und bekommst Vibes ✨ gutgeschrieben.
+        <br/><br/>
+        Beispiele: "Schreib 3 Nachrichten", "Knuddel dein VIBO 5×",
+        "Spiel Mini-Game 1×". Der Fortschrittsbalken zählt automatisch.
+        Um Mitternacht (deutsche Zeit) kommen 3 neue Quests.
+      </HelpCard>
       <h3 style={{ margin: "0 0 10px" }}>🥇 Heutige Quests</h3>
       {flash && (
         <div style={{

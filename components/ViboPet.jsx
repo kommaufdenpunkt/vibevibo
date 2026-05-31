@@ -10,7 +10,14 @@ import ViboCemetery from "./ViboCemetery";
 import ViboNeighbors from "./ViboNeighbors";
 import ViboRoom from "./ViboRoom";
 import ViboMinigame from "./ViboMinigame";
+import HelpCard from "./HelpCard";
 import { ACTIONS, SPECIES, stageInfo } from "@/lib/vibo";
+
+function formatCooldown(seconds) {
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.ceil(seconds / 60)}m`;
+  return `${Math.ceil(seconds / 3600)}h`;
+}
 
 function actionBig(id) {
   switch (id) {
@@ -208,7 +215,23 @@ export default function ViboPet() {
   useEffect(() => { load(); }, []);
   useEffect(() => {
     if (!vibo || vibo.diedAt) return;
-    const t = setInterval(load, 60_000); // jede Minute neu pollen
+    const t = setInterval(load, 60_000); // jede Minute Stats neu pollen
+    return () => clearInterval(t);
+  }, [vibo?.diedAt]);
+  // Cooldowns lokal jede Sekunde runterzählen (ohne Server-Roundtrip)
+  useEffect(() => {
+    if (!vibo || vibo.diedAt) return;
+    const t = setInterval(() => {
+      setVibo((prev) => {
+        if (!prev || !prev.cooldowns) return prev;
+        const next = { ...prev.cooldowns };
+        let changed = false;
+        for (const k of Object.keys(next)) {
+          if (next[k] > 0) { next[k] = next[k] - 1; changed = true; }
+        }
+        return changed ? { ...prev, cooldowns: next } : prev;
+      });
+    }, 1000);
     return () => clearInterval(t);
   }, [vibo?.diedAt]);
 
@@ -254,6 +277,24 @@ export default function ViboPet() {
   if (!vibo) {
     return (
       <>
+        <div style={{ padding: "0 14px" }}>
+          <HelpCard id="vibo-intro" title="Was ist ein VIBO?" emoji="🥚" color="#ec4899">
+            Dein VIBO ist dein <b>virtuelles Haustier</b>. Du wählst eine
+            Spezies und einen Namen, dann lebt es bei dir und du musst
+            es pflegen — füttern, spielen, knuddeln, putzen. Wenn du es
+            vernachlässigst, wird es krank und stirbt. Wenn du gut für
+            es sorgst, wächst es vom Baby zum Erwachsenen und lebt
+            100+ Tage.
+            <br/><br/>
+            <b>Was bringt's dir?</b> Du verdienst <b>Vibes ✨</b> (die
+            Plattform-Währung) wenn du dich kümmerst. Mit Vibes kaufst
+            du im Shop Essen, Spielzeug, Möbel für die VIBO-Wohnung.
+            <br/><br/>
+            <b>So fängst du an:</b> Name eintippen → Spezies auswählen →
+            "Schlüpfen" klicken. Dein VIBO ist <b>sofort aktiv</b> (kein
+            Warten mehr auf das Ei).
+          </HelpCard>
+        </div>
         <Hatchery onHatched={(v) => setVibo(v)} />
         <div style={{ textAlign: "center", marginTop: 8 }}>
           <button type="button" onClick={() => setShowCemetery(true)}
@@ -273,6 +314,24 @@ export default function ViboPet() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: 14 }}>
+      {!isDead && (
+        <div style={{ width: "100%", maxWidth: 420 }}>
+          <HelpCard id="vibo-care" title="So pflegst du dein VIBO" emoji="🫶" color="#10b981">
+            <b>5 Werte musst du im Auge behalten</b> (je näher 100, desto besser):<br/>
+            • 🍔 <b>Hunger</b> — sinkt, wenn lange nicht gefüttert<br/>
+            • 🎮 <b>Spaß</b> — sinkt, wenn lange nicht gespielt<br/>
+            • 🧼 <b>Sauber</b> — sinkt mit der Zeit, Spielen + Essen machen schmutziger<br/>
+            • 🫶 <b>Bindung</b> — wächst durch Knuddeln und Pflege<br/>
+            • ❤️ <b>Gesundheit</b> — fällt wenn andere Werte zu lange niedrig sind. Bei 0 stirbt dein VIBO!
+            <br/><br/>
+            <b>6 Aktionen unten</b>: Füttern · Spielen · Putzen · Knuddeln · Heilen · Schlafen.
+            Jede hat einen Cooldown (zeigt der Timer oben rechts).
+            <br/><br/>
+            <b>Wo bekomme ich Vibes ✨ her?</b> Tägliches Login, Quests erledigen,
+            Knuddeln, Realitätskarte abklappern, Mini-Game spielen.
+          </HelpCard>
+        </div>
+      )}
       <Egg>
         <Display vibo={vibo} error={error || (isDead ? `${vibo.name} ist verstorben (${vibo.deathReason || "Vernachlässigung"})` : "")} />
 
@@ -374,16 +433,28 @@ export default function ViboPet() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 10, width: "100%", maxWidth: 380 }}>
-            {Object.entries(ACTIONS).map(([id, a]) => (
-              <button key={id} type="button" disabled={actionBusy === id}
-                onClick={() => doAction(id)}
-                className={`vv-btn-big ${actionBig(id)}`}
-                style={{ flexDirection: "column", padding: "12px 8px", fontSize: 13 }}
-              >
-                <span className="vv-btn-icon" style={{ fontSize: 28 }}>{a.emoji}</span>
-                <span>{a.label}</span>
-              </button>
-            ))}
+            {Object.entries(ACTIONS).map(([id, a]) => {
+              const cd = (vibo.cooldowns && vibo.cooldowns[id]) || 0;
+              const onCooldown = cd > 0;
+              return (
+                <button key={id} type="button" disabled={actionBusy === id || onCooldown}
+                  onClick={() => doAction(id)}
+                  className={`vv-btn-big ${actionBig(id)}`}
+                  style={{ flexDirection: "column", padding: "12px 8px", fontSize: 13, position: "relative", opacity: onCooldown ? 0.55 : 1 }}
+                >
+                  <span className="vv-btn-icon" style={{ fontSize: 28 }}>{a.emoji}</span>
+                  <span>{a.label}</span>
+                  {onCooldown && (
+                    <span style={{
+                      position: "absolute", top: 4, right: 6,
+                      background: "rgba(0,0,0,0.55)", color: "#fff",
+                      fontSize: 10, fontWeight: 700,
+                      padding: "1px 5px", borderRadius: 999,
+                    }}>{formatCooldown(cd)}</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </>
       )}

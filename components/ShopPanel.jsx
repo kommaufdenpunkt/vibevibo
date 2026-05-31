@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import HelpCard from "./HelpCard";
 
 const TYPE_LABEL = { consumable: "Verbrauchen", booster: "Booster", cosmetic: "Kosmetik", furniture: "Möbel" };
 const TYPE_COLOR = { consumable: "#10b981", booster: "#8b5cf6", cosmetic: "#ec4899", furniture: "#f59e0b" };
@@ -37,6 +38,22 @@ export default function ShopPanel() {
 
   return (
     <div style={{ padding: 14 }}>
+      <HelpCard id="shop-intro" title="Wie funktioniert der Shop?" emoji="🛒" color="#ec4899">
+        Im Shop gibst du deine Vibes ✨ aus. Vier Kategorien:
+        <br/><br/>
+        🟢 <b>Verbrauchen</b> — wirken sofort aufs VIBO (Festmahl füllt
+        Hunger, Wellness-Tag putzt komplett, etc.). Wenn du gerade kein
+        VIBO hast oder noch ein Ei, landen sie im Inventar.<br/>
+        🟣 <b>Booster</b> — Sammelkarten-Pack zieht 3 zufällige Karten,
+        Mysterium-Ei bringt's Inventar für später.<br/>
+        🟡 <b>Möbel</b> — landen im Möbel-Inventar. Platzieren tust du sie
+        unter <b>VIBO → Zuhause → Einrichten</b>.<br/>
+        🩷 <b>Kosmetik</b> — Hüte, Sticker, Outfits (kommen bald sichtbar
+        am VIBO).
+        <br/><br/>
+        Oben rechts siehst du dein Guthaben. Buttons sind grau wenn du
+        zu wenig Vibes hast.
+      </HelpCard>
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         background: "linear-gradient(135deg, #ff3e9d 0%, #b91e7c 100%)",

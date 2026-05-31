@@ -3,6 +3,7 @@
 // Credits-Panel: Saldo, Rang, Streak, Daily-Bonus-Sammeln, Verlauf.
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import HelpCard from "./HelpCard";
 
 const RANK_EMOJI = { newbie: "🌱", regular: "✨", star: "⭐", legend: "👑" };
 
@@ -35,6 +36,21 @@ export default function CreditsPanel() {
 
   return (
     <div style={{ padding: 14 }}>
+      <HelpCard id="credits-intro" title="Was sind Vibes?" emoji="✨" color="#ec4899">
+        <b>Vibes ✨ sind die Währung von VibeVibo.</b> Du verdienst sie
+        durch Aktivität auf der Plattform und gibst sie im Shop aus —
+        für VIBO-Futter, Möbel, Sammelkarten, Outfits.
+        <br/><br/>
+        <b>Wie verdienen?</b> Tägliches Login, Quests, Pinnwand-Posts,
+        Gruscheln, Geschenke, Fotos, Mini-Game, Realitätskarte
+        (Items in der Stadt einsammeln).
+        <br/><br/>
+        <b>Wofür ausgeben?</b> Shop (Futter/Möbel/Karten), Spenden an
+        Freunde, später Outfits + Premium-Funktionen.
+        <br/><br/>
+        <b>Anti-Inflation:</b> Max 60 Vibes/Tag aus Aktivität. So bleibt
+        die Währung wertvoll und niemand kann farmen.
+      </HelpCard>
       {/* Saldo-Karte */}
       <div style={{
         background: "linear-gradient(135deg, #ff3e9d 0%, #b91e7c 100%)",

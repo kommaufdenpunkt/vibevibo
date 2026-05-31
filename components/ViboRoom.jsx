@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
+import HelpCard from "./HelpCard";
 import ViboSprite from "./ViboSprite";
 import FurnitureSprite from "./RoomFurniture";
 import { TIME_THEMES } from "@/lib/room";
@@ -348,6 +349,21 @@ export default function ViboRoom({ vibo, onClose }) {
 
   return (
     <div style={{ padding: 12, maxWidth: 420, margin: "0 auto" }}>
+      <HelpCard id="room-intro" title="VIBO-Zuhause einrichten" emoji="🏠" color="#f59e0b">
+        Hier wohnt dein VIBO. Möbel kaufst du im <b>Shop</b> (Kategorie
+        "Möbel"), platzierst sie dann hier:
+        <br/><br/>
+        1. <b>"🛠️ Einrichten"</b> klicken<br/>
+        2. <b>"📦 Möbel"</b> klicken — dein Möbel-Inventar geht auf<br/>
+        3. Möbel antippen — landet auf den nächsten freien Platz<br/>
+        4. Fertig? Wieder "Einrichten" klicken (Toggle aus)<br/>
+        <br/>
+        <b>Wohnung größer machen:</b> Lila Button unten — kostet Vibes,
+        gibt mehr Slots (Studio 5 → 1-Zi 8 → Loft 12 → Penthouse 18).
+        <br/><br/>
+        Das Fenster oben zeigt Tag/Nacht je nach Uhrzeit. Dein VIBO
+        läuft autonom durch's Zimmer.
+      </HelpCard>
       {/* Kopfzeile */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
