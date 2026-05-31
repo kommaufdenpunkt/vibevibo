@@ -123,6 +123,7 @@ export default function HomePage() {
           <div className="vv-card">
             <h3>💡 Schnelleinstieg</h3>
             <ul style={{ paddingLeft: 18, lineHeight: 1.7 }}>
+              <li>🗺️ <Link href="/karte"><strong>Realitätskarte</strong> – Items sammeln</Link></li>
               <li>📝 <Link href="/profile/edit">Profil bearbeiten</Link></li>
               <li>🎨 <Link href="/profile/skin">CSS-Skin gestalten</Link></li>
               <li>📸 <Link href="/fotos">Fotos hochladen</Link></li>
