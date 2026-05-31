@@ -7,6 +7,9 @@ function shape(v) {
   if (!v) return null;
   const ageDays = ageDaysFrom(v.hatched_at);
   const stage = v.died_at ? "dead" : getStage(ageDays);
+  // Schlaf-Modus: 20–5 UTC (≈22–6 Berlin)
+  const h = new Date().getUTCHours();
+  const sleeping = !v.died_at && (h >= 20 || h < 5);
   return {
     name: v.name, species: v.species, stage, stageInfo: stageInfo(stage),
     ageDays: Math.round(ageDays * 10) / 10,
@@ -15,6 +18,8 @@ function shape(v) {
     hatchedAt: v.hatched_at,
     diedAt: v.died_at || null,
     deathReason: v.death_reason || "",
+    sleeping,
+    birthdayJustHappened: !!v._birthdayJustHappened,
   };
 }
 
