@@ -13,6 +13,16 @@ export async function POST(req) {
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
   const body = await req.json().catch(() => ({}));
 
+  // Ei-Stadium: kein Mini-Game (Schlüpfen nach Zeit ODER Distanz)
+  const v = tickAndPersistVibo(me.id);
+  if (v && !v.died_at) {
+    const ageDays = (Date.now() - v.hatched_at) / (24 * 3600_000);
+    const walked = v.distance_walked_m || 0;
+    if (ageDays < 0.25 && walked < 2000) {
+      return NextResponse.json({ error: "🥚 Dein VIBO ist noch ein Ei und kann nicht spielen." }, { status: 400 });
+    }
+  }
+
   const score = Math.max(0, Math.min(MAX_SCORE_PER_ROUND, Number(body?.score) || 0));
   const dur = Math.max(0, Number(body?.durationMs) || 0);
 
@@ -34,7 +44,6 @@ export async function POST(req) {
 
   // Bonus: dem VIBO Fun + Hunger geben (es hat ja gegessen)
   try {
-    const v = tickAndPersistVibo(me.id);
     if (v && !v.died_at) {
       buffVibo(me.id, { fun: Math.min(10, realScore), hunger: Math.min(15, realScore) });
     }

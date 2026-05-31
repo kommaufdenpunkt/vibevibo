@@ -25,10 +25,17 @@ export async function POST(req) {
 
   if (item.type === "consumable") {
     const v = tickAndPersistVibo(me.id);
+    const ageDays = v ? (Date.now() - v.hatched_at) / (24 * 3600_000) : 0;
+    const walked = v ? (v.distance_walked_m || 0) : 0;
+    const isEgg = v && ageDays < 0.25 && walked < 2000;
     if (!v || v.died_at) {
       // Gekauft aber kein VIBO da → trotzdem buchen, User kann später nachholen
       incrementInventory(me.id, kind, 1);
       result.note = "Kein aktives VIBO – im Inventar gespeichert.";
+    } else if (isEgg) {
+      // Ei kann nichts konsumieren → lagern für später
+      incrementInventory(me.id, kind, 1);
+      result.note = "🥚 Ei kann noch nichts konsumieren – gelagert, anwendbar nach Schlüpfen.";
     } else {
       buffVibo(me.id, item.effect || {});
       result.applied = item.effect;

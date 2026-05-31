@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { loadVibo, tickAndPersistVibo, hatchVibo } from "@/lib/db";
-import { getStage, stageInfo, moodFromStats, ageDaysFrom } from "@/lib/vibo";
+import { getStage, stageInfo, moodFromStats, ageDaysFrom, eggProgress, EGG_HATCH_HOURS, EGG_HATCH_DISTANCE_M } from "@/lib/vibo";
 
 function shape(v) {
   if (!v) return null;
   const ageDays = ageDaysFrom(v.hatched_at);
-  const stage = v.died_at ? "dead" : getStage(ageDays);
+  const walked = v.distance_walked_m || 0;
+  const stage = v.died_at ? "dead" : getStage(ageDays, walked);
   // Schlaf-Modus: 20–5 UTC (≈22–6 Berlin)
   const h = new Date().getUTCHours();
   const sleeping = !v.died_at && (h >= 20 || h < 5);
+  const egg = stage === "egg" ? eggProgress(ageDays, walked) : null;
   return {
     name: v.name, species: v.species, stage, stageInfo: stageInfo(stage),
     ageDays: Math.round(ageDays * 10) / 10,
@@ -20,6 +22,15 @@ function shape(v) {
     deathReason: v.death_reason || "",
     sleeping,
     birthdayJustHappened: !!v._birthdayJustHappened,
+    distanceWalkedM: walked,
+    egg: egg ? {
+      timePct: Math.round(egg.time * 100),
+      distancePct: Math.round(egg.distance * 100),
+      hoursLeft: Math.max(0, EGG_HATCH_HOURS - ageDays * 24),
+      metersLeft: Math.max(0, EGG_HATCH_DISTANCE_M - walked),
+      hatchHours: EGG_HATCH_HOURS,
+      hatchDistanceM: EGG_HATCH_DISTANCE_M,
+    } : null,
   };
 }
 
