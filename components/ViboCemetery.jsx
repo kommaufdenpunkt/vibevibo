@@ -84,9 +84,9 @@ export default function ViboCemetery({ onBack }) {
                     rows={2}
                     style={{ width: "100%", padding: 6, borderRadius: 8, border: "1px solid #d1d5db", fontSize: 13, resize: "none" }}
                   />
-                  <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 6 }}>
-                    <button type="button" onClick={() => setEditing(null)} className="vv-btn">Abbrechen</button>
-                    <button type="button" onClick={() => saveEpitaph(g.id)} className="vv-btn vv-btn-pink">Speichern</button>
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}>
+                    <button type="button" onClick={() => setEditing(null)} className="vv-btn-big vv-btn-big-ghost" style={{ padding: "8px 14px", fontSize: 12 }}>Abbrechen</button>
+                    <button type="button" onClick={() => saveEpitaph(g.id)} className="vv-btn-big vv-btn-big-pink" style={{ padding: "8px 14px", fontSize: 12 }}>Speichern</button>
                   </div>
                 </div>
               ) : (

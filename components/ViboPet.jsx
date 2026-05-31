@@ -7,7 +7,19 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import ViboSprite from "./ViboSprite";
 import ViboCemetery from "./ViboCemetery";
+import ViboNeighbors from "./ViboNeighbors";
 import { ACTIONS, SPECIES, stageInfo } from "@/lib/vibo";
+
+function actionBig(id) {
+  switch (id) {
+    case "feed":  return "vv-btn-big-orange";
+    case "play":  return "vv-btn-big-cyan";
+    case "clean": return "vv-btn-big-violet";
+    case "pet":   return "vv-btn-big-pink";
+    case "heal":  return "vv-btn-big-green";
+    default:      return "vv-btn-big-ghost";
+  }
+}
 
 function Stat({ label, value, color }) {
   return (
@@ -91,7 +103,15 @@ function Display({ vibo, error }) {
         {error ? (
           <div style={{ textAlign: "center", color: "#7c2d12", fontSize: 11, padding: 14 }}>{error}</div>
         ) : vibo ? (
-          <ViboSprite stage={vibo.stage} species={vibo.species} mood={vibo.mood} size={120} />
+          <div style={{ position: "relative" }}>
+            <ViboSprite stage={vibo.stage} species={vibo.species} mood={vibo.mood} size={120} sleeping={vibo.sleeping} />
+            {vibo.sleeping && (
+              <div style={{ position: "absolute", top: -10, right: -14, fontSize: 24, animation: "vv-zzz 2s ease-in-out infinite" }}>💤</div>
+            )}
+            <style>{`
+              @keyframes vv-zzz { 0%,100% { opacity: 0.4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+            `}</style>
+          </div>
         ) : (
           <div style={{ fontSize: 12, color: "#1c1c1e" }}>Lädt…</div>
         )}
@@ -144,9 +164,9 @@ function Hatchery({ onHatched }) {
       </div>
       {error && <div style={{ color: "#c2185b", fontSize: 13, marginTop: 10 }}>⚠ {error}</div>}
       <button type="submit" disabled={busy || !name.trim()}
-        className="vv-btn vv-btn-pink"
-        style={{ marginTop: 16, width: "100%", padding: "12px", fontSize: 16 }}>
-        {busy ? "Schlüpft…" : "🥚 Schlüpfen lassen"}
+        className="vv-btn-big vv-btn-big-yellow"
+        style={{ marginTop: 16, width: "100%", padding: "16px", fontSize: 16 }}>
+        <span className="vv-btn-icon">🥚</span> {busy ? "Schlüpft…" : "Schlüpfen lassen"}
       </button>
     </form>
   );
@@ -158,6 +178,7 @@ export default function ViboPet() {
   const [error, setError] = useState("");
   const [actionBusy, setActionBusy] = useState("");
   const [showCemetery, setShowCemetery] = useState(false);
+  const [showNeighbors, setShowNeighbors] = useState(false);
 
   async function load() {
     try {
@@ -185,6 +206,7 @@ export default function ViboPet() {
   }
 
   if (showCemetery) return <ViboCemetery onBack={() => setShowCemetery(false)} />;
+  if (showNeighbors) return <ViboNeighbors onBack={() => setShowNeighbors(false)} />;
 
   if (loading) return <div style={{ textAlign: "center", padding: 30 }}>Lade dein VIBO…</div>;
 
@@ -221,8 +243,20 @@ export default function ViboPet() {
         <div style={{ fontSize: 18, fontWeight: 700 }}>{vibo.name}</div>
         <div style={{ fontSize: 12, color: "var(--vv-muted,#666)" }}>
           {stageInfo(vibo.stage).label} · {vibo.ageDays} Tag{vibo.ageDays === 1 ? "" : "e"} · {vibo.mood}
+          {vibo.sleeping && " · 💤 schläft"}
         </div>
       </div>
+
+      {vibo.birthdayJustHappened && (
+        <div style={{
+          background: "linear-gradient(135deg, #fbbf24, #f97316)",
+          color: "#fff", padding: "10px 16px", borderRadius: 12,
+          textAlign: "center", fontWeight: 700,
+          boxShadow: "0 4px 12px rgba(251,191,36,0.4)",
+        }}>
+          🎂 Geburtstag! +15 Vibes als Geschenk!
+        </div>
+      )}
 
       {!isDead && (
         <>
@@ -238,19 +272,15 @@ export default function ViboPet() {
             <Stat label="❤️ Gesundheit" value={vibo.health} color={vibo.health > 60 ? "#10b981" : vibo.health > 30 ? "#f59e0b" : "#ef4444"} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(70px, 1fr))", gap: 8, width: "100%", maxWidth: 360 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 10, width: "100%", maxWidth: 380 }}>
             {Object.entries(ACTIONS).map(([id, a]) => (
               <button key={id} type="button" disabled={actionBusy === id}
                 onClick={() => doAction(id)}
-                style={{
-                  padding: "10px 6px", borderRadius: 12,
-                  border: "1px solid rgba(120,120,128,0.2)",
-                  background: "var(--vv-card,#fff)", color: "var(--vv-text,#1c1c1e)",
-                  cursor: "pointer", font: "inherit", display: "flex", flexDirection: "column",
-                  alignItems: "center", gap: 4, opacity: actionBusy === id ? 0.5 : 1,
-                }}>
-                <span style={{ fontSize: 22 }}>{a.emoji}</span>
-                <span style={{ fontSize: 11, fontWeight: 600 }}>{a.label}</span>
+                className={`vv-btn-big ${actionBig(id)}`}
+                style={{ flexDirection: "column", padding: "12px 8px", fontSize: 13 }}
+              >
+                <span className="vv-btn-icon" style={{ fontSize: 28 }}>{a.emoji}</span>
+                <span>{a.label}</span>
               </button>
             ))}
           </div>
@@ -259,11 +289,25 @@ export default function ViboPet() {
 
       {isDead && (
         <button type="button" onClick={() => setVibo(null)}
-          className="vv-btn vv-btn-pink"
-          style={{ padding: "12px 24px", fontSize: 14 }}>
+          className="vv-btn-big vv-btn-big-pink"
+          style={{ padding: "14px 24px", fontSize: 15 }}>
           🥚 Neues VIBO schlüpfen lassen
         </button>
       )}
+
+      {/* Footer: Nachbarn + Friedhof */}
+      <div style={{ display: "flex", gap: 10, marginTop: 4, width: "100%", maxWidth: 380 }}>
+        <button type="button" onClick={() => setShowNeighbors(true)}
+          className="vv-btn-big vv-btn-big-cyan"
+          style={{ flex: 1 }}>
+          <span className="vv-btn-icon">🏠</span> Nachbarn
+        </button>
+        <button type="button" onClick={() => setShowCemetery(true)}
+          className="vv-btn-big vv-btn-big-ghost"
+          style={{ flex: 1 }}>
+          <span className="vv-btn-icon">🏆</span> Friedhof
+        </button>
+      </div>
     </div>
   );
 }

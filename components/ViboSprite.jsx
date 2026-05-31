@@ -161,7 +161,42 @@ const CHAR_COLOR = {
   "~": "#9ca3af",
 };
 
-export default function ViboSprite({ stage = "kid", species = "sprout", mood = "okay", size = 96, blink = true }) {
+// Custom-PNG-Loader: probiert /vibo/{species}/{stage}.png aus public/.
+// Fällt auf das SVG-Pixel-Art zurück wenn das PNG fehlt.
+import { useEffect, useState } from "react";
+
+function CustomSprite({ src, alt, size, sleeping }) {
+  return (
+    <img
+      src={src} alt={alt}
+      width={size} height={size}
+      style={{
+        imageRendering: "pixelated",
+        display: "block",
+        animation: sleeping ? "none" : "vv-vibo-bounce 2.5s ease-in-out infinite",
+        filter: sleeping ? "brightness(0.85)" : "none",
+      }}
+    />
+  );
+}
+
+export default function ViboSprite({ stage = "kid", species = "sprout", mood = "okay", size = 96, blink = true, sleeping = false }) {
+  // Custom PNG zuerst probieren
+  const [hasCustom, setHasCustom] = useState(null);
+  const customUrl = `/vibo/${species}/${stage}.png`;
+  useEffect(() => {
+    let cancelled = false;
+    const img = new window.Image();
+    img.onload = () => { if (!cancelled) setHasCustom(true); };
+    img.onerror = () => { if (!cancelled) setHasCustom(false); };
+    img.src = customUrl;
+    return () => { cancelled = true; };
+  }, [customUrl]);
+
+  if (hasCustom) {
+    return <CustomSprite src={customUrl} alt={`VIBO ${stage}`} size={size} sleeping={sleeping} />;
+  }
+
   const pal = SP[species] || SP.sprout;
   const lines = SPRITES[stage] || SPRITES.kid;
   const cell = size / 16;
