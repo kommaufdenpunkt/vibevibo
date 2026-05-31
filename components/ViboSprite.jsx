@@ -9,6 +9,9 @@ const PALETTES = {
   drago:   { body: "#a78bfa", outline: "#5b21b6", accent: "#fde68a", cheek: "#fda4af" },
   knuddi:  { body: "#f9a8d4", outline: "#be185d", accent: "#fff",    cheek: "#f43f5e" },
   stella:  { body: "#fde047", outline: "#a16207", accent: "#3b82f6", cheek: "#fda4af" },
+  maunzi:  { body: "#fb923c", outline: "#7c2d12", accent: "#fff",    cheek: "#fda4af" },
+  boo:     { body: "#f3f4f6", outline: "#6b21a8", accent: "#a78bfa", cheek: "#fda4af" },
+  robi:    { body: "#93c5fd", outline: "#1e3a8a", accent: "#fde047", cheek: "#fda4af" },
 };
 
 const SIZE_BY_STAGE = {
@@ -22,18 +25,19 @@ const SIZE_BY_STAGE = {
 };
 
 function CustomImage({ src, size, sleeping }) {
-  // 1-Bit-Sprites kommen oft mit weißem Hintergrund — wir machen Weiß transparent
-  // via CSS-Filter, falls die Datei keinen Alpha-Kanal hat.
+  // 1-Bit-Sprites werden 35% größer gerendert damit sie das LCD füllen.
+  // multiply-Blend macht weißen GIF-Hintergrund unsichtbar auf weißem LCD.
+  const renderSize = Math.round(size * 1.35);
   return (
     <img
       src={src} alt=""
-      width={size} height={size}
+      width={renderSize} height={renderSize}
       style={{
         imageRendering: "pixelated",
         display: "block",
         animation: sleeping ? "none" : "vv-vibo-bounce 2.5s ease-in-out infinite",
-        filter: sleeping ? "brightness(0.85)" : "none",
-        background: "transparent",
+        filter: sleeping ? "brightness(0.7) contrast(1.1)" : "contrast(1.15)",
+        mixBlendMode: "multiply",
       }}
     />
   );
@@ -110,6 +114,60 @@ function SpeciesAddon({ species, p, w, h, cx, cy, bodyR }) {
         strokeWidth="2.5"
         opacity="0.35"
       />
+    );
+  }
+  if (species === "maunzi") {
+    // Katzen-Ohren (Dreiecke) + Schnurrhaare
+    return (
+      <>
+        <g style={{ transformOrigin: `${cx - bodyR * 0.4}px ${cy - bodyR * 0.7}px`, animation: "vv-ear-l 2.5s ease-in-out infinite" }}>
+          <path d={`M${cx - bodyR * 0.7} ${cy - bodyR * 0.6} L${cx - bodyR * 0.85} ${cy - bodyR * 1.15} L${cx - bodyR * 0.3} ${cy - bodyR * 0.95} z`} fill={p.body} stroke={p.outline} strokeWidth="2" strokeLinejoin="round" />
+          <path d={`M${cx - bodyR * 0.75} ${cy - bodyR * 0.85} L${cx - bodyR * 0.78} ${cy - bodyR * 1.0} L${cx - bodyR * 0.55} ${cy - bodyR * 0.95} z`} fill="#fda4af" />
+        </g>
+        <g style={{ transformOrigin: `${cx + bodyR * 0.4}px ${cy - bodyR * 0.7}px`, animation: "vv-ear-r 2.5s 0.4s ease-in-out infinite" }}>
+          <path d={`M${cx + bodyR * 0.7} ${cy - bodyR * 0.6} L${cx + bodyR * 0.85} ${cy - bodyR * 1.15} L${cx + bodyR * 0.3} ${cy - bodyR * 0.95} z`} fill={p.body} stroke={p.outline} strokeWidth="2" strokeLinejoin="round" />
+          <path d={`M${cx + bodyR * 0.75} ${cy - bodyR * 0.85} L${cx + bodyR * 0.78} ${cy - bodyR * 1.0} L${cx + bodyR * 0.55} ${cy - bodyR * 0.95} z`} fill="#fda4af" />
+        </g>
+        {/* Schnurrhaare links */}
+        <line x1={cx - bodyR * 0.55} y1={cy + bodyR * 0.18} x2={cx - bodyR * 1.0} y2={cy + bodyR * 0.10} stroke={p.outline} strokeWidth="1" />
+        <line x1={cx - bodyR * 0.55} y1={cy + bodyR * 0.28} x2={cx - bodyR * 1.0} y2={cy + bodyR * 0.32} stroke={p.outline} strokeWidth="1" />
+        {/* Schnurrhaare rechts */}
+        <line x1={cx + bodyR * 0.55} y1={cy + bodyR * 0.18} x2={cx + bodyR * 1.0} y2={cy + bodyR * 0.10} stroke={p.outline} strokeWidth="1" />
+        <line x1={cx + bodyR * 0.55} y1={cy + bodyR * 0.28} x2={cx + bodyR * 1.0} y2={cy + bodyR * 0.32} stroke={p.outline} strokeWidth="1" />
+      </>
+    );
+  }
+  if (species === "boo") {
+    // Geist hat keine Beine — Spiral-Schwanz unten + schwebende Wisps
+    return (
+      <>
+        <path
+          d={`M${cx - bodyR * 0.85} ${cy + bodyR * 0.7} Q ${cx - bodyR * 0.4} ${cy + bodyR * 1.2}, ${cx} ${cy + bodyR * 0.95} T ${cx + bodyR * 0.85} ${cy + bodyR * 0.7}`}
+          fill="none" stroke={p.outline} strokeWidth="2.5"
+        />
+        <circle cx={cx - bodyR * 1.1} cy={cy - bodyR * 0.3} r={3} fill={p.accent} opacity="0.7">
+          <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+        <circle cx={cx + bodyR * 1.1} cy={cy - bodyR * 0.1} r={2.5} fill={p.accent} opacity="0.7">
+          <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+      </>
+    );
+  }
+  if (species === "robi") {
+    // Antenne mit Bulb oben + Schrauben seitlich
+    return (
+      <>
+        <line x1={cx} y1={cy - bodyR + 2} x2={cx} y2={cy - bodyR - 12} stroke={p.outline} strokeWidth="2" />
+        <circle cx={cx} cy={cy - bodyR - 14} r={4} fill={p.accent} stroke={p.outline} strokeWidth="1.5">
+          <animate attributeName="r" values="3.5;4.5;3.5" dur="1.2s" repeatCount="indefinite" />
+        </circle>
+        {/* Schrauben */}
+        <circle cx={cx - bodyR * 0.85} cy={cy - bodyR * 0.45} r="2" fill={p.outline} />
+        <circle cx={cx + bodyR * 0.85} cy={cy - bodyR * 0.45} r="2" fill={p.outline} />
+        <circle cx={cx - bodyR * 0.85} cy={cy + bodyR * 0.55} r="2" fill={p.outline} />
+        <circle cx={cx + bodyR * 0.85} cy={cy + bodyR * 0.55} r="2" fill={p.outline} />
+      </>
     );
   }
   return null;
@@ -270,9 +328,13 @@ export default function ViboSprite({ stage = "kid", species = "sprout", mood = "
           {/* Spezies-Add-On hinten */}
           {species === "stella" && <SpeciesAddon species={species} p={p} cx={cx} cy={cy} bodyR={bodyR} />}
 
-          {/* Körper — atmet */}
+          {/* Körper — atmet (Robi hat einen eckigen Body, Rest rund) */}
           <g style={{ transformOrigin: `${cx}px ${cy + bodyR * 0.95}px`, animation: sleeping ? "vv-breathe 4.5s ease-in-out infinite" : "vv-breathe 3s ease-in-out infinite" }}>
-            <ellipse cx={cx} cy={cy} rx={bodyR} ry={bodyR * 0.95} fill={p.body} stroke={p.outline} strokeWidth="2.5" />
+            {species === "robi" ? (
+              <rect x={cx - bodyR} y={cy - bodyR * 0.95} width={bodyR * 2} height={bodyR * 1.9} rx="8" fill={p.body} stroke={p.outline} strokeWidth="2.5" />
+            ) : (
+              <ellipse cx={cx} cy={cy} rx={bodyR} ry={bodyR * 0.95} fill={p.body} stroke={p.outline} strokeWidth="2.5" />
+            )}
           </g>
 
           {/* Wangen — sichtbar wenn happy */}

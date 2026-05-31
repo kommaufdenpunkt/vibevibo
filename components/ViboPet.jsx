@@ -19,6 +19,7 @@ function actionBig(id) {
     case "clean": return "vv-btn-big-violet";
     case "pet":   return "vv-btn-big-pink";
     case "heal":  return "vv-btn-big-green";
+    case "sleep": return "vv-btn-big-violet";
     default:      return "vv-btn-big-ghost";
   }
 }
@@ -87,10 +88,10 @@ function Display({ vibo, error }) {
     }}>
       <div style={{
         width: "100%", height: "100%",
-        background: "linear-gradient(180deg, #d6e4dd 0%, #b8d4c8 50%, #8eb6a4 100%)",
+        background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 60%, #e2e8f0 100%)",
         borderRadius: 6,
         display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "inset 0 4px 8px rgba(0,0,0,0.2)",
+        boxShadow: "inset 0 4px 10px rgba(0,0,0,0.18)",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -174,6 +175,18 @@ function Hatchery({ onHatched }) {
   );
 }
 
+// Was beim Action-Klick visuell passiert (fliegende Emojis)
+const ACTION_FX = {
+  feed:  { emojis: ["🍔", "🍟", "😋"],          color: "#f59e0b" },
+  play:  { emojis: ["⚽", "🎮", "🎉"],          color: "#3b82f6" },
+  clean: { emojis: ["🫧", "💧", "✨"],          color: "#06b6d4" },
+  pet:   { emojis: ["💖", "💗", "💕", "💞"],   color: "#ec4899" },
+  heal:  { emojis: ["💊", "✨", "❤️‍🩹"],       color: "#10b981" },
+  sleep: { emojis: ["💤", "🌙", "z", "Z"],     color: "#6366f1" },
+};
+
+let fxIdCounter = 0;
+
 export default function ViboPet() {
   const [vibo, setVibo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -183,6 +196,7 @@ export default function ViboPet() {
   const [showNeighbors, setShowNeighbors] = useState(false);
   const [showRoom, setShowRoom] = useState(false);
   const [showGame, setShowGame] = useState(false);
+  const [floaters, setFloaters] = useState([]); // [{id, emoji, x, action}]
 
   async function load() {
     try {
@@ -198,8 +212,28 @@ export default function ViboPet() {
     return () => clearInterval(t);
   }, [vibo?.diedAt]);
 
+  function spawnFloater(action) {
+    const fx = ACTION_FX[action];
+    if (!fx) return;
+    const count = 4 + Math.floor(Math.random() * 3);
+    const newOnes = [];
+    for (let i = 0; i < count; i++) {
+      newOnes.push({
+        id: ++fxIdCounter,
+        emoji: fx.emojis[Math.floor(Math.random() * fx.emojis.length)],
+        x: 30 + Math.random() * 40,            // % horizontal
+        delay: i * 80,                          // ms staggered
+      });
+    }
+    setFloaters((prev) => [...prev, ...newOnes]);
+    setTimeout(() => {
+      setFloaters((prev) => prev.filter((f) => !newOnes.find((n) => n.id === f.id)));
+    }, 2200);
+  }
+
   async function doAction(action) {
     setError(""); setActionBusy(action);
+    spawnFloater(action);  // sofort visuelles Feedback
     try {
       const r = await api.viboAction(action);
       setVibo(r.vibo);
@@ -241,6 +275,19 @@ export default function ViboPet() {
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: 14 }}>
       <Egg>
         <Display vibo={vibo} error={error || (isDead ? `${vibo.name} ist verstorben (${vibo.deathReason || "Vernachlässigung"})` : "")} />
+
+        {/* Floatende Action-Emojis */}
+        {floaters.map((f) => (
+          <div key={f.id} style={{
+            position: "absolute", left: `${f.x}%`, bottom: "32%",
+            fontSize: 26, pointerEvents: "none", zIndex: 50,
+            animation: "vv-action-float 2.1s ease-out forwards",
+            animationDelay: `${f.delay}ms`,
+            opacity: 0,
+            textShadow: "0 2px 4px rgba(0,0,0,0.4)",
+          }}>{f.emoji}</div>
+        ))}
+
         {/* 3 Tamagotchi-Knöpfe */}
         <div style={{ marginTop: "auto", display: "flex", gap: 28, paddingBottom: 8 }}>
           <button aria-label="A" style={pillBtn} />
@@ -383,6 +430,12 @@ export default function ViboPet() {
 
       <style>{`
         @keyframes vv-egg-shake { 0%,100% { transform: rotate(0) } 25% { transform: rotate(-12deg) } 75% { transform: rotate(12deg) } }
+        @keyframes vv-action-float {
+          0%   { opacity: 0; transform: translateY(0) scale(0.6) rotate(-8deg) }
+          15%  { opacity: 1; transform: translateY(-10px) scale(1.1) rotate(4deg) }
+          70%  { opacity: 1; transform: translateY(-60px) scale(1) rotate(-3deg) }
+          100% { opacity: 0; transform: translateY(-90px) scale(0.8) rotate(6deg) }
+        }
       `}</style>
     </div>
   );
