@@ -232,6 +232,10 @@ export default function ViboPet() {
   }
 
   const isDead = vibo.stage === "dead";
+  const isEgg = vibo.stage === "egg";
+
+  // Verbleibende Zeit bis Schlüpfen (ageDays < 0.25 = 6h)
+  const hoursLeft = isEgg ? Math.max(0, 6 - (vibo.ageDays * 24)) : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: 14 }}>
@@ -264,7 +268,51 @@ export default function ViboPet() {
         </div>
       )}
 
-      {!isDead && (
+      {isEgg && vibo.egg && (
+        <div style={{
+          background: "linear-gradient(135deg, #fef3c7, #fde68a)",
+          border: "2px dashed #f59e0b", borderRadius: 14,
+          padding: 16, width: "100%", maxWidth: 380,
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#92400e", marginBottom: 8, textAlign: "center" }}>
+            🥚 Dein VIBO ist noch ein Ei
+            {(vibo.egg.timePct > 90 || vibo.egg.distancePct > 90) && (
+              <span style={{ marginLeft: 6, animation: "vv-egg-shake 0.6s ease-in-out infinite", display: "inline-block" }}>
+                💥
+              </span>
+            )}
+          </div>
+
+          {/* Zeit-Balken */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#78350f", marginBottom: 3 }}>
+              <span>⏱ Zeit</span>
+              <span>{Math.ceil(vibo.egg.hoursLeft)}h verbleibend</span>
+            </div>
+            <div style={{ height: 8, background: "rgba(146,64,14,0.18)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${vibo.egg.timePct}%`, background: "linear-gradient(90deg, #fbbf24, #f97316)", transition: "width 0.6s ease" }} />
+            </div>
+          </div>
+
+          {/* Distanz-Balken (Pokémon-Go-Style!) */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#78350f", marginBottom: 3 }}>
+              <span>🚶 Laufdistanz</span>
+              <span>{((vibo.distanceWalkedM || 0) / 1000).toFixed(2)} / {(vibo.egg.hatchDistanceM / 1000).toFixed(1)} km</span>
+            </div>
+            <div style={{ height: 8, background: "rgba(146,64,14,0.18)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${vibo.egg.distancePct}%`, background: "linear-gradient(90deg, #3b82f6, #06b6d4)", transition: "width 0.6s ease" }} />
+            </div>
+          </div>
+
+          <div style={{ fontSize: 11, color: "#78350f", textAlign: "center", marginTop: 6, fontStyle: "italic" }}>
+            Schlüpft wenn <b>Zeit</b> oder <b>Distanz</b> voll ist — was schneller geht.<br/>
+            Geh raus & öffne die Realitätskarte, damit's mitzählt!
+          </div>
+        </div>
+      )}
+
+      {!isDead && !isEgg && (
         <>
           <div style={{ display: "flex", gap: 10, width: "100%", maxWidth: 360, padding: "0 4px" }}>
             <Stat label="🍔 Hunger"    value={vibo.hunger}    color="#f59e0b" />
@@ -301,8 +349,8 @@ export default function ViboPet() {
         </button>
       )}
 
-      {/* Footer-Zeile 1: Zimmer + Mini-Game */}
-      {!isDead && (
+      {/* Footer-Zeile 1: Zimmer + Mini-Game (nicht im Ei-Stadium) */}
+      {!isDead && !isEgg && (
         <div style={{ display: "flex", gap: 10, width: "100%", maxWidth: 380 }}>
           <button type="button" onClick={() => setShowRoom(true)}
             className="vv-btn-big vv-btn-big-yellow"
@@ -332,6 +380,10 @@ export default function ViboPet() {
           <span className="vv-btn-icon">🏆</span> Friedhof
         </button>
       </div>
+
+      <style>{`
+        @keyframes vv-egg-shake { 0%,100% { transform: rotate(0) } 25% { transform: rotate(-12deg) } 75% { transform: rotate(12deg) } }
+      `}</style>
     </div>
   );
 }

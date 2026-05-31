@@ -22,6 +22,8 @@ const SIZE_BY_STAGE = {
 };
 
 function CustomImage({ src, size, sleeping }) {
+  // 1-Bit-Sprites kommen oft mit weißem Hintergrund — wir machen Weiß transparent
+  // via CSS-Filter, falls die Datei keinen Alpha-Kanal hat.
   return (
     <img
       src={src} alt=""
@@ -31,6 +33,7 @@ function CustomImage({ src, size, sleeping }) {
         display: "block",
         animation: sleeping ? "none" : "vv-vibo-bounce 2.5s ease-in-out infinite",
         filter: sleeping ? "brightness(0.85)" : "none",
+        background: "transparent",
       }}
     />
   );
@@ -187,18 +190,43 @@ function GravestoneSprite({ p }) {
 }
 
 export default function ViboSprite({ stage = "kid", species = "sprout", mood = "okay", size = 96, sleeping = false }) {
-  // PNG-Fallback
-  const [hasCustom, setHasCustom] = useState(null);
-  const customUrl = `/vibo/${species}/${stage}.png`;
+  // Custom-Asset-Fallback. Reihenfolge:
+  // 1. Spezies-spezifisch: /vibo/{species}/{stage}.gif/png/webp
+  // 2. Generisch (alle Spezies): /vibo/{stage}.gif/png/webp
+  // 3. SVG-Default (eingebaut)
+  const [customUrl, setCustomUrl] = useState(null);
+  const [checked, setChecked] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    const img = new window.Image();
-    img.onload = () => { if (!cancelled) setHasCustom(true); };
-    img.onerror = () => { if (!cancelled) setHasCustom(false); };
-    img.src = customUrl;
+    const tries = [
+      `/vibo/${species}/${stage}.gif`,
+      `/vibo/${species}/${stage}.png`,
+      `/vibo/${species}/${stage}.webp`,
+      `/vibo/${stage}.gif`,
+      `/vibo/${stage}.png`,
+      `/vibo/${stage}.webp`,
+      `/${stage}.gif`,
+      `/${stage}.png`,
+      `/${stage}.webp`,
+    ];
+    async function probe() {
+      for (const url of tries) {
+        const ok = await new Promise((resolve) => {
+          const img = new window.Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+          img.src = url;
+        });
+        if (cancelled) return;
+        if (ok) { setCustomUrl(url); setChecked(true); return; }
+      }
+      if (!cancelled) { setCustomUrl(null); setChecked(true); }
+    }
+    probe();
     return () => { cancelled = true; };
-  }, [customUrl]);
-  if (hasCustom) return <CustomImage src={customUrl} size={size} sleeping={sleeping} />;
+  }, [species, stage]);
+  if (customUrl) return <CustomImage src={customUrl} size={size} sleeping={sleeping} />;
+  void checked;
 
   const p = PALETTES[species] || PALETTES.sprout;
   const scale = SIZE_BY_STAGE[stage] || 0.85;
