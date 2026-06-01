@@ -96,6 +96,25 @@ export default function Navbar() {
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState(null); // ausgewählter Status, wartet auf "posten/setzen"
   const [saving, setSaving] = useState(false);
+  // Aktuelle Query-Params (z.B. ?tab=vibo) reaktiv mitführen, ohne
+  // useSearchParams (das würde statische Seiten zu dynamic zwingen).
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") setSearch(window.location.search);
+  }, [pathname]);
+
+  // Aktiv-Logik: exakter Pfad-Match, plus Tab-Unterscheidung bei /messenger
+  function isActive(href) {
+    const [hp, hq] = href.split("?");
+    if (pathname !== hp) return false;
+    if (!hq) {
+      // Link ohne Query: nur aktiv wenn aktuell auch kein relevanter Tab gesetzt
+      if (hp === "/messenger") return !search.includes("tab=");
+      return true;
+    }
+    // Link mit ?tab=xyz: aktiv wenn der Tab in der URL steht
+    return search.includes(hq);
+  }
 
   useEffect(() => { setOpen(false); closeStatus(); }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -267,7 +286,7 @@ export default function Navbar() {
             <Link
               key={l.href}
               href={l.href}
-              className={`vv-nav2-item${pathname === l.href ? " vv-active" : ""}`}
+              className={`vv-nav2-item${isActive(l.href) ? " vv-active" : ""}`}
               onClick={() => setOpen(false)}
             >
               <span className="vv-nav2-icon">{l.icon}</span>

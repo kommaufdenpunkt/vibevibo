@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import { relTime } from "@/lib/format";
@@ -23,8 +23,11 @@ import { useTheme } from "@/lib/useTheme";
 import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
 import { getAutoLogoutMinutes, setAutoLogoutMinutes } from "@/components/IdleGuard";
 
-export default function MessengerHome() {
+const VALID_TABS = ["chats", "freunde", "vibo", "profil"];
+
+function MessengerInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { me, loading } = useMe();
   const [conversations, setConversations] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -35,12 +38,19 @@ export default function MessengerHome() {
   const [theme, setTheme] = useTheme();
   const [autoLogout, setAutoLogout] = useState(0);
 
-  // Initialen Tab aus ?tab=... lesen (z.B. Link vom Profil-Widget)
+  // Tab reaktiv aus ?tab=... lesen — greift auch bei Klick aus dem Menü,
+  // wenn man schon auf /messenger ist (Next.js remountet dann nicht).
+  const tabParam = searchParams.get("tab");
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const t = new URLSearchParams(window.location.search).get("tab");
-    if (t && ["chats", "freunde", "vibo", "profil"].includes(t)) setTab(t);
-  }, []);
+    if (tabParam && VALID_TABS.includes(tabParam)) setTab(tabParam);
+  }, [tabParam]);
+
+  // Tab-Wechsel hält die URL synchron (damit Reload + Back/Forward stimmen)
+  function changeTab(next) {
+    setTab(next);
+    const url = next === "chats" ? "/messenger" : `/messenger?tab=${next}`;
+    router.replace(url, { scroll: false });
+  }
 
   useEffect(() => { setAutoLogout(getAutoLogoutMinutes()); }, []);
 
@@ -346,21 +356,21 @@ export default function MessengerHome() {
       </main>
 
       <nav className="vv-msgapp-tabbar" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-        <button type="button" onClick={() => setTab("chats")} className={tab === "chats" ? "active" : ""}>
+        <button type="button" onClick={() => changeTab("chats")} className={tab === "chats" ? "active" : ""}>
           <span className="vv-tab-icon">💬</span>
           <span>Chats</span>
           {totalUnread > 0 && <span className="vv-tab-badge">{totalUnread > 99 ? "99+" : totalUnread}</span>}
         </button>
-        <button type="button" onClick={() => setTab("freunde")} className={tab === "freunde" ? "active" : ""}>
+        <button type="button" onClick={() => changeTab("freunde")} className={tab === "freunde" ? "active" : ""}>
           <span className="vv-tab-icon">👥</span>
           <span>Freunde</span>
           {onlineCount > 0 && <span className="vv-tab-badge" style={{ background: "#10b981" }}>{onlineCount}</span>}
         </button>
-        <button type="button" onClick={() => setTab("vibo")} className={tab === "vibo" ? "active" : ""}>
+        <button type="button" onClick={() => changeTab("vibo")} className={tab === "vibo" ? "active" : ""}>
           <span className="vv-tab-icon">🥚</span>
           <span>VIBO</span>
         </button>
-        <button type="button" onClick={() => setTab("profil")} className={tab === "profil" ? "active" : ""}>
+        <button type="button" onClick={() => changeTab("profil")} className={tab === "profil" ? "active" : ""}>
           <span className="vv-tab-icon">🌟</span>
           <span>Profil</span>
         </button>
@@ -374,5 +384,14 @@ export default function MessengerHome() {
         />
       )}
     </div>
+  );
+}
+
+// useSearchParams braucht eine Suspense-Grenze (Next.js App Router).
+export default function MessengerHome() {
+  return (
+    <Suspense fallback={null}>
+      <MessengerInner />
+    </Suspense>
   );
 }
