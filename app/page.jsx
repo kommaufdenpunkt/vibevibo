@@ -41,8 +41,49 @@ export default function HomePage() {
         🎉 Willkommen zurück, {me.displayName}! ✿ Aktuell {onlineUsers.length} User online ✿ Pinnwand wie früher! ✿ Geschenke verschicken ✿ Profile mit Background-Musik ✿ Foto-Alben & Gruppen ✿ Echtzeit-Messenger ✿
       </Marquee>
 
-      <div className="vv-grid-2">
-        <div>
+      <div className="vv-grid-3">
+        {/* ===== LINKS: Quick-Access ===== */}
+        <aside className="vv-col-left">
+          <div className="vv-card">
+            <h3 style={{ marginTop: 0 }}>💡 Schnellzugriff</h3>
+            <ul style={{ paddingLeft: 18, lineHeight: 1.8, margin: 0 }}>
+              <li>👤 <Link href="/profile">Mein Profil</Link></li>
+              <li>✉️ <Link href="/messenger">Nachrichten</Link></li>
+              <li>👯 <Link href="/freunde">Wer ist online?</Link></li>
+              <li>🗺️ <Link href="/karte"><strong>Realitätskarte</strong></Link></li>
+              <li>📸 <Link href="/fotos">Fotos</Link></li>
+              <li>🏘️ <Link href="/gruppen">Gruppen</Link></li>
+              <li>🎁 <Link href="/geschenke">Geschenke</Link></li>
+              <li>🎨 <Link href="/profile/skin">CSS-Skin</Link></li>
+            </ul>
+          </div>
+
+          <div className="vv-card">
+            <h3 style={{ marginTop: 0 }}>👥 Mitglieder</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {users.slice(0, 8).map((u) => (
+                <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: "rgba(255,255,255,0.04)", textDecoration: "none" }}>
+                  <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
+                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <OnlineName lastSeen={u.lastSeen}>
+                        <ColoredName gender={u.gender} age={u.age} name={u.displayName} fallbackColor="#e8e8f0" />
+                      </OnlineName>
+                      <ActivityBars lastSeen={u.lastSeen} size="sm" />
+                    </span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+            <div className="vv-row vv-mt-12">
+              <div className="vv-spacer" />
+              <Link href="/freunde" className="vv-btn">→ Alle</Link>
+            </div>
+          </div>
+        </aside>
+
+        {/* ===== MITTE: Hauptfeed ===== */}
+        <main className="vv-col-main">
           <div className="vv-card">
             <h2 style={{ marginTop: 0 }}>💌 Willkommen zurück, {me.displayName}!</h2>
             <p style={{ lineHeight: 1.6 }}>
@@ -54,12 +95,6 @@ export default function HomePage() {
             <div className="vv-muted" style={{ fontSize: 12, fontStyle: "italic" }}>
               ✿ Memories zählen. Diese eine Nachricht. Diese eine Rose. Diese eine Top-8-Platzierung. ✿
             </div>
-            <div className="vv-row vv-mt-12" style={{ flexWrap: "wrap" }}>
-              <Link href="/profile" className="vv-btn vv-btn-pink">👤 Mein Profil</Link>
-              <Link href="/freunde" className="vv-btn vv-btn-cyan">👯 Wer ist online?</Link>
-              <Link href="/messenger" className="vv-btn">✉️ Nachrichten</Link>
-              <Link href="/profile/skin" className="vv-btn">🎨 Skin gestalten</Link>
-            </div>
           </div>
 
           <div className="vv-card">
@@ -69,41 +104,18 @@ export default function HomePage() {
           </div>
 
           <Buschfunk key={feedTick} />
+        </main>
 
+        {/* ===== RECHTS: Online + Tipps ===== */}
+        <aside className="vv-col-right">
           <div className="vv-card">
-            <h2>👥 Mitglieder</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {users.slice(0, 12).map((u) => (
-                <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, background: "#23232f", textDecoration: "none" }}>
-                  <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
-                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      <OnlineName lastSeen={u.lastSeen}>
-                        <ColoredName gender={u.gender} age={u.age} name={u.displayName} fallbackColor="#e8e8f0" />
-                      </OnlineName>
-                      <ActivityBars lastSeen={u.lastSeen} size="sm" />
-                    </span>
-                    {u.mood && <span style={{ display: "block", marginTop: 7, fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
-                  </span>
-                </Link>
-              ))}
-            </div>
-            <div className="vv-row vv-mt-12">
-              <div className="vv-spacer" />
-              <Link href="/freunde" className="vv-btn">→ Alle Mitglieder</Link>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div className="vv-card">
-            <h3>🟢 Online jetzt</h3>
+            <h3 style={{ marginTop: 0 }}>🟢 Online jetzt ({onlineUsers.length})</h3>
             {onlineUsers.length === 0 ? (
               <div className="vv-muted">Niemand online :(</div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {onlineUsers.slice(0, 15).map((u) => (
-                  <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, background: "#23232f", textDecoration: "none" }}>
+                  <Link key={u.username} href={`/u/${u.username}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: "rgba(255,255,255,0.04)", textDecoration: "none" }}>
                     <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -112,7 +124,7 @@ export default function HomePage() {
                         </OnlineName>
                         <ActivityBars lastSeen={u.lastSeen} size="sm" />
                       </span>
-                      {u.mood && <span style={{ display: "block", marginTop: 7, fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
+                      {u.mood && <span style={{ display: "block", marginTop: 4, fontSize: 11, color: "#a9b0c0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.mood}</span>}
                     </span>
                   </Link>
                 ))}
@@ -121,17 +133,20 @@ export default function HomePage() {
           </div>
 
           <div className="vv-card">
-            <h3>💡 Schnelleinstieg</h3>
-            <ul style={{ paddingLeft: 18, lineHeight: 1.7 }}>
-              <li>🗺️ <Link href="/karte"><strong>Realitätskarte</strong> – Items sammeln</Link></li>
-              <li>📝 <Link href="/profile/edit">Profil bearbeiten</Link></li>
-              <li>🎨 <Link href="/profile/skin">CSS-Skin gestalten</Link></li>
-              <li>📸 <Link href="/fotos">Fotos hochladen</Link></li>
-              <li>🏘️ <Link href="/gruppen">Gruppen entdecken</Link></li>
-              <li>🎁 <Link href="/geschenke">Geschenke verschicken</Link></li>
+            <h3 style={{ marginTop: 0 }}>✨ Vibes verdienen</h3>
+            <ul style={{ paddingLeft: 18, lineHeight: 1.7, margin: 0, fontSize: 13 }}>
+              <li>🎁 Tages-Bonus abholen</li>
+              <li>📝 Pinnwand-Eintrag schreiben</li>
+              <li>🫶 Jemanden gruscheln</li>
+              <li>📷 Foto hochladen</li>
+              <li>🎯 Quests erledigen</li>
+              <li>🗺️ Items auf der Karte einsammeln</li>
             </ul>
+            <Link href="/messenger?tab=vibo" className="vv-btn vv-btn-pink" style={{ marginTop: 10, display: "block", textAlign: "center" }}>
+              ✨ Meine Vibes
+            </Link>
           </div>
-        </div>
+        </aside>
       </div>
     </>
   );

@@ -1,0 +1,61 @@
+# Nächtliche Sicherheits-Routine:
+#  1. npm audit gegen die NVD-Datenbank
+#  2. Bei Findings: npm audit fix für Patch-Level-Updates
+#  3. Build muss durchlaufen, sonst kein PR
+#  4. PR wird automatisch erstellt — Dependabot's Auto-Merge übernimmt patches
+name: Nightly Security Audit
+
+on:
+  schedule:
+    - cron: "0 2 * * *"     # 03:00 Berlin-Zeit (sommer-/winterzeit-tolerant)
+  workflow_dispatch:        # manuell aus dem Actions-Tab triggerbar
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  audit-and-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: npm install
+        run: npm ci
+
+      - name: npm audit (high/critical)
+        id: audit
+        continue-on-error: true
+        run: |
+          npm audit --omit=dev --audit-level=high
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: npm audit fix (nur Patch/Minor)
+        if: steps.audit.outputs.exit_code != '0'
+        run: |
+          npm audit fix --omit=dev --audit-level=high || true
+
+      - name: Build muss durchlaufen
+        run: npm run build
+
+      - name: PR erstellen wenn was geändert wurde
+        if: steps.audit.outputs.exit_code != '0'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "security: nightly npm audit fix"
+          title: "🛡️ Nightly Security Updates"
+          body: |
+            Automatisch erstellter PR vom nächtlichen `npm audit fix`-Lauf.
+
+            Bitte mergen, sobald CI grün ist. Deployment passiert dann automatisch via Coolify-Webhook.
+          branch: "security/nightly-fix"
+          delete-branch: true
+          labels: |
+            security
+            auto

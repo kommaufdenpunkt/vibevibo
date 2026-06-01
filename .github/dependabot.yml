@@ -1,0 +1,39 @@
+# Dependabot prüft jede Nacht ob neue Versionen / Sicherheitsfixes verfügbar sind
+# und erstellt Pull-Requests. Security-Updates kommen sofort, normale Updates
+# einmal pro Woche.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 8
+    labels: ["dependencies", "auto"]
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      next-stack:
+        patterns: ["next", "react", "react-dom"]
+      security-patches:
+        update-types: ["patch"]
+    # Sicherheitsupdates immer durchlassen, normale Major-Sprünge nicht
+    ignore:
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:30"
+      timezone: "Europe/Berlin"
+    labels: ["ci", "auto"]
+    commit-message:
+      prefix: "ci"

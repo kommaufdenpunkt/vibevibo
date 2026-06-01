@@ -1,0 +1,31 @@
+# Nach jedem erfolgreichen Merge auf main: Coolify-Deploy-Webhook anstoßen.
+# Repo-Secrets bitte setzen:
+#   COOLIFY_WEBHOOK_URL  z.B. http://HOST:8000/api/v1/deploy?uuid=...&force=false
+#   COOLIFY_TOKEN        API-Token aus Coolify -> Keys & Tokens
+name: Coolify Redeploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:    # manuell ausloesbar aus dem Actions-Tab
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coolify-Deploy auslösen
+        env:
+          URL:   ${{ secrets.COOLIFY_WEBHOOK_URL }}
+          TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
+            echo "::warning::COOLIFY_WEBHOOK_URL oder COOLIFY_TOKEN fehlt — Auto-Deploy übersprungen."
+            exit 0
+          fi
+          echo "Triggering Coolify-Deploy..."
+          curl -fsSL -X GET \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            "$URL" \
+            && echo "✅ Deploy-Webhook erfolgreich" \
+            || { echo "❌ Webhook-Aufruf fehlgeschlagen"; exit 1; }
