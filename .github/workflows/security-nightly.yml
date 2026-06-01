@@ -45,7 +45,7 @@ jobs:
 
       - name: PR erstellen wenn was geändert wurde
         if: steps.audit.outputs.exit_code != '0'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "security: nightly npm audit fix"
