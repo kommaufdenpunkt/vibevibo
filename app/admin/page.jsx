@@ -17,6 +17,8 @@ import {
 } from "@/lib/db";
 import GenderAge from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
+import AdminBroadcast from "@/components/AdminBroadcast";
+import AdminSettings from "@/components/AdminSettings";
 import { relTime } from "@/lib/format";
 import { deviceLabel } from "@/lib/device";
 
@@ -50,6 +52,8 @@ const TABS = [
   ["ips", "⛔ IP-Sperren"],
   ["vibeslog", "✨ Vibes-Log"],
   ["events", "🎉 Saison-Events"],
+  ["broadcast", "📢 Broadcast"],
+  ["settings", "⚙️ Einstellungen"],
   ["audit", "📜 Audit-Log"],
 ];
 
@@ -205,8 +209,25 @@ export default async function AdminPage({ searchParams }) {
       {tab === "ips" && <IpSperren q={q} pw={pw} />}
       {tab === "vibeslog" && <VibesLog q={q} pw={pw} />}
       {tab === "events" && <SeasonEvents q={q} pw={pw} />}
+      {tab === "broadcast" && <AdminBroadcast pw={pw} />}
+      {tab === "settings" && <AdminSettings pw={pw} />}
       {tab === "audit" && <AuditLog q={q} />}
     </>
+  );
+}
+
+function StatTile({ label, value, color = "#1f5fa8", emoji }) {
+  return (
+    <div style={{
+      background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10,
+      padding: "10px 12px", minWidth: 120, flex: "1 1 auto",
+      borderLeft: `4px solid ${color}`,
+    }}>
+      <div style={{ fontSize: 11, color: "#666", textTransform: "uppercase", letterSpacing: 0.3, fontWeight: 700 }}>
+        {emoji} {label}
+      </div>
+      <div style={{ fontSize: 26, fontWeight: 800, color: "#1c1c1e", marginTop: 2 }}>{value}</div>
+    </div>
   );
 }
 
@@ -214,7 +235,45 @@ function Uebersicht({ stats }) {
   const log = listRecentModLog(40);
   return (
     <>
+      {/* Live-Aktivität */}
       <div className="vv-card">
+        <h3>🟢 Live-Aktivität</h3>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <StatTile emoji="🟢" label="Gerade online" value={stats.onlineNow} color="#10b981" />
+          <StatTile emoji="📅" label="Heute aktiv" value={stats.activeToday} color="#3b82f6" />
+          <StatTile emoji="🆕" label="Neue (heute)" value={stats.newUsersToday} color="#ec4899" />
+          <StatTile emoji="📆" label="Neue (7 Tage)" value={stats.newUsersWeek} color="#8b5cf6" />
+          <StatTile emoji="🔔" label="Push-Abos" value={stats.pushSubs} color="#f59e0b" />
+        </div>
+      </div>
+
+      {/* Inhalte heute */}
+      <div className="vv-card">
+        <h3>📈 Inhalte heute (letzte 24h)</h3>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <StatTile emoji="💬" label="Nachrichten" value={stats.msgsToday} color="#2d7dd2" />
+          <StatTile emoji="📌" label="Pinnwand-Posts" value={stats.pinnwandToday} color="#ff8fd0" />
+          <StatTile emoji="🎁" label="Geschenke" value={stats.giftsToday} color="#ffd23f" />
+          <StatTile emoji="📷" label="Fotos" value={stats.photosToday} color="#7ec8ff" />
+          <StatTile emoji="🗺️" label="Karten-Pickups" value={stats.worldPickupsToday} color="#06b6d4" />
+        </div>
+      </div>
+
+      {/* Vibes & VIBO */}
+      <div className="vv-card">
+        <h3>✨ Vibes & 🥚 VIBOs</h3>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <StatTile emoji="↑" label="Vibes verdient (24h)" value={stats.vibesEarnedToday} color="#0d8a3f" />
+          <StatTile emoji="↓" label="Vibes ausgegeben (24h)" value={stats.vibesSpentToday} color="#c2185b" />
+          <StatTile emoji="🥚" label="Aktive VIBOs" value={stats.activeVibos} color="#8b5cf6" />
+          <StatTile emoji="🪦" label="Im Friedhof" value={stats.deadVibos} color="#6b7280" />
+          <StatTile emoji="🎴" label="Karten gesammelt" value={stats.cardsCollected} color="#a855f7" />
+        </div>
+      </div>
+
+      {/* Moderation */}
+      <div className="vv-card">
+        <h3>🛡 Moderation & Sicherheit</h3>
         <ul className="vv-profile-stats">
           <li><strong>{stats.pending}</strong>Warteliste</li>
           <li><strong>{stats.approved}</strong>Aktiv</li>
@@ -222,6 +281,8 @@ function Uebersicht({ stats }) {
           <li><strong>{stats.sanctions}</strong>Banns</li>
           <li><strong>{stats.deviceBans}</strong>Geräte-Sperren</li>
           <li><strong>{stats.pendingAvatars}</strong>Bilder offen</li>
+          <li><strong>{stats.pendingPhotos}</strong>Fotos offen</li>
+          <li><strong>{stats.openReports}</strong>Meldungen offen</li>
           <li><strong>{stats.blockedIps}</strong>IP-Sperren</li>
         </ul>
         <div className="vv-mt-12 vv-muted">

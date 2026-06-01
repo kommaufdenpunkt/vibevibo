@@ -19,6 +19,7 @@ export default function HomePage() {
   const { me, loading } = useMe();
   const [users, setUsers] = useState([]);
   const [feedTick, setFeedTick] = useState(0);
+  const [customMarquee, setCustomMarquee] = useState("");
 
   useEffect(() => {
     if (!me) return;
@@ -27,6 +28,13 @@ export default function HomePage() {
     const t = setInterval(load, 20000); // Online-Status live
     return () => clearInterval(t);
   }, [me]);
+
+  // Admin-konfigurierbarer Marquee-Text (überschreibt Default wenn gesetzt)
+  useEffect(() => {
+    fetch("/api/maintenance", { cache: "no-store" })
+      .then((r) => r.json()).then((d) => setCustomMarquee(d?.marquee || ""))
+      .catch(() => {});
+  }, []);
 
   if (loading) return null;
 
@@ -39,7 +47,9 @@ export default function HomePage() {
   return (
     <>
       <Marquee speed={60}>
-        🎉 Willkommen zurück, {me.displayName}! ✿ Aktuell {onlineUsers.length} User online ✿ Pinnwand wie früher! ✿ Geschenke verschicken ✿ Profile mit Background-Musik ✿ Foto-Alben & Gruppen ✿ Echtzeit-Messenger ✿
+        {customMarquee
+          ? customMarquee
+          : `🎉 Willkommen zurück, ${me.displayName}! ✿ Aktuell ${onlineUsers.length} User online ✿ Pinnwand wie früher! ✿ Geschenke verschicken ✿ Profile mit Background-Musik ✿ Foto-Alben & Gruppen ✿ Echtzeit-Messenger ✿`}
       </Marquee>
 
       <div className="vv-grid-3">

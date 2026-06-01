@@ -8,6 +8,7 @@ import InstallHelp from "@/components/InstallHelp";
 import PushSetup from "@/components/PushSetup";
 import LiveCallShell from "@/components/LiveCallShell";
 import IdleGuard from "@/components/IdleGuard";
+import MaintenanceGate from "@/components/MaintenanceGate";
 import { MeProvider } from "@/lib/useMe";
 import { THEME_BOOTSTRAP } from "@/lib/useTheme";
 
@@ -49,6 +50,7 @@ export default function RootLayout({ children }) {
           <PushSetup />
           <LiveCallShell />
           <IdleGuard />
+          <MaintenanceGate />
         </MeProvider>
       </body>
     </html>
