@@ -48,7 +48,7 @@ function Egg({ children }) {
   return (
     <div style={{
       position: "relative",
-      width: "min(340px, 92vw)",
+      width: "min(380px, 94vw)",
       aspectRatio: "0.78",
       background: "radial-gradient(circle at 35% 22%, #6aa3ff 0%, #1f5fa8 40%, #0a1b3f 100%)",
       borderRadius: "50% / 45% 45% 55% 55%",
@@ -86,7 +86,7 @@ function Display({ vibo, error }) {
   // Achteck im Gold-Look
   return (
     <div style={{
-      width: "78%", aspectRatio: "1",
+      width: "84%", aspectRatio: "1",
       background: "linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #b45309 100%)",
       clipPath: "polygon(20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20%)",
       padding: 12,
@@ -114,7 +114,7 @@ function Display({ vibo, error }) {
           <div style={{ textAlign: "center", color: "#7c2d12", fontSize: 11, padding: 14 }}>{error}</div>
         ) : vibo ? (
           <div style={{ position: "relative" }}>
-            <ViboSprite stage={vibo.stage} species={vibo.species} mood={vibo.mood} size={120} sleeping={vibo.sleeping} />
+            <ViboSprite stage={vibo.stage} species={vibo.species} mood={vibo.mood} size={190} sleeping={vibo.sleeping} />
             {vibo.sleeping && (
               <div style={{ position: "absolute", top: -10, right: -14, fontSize: 24, animation: "vv-zzz 2s ease-in-out infinite" }}>💤</div>
             )}
