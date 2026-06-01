@@ -214,6 +214,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
                 <Link className="vv-btn vv-btn-pink" href="/profile/edit" style={sideBtn}>✎ Bearbeiten</Link>
                 <Link className="vv-btn vv-btn-cyan" href="/profile/skin" style={sideBtn}>🎨 Skin/CSS</Link>
                 <Link className="vv-btn" href="/fotos" style={sideBtn}>📸 Meine Fotos</Link>
+                <Link className="vv-btn" href="/profile/transactions" style={sideBtn}>💰 Transaktionen</Link>
               </>
             )}
           </div>

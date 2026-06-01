@@ -2,6 +2,7 @@
 
 // Credits-Panel: Saldo, Rang, Streak, Daily-Bonus-Sammeln, Verlauf.
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import HelpCard from "./HelpCard";
 
@@ -118,41 +119,18 @@ export default function CreditsPanel() {
         </div>
       </div>
 
-      {/* Verlauf */}
-      {history.length > 0 && (
-        <>
-          <div className="vv-msgapp-section" style={{ padding: "16px 0 6px" }}>Letzte Bewegungen</div>
-          <div style={{ background: "var(--vv-card,#fff)", borderRadius: 10, overflow: "hidden", border: "1px solid var(--vv-border,#eee)" }}>
-            {history.slice(0, 12).map((tx) => (
-              <div key={tx.id} style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "8px 10px", borderBottom: "0.5px solid var(--vv-border,#eee)",
-                fontSize: 13,
-              }}>
-                <span style={{ flex: 1, color: "var(--vv-text,#1c1c1e)" }}>{labelFor(tx.reason)}</span>
-                <span style={{ color: tx.amount > 0 ? "#0d8a3f" : "#c2185b", fontWeight: 700, minWidth: 60, textAlign: "right" }}>
-                  {tx.amount > 0 ? "+" : ""}{tx.amount} ✨
-                </span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      {/* Link zu vollständigem Transaktions-Verlauf */}
+      <div style={{ marginTop: 14 }}>
+        <Link href="/profile/transactions" style={{
+          display: "block", textAlign: "center", padding: 12,
+          borderRadius: 10, border: "1px solid var(--vv-border,#eee)",
+          background: "var(--vv-card,#fff)",
+          color: "var(--vv-text,#1c1c1e)", textDecoration: "none",
+          fontSize: 13, fontWeight: 600,
+        }}>
+          💰 Alle Transaktionen ansehen →
+        </Link>
+      </div>
     </div>
   );
-}
-
-function labelFor(reason) {
-  const map = {
-    daily: "🎁 Tages-Bonus",
-    gruscheln_send: "🫶 Gegruschelt",
-    gruscheln_recv: "🫶 Gegrushelt worden",
-    pinnwand: "📌 Pinnwand-Beitrag",
-    gift_send: "🎀 Geschenk verschickt",
-    gift_recv: "🎀 Geschenk bekommen",
-    like_recv: "❤️ Like bekommen",
-    photo_upload: "📷 Foto hochgeladen",
-    admin_grant: "👑 Admin-Gutschrift",
-  };
-  return map[reason] || reason;
 }
