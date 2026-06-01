@@ -2660,11 +2660,27 @@ input[type="number"], input[type="tel"], textarea, select {
   min-height: 42vh;
   border-radius: 0;
   margin-top: 0;
+  /* Inhalt in einer zentrierten Spalte statt randlos breit */
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 14px 16px 24px;
+  background: transparent;
 }
-/* Tab-Leiste sitzt unten am Inhalt, klebt beim Scrollen unten am Frame */
+/* Header zentriert + dezenter auf Desktop */
+.vv-messenger-desktop-frame .vv-msgapp-header {
+  max-width: 760px;
+  margin: 0 auto;
+}
+/* Mobile Tab-Leiste auf Desktop ausblenden — die Navbar oben übernimmt
+   die Navigation; die Bottom-Tabs sind hier redundant. */
 .vv-messenger-desktop-frame .vv-msgapp-tabbar {
-  position: sticky;
-  bottom: 0;
+  display: none;
+}
+/* Such-Leiste (Chats/Freunde) auch zentrieren */
+.vv-messenger-desktop-frame .vv-msgapp-search {
+  max-width: 760px;
+  margin: 0 auto;
 }
 
 /* Chat-Window-Hintergrund (Nachrichtenliste) im Dark-Mode dunkel */
