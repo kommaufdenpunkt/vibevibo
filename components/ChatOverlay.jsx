@@ -64,11 +64,33 @@ export default function ChatOverlay() {
   const [creatingRoom, setCreatingRoom] = useState(false);
   const [inCall, setInCall] = useState(false);
   const [vibes, setVibes] = useState(null);
+  // Button-Upgrade
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [pulse, setPulse] = useState(false);       // Puls-Animation bei neuer Nachricht
+  const [toast, setToast] = useState(null);         // Vorschau-Sprechblase {partner,name,text,avatar}
+  const [pressMenu, setPressMenu] = useState(false); // Long-Press-Schnellmenü
   const scrollRef = useRef(null);
   const imageRef = useRef(null);
   const typingTimer = useRef(0);
+  const prevUnreadRef = useRef(-1);
+  const pressTimer = useRef(0);
 
-  const hide = !!pathname && (pathname.startsWith("/messenger") || pathname === "/login");
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 900);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Wann der Chat-Button versteckt wird:
+  // - immer auf /login
+  // - auf Mobile: überall in /messenger (dort gibt's die Vollbild-PWA)
+  // - auf Desktop: nur in den Chat-Detailseiten (/messenger/<name>),
+  //   aber NICHT auf /messenger?tab=vibo & Co. → Button bleibt sichtbar
+  const onMessenger = !!pathname && pathname.startsWith("/messenger") && pathname !== "/messenger/manifest.webmanifest";
+  const onMessengerDetail = !!pathname && /^\/messenger\/.+/.test(pathname);
+  const hide = pathname === "/login"
+    || (onMessenger && (!isDesktop || onMessengerDetail));
 
   /* ---------- Daten laden ---------- */
 
@@ -244,6 +266,33 @@ export default function ChatOverlay() {
     return () => window.removeEventListener("vv-open-chat-overlay", onOpen);
   }, [openChat]);
 
+  // Neue Nachricht erkannt → Puls-Animation + Vorschau-Sprechblase
+  useEffect(() => {
+    const total =
+      conversations.reduce((s, c) => s + (c.unread || 0), 0) +
+      rooms.reduce((s, r) => s + (r.unread || 0), 0);
+    const prev = prevUnreadRef.current;
+    prevUnreadRef.current = total;
+    if (prev < 0) return;                 // erster Lauf: nur merken, nicht pulsen
+    if (total > prev && !open) {
+      setPulse(true);
+      setTimeout(() => setPulse(false), 1800);
+      // jüngsten ungelesenen Chat als Vorschau zeigen
+      const newest = conversations
+        .filter((c) => c.unread > 0)
+        .sort((a, b) => (b.at || 0) - (a.at || 0))[0];
+      if (newest) {
+        setToast({
+          partner: newest.partnerUsername,
+          name: newest.partnerDisplayName,
+          text: (newest.fromMe ? "Du: " : "") + (newest.lastText || "📷 Bild"),
+          avatar: newest.partnerAvatar,
+        });
+        setTimeout(() => setToast(null), 5500);
+      }
+    }
+  }, [conversations, rooms, open]);
+
   /* ---------- Filterung + Sortierung (alle Hooks VOR dem early return) ---------- */
 
   const q = query.trim().toLowerCase();
@@ -283,32 +332,208 @@ export default function ChatOverlay() {
     rooms.reduce((s, r) => s + (r.unread || 0), 0);
   const onlineCount = users.filter((u) => isOnlineActivity(u.lastSeen)).length;
   const partnerPresence = partnerInfo ? getPresence({ statusText: partnerInfo.mood, presence: partnerInfo.presence, online: isOnlineActivity(partnerInfo.lastSeen) }) : null;
+  const roomUnread = rooms.reduce((s, r) => s + (r.unread || 0), 0);
+  const dmUnread = totalUnread - roomUnread;
+
+  // Mini-Avatare: die letzten Schreiber mit ungelesenen Nachrichten
+  const recentSenders = conversations
+    .filter((c) => c.unread > 0)
+    .sort((a, b) => (b.at || 0) - (a.at || 0))
+    .slice(0, 3);
+
+  // Zustands-Farbe des Buttons: ungelesen → pink, Freunde online → cyan, sonst violett
+  const state = totalUnread > 0 ? "unread" : onlineCount > 0 ? "online" : "idle";
+  const STATE = {
+    unread: { grad: "linear-gradient(135deg, #ff5cb1 0%, #c2185b 100%)", glow: "rgba(255,62,157,0.55)", accent: "#ff3e9d" },
+    online: { grad: "linear-gradient(135deg, #2d7dd2 0%, #5fb0ff 100%)", glow: "rgba(45,125,210,0.5)",  accent: "#2d7dd2" },
+    idle:   { grad: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", glow: "rgba(124,58,237,0.45)", accent: "#a855f7" },
+  }[state];
+
+  // Online-Ring: Anteil online / gesamt als Konus
+  const onlineFrac = users.length ? Math.min(1, onlineCount / users.length) : 0;
+  const ringDeg = Math.round(onlineFrac * 360);
+
+  function openFirstUnread() {
+    const first = conversations
+      .filter((c) => c.unread > 0)
+      .sort((a, b) => (b.at || 0) - (a.at || 0))[0];
+    setOpen(true);
+    if (first) openChat(first.partnerUsername);
+    else setView("list");
+    setPressMenu(false);
+  }
+
+  // Long-Press startet das Schnellmenü
+  function startPress() {
+    pressTimer.current = setTimeout(() => setPressMenu(true), 500);
+  }
+  function endPress() {
+    if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = 0; }
+  }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Chats öffnen"
-        style={{
-          position: "fixed", bottom: 18, right: 18, zIndex: 100,
-          width: 58, height: 58, borderRadius: "50%", border: "none",
-          background: "linear-gradient(135deg, #2d7dd2, #5fb0ff)",
-          color: "#fff", fontSize: 26, cursor: "pointer",
-          boxShadow: "0 6px 20px rgba(0,0,0,0.32)",
-        }}
-      >
-        💬
-        {totalUnread > 0 && (
+      <style>{`
+        @keyframes vv-cbtn-pulse { 0%,100%{transform:scale(1)} 30%{transform:scale(1.14)} 60%{transform:scale(0.97)} }
+        @keyframes vv-cbtn-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+        @keyframes vv-cbtn-spin  { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+        @keyframes vv-cbtn-toastin { from{opacity:0;transform:translateY(8px) scale(0.9)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes vv-cbtn-sheen { 0%{transform:translateX(-120%)} 60%,100%{transform:translateX(220%)} }
+      `}</style>
+
+      {/* Vorschau-Sprechblase über dem Button */}
+      {toast && !open && (
+        <button type="button"
+          onClick={() => { setToast(null); setOpen(true); openChat(toast.partner); }}
+          style={{
+            position: "fixed", bottom: 88, right: 18, zIndex: 101,
+            maxWidth: "min(300px, 80vw)", display: "flex", alignItems: "center", gap: 9,
+            background: "var(--vv-card,#fff)", color: "var(--vv-text,#1c1c1e)",
+            border: "1px solid var(--vv-border, rgba(0,0,0,0.1))",
+            borderRadius: 14, padding: "9px 12px", cursor: "pointer",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.32)", textAlign: "left",
+            animation: "vv-cbtn-toastin 0.3s cubic-bezier(0.18,0.89,0.32,1.28)",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+          }}>
+          <Avatar url={toast.avatar} name={toast.name} className="vv-avatar vv-avatar-sm" style={{ width: 34, height: 34, flexShrink: 0 }} />
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{toast.name}</span>
+            <span style={{ display: "block", fontSize: 11.5, opacity: 0.7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{toast.text}</span>
+          </span>
+        </button>
+      )}
+
+      {/* Long-Press-Schnellmenü */}
+      {pressMenu && !open && (
+        <>
+          <div onClick={() => setPressMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 101 }} />
+          <div style={{
+            position: "fixed", bottom: 88, right: 18, zIndex: 102,
+            background: "var(--vv-card,#fff)", color: "var(--vv-text,#1c1c1e)",
+            border: "1px solid var(--vv-border, rgba(0,0,0,0.1))",
+            borderRadius: 14, padding: 6, minWidth: 210,
+            boxShadow: "0 14px 40px rgba(0,0,0,0.4)",
+            animation: "vv-cbtn-toastin 0.22s ease",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+          }}>
+            {[
+              totalUnread > 0 && { icon: "📨", label: `${totalUnread} Ungelesene öffnen`, fn: openFirstUnread },
+              { icon: "💬", label: "Alle Chats", fn: () => { setOpen(true); setView("list"); setPressMenu(false); } },
+              { icon: "👯", label: "Gruppe erstellen", fn: () => { setCreatingRoom(true); setPressMenu(false); } },
+              { icon: "🗺️", label: "Realitätskarte", fn: () => { router.push("/karte"); setPressMenu(false); } },
+            ].filter(Boolean).map((o) => (
+              <button key={o.label} type="button" onClick={o.fn}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  padding: "10px 12px", background: "none", border: "none", borderRadius: 9,
+                  cursor: "pointer", fontSize: 13.5, fontWeight: 600, textAlign: "left",
+                  color: "var(--vv-text,#1c1c1e)", fontFamily: "inherit",
+                }}>
+                <span style={{ fontSize: 18 }}>{o.icon}</span>{o.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Mini-Avatare der letzten Schreiber, links neben dem Button */}
+      {!open && recentSenders.length > 0 && (
+        <div style={{
+          position: "fixed", bottom: 30, right: 84, zIndex: 100,
+          display: "flex", flexDirection: "row-reverse",
+        }}>
+          {recentSenders.map((c, i) => (
+            <Avatar key={c.partnerUsername} url={c.partnerAvatar} name={c.partnerDisplayName}
+              className="vv-avatar"
+              style={{
+                width: 30, height: 30, marginRight: i === 0 ? 0 : -10,
+                border: "2px solid var(--vv-card,#fff)", boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                animation: "vv-cbtn-float 2.6s ease-in-out infinite",
+                animationDelay: `${i * 0.25}s`,
+              }} />
+          ))}
+        </div>
+      )}
+
+      {/* Der Button */}
+      <div style={{ position: "fixed", bottom: 18, right: 18, zIndex: 100, width: 60, height: 60 }}>
+        {/* Online-Ring */}
+        <div style={{
+          position: "absolute", inset: -3, borderRadius: "50%",
+          background: `conic-gradient(#3ddc84 ${ringDeg}deg, rgba(255,255,255,0.18) ${ringDeg}deg)`,
+          padding: 3,
+          WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px))",
+          mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px))",
+          opacity: onlineCount > 0 ? 1 : 0.3,
+        }} />
+        <button
+          type="button"
+          onClick={() => { if (!pressMenu) setOpen((o) => !o); }}
+          onMouseDown={startPress} onMouseUp={endPress} onMouseLeave={endPress}
+          onTouchStart={startPress} onTouchEnd={endPress}
+          onContextMenu={(e) => { e.preventDefault(); setPressMenu(true); }}
+          aria-label="Chats öffnen (gedrückt halten für Schnellmenü)"
+          style={{
+            position: "absolute", inset: 0,
+            width: 60, height: 60, borderRadius: "50%", border: "none",
+            background: STATE.grad,
+            color: "#fff", cursor: "pointer", overflow: "hidden",
+            boxShadow: `0 6px 22px ${STATE.glow}, 0 2px 6px rgba(0,0,0,0.3)`,
+            animation: pulse
+              ? "vv-cbtn-pulse 0.6s ease 0s 3"
+              : "vv-cbtn-float 3s ease-in-out infinite",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {/* Eigenes animiertes Icon: Sprechblase mit funkelndem Vibe-Stern */}
+          <svg width="30" height="30" viewBox="0 0 32 32" style={{ display: "block" }}>
+            <path d="M5 7 h22 a3 3 0 0 1 3 3 v11 a3 3 0 0 1 -3 3 H13 l-6 5 v-5 H5 a3 3 0 0 1 -3 -3 V10 a3 3 0 0 1 3 -3 z"
+              fill="rgba(255,255,255,0.95)" />
+            <g style={{ transformOrigin: "16px 15px", animation: "vv-cbtn-spin 6s linear infinite" }}>
+              <path d="M16 9 l1.6 3.6 L21 14 l-3.4 1.4 L16 19 l-1.6-3.6 L11 14 l3.4-1.4 z"
+                fill={STATE.accent} />
+            </g>
+            <circle cx="22" cy="10.5" r="1.1" fill="#fde047" />
+            <circle cx="10.5" cy="19" r="0.9" fill="#fde047" />
+          </svg>
+          {/* Glanz-Sheen */}
           <span style={{
-            position: "absolute", top: -2, right: -2, minWidth: 22, height: 22,
+            position: "absolute", top: 0, bottom: 0, left: 0, width: "45%",
+            background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent)",
+            animation: "vv-cbtn-sheen 5s ease-in-out infinite", pointerEvents: "none",
+          }} />
+        </button>
+
+        {/* Getrennte Badges: DMs (pink) + Gruppen (gelb) */}
+        {dmUnread > 0 && (
+          <span style={{
+            position: "absolute", top: -3, right: -3, minWidth: 22, height: 22,
             padding: "0 6px", background: "#ff3e9d", color: "#fff",
             borderRadius: 11, fontSize: 12, fontWeight: "bold",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            border: "2px solid #fff", lineHeight: 1,
-          }}>{totalUnread > 99 ? "99+" : totalUnread}</span>
+            border: "2px solid var(--vv-card,#fff)", lineHeight: 1, zIndex: 2,
+          }}>{dmUnread > 99 ? "99+" : dmUnread}</span>
         )}
-      </button>
+        {roomUnread > 0 && (
+          <span style={{
+            position: "absolute", bottom: -3, right: -3, minWidth: 20, height: 20,
+            padding: "0 5px", background: "#f59e0b", color: "#1c1c1e",
+            borderRadius: 10, fontSize: 11, fontWeight: 800,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            border: "2px solid var(--vv-card,#fff)", lineHeight: 1, zIndex: 2,
+          }}>👯{roomUnread > 9 ? "9+" : roomUnread}</span>
+        )}
+        {/* Vibes-Mini-Pille links unten */}
+        {vibes && (
+          <span style={{
+            position: "absolute", bottom: -6, left: -8,
+            background: "linear-gradient(135deg,#fbbf24,#f59e0b)", color: "#1c1c1e",
+            borderRadius: 999, padding: "1px 6px", fontSize: 10, fontWeight: 800,
+            border: "2px solid var(--vv-card,#fff)", lineHeight: 1.3, zIndex: 2,
+            whiteSpace: "nowrap",
+          }}>✨{vibes.balance}</span>
+        )}
+      </div>
 
       {open && (
         <div style={{
