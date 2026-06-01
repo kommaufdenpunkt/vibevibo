@@ -1,6 +1,6 @@
 "use client";
 
-// Premium-Shop: Freischaltungen mit Vibes ✨. Eigenes Status-Setzen,
+// Shop: Account-Freischaltungen mit Vibes ✨. Eigenes Status-Setzen,
 // Anzeigename ändern, mehr Profilbild-Slots, Badges etc.
 
 import { useCallback, useEffect, useState } from "react";
@@ -64,9 +64,10 @@ export default function PremiumPanel() {
 
   return (
     <div style={{ padding: 14 }}>
-      <HelpCard id="premium-intro" title="Was ist der Premium-Shop?" emoji="💎" color="#8b5cf6">
-        Hier kaufst du <b>Sonder-Funktionen</b> mit Vibes ✨ frei, die im
-        normalen Shop nicht erhältlich sind:
+      <HelpCard id="shop-account-intro" title="Was ist der Shop?" emoji="🛍️" color="#8b5cf6">
+        Hier kaufst du <b>Account-Funktionen</b> mit Vibes ✨ frei.
+        Anders als der VIBO-Shop (Futter, Möbel, Karten) geht's hier um
+        dich selbst und dein Profil:
         <br/><br/>
         • <b>Eigenen Status-Text</b> schreiben (statt vorgegebene)<br/>
         • <b>Anzeigenamen ändern</b> (muss einzigartig sein)<br/>
@@ -85,8 +86,8 @@ export default function PremiumPanel() {
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <div>
-          <h3 style={{ margin: 0 }}>💎 Premium-Shop</h3>
-          <div style={{ fontSize: 12, opacity: 0.95 }}>Sonder-Features mit Vibes freischalten</div>
+          <h3 style={{ margin: 0 }}>🛍️ Shop</h3>
+          <div style={{ fontSize: 12, opacity: 0.95 }}>Account-Features mit Vibes freischalten</div>
         </div>
         <div style={{
           background: "rgba(255,255,255,0.2)", padding: "8px 14px", borderRadius: 999,

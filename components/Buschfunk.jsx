@@ -7,6 +7,7 @@ import { relTime } from "@/lib/format";
 import { findGift } from "@/lib/gifts";
 import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
+import PremiumBadges from "./PremiumBadges";
 import MentionText from "./MentionText";
 
 // Farbe des Zeitstrahl-Punkts je Ereignis-Typ
@@ -21,11 +22,14 @@ const NODE_COLOR = {
 
 function renderEvent(ev, i, isLast) {
   const actor = (
-    <Link href={`/u/${ev.actor.username}`} style={{ textDecoration: "none" }}>
-      <OnlineName lastSeen={ev.actor.lastSeen}>
-        <ColoredName gender={ev.actor.gender} age={ev.actor.age} name={ev.actor.displayName} />
-      </OnlineName>
-    </Link>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+      <Link href={`/u/${ev.actor.username}`} style={{ textDecoration: "none" }}>
+        <OnlineName lastSeen={ev.actor.lastSeen}>
+          <ColoredName gender={ev.actor.gender} age={ev.actor.age} name={ev.actor.displayName} />
+        </OnlineName>
+      </Link>
+      <PremiumBadges badges={ev.actor.premiumBadges} size={13} />
+    </span>
   );
   let icon = "✨";
   let text = null;

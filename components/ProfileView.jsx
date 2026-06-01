@@ -9,6 +9,7 @@ import ProfileSkin from "./ProfileSkin";
 import PicGallery from "./PicGallery";
 import ViboProfileWidget from "./ViboProfileWidget";
 import { ColoredName } from "./GenderAge";
+import PremiumBadges from "./PremiumBadges";
 import Avatar from "./Avatar";
 import ActivityBars from "./ActivityBars";
 import OnlineName from "./OnlineName";
@@ -177,8 +178,9 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
 
           {/* Identitaet */}
           <div style={{ flex: "1 1 240px", paddingTop: 12, minWidth: 0 }}>
-            <h2 style={{ margin: 0, lineHeight: 1.2, fontSize: 22 }}>
+            <h2 style={{ margin: 0, lineHeight: 1.2, fontSize: 22, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} fallbackColor="#222" size="1em" />
+              <PremiumBadges badges={profile.premiumBadges} size={20} />
             </h2>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
               <span style={{ background: "#e3e6f1", color: "#555", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>@{profile.username}</span>

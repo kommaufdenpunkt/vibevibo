@@ -17,7 +17,6 @@ import ViboPet from "@/components/ViboPet";
 import CreditsPanel from "@/components/CreditsPanel";
 import QuestPanel from "@/components/QuestPanel";
 import ShopPanel from "@/components/ShopPanel";
-import PremiumPanel from "@/components/PremiumPanel";
 import CardCollection from "@/components/CardCollection";
 import { getPresence } from "@/lib/presence";
 import { useTheme } from "@/lib/useTheme";
@@ -238,7 +237,6 @@ export default function MessengerHome() {
             <QuestPanel />
             <ViboPet />
             <ShopPanel />
-            <PremiumPanel />
             <CardCollection />
           </>
         )}

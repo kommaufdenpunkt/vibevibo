@@ -8,6 +8,53 @@ import { api } from "@/lib/api";
 import NotificationsBell from "./NotificationsBell";
 import VibesNavBadge from "./VibesNavBadge";
 
+// Eigenen Status für 50 ✨ posten — Premium-Feature
+function CustomStatusBox({ onSet }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  async function buy() {
+    if (!text.trim()) return;
+    setBusy(true); setErr("");
+    try {
+      await api.premiumBuy("custom_status", { text: text.trim() });
+      setText("");
+      onSet?.(text.trim());
+    } catch (e) { setErr(e.message); }
+    finally { setBusy(false); }
+  }
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, #fef3c7, #fde68a)",
+      border: "2px dashed #f59e0b", borderRadius: 10, padding: 10, marginBottom: 10,
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#92400e", marginBottom: 6 }}>
+        ✏️ Eigenen Status schreiben <span style={{ float: "right" }}>50 ✨</span>
+      </div>
+      <input
+        type="text" value={text} maxLength={80}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="z.B. 🚀 voll im Flow"
+        style={{
+          width: "100%", padding: "8px 10px", border: "1px solid #d97706",
+          borderRadius: 6, fontSize: 14, background: "#fffbeb",
+          boxSizing: "border-box",
+        }}
+      />
+      <button type="button" disabled={busy || !text.trim()} onClick={buy}
+        style={{
+          marginTop: 6, width: "100%", padding: "8px 10px", border: "none",
+          borderRadius: 6, background: text.trim() ? "linear-gradient(135deg, #f59e0b, #b45309)" : "#fcd34d",
+          color: text.trim() ? "#fff" : "#92400e", fontWeight: 700, cursor: text.trim() ? "pointer" : "default",
+          fontSize: 13, opacity: busy ? 0.6 : 1,
+        }}>
+        {busy ? "wird gesetzt…" : "Für 50 ✨ posten"}
+      </button>
+      {err && <div style={{ color: "#b91c1c", fontSize: 11, marginTop: 5 }}>⚠ {err}</div>}
+    </div>
+  );
+}
+
 const LINKS = [
   { href: "/", icon: "🏠", label: "Start" },
   { href: "/profile", icon: "👤", label: "Mein Profil" },
@@ -18,6 +65,7 @@ const LINKS = [
   { href: "/fotos", icon: "📸", label: "Fotos" },
   { href: "/gruppen", icon: "🏘️", label: "Gruppen" },
   { href: "/geschenke", icon: "🎁", label: "Geschenke" },
+  { href: "/shop", icon: "🛍️", label: "Shop" },
 ];
 
 // Vorgefertigte Status nach Kategorien (Jappy-Stil)
@@ -161,14 +209,14 @@ export default function Navbar() {
                     </button>
                   </div>
                 ) : (
-                  // Schritt 1: Suche + Auswahl
+                  // Schritt 1: Suche + Auswahl + Custom-Status (Premium)
                   <div>
+                    <CustomStatusBox onSet={(text) => { setStatusOpen(false); refresh(); }} />
                     <input
                       className="vv-input"
                       style={{ margin: "0 0 10px", fontSize: 15, padding: "10px" }}
                       placeholder="🔍 Status suchen… (z.B. zocken)"
                       value={query}
-                      autoFocus
                       onChange={(e) => setQuery(e.target.value)}
                     />
                     {filtered ? (

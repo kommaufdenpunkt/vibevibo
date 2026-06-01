@@ -12,6 +12,7 @@ import { ColoredName } from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
 import ActivityBars from "@/components/ActivityBars";
 import OnlineName from "@/components/OnlineName";
+import PremiumBadges from "@/components/PremiumBadges";
 import { isOnlineActivity } from "@/lib/activity";
 
 export default function HomePage() {
@@ -69,6 +70,7 @@ export default function HomePage() {
                       <OnlineName lastSeen={u.lastSeen}>
                         <ColoredName gender={u.gender} age={u.age} name={u.displayName} fallbackColor="#e8e8f0" />
                       </OnlineName>
+                      <PremiumBadges badges={u.premiumBadges} size={12} gap={2} />
                       <ActivityBars lastSeen={u.lastSeen} size="sm" />
                     </span>
                   </span>

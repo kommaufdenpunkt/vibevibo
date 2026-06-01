@@ -38,8 +38,12 @@ export default function ShopPanel() {
 
   return (
     <div style={{ padding: 14 }}>
-      <HelpCard id="shop-intro" title="Wie funktioniert der Shop?" emoji="🛒" color="#ec4899">
-        Im Shop gibst du deine Vibes ✨ aus. Vier Kategorien:
+      <HelpCard id="vibo-shop-intro" title="Wie funktioniert der VIBO-Shop?" emoji="🛒" color="#ec4899">
+        Im VIBO-Shop kaufst du Sachen <b>für dein VIBO</b>: Futter, Möbel
+        für die Wohnung, Sammelkarten. Account-Features (Badges, eigener
+        Status, Pic-Slots) gibt's im <b>Shop</b> in der Navbar.
+        <br/><br/>
+        Vier Kategorien:
         <br/><br/>
         🟢 <b>Verbrauchen</b> — wirken sofort aufs VIBO (Festmahl füllt
         Hunger, Wellness-Tag putzt komplett, etc.). Wenn du gerade kein
