@@ -2581,6 +2581,24 @@ input[type="number"], input[type="tel"], textarea, select {
   height: 100dvh;
 }
 
+/* Desktop-Variante: Messenger eingebettet in vv-page mit Banner/Navbar/Footer.
+   Der Wrapper begrenzt Höhe + Breite, Container drinnen wird zum normalen
+   Block-Element (nicht mehr position:fixed). */
+.vv-messenger-desktop-frame {
+  margin: 12px 0;
+}
+.vv-messenger-desktop-frame .vv-app-fullscreen {
+  position: relative;
+  inset: auto;
+  height: 75vh;
+  min-height: 540px;
+  max-height: 800px;
+  border-radius: 14px;
+  border: 1px solid var(--vv-border, rgba(0,0,0,0.1));
+  box-shadow: 0 8px 26px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
 /* Chat-Window-Hintergrund (Nachrichtenliste) im Dark-Mode dunkel */
 [data-theme="dark"] .vv-app-fullscreen .vv-chat-window,
 [data-theme="dark"] .vv-app-fullscreen .vv-chat-window form {

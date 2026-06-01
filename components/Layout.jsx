@@ -9,19 +9,19 @@ import { useMe } from "@/lib/useMe";
 
 // Entscheidet ob Banner/Navbar gezeigt werden.
 // - Landing (/) ohne Login: nur die nackte Landing
-// - Messenger AUF MOBILE: vollflächig PWA-Style (kein Navbar/Footer)
-// - Messenger AUF DESKTOP: ganz normal eingebettet wie andere Seiten
+// - Messenger AUF MOBILE: vollflächig PWA (position:fixed inset:0)
+// - Messenger AUF DESKTOP: in vv-page eingebettet wie andere Seiten,
+//   Höhe begrenzt damit Banner+Footer drumherum sichtbar bleiben
 export default function Layout({ children }) {
   const { me, loading } = useMe();
   const pathname = usePathname();
   const isLanding = pathname === "/" && !me && !loading;
-  const isMessenger =
+  const isMessengerApp =
     !!pathname &&
     pathname.startsWith("/messenger") &&
     pathname !== "/messenger/manifest.webmanifest";
 
-  // Mobile = <900px Bildschirmbreite. SSR rendert konservativ Mobile,
-  // nach Mount wird's korrigiert falls Desktop (kurzer Flash auf Desktop ok).
+  // SSR-default: mobile (sicher). Nach Mount korrekt.
   const [isMobile, setIsMobile] = useState(true);
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 900);
@@ -39,12 +39,23 @@ export default function Layout({ children }) {
     );
   }
 
-  if (isMessenger && isMobile) {
-    // Vollflächiger PWA-Modus auf Mobile
+  if (isMessengerApp && isMobile) {
+    // Vollflächige Mobile-PWA — Inhalt regelt alles selbst
     return <div className="vv-app-fullscreen">{children}</div>;
   }
 
-  // Standard-Layout für alle anderen Seiten (inkl. Messenger auf Desktop)
+  if (isMessengerApp) {
+    // Desktop: Standard-Chrome drum, Messenger-Inhalt in Container mit fester Höhe
+    return (
+      <div className="vv-page">
+        <Banner />
+        <Navbar />
+        <div className="vv-messenger-desktop-frame">{children}</div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="vv-page">
       <Banner />
