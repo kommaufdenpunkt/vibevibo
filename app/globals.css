@@ -20,6 +20,26 @@
   --vv-myspace: #6699ff;
 }
 
+/* Dark-Theme für die GESAMTE App (nicht nur Messenger): wenn der User
+   Dark-Mode gewählt hat, werden auch Startseite, Freunde, Shop, Gruppen
+   etc. dunkel — passend zum VIBO-/Messenger-Look.
+   Ausgenommen: das Profil (.vv-skin) behält helle, frei skinbare Karten. */
+[data-theme="dark"] {
+  --vv-card: #1a1236;
+  --vv-card-border: rgba(255, 255, 255, 0.14);
+  --vv-text: #f1ecff;
+  --vv-link: #8ab4ff;
+  --vv-link-visited: #c79bff;
+}
+/* Profil bleibt hell + individuell skinbar (Custom-CSS überschreibt eh) */
+[data-theme="dark"] .vv-skin {
+  --vv-card: #ffffff;
+  --vv-card-border: #000000;
+  --vv-text: #1a0033;
+  --vv-link: #1c00ff;
+  --vv-link-visited: #8c00ff;
+}
+
 * {
   box-sizing: border-box;
 }
