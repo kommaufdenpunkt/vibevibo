@@ -8,7 +8,7 @@ import HelpCard from "./HelpCard";
 
 const RANK_EMOJI = { newbie: "🌱", regular: "✨", star: "⭐", legend: "👑" };
 
-export default function CreditsPanel() {
+export default function CreditsPanel({ embedded = false }) {
   const [data, setData] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -119,18 +119,20 @@ export default function CreditsPanel() {
         </div>
       </div>
 
-      {/* Link zu vollständigem Transaktions-Verlauf */}
-      <div style={{ marginTop: 14 }}>
-        <Link href="/profile/transactions" style={{
-          display: "block", textAlign: "center", padding: 12,
-          borderRadius: 10, border: "1px solid var(--vv-border,#eee)",
-          background: "var(--vv-card,#fff)",
-          color: "var(--vv-text,#1c1c1e)", textDecoration: "none",
-          fontSize: 13, fontWeight: 600,
-        }}>
-          💰 Alle Transaktionen ansehen →
-        </Link>
-      </div>
+      {/* Link zu vollständigem Transaktions-Verlauf — nicht zeigen wenn schon dort */}
+      {!embedded && (
+        <div style={{ marginTop: 14 }}>
+          <Link href="/profile/transactions" style={{
+            display: "block", textAlign: "center", padding: 12,
+            borderRadius: 10, border: "1px solid var(--vv-border,#eee)",
+            background: "var(--vv-card,#fff)",
+            color: "var(--vv-text,#1c1c1e)", textDecoration: "none",
+            fontSize: 13, fontWeight: 600,
+          }}>
+            💰 Alle Transaktionen ansehen →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

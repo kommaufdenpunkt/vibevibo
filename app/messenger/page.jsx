@@ -14,7 +14,6 @@ import CreateRoomDialog from "@/components/CreateRoomDialog";
 import ActivityBars from "@/components/ActivityBars";
 import OnlineName from "@/components/OnlineName";
 import ViboPet from "@/components/ViboPet";
-import CreditsPanel from "@/components/CreditsPanel";
 import QuestPanel from "@/components/QuestPanel";
 import ShopPanel from "@/components/ShopPanel";
 import CardCollection from "@/components/CardCollection";
@@ -243,7 +242,6 @@ function MessengerInner() {
 
         {tab === "vibo" && (
           <>
-            <CreditsPanel />
             <QuestPanel />
             <ViboPet />
             <ShopPanel />

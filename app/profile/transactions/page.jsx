@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
+import CreditsPanel from "@/components/CreditsPanel";
 
 const PAGE = 50;
 
@@ -159,7 +160,10 @@ export default function TransactionsPage() {
   return (
     <div className="vv-page">
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
-        {/* Header */}
+        {/* Vibes-Saldo + Daily-Bonus + Tipps oben (vorher auf "Mein VIBO") */}
+        <CreditsPanel embedded />
+
+        {/* Header der Transaktions-Liste */}
         <div className="vv-card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <div>

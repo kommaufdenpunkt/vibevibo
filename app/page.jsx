@@ -154,7 +154,7 @@ export default function HomePage() {
               <li>🎯 Quests erledigen</li>
               <li>🗺️ Items auf der Karte einsammeln</li>
             </ul>
-            <Link href="/messenger?tab=vibo" className="vv-btn vv-btn-pink" style={{ marginTop: 10, display: "block", textAlign: "center" }}>
+            <Link href="/profile/transactions" className="vv-btn vv-btn-pink" style={{ marginTop: 10, display: "block", textAlign: "center" }}>
               ✨ Meine Vibes
             </Link>
           </div>

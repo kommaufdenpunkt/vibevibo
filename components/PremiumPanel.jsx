@@ -3,15 +3,26 @@
 // Shop: Account-Freischaltungen mit Vibes ✨. Eigenes Status-Setzen,
 // Anzeigename ändern, mehr Profilbild-Slots, Badges etc.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import HelpCard from "./HelpCard";
+import { PREMIUM_GROUPS } from "@/lib/premium";
 
 // Items die einen Text-Input brauchen (vor dem Kauf)
 const NEEDS_INPUT = {
-  custom_status: { label: "Dein Status-Text", placeholder: "z.B. 🚀 voll im Flow", field: "text" },
-  displayname_change: { label: "Neuer Anzeigename", placeholder: "z.B. Marcel K.", field: "newDisplayName" },
-  username_change: { label: "Neuer @username (3-20 Zeichen, a-z 0-9 _)", placeholder: "z.B. marcel_2026", field: "newUsername" },
+  custom_status:        { label: "Dein Status-Text", placeholder: "z.B. 🚀 voll im Flow", field: "text" },
+  displayname_change:   { label: "Neuer Anzeigename", placeholder: "z.B. Marcel K.", field: "newDisplayName" },
+  displayname_3pack:    null, // kein direkter Input — gibt Credits
+  username_change:      { label: "Neuer @username (3-20 Zeichen, a-z 0-9 _)", placeholder: "z.B. marcel_2026", field: "newUsername" },
+  username_change_fast: { label: "Neuer @username (3-20 Zeichen, a-z 0-9 _)", placeholder: "z.B. marcel_2026", field: "newUsername" },
+};
+
+// Permanent-Owned Flags die im Backend gespeichert sind
+const FLAGS = {
+  badge_gold: "gold", badge_diamond: "diamond",
+  frame_rainbow: "rainbow", frame_neon: "frame_neon", frame_gold: "frame_gold",
+  vanity_url: "vanity", bio_xl: "bio_xl", presence_invisible: "invisible",
+  status_slot: "status_slot",
 };
 
 export default function PremiumPanel() {
@@ -53,13 +64,22 @@ export default function PremiumPanel() {
     } finally { setBusy(""); }
   }
 
+  // Items nach group bündeln (vor early-return wegen useMemo-Regel)
+  const itemsByGroup = useMemo(() => {
+    const map = new Map(PREMIUM_GROUPS.map((g) => [g.id, []]));
+    for (const it of data?.items || []) {
+      const g = it.group || "andere";
+      if (!map.has(g)) map.set(g, []);
+      map.get(g).push(it);
+    }
+    return map;
+  }, [data]);
+
   if (!data) return null;
 
   function badgeOwned(itemKind) {
-    if (itemKind === "badge_gold") return data.owned.badges.includes("gold");
-    if (itemKind === "badge_diamond") return data.owned.badges.includes("diamond");
-    if (itemKind === "frame_rainbow") return data.owned.badges.includes("rainbow");
-    return false;
+    const flag = FLAGS[itemKind];
+    return flag ? data.owned.badges.includes(flag) : false;
   }
 
   return (
@@ -115,77 +135,94 @@ export default function PremiumPanel() {
         }}>{flash}</div>
       )}
 
-      {/* Items */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {data.items.map((it) => {
-          const owned = badgeOwned(it.kind);
-          const canAfford = data.balance >= it.price;
-          const needsIn = NEEDS_INPUT[it.kind];
-          const isConfirming = confirming === it.kind;
-          return (
-            <div key={it.kind} style={{
-              background: "var(--vv-card,#fff)",
-              border: `2px solid ${owned ? "#10b981" : "var(--vv-border,#eee)"}`,
-              borderRadius: 12, padding: 12,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ fontSize: 32, lineHeight: 1 }}>{it.emoji}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>
-                    {it.name}
-                    {owned && <span style={{ marginLeft: 6, color: "#10b981", fontSize: 11 }}>✓ besitzt du</span>}
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--vv-muted,#666)" }}>{it.description}</div>
-                </div>
-                <div style={{
-                  background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-                  color: "#1c1c1e", padding: "5px 10px", borderRadius: 999,
-                  fontWeight: 800, fontSize: 13, flexShrink: 0,
-                }}>✨ {it.price}</div>
-              </div>
-
-              {/* Text-Eingabe wenn nötig */}
-              {needsIn && !owned && (
-                <input
-                  type="text"
-                  value={input[it.kind] || ""}
-                  onChange={(e) => setInput((p) => ({ ...p, [it.kind]: e.target.value }))}
-                  placeholder={needsIn.placeholder}
-                  className="vv-input"
-                  style={{ width: "100%", marginTop: 8, fontSize: 13 }}
-                  maxLength={it.kind === "custom_status" ? 80 : 40}
-                />
-              )}
-
-              {!owned && (
-                <div style={{ marginTop: 8 }}>
-                  {!isConfirming ? (
-                    <button type="button" disabled={!canAfford || busy === it.kind}
-                      onClick={() => setConfirming(it.kind)}
-                      className={canAfford ? "vv-btn-big vv-btn-big-violet" : "vv-btn-big vv-btn-big-ghost"}
-                      style={{ width: "100%", padding: "10px 12px", fontSize: 13 }}>
-                      {canAfford ? `Freikaufen für ${it.price} ✨` : `Du brauchst noch ${it.price - data.balance} ✨ mehr`}
-                    </button>
-                  ) : (
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button type="button" disabled={busy === it.kind}
-                        onClick={() => buy(it.kind)}
-                        className="vv-btn-big vv-btn-big-pink"
-                        style={{ flex: 1, padding: "10px 12px", fontSize: 13 }}>
-                        {busy === it.kind ? "…" : "✓ Wirklich kaufen"}
-                      </button>
-                      <button type="button"
-                        onClick={() => setConfirming("")}
-                        className="vv-btn-big vv-btn-big-ghost"
-                        style={{ padding: "10px 16px", fontSize: 13 }}>Abbruch</button>
-                    </div>
-                  )}
-                </div>
-              )}
+      {/* Items nach Gruppen */}
+      {PREMIUM_GROUPS.map((group) => {
+        const items = itemsByGroup.get(group.id) || [];
+        if (!items.length) return null;
+        return (
+          <div key={group.id} style={{ marginTop: 18 }}>
+            <h3 style={{
+              margin: "0 0 8px", fontSize: 14, fontWeight: 800,
+              color: "var(--vv-text,#1c1c1e)", letterSpacing: 0.2,
+              padding: "6px 10px", borderRadius: 8,
+              background: "linear-gradient(90deg, rgba(139,92,246,0.18), transparent)",
+              borderLeft: "4px solid #8b5cf6",
+            }}>{group.label}</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {items.map((it) => renderItem(it))}
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
+
+  function renderItem(it) {
+    const owned = badgeOwned(it.kind);
+    const canAfford = data.balance >= it.price;
+    const needsIn = NEEDS_INPUT[it.kind];
+    const isConfirming = confirming === it.kind;
+    return (
+      <div key={it.kind} style={{
+        background: "var(--vv-card,#fff)",
+        border: `2px solid ${owned ? "#10b981" : "var(--vv-border,#eee)"}`,
+        borderRadius: 12, padding: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ fontSize: 32, lineHeight: 1 }}>{it.emoji}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>
+              {it.name}
+              {owned && <span style={{ marginLeft: 6, color: "#10b981", fontSize: 11 }}>✓ besitzt du</span>}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--vv-muted,#666)" }}>{it.description}</div>
+          </div>
+          <div style={{
+            background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+            color: "#1c1c1e", padding: "5px 10px", borderRadius: 999,
+            fontWeight: 800, fontSize: 13, flexShrink: 0,
+          }}>✨ {it.price}</div>
+        </div>
+
+        {/* Text-Eingabe wenn nötig */}
+        {needsIn && !owned && (
+          <input
+            type="text"
+            value={input[it.kind] || ""}
+            onChange={(e) => setInput((p) => ({ ...p, [it.kind]: e.target.value }))}
+            placeholder={needsIn.placeholder}
+            className="vv-input"
+            style={{ width: "100%", marginTop: 8, fontSize: 13 }}
+            maxLength={it.kind === "custom_status" ? 80 : 40}
+          />
+        )}
+
+        {!owned && (
+          <div style={{ marginTop: 8 }}>
+            {!isConfirming ? (
+              <button type="button" disabled={!canAfford || busy === it.kind}
+                onClick={() => setConfirming(it.kind)}
+                className={canAfford ? "vv-btn-big vv-btn-big-violet" : "vv-btn-big vv-btn-big-ghost"}
+                style={{ width: "100%", padding: "10px 12px", fontSize: 13 }}>
+                {canAfford ? `Freikaufen für ${it.price} ✨` : `Du brauchst noch ${it.price - data.balance} ✨ mehr`}
+              </button>
+            ) : (
+              <div style={{ display: "flex", gap: 6 }}>
+                <button type="button" disabled={busy === it.kind}
+                  onClick={() => buy(it.kind)}
+                  className="vv-btn-big vv-btn-big-pink"
+                  style={{ flex: 1, padding: "10px 12px", fontSize: 13 }}>
+                  {busy === it.kind ? "…" : "✓ Wirklich kaufen"}
+                </button>
+                <button type="button"
+                  onClick={() => setConfirming("")}
+                  className="vv-btn-big vv-btn-big-ghost"
+                  style={{ padding: "10px 16px", fontSize: 13 }}>Abbruch</button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 }
