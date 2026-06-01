@@ -187,23 +187,37 @@ function Eyes({ mood, cx, cy, bodyR, p, sleeping }) {
       </>
     );
   }
-  const ex = cx - bodyR * 0.32;
-  const ex2 = cx + bodyR * 0.32;
-  const ey = cy - bodyR * 0.1;
-  const r = mood === "krank" ? 1.5 : 3;
+  const ex = cx - bodyR * 0.34;
+  const ex2 = cx + bodyR * 0.34;
+  const ey = cy - bodyR * 0.12;
+  const eyeR = 6;                                  // größere Augen — kawaii
+  const pupilR = mood === "krank" ? 2 : 4;
+  const happy = mood === "glücklich" || mood === "okay";
   return (
     <>
-      <circle cx={ex} cy={ey} r="4" fill="#fff" />
-      <circle cx={ex2} cy={ey} r="4" fill="#fff" />
-      <circle cx={ex} cy={ey + 0.5} r={r} fill="#1c1c1e">
-        <animate attributeName="r" values={`${r};${r};0.4;${r};${r}`} keyTimes="0;0.94;0.97;0.99;1" dur="4s" repeatCount="indefinite" />
+      {/* Augenweißes (größer) */}
+      <circle cx={ex} cy={ey} r={eyeR} fill="#fff" stroke={p.outline} strokeWidth="1" />
+      <circle cx={ex2} cy={ey} r={eyeR} fill="#fff" stroke={p.outline} strokeWidth="1" />
+      {/* Pupille mit Blink-Anim */}
+      <circle cx={ex} cy={ey + 0.6} r={pupilR} fill="#1c1c1e">
+        <animate attributeName="r" values={`${pupilR};${pupilR};0.4;${pupilR};${pupilR}`} keyTimes="0;0.92;0.95;0.98;1" dur="4.5s" repeatCount="indefinite" />
       </circle>
-      <circle cx={ex2} cy={ey + 0.5} r={r} fill="#1c1c1e">
-        <animate attributeName="r" values={`${r};${r};0.4;${r};${r}`} keyTimes="0;0.94;0.97;0.99;1" dur="4s" repeatCount="indefinite" />
+      <circle cx={ex2} cy={ey + 0.6} r={pupilR} fill="#1c1c1e">
+        <animate attributeName="r" values={`${pupilR};${pupilR};0.4;${pupilR};${pupilR}`} keyTimes="0;0.92;0.95;0.98;1" dur="4.5s" repeatCount="indefinite" />
       </circle>
-      {/* Glanzpunkt */}
-      <circle cx={ex + 1} cy={ey - 1} r="0.9" fill="#fff" />
-      <circle cx={ex2 + 1} cy={ey - 1} r="0.9" fill="#fff" />
+      {/* Großer Glanzpunkt (Kawaii-Style) */}
+      <circle cx={ex + 1.6} cy={ey - 1.6} r="1.7" fill="#fff" />
+      <circle cx={ex2 + 1.6} cy={ey - 1.6} r="1.7" fill="#fff" />
+      {/* Kleiner zweiter Glanzpunkt unten */}
+      <circle cx={ex - 1.6} cy={ey + 2} r="0.8" fill="#fff" opacity="0.8" />
+      <circle cx={ex2 - 1.6} cy={ey + 2} r="0.8" fill="#fff" opacity="0.8" />
+      {/* Bei "glücklich" lächelnde Augenfalte oben drüber */}
+      {happy && mood === "glücklich" && (
+        <>
+          <path d={`M${ex - 4} ${ey - 6} q 4 -2 8 0`} stroke={p.outline} strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.6" />
+          <path d={`M${ex2 - 4} ${ey - 6} q 4 -2 8 0`} stroke={p.outline} strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.6" />
+        </>
+      )}
     </>
   );
 }
@@ -256,16 +270,13 @@ export default function ViboSprite({ stage = "kid", species = "sprout", mood = "
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     let cancelled = false;
+    // Custom-Asset NUR über expliziten Spezies-Pfad — verhindert dass eine
+    // generische /baby.gif für alle Spezies einspringt. Will man eigene
+    // Sprites: /public/vibo/sprout/baby.png etc. anlegen.
     const tries = [
       `/vibo/${species}/${stage}.gif`,
       `/vibo/${species}/${stage}.png`,
       `/vibo/${species}/${stage}.webp`,
-      `/vibo/${stage}.gif`,
-      `/vibo/${stage}.png`,
-      `/vibo/${stage}.webp`,
-      `/${stage}.gif`,
-      `/${stage}.png`,
-      `/${stage}.webp`,
     ];
     async function probe() {
       for (const url of tries) {
@@ -334,6 +345,10 @@ export default function ViboSprite({ stage = "kid", species = "sprout", mood = "
               <rect x={cx - bodyR} y={cy - bodyR * 0.95} width={bodyR * 2} height={bodyR * 1.9} rx="8" fill={p.body} stroke={p.outline} strokeWidth="2.5" />
             ) : (
               <ellipse cx={cx} cy={cy} rx={bodyR} ry={bodyR * 0.95} fill={p.body} stroke={p.outline} strokeWidth="2.5" />
+            )}
+            {/* Bauch-Highlight für Tiefe */}
+            {species !== "robi" && (
+              <ellipse cx={cx - bodyR * 0.3} cy={cy - bodyR * 0.35} rx={bodyR * 0.35} ry={bodyR * 0.22} fill="#fff" opacity="0.35" />
             )}
           </g>
 

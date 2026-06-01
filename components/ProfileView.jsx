@@ -41,6 +41,20 @@ function fileToAvatarDataUrl(file) {
   });
 }
 
+// Einheitliche Sidebar-Buttons: gleich breit, gleich hoch, zentriert
+const sideBtn = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  width: "100%",
+  padding: "10px 12px",
+  fontSize: 13,
+  textAlign: "center",
+  boxSizing: "border-box",
+  whiteSpace: "nowrap",
+};
+
 function StatPill({ icon, label, value }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 999, background: "#f0f1f6", color: "#222", fontSize: 12 }}>
@@ -184,20 +198,20 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
             </div>
           </div>
 
-          {/* Aktions-Knoepfe */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 12, minWidth: 150 }}>
+          {/* Aktions-Knoepfe — einheitliche Breite + zentriert */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 12, width: 170, flexShrink: 0 }}>
             {!isOwner && me && (
               <>
-                <button type="button" className="vv-btn vv-btn-pink" onClick={gruscheln}>🫶 Gruscheln</button>
-                <Link className="vv-btn vv-btn-cyan" href={`/messenger/${profile.username}`}>✉️ Nachricht</Link>
-                <Link className="vv-btn" href={`/u/${profile.username}/fotos`}>📸 Fotos</Link>
+                <button type="button" className="vv-btn vv-btn-pink" onClick={gruscheln} style={sideBtn}>🫶 Gruscheln</button>
+                <Link className="vv-btn vv-btn-cyan" href={`/messenger/${profile.username}`} style={sideBtn}>✉️ Nachricht</Link>
+                <Link className="vv-btn" href={`/u/${profile.username}/fotos`} style={sideBtn}>📸 Fotos</Link>
               </>
             )}
             {isOwner && (
               <>
-                <Link className="vv-btn vv-btn-pink" href="/profile/edit">✎ Profil bearbeiten</Link>
-                <Link className="vv-btn vv-btn-cyan" href="/profile/skin">🎨 Skin/CSS</Link>
-                <Link className="vv-btn" href="/fotos">📸 Meine Fotos</Link>
+                <Link className="vv-btn vv-btn-pink" href="/profile/edit" style={sideBtn}>✎ Bearbeiten</Link>
+                <Link className="vv-btn vv-btn-cyan" href="/profile/skin" style={sideBtn}>🎨 Skin/CSS</Link>
+                <Link className="vv-btn" href="/fotos" style={sideBtn}>📸 Meine Fotos</Link>
               </>
             )}
           </div>

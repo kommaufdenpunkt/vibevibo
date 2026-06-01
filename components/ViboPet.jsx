@@ -95,10 +95,10 @@ function Display({ vibo, error }) {
     }}>
       <div style={{
         width: "100%", height: "100%",
-        background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 60%, #e2e8f0 100%)",
+        background: "radial-gradient(ellipse at 50% 30%, #fffefb 0%, #fef9e7 70%, #fef3c7 100%)",
         borderRadius: 6,
         display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "inset 0 4px 10px rgba(0,0,0,0.18)",
+        boxShadow: "inset 0 4px 10px rgba(146,64,14,0.18)",
         position: "relative",
         overflow: "hidden",
       }}>
