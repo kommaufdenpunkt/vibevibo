@@ -2254,9 +2254,51 @@ a:hover { background: var(--vv-yellow); color: #000; }
   -webkit-backdrop-filter: blur(2px);
 }
 
-/* Mobile-Feinschliff */
-@media (max-width: 600px) {
+/* ============================================================
+   MOBILE-FEINSCHLIFF (Schritt 1: Startseite + normale Seiten)
+   Nur innerhalb dieser Media-Query — Desktop bleibt unberührt.
+   ============================================================ */
+@media (max-width: 700px) {
+  /* Seiten-Rahmen enger, mehr Platz für Inhalt */
   .vv-page { padding: 8px; }
+
+  /* Banner kompakter — frisst sonst halben Screen */
+  .vv-banner { padding: 12px 10px; border-radius: 12px; margin-bottom: 10px; }
+  .vv-logo { font-size: 30px; letter-spacing: 0.5px; }
+  .vv-slogan { font-size: 12px; }
+
+  /* Cards: weichere Ecken, etwas weniger Padding, dezenter Schatten */
+  .vv-card {
+    border-radius: 12px;
+    padding: 13px;
+    margin-bottom: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.30);
+  }
+  .vv-card > h2:first-child,
+  .vv-card > h3:first-child,
+  .vv-card h2, .vv-card h3 { font-size: 15px; }
+
+  /* Touch-freundliche normale Buttons */
+  .vv-btn {
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 8px;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Eingabefelder größer (kein iOS-Zoom: >=16px) */
+  .vv-input, input.vv-input, textarea.vv-input {
+    font-size: 16px;
+    padding: 11px 12px;
+  }
+
+  /* Listen-Reihen mit größerem Tap-Target */
+  .vv-msgapp-row { padding: 12px 14px; }
+
+  /* Diverse Layout-Stacks */
   .vv-nav2-logo { font-size: 18px; }
   .vv-nav2-user { max-width: 110px; font-size: 11px; }
   .vv-grid-2 { grid-template-columns: 1fr; }
@@ -2267,6 +2309,12 @@ a:hover { background: var(--vv-yellow); color: #000; }
   .vv-splash-title { font-size: 52px; }
   .vv-btn-cta, .vv-btn-mega { min-width: 0; width: 100%; }
   .vv-splash-form { padding: 18px; }
+}
+
+/* Sehr schmale Phones */
+@media (max-width: 380px) {
+  .vv-logo { font-size: 26px; }
+  .vv-card { padding: 11px; }
 }
 
 /* PWA Install-Hinweis */
