@@ -103,6 +103,28 @@ export default function Navbar() {
     if (typeof window !== "undefined") setSearch(window.location.search);
   }, [pathname]);
 
+  // Desktop-Erkennung: dort öffnet "Nachrichten" das Chat-Overlay statt
+  // zur (mobil gedachten) Messenger-Seite zu navigieren.
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 900);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Sonderbehandlung beim Klick auf einen Menü-Link. Gibt true zurück,
+  // wenn die Standard-Navigation unterdrückt werden soll.
+  function handleLinkClick(e, href) {
+    setOpen(false);
+    // Desktop + "Nachrichten" → Chat-Overlay öffnen statt navigieren
+    if (isDesktop && href === "/messenger") {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent("vv-open-chat-overlay"));
+      return;
+    }
+  }
+
   // Aktiv-Logik: exakter Pfad-Match, plus Tab-Unterscheidung bei /messenger
   function isActive(href) {
     const [hp, hq] = href.split("?");
@@ -287,7 +309,7 @@ export default function Navbar() {
               key={l.href}
               href={l.href}
               className={`vv-nav2-item${isActive(l.href) ? " vv-active" : ""}`}
-              onClick={() => setOpen(false)}
+              onClick={(e) => handleLinkClick(e, l.href)}
             >
               <span className="vv-nav2-icon">{l.icon}</span>
               <span className="vv-nav2-label">{l.label}</span>

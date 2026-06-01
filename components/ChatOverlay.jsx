@@ -231,6 +231,19 @@ export default function ChatOverlay() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, view]);
 
+  // Von außen öffenbar (z.B. Menü-Punkt "Nachrichten" auf Desktop).
+  // Optionales detail.partner öffnet direkt einen bestimmten Chat.
+  useEffect(() => {
+    const onOpen = (e) => {
+      setOpen(true);
+      const partner = e?.detail?.partner;
+      if (partner) openChat(partner);
+      else setView("list");
+    };
+    window.addEventListener("vv-open-chat-overlay", onOpen);
+    return () => window.removeEventListener("vv-open-chat-overlay", onOpen);
+  }, [openChat]);
+
   /* ---------- Filterung + Sortierung (alle Hooks VOR dem early return) ---------- */
 
   const q = query.trim().toLowerCase();
