@@ -128,7 +128,7 @@ export default function PicGallery({ username, isOwner, onAvatarChange }) {
           {isOwner ? "Noch keine Profilbilder – lad dein erstes hoch!" : "Noch keine Profilbilder."}
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(78px, 1fr))", gap: 8, marginTop: 10 }}>
           {visible.map((p) => {
             const badge = STATUS_BADGE[p.status] || STATUS_BADGE.approved;
             return (

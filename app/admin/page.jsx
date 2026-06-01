@@ -659,18 +659,27 @@ function Userakte({ q, pw, uParam }) {
             <button type="submit" className="vv-btn">Speichern</button>
           </form>
           <div className="vv-mt-12">
+            <div className="vv-muted" style={{ fontSize: 11, marginBottom: 6 }}>
+              📜 Protokoll: {log.length} Einträge (Namensänderungen, Moderation, Banns, Posts-Checks …)
+            </div>
             {log.length === 0 && <div className="vv-muted">Keine Einträge – sauberer Nutzer. 🌟</div>}
-            {log.map((m) => (
-              <div className="vv-admin-row" key={m.id}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 11, fontWeight: "bold" }}>{m.by}</span>{" "}
-                  <span className="vv-muted">{m.kind} · {m.decision}</span>
-                  {m.reason ? <div className="vv-muted" style={{ fontSize: 11 }}>{m.reason}</div> : null}
-                  {m.content ? <div style={{ fontSize: 11, color: "#666" }}>„{m.content}"</div> : null}
+            {log.map((m) => {
+              const isName = m.kind === "namechange";
+              return (
+                <div className="vv-admin-row" key={m.id} style={isName ? { borderLeft: "3px solid #8b5cf6", paddingLeft: 8 } : undefined}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 11, fontWeight: "bold" }}>{isName ? "🏷️ " : ""}{m.by}</span>{" "}
+                    <span className="vv-muted">{m.kind}{m.decision ? ` · ${m.decision}` : ""}</span>
+                    {m.reason ? <div className="vv-muted" style={{ fontSize: 11 }}>{m.reason}</div> : null}
+                    {m.content ? <div style={{ fontSize: 12, color: isName ? "#6d28d9" : "#666", fontWeight: isName ? 700 : 400 }}>{isName ? "" : "„"}{m.content}{isName ? "" : "\""}</div> : null}
+                  </div>
+                  <span className="vv-muted" style={{ fontSize: 10, textAlign: "right", flexShrink: 0, lineHeight: 1.3 }}>
+                    {new Date(m.created_at).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    <br/>{relTime(m.created_at)}
+                  </span>
                 </div>
-                <span className="vv-muted" style={{ fontSize: 11 }}>{relTime(m.created_at)}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}

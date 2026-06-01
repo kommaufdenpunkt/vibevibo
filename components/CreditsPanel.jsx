@@ -37,20 +37,28 @@ export default function CreditsPanel({ embedded = false }) {
 
   return (
     <div style={{ padding: 14 }}>
-      <HelpCard id="credits-intro" title="Was sind Vibes?" emoji="✨" color="#ec4899">
-        <b>Vibes ✨ sind die Währung von VibeVibo.</b> Du verdienst sie
-        durch Aktivität auf der Plattform und gibst sie im Shop aus —
-        für VIBO-Futter, Möbel, Sammelkarten, Outfits.
+      <HelpCard id="credits-intro" title="Was sind Vibes?" emoji="✨" color="#ff3e9d">
+        <b>Vibes ✨ sind deine Plattform-Währung.</b> Du verdienst sie,
+        indem du aktiv bist — und gibst sie für coole Sachen wieder aus.
         <br/><br/>
-        <b>Wie verdienen?</b> Tägliches Login, Quests, Pinnwand-Posts,
-        Gruscheln, Geschenke, Fotos, Mini-Game, Realitätskarte
-        (Items in der Stadt einsammeln).
-        <br/><br/>
-        <b>Wofür ausgeben?</b> Shop (Futter/Möbel/Karten), Spenden an
-        Freunde, später Outfits + Premium-Funktionen.
-        <br/><br/>
-        <b>Anti-Inflation:</b> Max 60 Vibes/Tag aus Aktivität. So bleibt
-        die Währung wertvoll und niemand kann farmen.
+        <b>💰 So verdienst du Vibes</b>
+        <ul style={{ margin: "4px 0 0", paddingLeft: 18, lineHeight: 1.7 }}>
+          <li>🎁 Jeden Tag einloggen (Tages-Bonus, Streak bringt extra)</li>
+          <li>🎯 Quests erfüllen</li>
+          <li>📌 Pinnwand schreiben · 🫶 gruscheln · 🎀 Geschenke</li>
+          <li>📷 Fotos hochladen · 🎮 Mini-Game spielen</li>
+          <li>🗺️ Auf der Realitätskarte Items einsammeln</li>
+        </ul>
+        <br/>
+        <b>🛒 Wofür du sie ausgibst</b>
+        <ul style={{ margin: "4px 0 0", paddingLeft: 18, lineHeight: 1.7 }}>
+          <li>VIBO-Shop: Futter, Möbel, Sammelkarten</li>
+          <li>Shop: mehr Profilbild-Slots, Name ändern, Badges, Rahmen</li>
+          <li>Freunden etwas spenden</li>
+        </ul>
+        <br/>
+        <b>🛡 Fair & wertvoll:</b> Max. 60 Vibes pro Tag aus Aktivität —
+        so kann niemand farmen und deine Vibes bleiben etwas wert.
       </HelpCard>
       {/* Saldo-Karte */}
       <div style={{

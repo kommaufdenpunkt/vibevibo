@@ -34,31 +34,34 @@ export default function HelpCard({
 
   return (
     <div style={{
-      background: `${color}18`,
+      background: `${color}14`,
       border: `2px solid ${color}55`,
       borderRadius: 12,
       marginBottom: 12,
       overflow: "hidden",
     }}>
+      {/* Titelbalken im Menü-/Header-Look: pink → violett Verlauf, weiße Schrift */}
       <button type="button" onClick={toggle}
         style={{
           width: "100%", padding: "10px 14px",
-          background: "transparent", border: "none", cursor: "pointer",
+          background: "linear-gradient(90deg, var(--vv-pink, #ff3e9d), var(--vv-violet, #b300ff))",
+          border: "none", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          fontFamily: "inherit", color: "var(--vv-text,#1c1c1e)",
-          fontSize: 13, fontWeight: 700, textAlign: "left",
+          fontFamily: "inherit", color: "#fff",
+          fontSize: 14, fontWeight: 800, textAlign: "left",
+          textShadow: "1px 1px 0 rgba(0,0,0,0.45)",
         }}>
         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 18 }}>{emoji}</span>
           {title}
         </span>
-        <span style={{ fontSize: 12, opacity: 0.65 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, background: "rgba(255,255,255,0.22)", padding: "3px 9px", borderRadius: 999 }}>
           {open ? "▲ verstanden" : "▼ erklären"}
         </span>
       </button>
       {open && (
         <div style={{
-          padding: "0 14px 12px", fontSize: 12.5, lineHeight: 1.5,
+          padding: "12px 14px", fontSize: 13, lineHeight: 1.55,
           color: "var(--vv-text,#1c1c1e)",
         }}>
           {children}

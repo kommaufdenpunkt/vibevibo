@@ -2667,6 +2667,13 @@ input[type="number"], input[type="tel"], textarea, select {
   border: none;
   box-shadow: none;
   overflow: visible;
+  /* Konsistente, gut lesbare Palette auf dem lila App-Hintergrund:
+     dunkle Karten + heller Text, egal welches Theme global aktiv ist. */
+  --vv-bg: transparent;
+  --vv-card: #1f1640;
+  --vv-text: #f3eeff;
+  --vv-muted: rgba(243,238,255,0.72);
+  --vv-border: rgba(255,255,255,0.14);
 }
 .vv-messenger-desktop-frame .vv-msgapp {
   display: block;
