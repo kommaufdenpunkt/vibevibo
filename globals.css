@@ -72,11 +72,14 @@ a:hover { background: var(--vv-yellow); color: #000; }
 
 /* Layout */
 .vv-page {
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 16px;
   position: relative;
   z-index: 1;
+}
+@media (max-width: 600px) {
+  .vv-page { padding: 10px; }
 }
 
 /* Logo Banner */
@@ -582,7 +585,7 @@ a:hover { background: var(--vv-yellow); color: #000; }
 .vv-feed-item:last-child { border-bottom: none; }
 .vv-feed-meta { font-size: 11px; color: #666; }
 
-/* Two column */
+/* Two column (Legacy: in vielen Seiten noch genutzt) */
 .vv-grid-2 {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -590,6 +593,35 @@ a:hover { background: var(--vv-yellow); color: #000; }
 }
 @media (max-width: 800px) {
   .vv-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Drei-Spalten-Home-Layout: links Quick-Access, Mitte Main-Feed,
+   rechts Online-Liste. Skalliert von 3-spaltig (wide desktop) auf
+   2-spaltig (Tablet/normales Desktop) auf 1-spaltig (Mobile). */
+.vv-grid-3 {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  /* Bei mittlerer Breite: links + rechts zusammen unter Main-Feed */
+  .vv-grid-3 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "main main"
+      "left right";
+  }
+  .vv-grid-3 > .vv-col-main  { grid-area: main; }
+  .vv-grid-3 > .vv-col-left  { grid-area: left; }
+  .vv-grid-3 > .vv-col-right { grid-area: right; }
+}
+@media (max-width: 700px) {
+  /* Mobile: 1 Spalte, Main zuerst, dann rechts (Online), dann links (Quick-Access) */
+  .vv-grid-3 {
+    grid-template-columns: 1fr;
+    grid-template-areas: "main" "right" "left";
+  }
 }
 
 /* Gruschel Toast */
