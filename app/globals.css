@@ -25,8 +25,8 @@
    etc. dunkel — passend zum VIBO-/Messenger-Look.
    Ausgenommen: das Profil (.vv-skin) behält helle, frei skinbare Karten. */
 [data-theme="dark"] {
-  --vv-card: #1a1236;
-  --vv-card-border: rgba(255, 255, 255, 0.14);
+  --vv-card: #140d28;
+  --vv-card-border: #000000;
   --vv-text: #f1ecff;
   --vv-link: #8ab4ff;
   --vv-link-visited: #c79bff;
