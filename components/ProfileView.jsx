@@ -13,6 +13,8 @@ import PremiumBadges from "./PremiumBadges";
 import Avatar from "./Avatar";
 import ActivityBars from "./ActivityBars";
 import OnlineName from "./OnlineName";
+import OnlineSince from "./OnlineSince";
+import TopFriends from "./TopFriends";
 import Gaestebuch from "./Gaestebuch";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
@@ -188,6 +190,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
                 <ActivityBars lastSeen={profile.lastSeen} size="sm" />
                 {profile.online ? "online" : "offline"}
               </span>
+              <OnlineSince onlineSince={profile.onlineSince} online={profile.online} />
               {profile.mood && (
                 <span style={{ background: "linear-gradient(90deg, #ffd6e7, #ffeaf3)", color: "#a01062", padding: "2px 9px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>💭 {profile.mood}</span>
               )}
@@ -223,6 +226,9 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
 
       {/* === VIBO-Widget === */}
       <ViboProfileWidget username={profile.username} isOwner={isOwner} />
+
+      {/* === Top-5-Buddies (MySpace „Top 8"-Nostalgie) === */}
+      <TopFriends username={profile.username} isOwner={isOwner} />
 
       {/* === Profilbild-Galerie === */}
       <PicGallery username={profile.username} isOwner={isOwner} onAvatarChange={onChange} />

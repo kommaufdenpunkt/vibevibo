@@ -20,17 +20,23 @@ const NODE_COLOR = {
   status: "#ff6fae",
 };
 
-function renderEvent(ev, i, isLast) {
-  const actor = (
+function userChip(u) {
+  if (!u) return null;
+  return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-      <Link href={`/u/${ev.actor.username}`} style={{ textDecoration: "none" }}>
-        <OnlineName lastSeen={ev.actor.lastSeen}>
-          <ColoredName gender={ev.actor.gender} age={ev.actor.age} name={ev.actor.displayName} />
+      <Link href={`/u/${u.username}`} style={{ textDecoration: "none" }}>
+        <OnlineName lastSeen={u.lastSeen}>
+          <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
         </OnlineName>
       </Link>
-      <PremiumBadges badges={ev.actor.premiumBadges} size={13} />
+      <PremiumBadges badges={u.premiumBadges} size={13} />
     </span>
   );
+}
+
+function renderEvent(ev, i, isLast) {
+  const actor = userChip(ev.actor);
+  const target = userChip(ev.target);
   let icon = "✨";
   let text = null;
 
@@ -39,11 +45,11 @@ function renderEvent(ev, i, isLast) {
     const self = ev.actor.username === ev.target.username;
     text = self
       ? <>{actor} postet: „<MentionText text={truncate(ev.detail, 80)} />"</>
-      : <>{actor} schrieb an <Link href={`/u/${ev.target.username}`}>{ev.target.displayName}</Link>: „<MentionText text={truncate(ev.detail, 60)} />"</>;
+      : <>{actor} schrieb an {target}: „<MentionText text={truncate(ev.detail, 60)} />"</>;
   } else if (ev.type === "gift") {
     const g = findGift(ev.gift);
     icon = g?.icon || "🎁";
-    text = <>{actor} schenkte <Link href={`/u/${ev.target.username}`}>{ev.target.displayName}</Link> {g ? `${g.icon} ${g.name}` : "ein Geschenk"}</>;
+    text = <>{actor} schenkte {target} {g ? `${g.icon} ${g.name}` : "ein Geschenk"}</>;
   } else if (ev.type === "grouppost") {
     icon = "🏘️";
     text = <>{actor} postete in <Link href={`/gruppen/${ev.group.slug}`}>{ev.group.name}</Link>: „{truncate(ev.detail, 55)}"</>;
