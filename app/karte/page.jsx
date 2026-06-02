@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import WorldMap from "@/components/WorldMap";
 import WorldInventory from "@/components/WorldInventory";
+import MarketPanel from "@/components/MarketPanel";
+
+const TABS = [
+  ["map", "🗺️ Karte"],
+  ["inv", "🎒 Inventar"],
+  ["market", "🏪 Basar"],
+];
 
 export default function KartePage() {
   const { me, loading } = useMe();
@@ -22,25 +29,21 @@ export default function KartePage() {
   return (
     <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
       <div style={{ display: "flex", borderBottom: "1px solid var(--vv-border,#eee)" }}>
-        <button type="button" onClick={() => setTab("map")}
-          style={{
-            flex: 1, padding: "12px", border: "none",
-            background: tab === "map" ? "var(--vv-card,#fff)" : "transparent",
-            fontWeight: tab === "map" ? 700 : 500,
-            cursor: "pointer", borderBottom: tab === "map" ? "3px solid #ec4899" : "3px solid transparent",
-            fontFamily: "inherit", fontSize: 14,
-          }}>🗺️ Karte</button>
-        <button type="button" onClick={() => setTab("inv")}
-          style={{
-            flex: 1, padding: "12px", border: "none",
-            background: tab === "inv" ? "var(--vv-card,#fff)" : "transparent",
-            fontWeight: tab === "inv" ? 700 : 500,
-            cursor: "pointer", borderBottom: tab === "inv" ? "3px solid #ec4899" : "3px solid transparent",
-            fontFamily: "inherit", fontSize: 14,
-          }}>🎒 Inventar</button>
+        {TABS.map(([k, label]) => (
+          <button key={k} type="button" onClick={() => setTab(k)}
+            style={{
+              flex: 1, padding: "12px", border: "none",
+              background: tab === k ? "var(--vv-card,#fff)" : "transparent",
+              color: "var(--vv-text,#1c1c1e)",
+              fontWeight: tab === k ? 700 : 500,
+              cursor: "pointer", borderBottom: tab === k ? "3px solid #ec4899" : "3px solid transparent",
+              fontFamily: "inherit", fontSize: 14,
+            }}>{label}</button>
+        ))}
       </div>
       {tab === "map" && <WorldMap />}
       {tab === "inv" && <WorldInventory />}
+      {tab === "market" && <MarketPanel />}
     </div>
   );
 }

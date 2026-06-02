@@ -77,6 +77,7 @@ export default function WorldMap({ onPickup }) {
   const [items, setItems] = useState([]);
   const [flash, setFlash] = useState("");
   const [error, setError] = useState("");
+  const [weather, setWeather] = useState(null);
 
   // Leaflet + Karte initialisieren wenn Position da
   useEffect(() => {
@@ -162,12 +163,44 @@ export default function WorldMap({ onPickup }) {
     return () => clearInterval(t);
   }, [perm, pos, loadItems]);
 
+  // Wetter laden (alle 10 Min) — beeinflusst welche Wild-VIBOs auftauchen
+  useEffect(() => {
+    if (perm !== "granted" || !pos) return;
+    let alive = true;
+    const load = () => api.worldWeather(pos.lat, pos.lng).then((r) => { if (alive) setWeather(r.weather || null); }).catch(() => {});
+    load();
+    const t = setInterval(load, 10 * 60_000);
+    return () => { alive = false; clearInterval(t); };
+  }, [perm, pos]);
+
+  const [fishing, setFishing] = useState(false);
+  async function goFishing() {
+    if (!pos || fishing) return;
+    setFishing(true);
+    setFlash("🎣 Auswerfen…");
+    try {
+      const r = await api.worldFish(pos.lat, pos.lng, pos.acc);
+      const f = r.fish;
+      setFlash(`${f.emoji} ${f.msg}${f.vibes ? ` (+${f.vibes} ✨)` : ""}${r.viboFed ? " · VIBO gefüttert 🍽️" : ""}`);
+      setTimeout(() => setFlash(""), 4200);
+    } catch (e) {
+      setFlash(`⚠ ${e.message}`);
+      setTimeout(() => setFlash(""), 4200);
+    } finally { setFishing(false); }
+  }
+
   async function pickup(item) {
     if (!pos) return;
     try {
-      const r = await api.worldPickup(item.id, pos.lat, pos.lng, pos.acc);
-      setFlash(`${r.emoji} ${r.name}! ${r.description || ""}`);
-      setTimeout(() => setFlash(""), 3500);
+      const r = await api.worldPickup(item.id, pos.lat, pos.lng, pos.acc, weather?.favored);
+      if (r.caught) {
+        setFlash(r.caught.firstTime
+          ? `🎉 NEU gefangen: ${r.caught.emoji} ${r.caught.name}! (+5 ✨)`
+          : `🐾 ${r.caught.emoji} ${r.caught.name} gefangen (×${r.caught.count})`);
+      } else {
+        setFlash(`${r.emoji} ${r.name}! ${r.description || ""}`);
+      }
+      setTimeout(() => setFlash(""), 3800);
       // sofort neu laden, Item ist weg
       loadItems(pos);
     } catch (e) {
@@ -224,9 +257,24 @@ export default function WorldMap({ onPickup }) {
   return (
     <div style={{ position: "relative", width: "100%", height: "calc(100dvh - 80px)" }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
+      {/* Wetter-Banner: beeinflusst welche Wild-VIBOs auftauchen */}
+      {weather && (
+        <div style={{
+          position: "absolute", top: 12, left: 12, right: 12,
+          background: "rgba(255,255,255,0.95)", borderRadius: 12,
+          padding: "8px 12px", zIndex: 999, display: "flex", alignItems: "center", gap: 10,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.18)", backdropFilter: "blur(8px)", color: "#1c1c1e",
+        }}>
+          <span style={{ fontSize: 26 }}>{weather.emoji}</span>
+          <div style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
+            <div style={{ fontSize: 13, fontWeight: 800 }}>{weather.label} · {weather.temp}°C</div>
+            <div style={{ fontSize: 11, color: "#555" }}>{weather.note}</div>
+          </div>
+        </div>
+      )}
       {flash && (
         <div style={{
-          position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)",
+          position: "absolute", top: weather ? 70 : 16, left: "50%", transform: "translateX(-50%)",
           background: flash.startsWith("⚠") ? "#fef3c7" : "#fff",
           color: flash.startsWith("⚠") ? "#92400e" : "#1c1c1e",
           padding: "10px 16px", borderRadius: 12,
@@ -246,6 +294,18 @@ export default function WorldMap({ onPickup }) {
         🎯 <strong>{items.length}</strong> Items in deiner Nähe ·
         komm bis auf <strong>30 m</strong> heran und tippe zum Einsammeln.
       </div>
+
+      {/* Angel-Button — funktioniert nur in der Nähe echter Gewässer */}
+      <button type="button" onClick={goFishing} disabled={fishing}
+        title="Angeln (nur am Wasser)"
+        style={{
+          position: "absolute", right: 14, bottom: 84, zIndex: 1000,
+          width: 56, height: 56, borderRadius: "50%", border: "none",
+          background: "linear-gradient(135deg, #38bdf8, #0369a1)",
+          color: "#fff", fontSize: 26, cursor: "pointer",
+          boxShadow: "0 6px 18px rgba(3,105,161,0.5)",
+          opacity: fishing ? 0.6 : 1,
+        }}>🎣</button>
     </div>
   );
 }

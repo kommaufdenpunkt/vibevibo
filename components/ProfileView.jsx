@@ -200,8 +200,8 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
             </div>
           </div>
 
-          {/* Aktions-Knoepfe — einheitliche Breite + zentriert */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 12, width: 170, flexShrink: 0 }}>
+          {/* Aktions-Knoepfe — 2×2-Raster statt langer Spalte */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, paddingTop: 12, width: 280, flexShrink: 0 }}>
             {!isOwner && me && (
               <>
                 <button type="button" className="vv-btn vv-btn-pink" onClick={gruscheln} style={sideBtn}>🫶 Gruscheln</button>

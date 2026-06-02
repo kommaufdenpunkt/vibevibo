@@ -3,10 +3,13 @@ import { getSessionUser } from "@/lib/auth";
 import {
   getWorldItem, markItemPickedUp, getUserLocation, recordPickup,
   incrementInventory, awardCredits, updateUserLocation, addUserCard, bumpQuestProgress,
+  recordCaughtVibo,
 } from "@/lib/db";
 import {
   distanceMeters, PICKUP_RADIUS_M, PICKUP_COOLDOWN_MS, MAX_PICKUPS_PER_DAY, MAX_SPEED_KMH, ITEMS,
+  pickWildSpecies,
 } from "@/lib/world";
+import { SPECIES } from "@/lib/vibo";
 import { drawRandomCard, CARDS_MAP } from "@/lib/cards";
 
 // POST { itemId, lat, lng } – Item einsammeln. Server prüft alles selbst.
@@ -69,6 +72,7 @@ export async function POST(req) {
   const def = ITEMS[item.kind] || { name: item.kind, emoji: "?" };
   let viboBoost = 0;
   let cardDrawn = null;
+  let caught = null;
   if (item.kind === "vibe_coin") {
     awardCredits(me.id, 2, "world_pickup", { type: "item", id: item.id });
   } else if (item.kind === "crystal") {
@@ -82,6 +86,15 @@ export async function POST(req) {
     addUserCard(me.id, c.id);
     cardDrawn = c;
     incrementInventory(me.id, "card", 1);
+  } else if (item.kind === "wild_vibo") {
+    // Wild-VIBO fangen — Wetter kann eine Spezies bevorzugen (Body-Param favored)
+    const favored = typeof body?.favored === "string" ? body.favored : null;
+    const species = pickWildSpecies(favored);
+    const res = recordCaughtVibo(me.id, species);
+    const sp = SPECIES.find((s) => s.id === species) || { id: species, name: species, emoji: "🐾" };
+    // Belohnung: erstes Exemplar einer Spezies = +5 Vibes, sonst +1
+    awardCredits(me.id, res.firstTime ? 5 : 1, "world_pickup", { type: "wild", id: item.id });
+    caught = { species: sp.id, name: sp.name, emoji: sp.emoji, firstTime: res.firstTime, count: res.count };
   } else {
     incrementInventory(me.id, item.kind, 1);
   }
@@ -97,5 +110,6 @@ export async function POST(req) {
     todayCount: total,
     viboBoost,
     card: cardDrawn,
+    caught,
   });
 }

@@ -204,11 +204,23 @@ export default function ViboPet() {
   const [showRoom, setShowRoom] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const [floaters, setFloaters] = useState([]); // [{id, emoji, x, action}]
+  const [achToast, setAchToast] = useState(null); // {emoji,name,reward} bei Freischaltung
+
+  // Achievement-Freischaltungen aus einer VIBO-Antwort als Toast zeigen
+  function celebrateAchievements(v) {
+    if (!v?.newAchievements?.length || !v.achievements) return;
+    const first = v.achievements.find((a) => a.id === v.newAchievements[0]);
+    if (first) {
+      setAchToast(first);
+      setTimeout(() => setAchToast(null), 5000);
+    }
+  }
 
   async function load() {
     try {
       const r = await api.viboGet();
       setVibo(r.vibo);
+      celebrateAchievements(r.vibo);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   }
@@ -259,7 +271,15 @@ export default function ViboPet() {
     spawnFloater(action);  // sofort visuelles Feedback
     try {
       const r = await api.viboAction(action);
-      setVibo(r.vibo);
+      // action-route liefert kein vollständiges achievements-Array → frisch laden
+      setVibo((prev) => ({ ...prev, ...r.vibo, achievements: prev?.achievements }));
+      if (r.vibo?._cured || r.vibo?.cured) {
+        setError(""); // kein Fehler — kurz Erfolg zeigen
+      }
+      if (r.vibo?.newAchievements?.length) {
+        // vollständige Liste nachladen, damit Toast Namen kennt
+        load();
+      }
     } catch (e) {
       setError(e.message);
       setTimeout(() => setError(""), 3000);
@@ -314,6 +334,20 @@ export default function ViboPet() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: 14 }}>
+      {/* Achievement-Freischaltung */}
+      {achToast && (
+        <div style={{
+          position: "fixed", top: 70, left: "50%", transform: "translateX(-50%)",
+          zIndex: 9999, background: "linear-gradient(135deg, #fbbf24, #f97316)",
+          color: "#1c1c1e", padding: "12px 20px", borderRadius: 14,
+          boxShadow: "0 10px 34px rgba(0,0,0,0.4)", fontWeight: 800, textAlign: "center",
+          animation: "vv-action-float 0.4s ease",
+        }}>
+          🏆 Achievement freigeschaltet!<br/>
+          <span style={{ fontSize: 16 }}>{achToast.emoji} {achToast.name}</span>
+          <span style={{ display: "block", fontSize: 12, fontWeight: 600 }}>+{achToast.reward} ✨</span>
+        </div>
+      )}
       {!isDead && (
         <div style={{ width: "100%", maxWidth: 420 }}>
           <HelpCard id="vibo-care" title="So pflegst du dein VIBO" emoji="🫶" color="#10b981">
@@ -333,6 +367,25 @@ export default function ViboPet() {
         </div>
       )}
       <Egg>
+        {/* Gedanken-Sprechblase (Stimmungs-Tagebuch) */}
+        {!isDead && !isEgg && vibo.thought && (
+          <div style={{
+            position: "absolute", top: 56, left: "50%", transform: "translateX(-50%)",
+            zIndex: 40, maxWidth: "82%",
+            background: "#fff", color: "#1c1c1e",
+            borderRadius: 14, padding: "7px 12px", fontSize: 12.5, fontWeight: 600,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)", textAlign: "center",
+            border: vibo.sick ? "2px solid #ef4444" : "2px solid #fde68a",
+          }}>
+            {vibo.thought}
+            <span style={{
+              position: "absolute", bottom: -7, left: "50%", transform: "translateX(-50%)",
+              width: 0, height: 0, borderLeft: "7px solid transparent",
+              borderRight: "7px solid transparent",
+              borderTop: `7px solid ${vibo.sick ? "#ef4444" : "#fde68a"}`,
+            }} />
+          </div>
+        )}
         <Display vibo={vibo} error={error || (isDead ? `${vibo.name} ist verstorben (${vibo.deathReason || "Vernachlässigung"})` : "")} />
 
         {/* Floatende Action-Emojis */}
@@ -361,6 +414,30 @@ export default function ViboPet() {
           {stageInfo(vibo.stage).label} · {vibo.ageDays} Tag{vibo.ageDays === 1 ? "" : "e"} · {vibo.mood}
           {vibo.sleeping && " · 💤 schläft"}
         </div>
+        {/* Charakter-Eigenschaft */}
+        {!isEgg && vibo.trait && (
+          <div style={{ marginTop: 6 }} title={vibo.trait.desc}>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              background: "rgba(139,92,246,0.15)", color: "var(--vv-text,#1c1c1e)",
+              border: "1px solid rgba(139,92,246,0.4)",
+              padding: "3px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+            }}>
+              {vibo.trait.emoji} {vibo.trait.name}
+            </span>
+          </div>
+        )}
+        {/* Krankheit */}
+        {!isDead && vibo.sick && (
+          <div style={{
+            marginTop: 8, display: "inline-block",
+            background: "#fee2e2", color: "#991b1b",
+            border: "1px solid #fca5a5", borderRadius: 10,
+            padding: "6px 12px", fontSize: 12.5, fontWeight: 700,
+          }}>
+            {vibo.sick.emoji} Krank: {vibo.sick.name} — heile dein VIBO mit 💊!
+          </div>
+        )}
       </div>
 
       {vibo.birthdayJustHappened && (
@@ -498,6 +575,35 @@ export default function ViboPet() {
           <span className="vv-btn-icon">🏆</span> Friedhof
         </button>
       </div>
+
+      {/* Achievements / Trophäen */}
+      {vibo.achievements && vibo.achievements.length > 0 && (
+        <div style={{ width: "100%", maxWidth: 420 }}>
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            margin: "4px 2px 8px",
+          }}>
+            <h3 style={{ margin: 0, fontSize: 15 }}>🏆 Trophäen</h3>
+            <span style={{ fontSize: 12, color: "var(--vv-muted,#666)" }}>
+              {vibo.achievements.filter((a) => a.unlocked).length} / {vibo.achievements.length}
+            </span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 8 }}>
+            {vibo.achievements.map((a) => (
+              <div key={a.id} title={a.desc} style={{
+                background: a.unlocked ? "linear-gradient(135deg, #fef3c7, #fde68a)" : "rgba(120,120,128,0.12)",
+                border: `2px solid ${a.unlocked ? "#f59e0b" : "var(--vv-border,#e5e7eb)"}`,
+                borderRadius: 12, padding: "10px 8px", textAlign: "center",
+                opacity: a.unlocked ? 1 : 0.55, filter: a.unlocked ? "none" : "grayscale(0.8)",
+              }}>
+                <div style={{ fontSize: 26, marginBottom: 2 }}>{a.unlocked ? a.emoji : "🔒"}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: a.unlocked ? "#1c1c1e" : "var(--vv-muted,#888)" }}>{a.name}</div>
+                <div style={{ fontSize: 9, color: a.unlocked ? "#92400e" : "var(--vv-muted,#999)", marginTop: 2 }}>+{a.reward} ✨</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes vv-egg-shake { 0%,100% { transform: rotate(0) } 25% { transform: rotate(-12deg) } 75% { transform: rotate(12deg) } }
