@@ -82,6 +82,14 @@ export default function ChatOverlay() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  // Body-Scroll-Lock wenn Overlay offen — Hintergrund-Page bleibt stehen
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [open]);
+
   // Wann der Chat-Button versteckt wird:
   // - immer auf /login
   // - auf Mobile: überall in /messenger (dort gibt's die Vollbild-PWA)
@@ -139,6 +147,18 @@ export default function ChatOverlay() {
     const t = setTimeout(() => setPartnerTyping(0), 4000);
     return () => clearTimeout(t);
   }, [partnerTyping]);
+
+  // Mute-Menü schließen wenn außerhalb geklickt wird
+  useEffect(() => {
+    if (!muteMenu) return;
+    const onClick = (e) => {
+      if (!e.target.closest?.("[data-mute-menu], [data-mute-trigger]")) {
+        setMuteMenu(false);
+      }
+    };
+    setTimeout(() => document.addEventListener("click", onClick), 0);
+    return () => document.removeEventListener("click", onClick);
+  }, [muteMenu]);
 
   /* ---------- Aktionen ---------- */
 
@@ -379,6 +399,7 @@ export default function ChatOverlay() {
         @keyframes vv-cbtn-spin  { from{transform:rotate(0)} to{transform:rotate(360deg)} }
         @keyframes vv-cbtn-toastin { from{opacity:0;transform:translateY(8px) scale(0.9)} to{opacity:1;transform:translateY(0) scale(1)} }
         @keyframes vv-cbtn-sheen { 0%{transform:translateX(-120%)} 60%,100%{transform:translateX(220%)} }
+        @keyframes vv-overlay-in { from{opacity:0;transform:translateY(12px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
       `}</style>
 
       {/* Vorschau-Sprechblase über dem Button */}
@@ -456,7 +477,7 @@ export default function ChatOverlay() {
       )}
 
       {/* Der Button */}
-      <div style={{ position: "fixed", bottom: 18, right: 18, zIndex: 100, width: 60, height: 60 }}>
+      <div style={{ position: "fixed", bottom: "calc(18px + env(safe-area-inset-bottom, 0px))", right: 18, zIndex: 100, width: 60, height: 60 }}>
         {/* Online-Ring */}
         <div style={{
           position: "absolute", inset: -3, borderRadius: "50%",
@@ -537,8 +558,12 @@ export default function ChatOverlay() {
 
       {open && (
         <div style={{
-          position: "fixed", bottom: 86, right: 18, zIndex: 99,
-          width: "min(380px, 94vw)", height: view === "chat" ? "78vh" : "min(78vh, 620px)",
+          position: "fixed",
+          bottom: "calc(86px + env(safe-area-inset-bottom, 0px))",
+          right: 18, zIndex: 99,
+          width: "min(380px, 94vw)",
+          maxHeight: "calc(100dvh - 110px - env(safe-area-inset-bottom, 0px))",
+          height: view === "chat" ? "78dvh" : "min(78dvh, 620px)",
           background: "var(--vv-card, #fff)", borderRadius: 18, overflow: "hidden",
           boxShadow: "0 20px 60px rgba(0,0,0,0.42), 0 4px 12px rgba(0,0,0,0.12)",
           display: "flex", flexDirection: "column",
@@ -546,6 +571,7 @@ export default function ChatOverlay() {
           animation: "vv-overlay-in 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28)",
           transformOrigin: "bottom right",
           border: "1px solid var(--vv-border, rgba(0,0,0,0.08))",
+          color: "var(--vv-text, #1c1c1e)",
         }}>
           {/* Kopfleiste */}
           <div style={{
@@ -585,8 +611,9 @@ export default function ChatOverlay() {
                 />
                 <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
                   <div style={{ fontWeight: "bold", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13 }}>
-                    {partnerInfo?.gender ? `${partnerInfo.gender}${partnerInfo.age != null ? ` ${partnerInfo.age}` : ""} ` : ""}
-                    {partnerInfo?.displayName || activePartner}
+                    {partnerInfo
+                      ? <ColoredName gender={partnerInfo.gender} age={partnerInfo.age} name={partnerInfo.displayName || activePartner} />
+                      : activePartner}
                   </div>
                   <div style={{ fontSize: 10, opacity: 0.95, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                     <ActivityBars lastSeen={partnerInfo?.lastSeen} size="sm" />
@@ -604,12 +631,11 @@ export default function ChatOverlay() {
                 <button type="button" onClick={nudgePartner} title="Anklopfen" aria-label="Anklopfen"
                   style={{ color: "#fff", background: "rgba(255,255,255,0.18)", border: "none", borderRadius: 6, padding: "2px 6px", cursor: "pointer", fontSize: 13 }}>👋</button>
                 <div style={{ position: "relative" }}>
-                  <button type="button" onClick={() => setMuteMenu((v) => !v)} title="Optionen"
+                  <button type="button" data-mute-trigger="1" onClick={() => setMuteMenu((v) => !v)} title="Optionen"
                     style={{ color: "#fff", background: "rgba(255,255,255,0.18)", border: "none", borderRadius: 6, padding: "2px 6px", cursor: "pointer", fontSize: 13 }}>⋮</button>
                   {muteMenu && (
                     <>
-                      <div onClick={() => setMuteMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 9 }} />
-                      <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 10, background: "#fff", color: "#222", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", minWidth: 200, padding: 8, textShadow: "none" }}>
+                      <div data-mute-menu="1" style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 10, background: "var(--vv-card,#fff)", color: "var(--vv-text,#222)", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", minWidth: 200, padding: 8, textShadow: "none", border: "1px solid var(--vv-border, rgba(0,0,0,0.08))" }}>
                         <div style={{ padding: "6px 8px", fontSize: 12, color: "#555", borderBottom: "1px solid #eee" }}>🔕 Stumm schalten</div>
                         {[
                           { ms: 15 * 60_000, label: "15 Minuten" },
@@ -651,7 +677,7 @@ export default function ChatOverlay() {
                 </div>
               )}
               {/* Suchleiste */}
-              <div style={{ padding: 8, borderBottom: "1px solid #f0f0f5", background: "#fafafd" }}>
+              <div style={{ padding: 8, borderBottom: "1px solid var(--vv-border,#f0f0f5)", background: "var(--vv-surface,#fafafd)" }}>
                 <input
                   type="search" value={query} onChange={(e) => setQuery(e.target.value)}
                   placeholder="🔍 Personen, Gruppen, Status…"
@@ -663,10 +689,10 @@ export default function ChatOverlay() {
               <div style={{ overflowY: "auto", flex: 1 }}>
                 {filteredRooms.length > 0 && (
                   <>
-                    <div style={{ padding: "6px 12px", fontSize: 11, color: "#555", background: "#f6f8fc", fontWeight: "bold" }}>👯 Gruppen</div>
+                    <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--vv-muted,#555)", background: "var(--vv-surface,#f6f8fc)", fontWeight: "bold" }}>👯 Gruppen</div>
                     {filteredRooms.map((r) => (
                       <Link key={r.id} href={`/messenger/rooms/${r.id}`} onClick={() => setOpen(false)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderBottom: "1px solid #f0f0f5", textDecoration: "none", color: "#222", background: r.unread > 0 ? "#fff5fb" : "#fff" }}>
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderBottom: "1px solid var(--vv-border,#f0f0f5)", textDecoration: "none", color: "var(--vv-text,#222)", background: r.unread > 0 ? "var(--vv-unread,#fff5fb)" : "var(--vv-card,#fff)" }}>
                         <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#f7e0b0,#ffd9ec)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, position: "relative", flexShrink: 0 }}>
                           <span>{r.emoji || "💬"}</span>
                           {r.unread > 0 && (
@@ -674,19 +700,19 @@ export default function ChatOverlay() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: "bold", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</div>
-                          <div style={{ fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: r.unread > 0 ? "bold" : "normal" }}>
-                            {r.lastText || <span style={{ color: "#aaa" }}>noch nichts geschrieben</span>}
+                          <div style={{ fontSize: 13, fontWeight: "bold", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--vv-text,#222)" }}>{r.name}</div>
+                          <div style={{ fontSize: 11, color: "var(--vv-muted,#666)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: r.unread > 0 ? "bold" : "normal" }}>
+                            {r.lastText || <span style={{ color: "var(--vv-muted,#aaa)" }}>noch nichts geschrieben</span>}
                           </div>
                         </div>
-                        {r.lastAt && <span style={{ fontSize: 10, color: "#aaa", flexShrink: 0 }}>{relTime(r.lastAt)}</span>}
+                        {r.lastAt && <span style={{ fontSize: 10, color: "var(--vv-muted,#aaa)", flexShrink: 0 }}>{relTime(r.lastAt)}</span>}
                       </Link>
                     ))}
                   </>
                 )}
 
                 {filteredUsers.length > 0 && (
-                  <div style={{ padding: "6px 12px", fontSize: 11, color: "#555", background: "#f6f8fc", fontWeight: "bold" }}>💬 Freunde</div>
+                  <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--vv-muted,#555)", background: "var(--vv-surface,#f6f8fc)", fontWeight: "bold" }}>💬 Freunde</div>
                 )}
                 {filteredUsers.map(({ user: u, convo }) => {
                   const onlineNow = isOnlineActivity(u.lastSeen);
@@ -698,12 +724,12 @@ export default function ChatOverlay() {
                       onClick={() => openChat(u.username)}
                       style={{
                         width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                        background: convo?.unread > 0 ? "#fff5fb" : "#fff", border: "none",
-                        borderBottom: "1px solid #f0f0f5", cursor: "pointer", textAlign: "left",
+                        background: convo?.unread > 0 ? "var(--vv-unread,#fff5fb)" : "var(--vv-card,#fff)", border: "none",
+                        borderBottom: "1px solid var(--vv-border,#f0f0f5)", cursor: "pointer", textAlign: "left",
                       }}
                     >
                       <PresenceAvatar url={u.avatarUrl} name={u.displayName} presenceInfo={presenceInfo} size={34} className="vv-avatar vv-avatar-sm" />
-                      <span style={{ flex: 1, minWidth: 0, color: "#222" }}>
+                      <span style={{ flex: 1, minWidth: 0, color: "var(--vv-text,#222)" }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           <OnlineName lastSeen={u.lastSeen}>
                             <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
@@ -711,11 +737,11 @@ export default function ChatOverlay() {
                           <ActivityBars lastSeen={u.lastSeen} size="xs" />
                         </span>
                         {convo ? (
-                          <span style={{ display: "block", marginTop: 6, fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: convo.unread > 0 ? "bold" : "normal" }}>
+                          <span style={{ display: "block", marginTop: 6, fontSize: 11, color: "var(--vv-muted,#666)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: convo.unread > 0 ? "bold" : "normal" }}>
                             {convo.fromMe ? "Du: " : ""}{convo.lastText}
                           </span>
                         ) : (
-                          <span style={{ display: "block", marginTop: 6, fontSize: 11, color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <span style={{ display: "block", marginTop: 6, fontSize: 11, color: "var(--vv-muted,#888)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {onlineNow ? (u.mood || "online") : `zuletzt ${formatLastActive(u.lastSeen)}`}
                           </span>
                         )}
@@ -723,7 +749,7 @@ export default function ChatOverlay() {
                       {convo?.unread > 0 && (
                         <span style={{ minWidth: 18, height: 18, padding: "0 5px", background: "#ff3e9d", color: "#fff", borderRadius: 9, fontSize: 11, fontWeight: "bold", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>{convo.unread > 99 ? "99+" : convo.unread}</span>
                       )}
-                      <span style={{ fontSize: 10, color: "#aaa", flexShrink: 0 }}>{convo ? relTime(convo.at) : ""}</span>
+                      <span style={{ fontSize: 10, color: "var(--vv-muted,#aaa)", flexShrink: 0 }}>{convo ? relTime(convo.at) : ""}</span>
                     </button>
                   );
                 })}
@@ -737,7 +763,7 @@ export default function ChatOverlay() {
             </>
           ) : (
             <>
-              <div ref={scrollRef} style={{ overflowY: "auto", flex: 1, padding: "10px 8px", background: "linear-gradient(180deg, #eef3fb 0%, #f8fafc 100%)" }}>
+              <div ref={scrollRef} style={{ overflowY: "auto", flex: 1, padding: "10px 8px", background: "var(--vv-chat-bg, linear-gradient(180deg, #eef3fb 0%, #f8fafc 100%))" }}>
                 {messages.length === 0 && (
                   <div className="vv-muted vv-center" style={{ marginTop: 30 }}>Sag „Hi 👋"!</div>
                 )}
@@ -745,9 +771,9 @@ export default function ChatOverlay() {
                   <div key={m.id} style={{ display: "flex", justifyContent: m.fromMe ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 4, marginBottom: 4 }}>
                     <div style={{
                       maxWidth: "78%", padding: m.imageUrl ? "4px" : "6px 10px", borderRadius: 14,
-                      background: m.fromMe ? "linear-gradient(135deg, #2d7dd2, #5fb0ff)" : "#fff",
-                      color: m.fromMe ? "#fff" : "#222",
-                      border: m.fromMe ? "none" : "1px solid #d8def0",
+                      background: m.fromMe ? "linear-gradient(135deg, #2d7dd2, #5fb0ff)" : "var(--vv-card,#fff)",
+                      color: m.fromMe ? "#fff" : "var(--vv-text,#222)",
+                      border: m.fromMe ? "none" : "1px solid var(--vv-border,#d8def0)",
                       boxShadow: m.fromMe ? "0 2px 6px rgba(45,125,210,0.25)" : "0 1px 2px rgba(0,0,0,0.06)",
                       borderBottomRightRadius: m.fromMe ? 4 : 14,
                       borderBottomLeftRadius: m.fromMe ? 14 : 4,
@@ -769,11 +795,11 @@ export default function ChatOverlay() {
                 ))}
               </div>
               {partnerTyping > 0 && (
-                <div style={{ fontSize: 11, color: "#1f5fa8", padding: "2px 12px", fontStyle: "italic", background: "#fafafd" }}>
+                <div style={{ fontSize: 11, color: "#1f5fa8", padding: "2px 12px", fontStyle: "italic", background: "var(--vv-surface,#fafafd)" }}>
                   {partnerInfo?.displayName || activePartner} schreibt…
                 </div>
               )}
-              <form onSubmit={send} style={{ borderTop: "1px solid #eee", background: "#fff", padding: 6 }}>
+              <form onSubmit={send} style={{ borderTop: "1px solid var(--vv-border,#eee)", background: "var(--vv-card,#fff)", padding: 6, paddingBottom: "calc(6px + env(safe-area-inset-bottom, 0px))" }}>
                 {pendingImage && (
                   <div style={{ position: "relative", display: "inline-block", margin: "0 4px 4px", maxWidth: 140 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -801,7 +827,7 @@ export default function ChatOverlay() {
                   <button type="submit" className="vv-btn vv-btn-pink" disabled={!text.trim() && !pendingImage} style={{ flexShrink: 0 }}>▶</button>
                 </div>
               </form>
-              <div style={{ padding: "6px 10px", borderTop: "1px solid #eee", background: "#fafafd", fontSize: 11, textAlign: "right" }}>
+              <div style={{ padding: "6px 10px", borderTop: "1px solid var(--vv-border,#eee)", background: "var(--vv-surface,#fafafd)", fontSize: 11, textAlign: "right" }}>
                 <Link href={`/messenger/${activePartner}`} onClick={() => setOpen(false)}>↗ Im großen Messenger öffnen</Link>
               </div>
             </>

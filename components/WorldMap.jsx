@@ -315,6 +315,20 @@ export default function WorldMap({ onPickup }) {
     api.locationConsentGet().then((r) => setConsent(r.value)).catch(() => setConsent(0));
   }, []);
 
+  // Wenn beide Einverständnisse vorhanden (Server + Browser), sofort starten
+  // — ohne nochmal auf „Karte freischalten" zu warten.
+  useEffect(() => {
+    if (consent !== 1 || perm !== "idle") return;
+    if (typeof navigator === "undefined" || !navigator.permissions) return;
+    let cancelled = false;
+    navigator.permissions.query({ name: "geolocation" }).then((p) => {
+      if (cancelled) return;
+      if (p.state === "granted") requestLocation();
+    }).catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consent, perm]);
+
   const requestLocation = useCallback(async () => {
     if (!navigator.geolocation) {
       setError("Dein Browser unterstützt keine Geo-Lokation.");

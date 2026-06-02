@@ -34,7 +34,9 @@ export default function HelpCard({
 
   return (
     <div style={{
-      background: `${color}14`,
+      // Card-Body: weißer (Light) / sehr dunkler (Dark) Hintergrund mit
+      // farbiger Tönung — damit der Text IMMER lesbar bleibt.
+      background: "var(--vv-card, #fff)",
       border: `2px solid ${color}55`,
       borderRadius: 12,
       marginBottom: 12,

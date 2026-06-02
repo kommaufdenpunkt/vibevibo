@@ -21,6 +21,7 @@ import { getPresence } from "@/lib/presence";
 import { useTheme } from "@/lib/useTheme";
 import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
 import { getAutoLogoutMinutes, setAutoLogoutMinutes } from "@/components/IdleGuard";
+import PwaInfo from "@/components/PwaInfo";
 
 const VALID_TABS = ["chats", "freunde", "vibo", "profil"];
 
@@ -257,6 +258,9 @@ function MessengerInner() {
               <div className="vv-muted" style={{ fontSize: 13 }}>@{me.username}</div>
               {me.mood && <div style={{ marginTop: 8, fontSize: 14, fontStyle: "italic", color: "#666" }}>„{me.mood}"</div>}
             </div>
+
+            <PwaInfo id="pwa-messenger" appName="VV Messenger"
+              appEmoji="💬" appPurpose="den Messenger" />
 
             <div className="vv-msgapp-section">Privatsphäre</div>
             <div className="vv-msgapp-link-row">

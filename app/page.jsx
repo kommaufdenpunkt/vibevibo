@@ -7,6 +7,7 @@ import Landing from "@/components/Landing";
 import Buschfunk from "@/components/Buschfunk";
 import WallComposer from "@/components/WallComposer";
 import { FortuneCookie, TodaysBirthdays } from "@/components/HomeNostalgia";
+import PwaInfo from "@/components/PwaInfo";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "@/components/GenderAge";
@@ -118,6 +119,8 @@ export default function HomePage() {
 
           <FortuneCookie />
           <TodaysBirthdays />
+          <PwaInfo id="pwa-community" appName="VibeVibo Community"
+            appEmoji="🎨" appPurpose="die Community" />
           <Buschfunk key={feedTick} />
         </main>
 
