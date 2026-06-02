@@ -183,6 +183,17 @@ export default function PushSetup() {
         <span style={{ color: "#11a047" }}>🔔</span>
         <span style={{ color: "#333" }}>Benachrichtigungen aktiv</span>
         <button
+          onClick={async () => {
+            try { await api.pushTest(); }
+            catch (e) { setError(e?.message || "Test fehlgeschlagen"); }
+          }}
+          style={{ background: "none", border: "none", color: "#1f5fa8", cursor: "pointer", fontSize: 12, padding: 0 }}
+          aria-label="Test-Benachrichtigung senden"
+          title="Sperr dein Handy, dann tippe drauf — Push muss als Banner aufploppen"
+        >
+          📲 testen
+        </button>
+        <button
           onClick={disable}
           disabled={busy}
           style={{ background: "none", border: "none", color: "#a00", cursor: "pointer", fontSize: 12, padding: 0 }}
