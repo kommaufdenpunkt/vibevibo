@@ -23,6 +23,13 @@ export default function manifest() {
         icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
       {
+        name: "Mein VIBO",
+        short_name: "VIBO",
+        description: "Karte, Basar & Pflege",
+        url: "/karte",
+        icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
         name: "Mein Profil",
         short_name: "Profil",
         url: "/profile",

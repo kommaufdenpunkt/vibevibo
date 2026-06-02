@@ -7,6 +7,7 @@ import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import GenderAge from "@/components/GenderAge";
 import TwoFactorSetup from "@/components/TwoFactorSetup";
+import LocationSettings from "@/components/LocationSettings";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -166,6 +167,8 @@ export default function EditProfilePage() {
             Mit „Unsichtbar" siehst du für andere wie offline aus, kannst aber selber sehen, wer online ist.
           </div>
         </div>
+
+        <LocationSettings />
 
         <TwoFactorSetup has2fa={!!me?.has2fa} onChanged={refresh} />
 

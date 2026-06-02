@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { getSellableByIds, commitSale, getSellDaily } from "@/lib/db";
+import { getSellableByIds, commitSale, getSellDaily, getUserHome, getUserLocation } from "@/lib/db";
 import {
-  MERCHANT_MAP, weeklyMerchants, dailyFactor, isOpen, sellPrice, hotItem,
+  localMerchants, dailyFactor, sellPrice, hotItem,
+  distanceToMerchant, SELL_RADIUS_M,
   MAX_SELL_VIBES_PER_DAY, SELL_DIMINISH_AFTER,
 } from "@/lib/market";
 import { FISH_TABLE } from "@/lib/fishing";
@@ -13,7 +14,8 @@ function resolveHotId() {
   return (fishable[Math.floor(r * fishable.length)] || fishable[0])?.id || null;
 }
 
-// POST { merchantId, ids:[...] } — Fänge an einen Händler verkaufen
+// POST { merchantId, ids:[...], lat?, lng? } — Fänge an einen Händler verkaufen.
+// Du musst in ≤ 30m vom heutigen Standort des Händlers stehen.
 export async function POST(req) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
@@ -21,17 +23,37 @@ export async function POST(req) {
   const merchantId = String(body?.merchantId || "");
   const ids = Array.isArray(body?.ids) ? body.ids.map((n) => Number(n)).filter(Boolean) : [];
 
-  const merchant = MERCHANT_MAP[merchantId];
-  if (!merchant) return NextResponse.json({ error: "Unbekannter Händler." }, { status: 400 });
+  const home = getUserHome(me.id);
+  if (!home) {
+    return NextResponse.json({ error: "Kein Zuhause-Anker gesetzt. Öffne erst die Karte." }, { status: 400 });
+  }
 
   const now = Date.now();
-  // Händler muss diese Woche da + gerade offen sein
-  const thisWeek = weeklyMerchants(now).some((m) => m.id === merchantId);
-  if (!thisWeek) return NextResponse.json({ error: "Dieser Händler ist diese Woche nicht da." }, { status: 403 });
-  if (!isOpen(merchant, now)) {
-    const [a, b] = merchant.open;
-    return NextResponse.json({ error: `${merchant.name} hat geschlossen (offen ${a}–${b} Uhr).` }, { status: 403 });
+  const merchants = localMerchants(home.lat, home.lng, now);
+  const merchant = merchants.find((m) => m.id === merchantId);
+  if (!merchant) {
+    return NextResponse.json({ error: "Dieser Händler ist diese Woche nicht da." }, { status: 403 });
   }
+
+  // Aktuelle Position: bevorzugt aus Request (frischer), sonst aus DB
+  let userLat = parseFloat(body?.lat);
+  let userLng = parseFloat(body?.lng);
+  if (!Number.isFinite(userLat) || !Number.isFinite(userLng)) {
+    const loc = getUserLocation(me.id);
+    userLat = loc?.lat; userLng = loc?.lng;
+  }
+  if (userLat == null || userLng == null) {
+    return NextResponse.json({ error: "Wir brauchen deine aktuelle Position, um zu verkaufen." }, { status: 400 });
+  }
+
+  const distM = distanceToMerchant(merchant, userLat, userLng);
+  if (distM == null || distM > SELL_RADIUS_M) {
+    return NextResponse.json({
+      error: `Du bist ${distM} m von ${merchant.name} entfernt. Geh näher ran (≤ ${SELL_RADIUS_M} m).`,
+      distanceM: distM,
+    }, { status: 403 });
+  }
+
   if (!ids.length) return NextResponse.json({ error: "Nichts ausgewählt." }, { status: 400 });
 
   const rows = getSellableByIds(me.id, ids);
@@ -41,19 +63,16 @@ export async function POST(req) {
   const dayKey = new Date(now).toISOString().slice(0, 10);
   let { vibes: earnedToday, count: salesToday } = getSellDaily(me.id, dayKey);
 
-  // Preise berechnen + Anti-Inflation: Tages-Cap + Diminishing pro Verkauf
   const payouts = [];
   let blockedByCap = false;
   for (const s of rows) {
     const isHot = hotId && s.itemId === hotId;
     let price = sellPrice(merchant, s.category, s.baseValue, dailyFactor(merchant.id, s.category, now), isHot);
-    // Diminishing: ab N Verkäufen am Tag sinkt die Auszahlung
     if (salesToday >= SELL_DIMINISH_AFTER) {
       const over = salesToday - SELL_DIMINISH_AFTER;
       const f = Math.max(0.25, 1 - over * 0.05);
       price = Math.max(1, Math.round(price * f));
     }
-    // Tages-Cap
     if (earnedToday + price > MAX_SELL_VIBES_PER_DAY) {
       const remaining = MAX_SELL_VIBES_PER_DAY - earnedToday;
       if (remaining <= 0) { blockedByCap = true; break; }
