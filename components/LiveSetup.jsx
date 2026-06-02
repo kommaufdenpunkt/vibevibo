@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { MAX_HOSTS_MULTI, RECOMMEND_AUDIO_ONLY_ABOVE, HOST_POLICIES } from "@/lib/live";
+import HelpCard from "./HelpCard";
 
 export default function LiveSetup({ onClose, onCreated }) {
   const [mode, setMode] = useState("solo");
@@ -43,6 +44,23 @@ export default function LiveSetup({ onClose, onCreated }) {
         borderRadius: 16, padding: 18, boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
       }}>
         <h3 style={{ margin: "0 0 10px" }}>🎥 Live gehen</h3>
+
+        <HelpCard id="live-host-rules" title="Bevor du live gehst" emoji="📋" color="#ec4899">
+          <b>Was geht:</b> Schwatzen, Musik teilen, Tutorials, Kunst, Spazieren, Show, Reaktionen.
+          Alltagskleidung — auch knappe Sachen, BH/Slip wenn sportlich/legitim.
+          <br/><br/>
+          <b>Was NICHT geht:</b><br/>
+          🚫 Nackte Tatsachen, Brustwarzen, Genitalien, sexuelle Handlungen<br/>
+          🚫 Minderjährige in unangemessener Form<br/>
+          🚫 Drogen, Gewalt, Hass, Hetze<br/>
+          🚫 Persönliche Daten Dritter ohne Erlaubnis
+          <br/><br/>
+          <b>Wie wir prüfen:</b> Eine KI im Browser checkt dein Video alle 3 Sek. Bei
+          Treffer wird sofort schwarzgeschaltet, du kriegst einen Strike.
+          Nach <b>3 Strikes innerhalb 90 Tagen</b>: 24h-Sperre. Mehr: bis 7 Tage / permanent.
+          <br/><br/>
+          Streams können auch von Zuschauern gemeldet werden — bleib freundlich, alles wird angeschaut.
+        </HelpCard>
 
         <label style={{ fontSize: 12, fontWeight: 700 }}>Titel</label>
         <input className="vv-input" placeholder="z.B. Quatsch-Runde mit Kaffee ☕"

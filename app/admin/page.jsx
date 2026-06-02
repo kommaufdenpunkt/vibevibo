@@ -8,6 +8,7 @@ import {
   listDevices, banDevice, unbanDevice, listDeviceBans,
   getUserDossier, listRecentModLog,
   listPendingPics, listRejectedPics, listApprovedPics, setPicStatus, getProfilePic,
+  listOpenLiveReports, resolveLiveReport, countActiveStrikes, addLiveStrike, clearLiveBlock, getLiveBlockedUntil,
   listPendingPhotos, listRejectedPhotos, setPhotoStatus, getPhoto,
   listOpenReports, getReportSnippet, resolveReport,
   logMod, updateUser, ageFromBirthdate,
@@ -46,6 +47,7 @@ const TABS = [
   ["profilbilder", "🖼 Profilbilder"],
   ["fotos", "📷 Fotos"],
   ["meldungen", "🚩 Meldungen"],
+  ["livemeldungen", "🎥 Live-Meldungen"],
   ["banns", "🔨 Banns"],
   ["geraete", "📱 Geräte"],
   ["userakte", "📁 Userakte"],
@@ -126,6 +128,19 @@ export default async function AdminPage({ searchParams }) {
     else if (action === "phReject" && pid) { const p = getPhoto(Number(pid)); if (p) { setPhotoStatus(p.id, "rejected", "Vom Admin abgelehnt"); logMod({ userId: p.user_id, kind: "foto", decision: "rejected", reason: "Admin-Ablehnung", by: "admin" }); } }
     else if (action === "resolveReport" && rid) { resolveReport(Number(rid), "resolved"); }
     else if (action === "dismissReport" && rid) { resolveReport(Number(rid), "dismissed"); }
+    else if (action === "resolveLiveReport" && rid) { resolveLiveReport(Number(rid), 0, "resolved"); }
+    else if (action === "dismissLiveReport" && rid) { resolveLiveReport(Number(rid), 0, "dismissed"); }
+    else if (action === "liveStrike" && uname) {
+      const x = getUserByUsername(uname);
+      if (x) {
+        const r = addLiveStrike(x.id, { reason: "Admin-Strike (manuell)", kind: "manual", byUserId: 0 });
+        logMod({ userId: x.id, kind: "live", decision: `strike (${r.strikeCount})`, reason: `Sperre ${r.hours}h`, by: "admin" });
+      }
+    }
+    else if (action === "liveUnblock" && uname) {
+      const x = getUserByUsername(uname);
+      if (x) { clearLiveBlock(x.id); logMod({ userId: x.id, kind: "live", decision: "unblocked", reason: "Admin hob Live-Sperre auf", by: "admin" }); }
+    }
     else if (action === "setvitals" && uname) {
       const x = getUserByUsername(uname);
       if (x) {
@@ -203,6 +218,7 @@ export default async function AdminPage({ searchParams }) {
       {tab === "profilbilder" && <Profilbilder q={q} />}
       {tab === "fotos" && <Fotos q={q} />}
       {tab === "meldungen" && <Meldungen q={q} />}
+      {tab === "livemeldungen" && <LiveMeldungen />}
       {tab === "banns" && <Banns q={q} pw={pw} />}
       {tab === "geraete" && <Geraete q={q} />}
       {tab === "userakte" && <Userakte q={q} pw={pw} uParam={uParam} />}
@@ -965,6 +981,48 @@ function AuditLog({ q }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function LiveMeldungen() {
+  const reports = listOpenLiveReports(80);
+  return (
+    <div className="vv-card">
+      <h3 style={{ marginTop: 0 }}>🎥 Live-Meldungen ({reports.length})</h3>
+      <div className="vv-muted" style={{ fontSize: 12, marginBottom: 12 }}>
+        Auto-Reports vom NSFW-Modell sind mit <strong>NSFW</strong> markiert. „Strike geben" → 1. Strike = Warnung,
+        2. = 24h, 3. = 7 Tage, 4. = permanent (90-Tage-Fenster).
+      </div>
+      {reports.length === 0 && <div className="vv-muted vv-mt-8">Keine offenen Live-Meldungen. ✨</div>}
+      {reports.map((r) => {
+        const blocked = r.targetBlockedUntil && r.targetBlockedUntil > Date.now();
+        return (
+          <div key={r.id} style={{ borderTop: "1px solid #eee", paddingTop: 10, marginTop: 10 }}>
+            <div style={{ fontSize: 12, marginBottom: 4, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{
+                background: r.kind === "nsfw" ? "#ef4444" : "#6b7280", color: "#fff",
+                padding: "1px 6px", borderRadius: 4, fontSize: 10, fontWeight: 700,
+              }}>{r.kind === "nsfw" ? "🤖 NSFW" : r.kind === "chat" ? "💬 CHAT" : "MANUELL"}</span>
+              <strong>@{r.targetUsername}</strong>
+              {blocked && <span style={{ color: "#b91c1c", fontWeight: 700 }}>🔒 gesperrt</span>}
+              <span style={{ color: "#6b7280" }}>· Grund: „{r.reason}"</span>
+            </div>
+            {r.detail && <div style={{ fontSize: 11, color: "#666", marginBottom: 4 }}>{r.detail}</div>}
+            <div style={{ fontSize: 11, color: "#666", marginBottom: 6 }}>
+              Stream: <em>„{r.streamTitle || "?"}"</em> ({r.streamStatus || "?"}) · Reporter: @{r.reporterUsername} · {relTime(r.createdAt)}
+            </div>
+            <div className="vv-row vv-mt-8" style={{ flexWrap: "wrap", gap: 6 }}>
+              <a className="vv-btn" style={{ color: "#a00" }} href={`/admin?tab=livemeldungen&do=liveStrike&u=${encodeURIComponent(r.targetUsername)}`}>⚡ Strike geben</a>
+              {blocked && <a className="vv-btn" href={`/admin?tab=livemeldungen&do=liveUnblock&u=${encodeURIComponent(r.targetUsername)}`}>🔓 Live-Sperre aufheben</a>}
+              <a className="vv-btn" href={`/admin?tab=userakte&u=${encodeURIComponent(r.targetUsername)}`}>📁 Userakte</a>
+              <div className="vv-spacer" />
+              <a className="vv-btn vv-btn-pink" href={`/admin?tab=livemeldungen&do=resolveLiveReport&rid=${r.id}`}>✓ Erledigt</a>
+              <a className="vv-btn" href={`/admin?tab=livemeldungen&do=dismissLiveReport&rid=${r.id}`}>✕ Verwerfen</a>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

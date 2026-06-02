@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useLiveStream } from "@/lib/useLiveStream";
+import { useNsfwGuard } from "@/lib/useNsfwGuard";
 import { EMOTES } from "@/lib/live";
 import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
@@ -74,6 +75,9 @@ export default function LiveRoom({ streamId, meId }) {
   const [showViewers, setShowViewers] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
   const [modTarget, setModTarget] = useState(null); // {userId, displayName} → öffnet Mod-Aktionen-Sheet
+  const [reportTarget, setReportTarget] = useState(null); // {userId, displayName} → Report-Sheet
+  const [nsfwBlackout, setNsfwBlackout] = useState(false);
+  const [nsfwWarning, setNsfwWarning] = useState("");
   const sseRef = useRef(null);
   const videoZoneRef = useRef(null);
 
@@ -88,6 +92,27 @@ export default function LiveRoom({ streamId, meId }) {
     streamId, isHost: iAmHost, meId, hostIds,
     hasVideo: !!stream?.hasVideo, hasAudio: !!stream?.hasAudio,
     sseRef,
+  });
+
+  // NSFW-Guard: läuft im Browser bei Hosts mit Video. Bei Treffer: Blackout + Auto-Report + Auto-End.
+  useNsfwGuard({
+    stream: iAmHost && stream?.hasVideo ? localStream : null,
+    enabled: !!iAmHost && !!stream?.hasVideo && localReady,
+    onHardHit: async ({ hard }) => {
+      setNsfwBlackout(true);
+      try {
+        // Selbst-Report → Server vergibt Strike + ggf. Sperre
+        await api.liveReport(streamId, meId, "nudity", `Score ${hard.toFixed(2)}`, "nsfw");
+      } catch {}
+      // Stream sofort beenden, wenn ich Owner bin
+      if (isOwner) {
+        try { const r = await api.liveEnd(streamId); if (r?.stats) setEndStats(r.stats); } catch {}
+      }
+    },
+    onSoftHit: () => {
+      setNsfwWarning("⚠ Bitte angemessen anziehen — der Stream droht beendet zu werden.");
+      setTimeout(() => setNsfwWarning(""), 6000);
+    },
   });
 
   // Race-Fix: wenn ich Host bin + lokal ready, connecte explizit zu allen aktuellen Hosts +
@@ -222,6 +247,16 @@ export default function LiveRoom({ streamId, meId }) {
     finally { setBusy(false); setModTarget(null); }
   }
 
+  async function reportLive(reason, detail) {
+    try {
+      const target = reportTarget?.userId || stream.ownerId;
+      await api.liveReport(streamId, target, reason, detail || "", "manual");
+      setFlash("🚩 Danke — Admin schaut sich's an.");
+      setTimeout(() => setFlash(""), 2500);
+    } catch (e) { setFlash(`⚠ ${e.message}`); setTimeout(() => setFlash(""), 3000); }
+    finally { setReportTarget(null); }
+  }
+
   async function decideRequest(reqId, approve) {
     setBusy(true);
     try {
@@ -280,6 +315,13 @@ export default function LiveRoom({ streamId, meId }) {
               📨 {requests.length}
             </button>
           )}
+          {!isOwner && (
+            <button type="button" onClick={() => setReportTarget({ userId: stream.ownerId, displayName: stream.owner.displayName })}
+              className="vv-btn" title="Stream melden"
+              style={{ background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", fontSize: 12, padding: "6px 8px" }}>
+              🚩
+            </button>
+          )}
           {isOwner ? (
             <button type="button" onClick={endStream} className="vv-btn"
               style={{ background: "#ef4444", color: "#fff", border: "none", fontSize: 12, padding: "6px 10px" }}>⏹ Beenden</button>
@@ -301,6 +343,15 @@ export default function LiveRoom({ streamId, meId }) {
           </div>
         )}
       </div>
+
+      {/* NSFW-Warnung */}
+      {nsfwWarning && (
+        <div style={{
+          margin: "8px 0", padding: 10, background: "#fef3c7", color: "#92400e",
+          borderRadius: 8, fontWeight: 700, textAlign: "center", fontSize: 13,
+          border: "2px solid #f59e0b",
+        }}>{nsfwWarning}</div>
+      )}
 
       {/* Video-Grid */}
       <div ref={videoZoneRef} className="vv-card" style={{ position: "relative", padding: 8, overflow: "hidden" }}>
@@ -354,6 +405,22 @@ export default function LiveRoom({ streamId, meId }) {
               background: "rgba(255,255,255,0.92)", color: "#1c1c1e", fontSize: 18,
               boxShadow: "0 3px 10px rgba(0,0,0,0.4)" }}>⛶</button>
         </div>
+
+        {/* NSFW-Blackout-Overlay */}
+        {nsfwBlackout && (
+          <div style={{
+            position: "absolute", inset: 0, background: "#000",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            color: "#fff", padding: 20, zIndex: 1100, textAlign: "center",
+          }}>
+            <div style={{ fontSize: 60 }}>🚫</div>
+            <div style={{ fontWeight: 800, fontSize: 18, marginTop: 8 }}>Stream gesperrt</div>
+            <div style={{ fontSize: 13, marginTop: 6, opacity: 0.85 }}>
+              KI hat unangemessenen Inhalt erkannt. Strike erfasst.<br/>
+              Bei mehrmals: 24h / 7d / permanent Live-Sperre.
+            </div>
+          </div>
+        )}
       </div>
 
       {flash && (
@@ -377,6 +444,12 @@ export default function LiveRoom({ streamId, meId }) {
                 <button type="button" onClick={() => setModTarget({ ...m.user, userId: m.user.id })}
                   style={{ background:"none", border:"none", cursor:"pointer", color:"#ef4444",
                     fontSize: 10, padding: "0 4px 0 0", fontFamily:"inherit" }}>🛡</button>
+              )}
+              {!canModerate && m.user.id !== meId && (
+                <button type="button" onClick={() => setReportTarget({ userId: m.user.id, displayName: m.user.displayName })}
+                  title="Nachricht melden"
+                  style={{ background:"none", border:"none", cursor:"pointer", color:"#ef4444",
+                    fontSize: 10, padding: "0 4px 0 0", fontFamily:"inherit" }}>🚩</button>
               )}
               <OnlineName lastSeen={m.user.lastSeen}>
                 <ColoredName gender={m.user.gender} age={m.user.age} name={m.user.displayName} />
@@ -494,6 +567,31 @@ export default function LiveRoom({ streamId, meId }) {
               </div>
             ))}
           </div>
+        </BottomSheet>
+      )}
+
+      {/* Report-Sheet */}
+      {reportTarget && (
+        <BottomSheet onClose={() => setReportTarget(null)} title={`🚩 ${reportTarget.displayName} melden`}>
+          <div style={{ fontSize: 12, color: "var(--vv-muted,#666)", marginBottom: 10 }}>
+            Wähle einen Grund — Admin prüft manuell. Falschmeldungen können selbst zu Sanktionen führen.
+          </div>
+          {[
+            { v: "nudity",     label: "🚫 Nackte Tatsachen / Sex" },
+            { v: "minor",      label: "👶 Minderjährige unangemessen" },
+            { v: "harassment", label: "💢 Beleidigung / Hass" },
+            { v: "violence",   label: "⚔️ Gewalt / Drogen" },
+            { v: "spam",       label: "🥫 Spam / Werbung" },
+            { v: "other",      label: "❓ Sonstiges" },
+          ].map((o) => (
+            <button key={o.v} type="button" onClick={() => reportLive(o.v)}
+              style={{ width: "100%", padding: 10, marginBottom: 6, borderRadius: 10,
+                border: "1px solid var(--vv-border,#e5e7eb)",
+                background: "var(--vv-surface,#f5f5f7)", color: "var(--vv-text,#1c1c1e)",
+                fontFamily: "inherit", textAlign: "left", fontSize: 13, cursor: "pointer" }}>
+              {o.label}
+            </button>
+          ))}
         </BottomSheet>
       )}
 

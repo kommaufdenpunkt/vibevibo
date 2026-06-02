@@ -590,68 +590,26 @@ export default function WorldMap({ onPickup }) {
         komm bis auf <strong>30 m</strong> heran und tippe zum Einsammeln.
       </div>
 
-      {/* Angel-Button — funktioniert nur in der Nähe echter Gewässer */}
-      <button type="button" onClick={goFishing} disabled={fishing}
-        title="Angeln (nur am Wasser)"
-        style={{
-          position: "absolute", right: 14, bottom: 84, zIndex: 1000,
-          width: 56, height: 56, borderRadius: "50%", border: "none",
-          background: "linear-gradient(135deg, #38bdf8, #0369a1)",
-          color: "#fff", fontSize: 26, cursor: "pointer",
-          boxShadow: "0 6px 18px rgba(3,105,161,0.5)",
-          opacity: fishing ? 0.6 : 1,
-        }}>🎣</button>
-
-      {/* POI-Button — öffnet Bottom-Sheet mit Pflege-Orten in der Nähe */}
-      <button type="button" onClick={() => setPoiSheetOpen(true)}
-        title="Pflege-Orte in der Nähe"
-        style={{
-          position: "absolute", right: 14, bottom: 150, zIndex: 1000,
-          width: 56, height: 56, borderRadius: "50%", border: "none",
-          background: "linear-gradient(135deg, #f472b6, #be185d)",
-          color: "#fff", fontSize: 26, cursor: "pointer",
-          boxShadow: "0 6px 18px rgba(190,24,93,0.5)",
-        }}>
-        💊
-        {poiData?.pois?.some((p) => p.inRange && p.cooldownLeftMs === 0) && (
-          <span style={{
-            position: "absolute", top: -2, right: -2,
-            width: 14, height: 14, borderRadius: "50%",
-            background: "#22c55e", border: "2px solid #fff",
-          }} />
-        )}
-      </button>
-
-      {/* 🎒 Rucksack — Inventar als Bottom-Sheet */}
-      <button type="button" onClick={() => setInvSheetOpen(true)}
-        title="Rucksack"
-        style={{
-          position: "absolute", right: 14, bottom: 216, zIndex: 1000,
-          width: 56, height: 56, borderRadius: "50%", border: "none",
-          background: "linear-gradient(135deg, #fbbf24, #b45309)",
-          color: "#fff", fontSize: 26, cursor: "pointer",
-          boxShadow: "0 6px 18px rgba(180,83,9,0.5)",
-        }}>🎒</button>
-
-      {/* 🏪 Basar — Markt als Bottom-Sheet, grüner Punkt wenn Händler in Reichweite */}
-      <button type="button" onClick={() => setMarketSheetOpen(true)}
-        title="Basar"
-        style={{
-          position: "absolute", right: 14, bottom: 282, zIndex: 1000,
-          width: 56, height: 56, borderRadius: "50%", border: "none",
-          background: "linear-gradient(135deg, #22c55e, #15803d)",
-          color: "#fff", fontSize: 26, cursor: "pointer",
-          boxShadow: "0 6px 18px rgba(21,128,61,0.5)",
-        }}>
-        🏪
-        {market?.week?.some((m) => m.inRange) && (
-          <span style={{
-            position: "absolute", top: -2, right: -2,
-            width: 14, height: 14, borderRadius: "50%",
-            background: "#facc15", border: "2px solid #fff",
-          }} />
-        )}
-      </button>
+      {/* 🎮 Action-Bar unten — Animal Crossing-Style mit 4 großen Buttons + Labels */}
+      <div style={{
+        position: "absolute", left: 8, right: 8, bottom: 8, zIndex: 1000,
+        display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6,
+        padding: 6, borderRadius: 16,
+        background: "rgba(255,255,255,0.92)",
+        boxShadow: "0 -4px 18px rgba(0,0,0,0.18)",
+        backdropFilter: "blur(8px)",
+      }}>
+        <ActionBtn emoji="🏪" label="Basar" color="#15803d"
+          badge={market?.week?.some((m) => m.inRange) ? "in Reichweite" : null}
+          onClick={() => setMarketSheetOpen(true)} />
+        <ActionBtn emoji="🎒" label="Rucksack" color="#b45309"
+          onClick={() => setInvSheetOpen(true)} />
+        <ActionBtn emoji="💊" label="Pflege" color="#be185d"
+          badge={poiData?.pois?.some((p) => p.inRange && p.cooldownLeftMs === 0) ? "in Reichweite" : null}
+          onClick={() => setPoiSheetOpen(true)} />
+        <ActionBtn emoji="🎣" label="Angeln" color="#0369a1"
+          disabled={fishing} onClick={goFishing} />
+      </div>
 
       {/* Bottom-Sheet: Rucksack */}
       {invSheetOpen && (
@@ -781,5 +739,30 @@ export default function WorldMap({ onPickup }) {
         </div>
       )}
     </div>
+  );
+}
+
+function ActionBtn({ emoji, label, color, badge, disabled, onClick }) {
+  return (
+    <button type="button" disabled={disabled} onClick={onClick}
+      style={{
+        position: "relative",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "8px 4px", borderRadius: 12, border: "none",
+        background: `linear-gradient(135deg, ${color}22, ${color}11)`,
+        color: "#1c1c1e", fontFamily: "inherit", cursor: "pointer",
+        opacity: disabled ? 0.6 : 1,
+      }}>
+      <span style={{ fontSize: 24, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color }}>{label}</span>
+      {badge && (
+        <span style={{
+          position: "absolute", top: 2, right: 4,
+          background: "#22c55e", color: "#fff",
+          fontSize: 8, fontWeight: 700,
+          padding: "1px 4px", borderRadius: 999,
+        }}>● {badge}</span>
+      )}
+    </button>
   );
 }

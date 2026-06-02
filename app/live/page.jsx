@@ -9,6 +9,7 @@ import { ColoredName } from "@/components/GenderAge";
 import OnlineName from "@/components/OnlineName";
 import PremiumBadges from "@/components/PremiumBadges";
 import LiveSetup from "@/components/LiveSetup";
+import HelpCard from "@/components/HelpCard";
 
 function timeAgo(ms) {
   const s = Math.floor((Date.now() - ms) / 1000);
@@ -56,6 +57,19 @@ export default function LivePage() {
           </button>
         </div>
       </div>
+
+      <HelpCard id="live-viewer-rules" title="Spielregeln im Live" emoji="📋" color="#0ea5e9">
+        <b>Sei nett, sei fair.</b> Beleidigungen, Hate-Speech und Spam → 🛡-Tap im Chat
+        → Owner oder Mod kann muten, kicken, bannen.
+        <br/><br/>
+        <b>Etwas Unangemessenes gesehen?</b> Tap auf das 🚩-Symbol im Stream — Reports landen
+        sofort bei den Admins und werden manuell geprüft.
+        <br/><br/>
+        <b>Was zählt als Verstoß:</b> Nackte Tatsachen, sexuelle Handlungen, Minderjährige in
+        unpassender Form, Drogen, Gewalt, Hass. <i>BH/Slip im sportlichen Kontext gilt nicht.</i>
+        <br/><br/>
+        <b>Emotes</b> sind kostenpflichtig (Vibes-Sink). 70% gehen an die Hosts.
+      </HelpCard>
 
       <div className="vv-card">
         <h3 style={{ margin: "0 0 10px" }}>🔴 Gerade live ({streams.length})</h3>
