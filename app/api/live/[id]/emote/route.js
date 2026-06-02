@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
   getLiveStream, listLiveHosts, logLiveEmote, spendCredits, adminGrantCredits,
-  publishLive, userRow, getUserById,
+  publishLive, userRow, getUserById, isMuted, isStreamBanned,
 } from "@/lib/db";
 import { EMOTE_MAP, EMOTE_HOST_PAYOUT_PCT, EMOTE_MIN_INTERVAL_MS } from "@/lib/live";
 
@@ -21,6 +21,9 @@ export async function POST(req, ctx) {
 
   const s = getLiveStream(sid);
   if (!s || s.status !== "live") return NextResponse.json({ error: "Stream nicht aktiv." }, { status: 410 });
+
+  if (isStreamBanned(sid, me.id)) return NextResponse.json({ error: "Du bist gebannt." }, { status: 403 });
+  if (isMuted(sid, me.id)) return NextResponse.json({ error: "Du bist gemutet." }, { status: 403 });
 
   const key = `${sid}:${me.id}`;
   const now = Date.now();

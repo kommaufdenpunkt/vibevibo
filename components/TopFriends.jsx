@@ -45,26 +45,26 @@ export default function TopFriends({ username, isOwner = false }) {
   }
 
   return (
-    <div className="vv-card">
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
-        <h3 style={{ margin: 0, fontSize: 15 }}>🌟 Top-5-Buddies</h3>
+    <div className="vv-card" style={{ padding: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+        <h3 style={{ margin: 0, fontSize: 13 }}>🌟 Top-5</h3>
         {isOwner && (
           <button type="button" onClick={() => setEditing((v) => !v)}
             style={{ marginLeft: "auto", background: "none", border: "none",
-              color: "#ec4899", cursor: "pointer", fontFamily: "inherit", fontSize: 12,
+              color: "#ec4899", cursor: "pointer", fontFamily: "inherit", fontSize: 11,
               textDecoration: "underline" }}>
             {editing ? "fertig" : "bearbeiten"}
           </button>
         )}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4, maxWidth: 240 }}>
         {slots.map((s) => {
           if (s.empty) {
             return (
               <div key={s.slot} style={{
-                aspectRatio: "1", border: "2px dashed var(--vv-border,#e5e7eb)",
-                borderRadius: 10, display: "flex", alignItems: "center",
-                justifyContent: "center", color: "var(--vv-muted,#aaa)", fontSize: 22,
+                aspectRatio: "1", border: "1px dashed var(--vv-border,#e5e7eb)",
+                borderRadius: 8, display: "flex", alignItems: "center",
+                justifyContent: "center", color: "var(--vv-muted,#aaa)", fontSize: 14,
               }}>{isOwner ? "+" : "·"}</div>
             );
           }
@@ -72,18 +72,18 @@ export default function TopFriends({ username, isOwner = false }) {
             <div key={s.slot} style={{ position: "relative" }}>
               <Link href={`/u/${s.username}`} style={{ textDecoration: "none" }}>
                 <div style={{
-                  aspectRatio: "1", border: "2px solid var(--vv-border,#e5e7eb)",
-                  borderRadius: 10, overflow: "hidden", background: "#fafafa",
+                  aspectRatio: "1", border: "1px solid var(--vv-border,#e5e7eb)",
+                  borderRadius: 8, overflow: "hidden", background: "#fafafa",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 }}>
                   {s.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={s.avatarUrl} alt="" style={{ width: "100%", height: "70%", objectFit: "cover" }} />
                   ) : (
-                    <div style={{ fontSize: 26 }}>👤</div>
+                    <div style={{ fontSize: 16 }}>👤</div>
                   )}
-                  <div style={{ fontSize: 10, fontWeight: 700, textAlign: "center",
-                    padding: "2px 3px", width: "100%", lineHeight: 1.1,
+                  <div style={{ fontSize: 8, fontWeight: 700, textAlign: "center",
+                    padding: "1px 2px", width: "100%", lineHeight: 1.1,
                     whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     <OnlineName lastSeen={s.lastSeen}>
                       <ColoredName gender={s.gender} age={s.age} name={s.displayName} />
@@ -93,10 +93,10 @@ export default function TopFriends({ username, isOwner = false }) {
               </Link>
               {editing && isOwner && (
                 <button type="button" disabled={busy} onClick={() => unpin(s.slot)}
-                  style={{ position: "absolute", top: -6, right: -6,
-                    width: 22, height: 22, borderRadius: "50%", border: "none",
+                  style={{ position: "absolute", top: -4, right: -4,
+                    width: 16, height: 16, borderRadius: "50%", border: "none",
                     background: "#ef4444", color: "#fff", cursor: "pointer",
-                    fontSize: 12, fontFamily: "inherit", boxShadow: "0 2px 6px rgba(0,0,0,0.3)" }}>×</button>
+                    fontSize: 9, fontFamily: "inherit", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}>×</button>
               )}
             </div>
           );

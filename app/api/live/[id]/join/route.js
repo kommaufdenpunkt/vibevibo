@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { getLiveStream, heartbeatViewer, publishLive } from "@/lib/db";
+import { getLiveStream, heartbeatViewer, publishLive, isStreamBanned } from "@/lib/db";
 
 // POST — als Zuschauer beitreten / Heartbeat
 export async function POST(_req, ctx) {
@@ -11,6 +11,9 @@ export async function POST(_req, ctx) {
   const s = getLiveStream(sid);
   if (!s) return NextResponse.json({ error: "Stream nicht gefunden." }, { status: 404 });
   if (s.status !== "live") return NextResponse.json({ error: "Stream beendet." }, { status: 410 });
+  if (isStreamBanned(sid, me.id)) {
+    return NextResponse.json({ error: "Du wurdest aus diesem Stream gebannt." }, { status: 403 });
+  }
   const { viewerCount } = heartbeatViewer(sid, me.id);
   publishLive(sid, "viewer", { userId: me.id, count: viewerCount, joined: true });
   return NextResponse.json({ ok: true, viewerCount });

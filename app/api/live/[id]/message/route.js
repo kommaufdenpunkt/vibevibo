@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { getLiveStream, addLiveChatMessage, publishLive, userRow, getUserById } from "@/lib/db";
+import { getLiveStream, addLiveChatMessage, publishLive, userRow, getUserById, isMuted, isStreamBanned } from "@/lib/db";
 import { CHAT_MAX_LEN, CHAT_MIN_INTERVAL_MS } from "@/lib/live";
 
 // Pro-User-Throttle in-process (genug für Anti-Spam, nicht für Cluster)
@@ -18,6 +18,13 @@ export async function POST(req, ctx) {
 
   const s = getLiveStream(sid);
   if (!s || s.status !== "live") return NextResponse.json({ error: "Stream nicht aktiv." }, { status: 410 });
+
+  if (isStreamBanned(sid, me.id)) return NextResponse.json({ error: "Du bist in diesem Stream gebannt." }, { status: 403 });
+  const mutedUntil = isMuted(sid, me.id);
+  if (mutedUntil) {
+    const min = Math.ceil((mutedUntil - Date.now()) / 60_000);
+    return NextResponse.json({ error: `Du bist gemutet — noch ${min} min.`, mutedUntilAt: mutedUntil }, { status: 403 });
+  }
 
   const key = `${sid}:${me.id}`;
   const now = Date.now();
