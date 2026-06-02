@@ -7,6 +7,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { ITEMS } from "@/lib/world";
+import WorldInventory from "./WorldInventory";
+import MarketPanel from "./MarketPanel";
 
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 const LEAFLET_JS  = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
@@ -164,6 +166,8 @@ export default function WorldMap({ onPickup }) {
   const [poiSheetOpen, setPoiSheetOpen] = useState(false);
   const [poiBusy, setPoiBusy] = useState(false);
   const [companionBubble, setCompanionBubble] = useState("");
+  const [invSheetOpen, setInvSheetOpen] = useState(false);
+  const [marketSheetOpen, setMarketSheetOpen] = useState(false);
 
   // Leaflet + Karte initialisieren wenn Position da
   useEffect(() => {
@@ -239,10 +243,13 @@ export default function WorldMap({ onPickup }) {
       const distLbl = m.distanceM != null ? `${m.distanceM} m entfernt` : "";
       marker.bindTooltip(`${m.emoji} ${m.name}${distLbl ? " · " + distLbl : ""}`);
       marker.on("click", () => {
-        setFlash(m.inRange
-          ? `${m.emoji} ${m.name} ist in Reichweite — wechsel auf den Basar-Tab!`
-          : `${m.emoji} ${m.name} · noch ${Math.max(0, (m.distanceM ?? 0) - (market.sellRadiusM || 30))} m bis zur Reichweite`);
-        setTimeout(() => setFlash(""), 3500);
+        if (m.inRange) {
+          // Direkt Basar öffnen — Verkaufen-Knopf für genau diesen Händler
+          setMarketSheetOpen(true);
+        } else {
+          setFlash(`${m.emoji} ${m.name} · noch ${Math.max(0, (m.distanceM ?? 0) - (market.sellRadiusM || 30))} m`);
+          setTimeout(() => setFlash(""), 3500);
+        }
       });
       merchantsLayerRef.current.addLayer(marker);
     }
@@ -614,6 +621,87 @@ export default function WorldMap({ onPickup }) {
           }} />
         )}
       </button>
+
+      {/* 🎒 Rucksack — Inventar als Bottom-Sheet */}
+      <button type="button" onClick={() => setInvSheetOpen(true)}
+        title="Rucksack"
+        style={{
+          position: "absolute", right: 14, bottom: 216, zIndex: 1000,
+          width: 56, height: 56, borderRadius: "50%", border: "none",
+          background: "linear-gradient(135deg, #fbbf24, #b45309)",
+          color: "#fff", fontSize: 26, cursor: "pointer",
+          boxShadow: "0 6px 18px rgba(180,83,9,0.5)",
+        }}>🎒</button>
+
+      {/* 🏪 Basar — Markt als Bottom-Sheet, grüner Punkt wenn Händler in Reichweite */}
+      <button type="button" onClick={() => setMarketSheetOpen(true)}
+        title="Basar"
+        style={{
+          position: "absolute", right: 14, bottom: 282, zIndex: 1000,
+          width: 56, height: 56, borderRadius: "50%", border: "none",
+          background: "linear-gradient(135deg, #22c55e, #15803d)",
+          color: "#fff", fontSize: 26, cursor: "pointer",
+          boxShadow: "0 6px 18px rgba(21,128,61,0.5)",
+        }}>
+        🏪
+        {market?.week?.some((m) => m.inRange) && (
+          <span style={{
+            position: "absolute", top: -2, right: -2,
+            width: 14, height: 14, borderRadius: "50%",
+            background: "#facc15", border: "2px solid #fff",
+          }} />
+        )}
+      </button>
+
+      {/* Bottom-Sheet: Rucksack */}
+      {invSheetOpen && (
+        <div onClick={() => setInvSheetOpen(false)}
+          style={{
+            position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)",
+            zIndex: 2000, display: "flex", alignItems: "flex-end",
+          }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%", maxHeight: "85%", overflowY: "auto",
+              background: "var(--vv-card,#fff)", color: "var(--vv-text,#1c1c1e)",
+              borderTopLeftRadius: 18, borderTopRightRadius: 18,
+              boxShadow: "0 -8px 30px rgba(0,0,0,0.3)",
+            }}>
+            <div style={{ width: 44, height: 4, background: "#d4d4d8", borderRadius: 2, margin: "12px auto 6px" }} />
+            <div style={{ display: "flex", alignItems: "center", padding: "0 14px 6px" }}>
+              <h3 style={{ margin: 0, fontSize: 16 }}>🎒 Rucksack</h3>
+              <button type="button" onClick={() => setInvSheetOpen(false)}
+                style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "inherit" }}>✕</button>
+            </div>
+            <WorldInventory />
+          </div>
+        </div>
+      )}
+
+      {/* Bottom-Sheet: Basar */}
+      {marketSheetOpen && (
+        <div onClick={() => setMarketSheetOpen(false)}
+          style={{
+            position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)",
+            zIndex: 2000, display: "flex", alignItems: "flex-end",
+          }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%", maxHeight: "85%", overflowY: "auto",
+              background: "var(--vv-card,#fff)", color: "var(--vv-text,#1c1c1e)",
+              borderTopLeftRadius: 18, borderTopRightRadius: 18,
+              boxShadow: "0 -8px 30px rgba(0,0,0,0.3)",
+            }}>
+            <div style={{ width: 44, height: 4, background: "#d4d4d8", borderRadius: 2, margin: "12px auto 6px" }} />
+            <div style={{ display: "flex", alignItems: "center", padding: "0 14px 6px" }}>
+              <h3 style={{ margin: 0, fontSize: 16 }}>🏪 VIBO-Basar</h3>
+              <button type="button" onClick={() => setMarketSheetOpen(false)}
+                style={{ marginLeft: "auto", background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "inherit" }}>✕</button>
+            </div>
+            <MarketPanel />
+          </div>
+        </div>
+      )}
 
       {/* Companion-Sprechblase */}
       {companionBubble && (
