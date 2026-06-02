@@ -60,6 +60,7 @@ const LINKS = [
   { href: "/profile", icon: "👤", label: "Mein Profil" },
   { href: "/messenger?tab=vibo", icon: "🥚", label: "Mein VIBO" },
   { href: "/karte", icon: "🗺️", label: "Realitätskarte" },
+  { href: "/live", icon: "🎥", label: "Live" },
   { href: "/freunde", icon: "👯", label: "Freunde" },
   { href: "/messenger", icon: "✉️", label: "Nachrichten" },
   { href: "/fotos", icon: "📸", label: "Fotos" },

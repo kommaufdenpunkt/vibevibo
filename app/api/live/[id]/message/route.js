@@ -1,0 +1,41 @@
+import { NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/auth";
+import { getLiveStream, addLiveChatMessage, publishLive, userRow, getUserById } from "@/lib/db";
+import { CHAT_MAX_LEN, CHAT_MIN_INTERVAL_MS } from "@/lib/live";
+
+// Pro-User-Throttle in-process (genug für Anti-Spam, nicht für Cluster)
+const lastChat = new Map(); // key: streamId:userId → ts
+
+export async function POST(req, ctx) {
+  const me = await getSessionUser();
+  if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
+  const { id } = await ctx.params;
+  const sid = Number(id);
+  const body = await req.json().catch(() => ({}));
+  const text = String(body?.text || "").trim();
+  if (!text) return NextResponse.json({ error: "leer" }, { status: 400 });
+  if (text.length > CHAT_MAX_LEN) return NextResponse.json({ error: "zu lang" }, { status: 400 });
+
+  const s = getLiveStream(sid);
+  if (!s || s.status !== "live") return NextResponse.json({ error: "Stream nicht aktiv." }, { status: 410 });
+
+  const key = `${sid}:${me.id}`;
+  const now = Date.now();
+  if ((lastChat.get(key) || 0) > now - CHAT_MIN_INTERVAL_MS) {
+    return NextResponse.json({ error: "Etwas langsamer." }, { status: 429 });
+  }
+  lastChat.set(key, now);
+
+  const cid = addLiveChatMessage(sid, me.id, text);
+  const u = userRow(getUserById(me.id));
+  const msg = {
+    id: cid, text, at: now,
+    user: {
+      id: me.id, username: u.username, displayName: u.displayName,
+      gender: u.gender, age: u.age, avatarUrl: u.avatarUrl,
+      lastSeen: u.lastSeen, premiumBadges: u.premiumBadges,
+    },
+  };
+  publishLive(sid, "chat", msg);
+  return NextResponse.json({ ok: true, message: msg });
+}
