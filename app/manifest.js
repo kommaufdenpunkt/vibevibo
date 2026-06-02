@@ -30,6 +30,13 @@ export default function manifest() {
         icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
       {
+        name: "Live",
+        short_name: "Live",
+        description: "Solo & Multi-Live, Chat, Emotes",
+        url: "/live",
+        icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
         name: "Mein Profil",
         short_name: "Profil",
         url: "/profile",

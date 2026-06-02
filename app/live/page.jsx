@@ -10,6 +10,7 @@ import OnlineName from "@/components/OnlineName";
 import PremiumBadges from "@/components/PremiumBadges";
 import LiveSetup from "@/components/LiveSetup";
 import HelpCard from "@/components/HelpCard";
+import InstallNow from "@/components/InstallNow";
 
 function timeAgo(ms) {
   const s = Math.floor((Date.now() - ms) / 1000);
@@ -57,6 +58,8 @@ export default function LivePage() {
           </button>
         </div>
       </div>
+
+      <InstallNow appName="VV Live" appEmoji="🎥" appColor="#ec4899" />
 
       <HelpCard id="live-viewer-rules" title="Spielregeln im Live" emoji="📋" color="#0ea5e9">
         <b>Sei nett, sei fair.</b> Beleidigungen, Hate-Speech und Spam → 🛡-Tap im Chat

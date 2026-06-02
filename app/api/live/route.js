@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { createLiveStream, listLiveStreams } from "@/lib/db";
+import { createLiveStream, listLiveStreams, listFansOf, userRow, getUserById } from "@/lib/db";
 import { LIVE_MODES, MAX_HOSTS_MULTI } from "@/lib/live";
+import { sendPushToUser } from "@/lib/push";
 
 // GET — Liste aller aktiven Streams
 export async function GET() {
@@ -31,6 +32,22 @@ export async function POST(req) {
     const id = createLiveStream({
       ownerId: me.id, title, mode, hasVideo, hasAudio, maxHosts, hostPolicy,
     });
+    // Push an Fans (alle User die mich in ihrer Top-5 haben) — „X ist live!"
+    const owner = userRow(getUserById(me.id));
+    const fans = listFansOf(me.id);
+    if (fans.length > 0) {
+      const payload = {
+        title: `🔴 ${owner?.displayName || me.username} ist LIVE!`,
+        body: title,
+        url: `/live/${id}`,
+        tag: `live-${id}`,
+        kind: "live_started",
+        fromUsername: me.username,
+        fromDisplayName: owner?.displayName || me.username,
+      };
+      // Fire-and-forget — nicht auf den Versand warten
+      Promise.all(fans.map((uid) => sendPushToUser(uid, payload).catch(() => null)));
+    }
     return NextResponse.json({ ok: true, id });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });
