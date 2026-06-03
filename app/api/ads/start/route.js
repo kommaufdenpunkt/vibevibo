@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { checkCanStartAd, createAdImpression } from "@/lib/db";
-import { PROVIDER, getProviderConfig } from "@/lib/ads";
+import { getProvider, getProviderConfig } from "@/lib/ads";
 
 // Client moechte eine Rewarded-Ad starten.
 // POST { slot: "home" | "shop_lowbal" | "vibo_hungry" | ... }
@@ -24,7 +24,7 @@ export async function POST(req) {
     return NextResponse.json({ error: gate.reason }, { status: 429 });
   }
 
-  const session = createAdImpression(me.id, slot, PROVIDER, ip);
+  const session = createAdImpression(me.id, slot, getProvider(), ip);
   return NextResponse.json({
     ok: true,
     token: session.token,

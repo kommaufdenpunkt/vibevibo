@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { completeAdImpression, getAdImpressionByToken } from "@/lib/db";
-import { PROVIDER, getProviderConfig } from "@/lib/ads";
+import { getProvider, getProviderConfig } from "@/lib/ads";
 
 // Simulator-Modus: Client meldet "Video durchgesehen" nach Mindest-Wartezeit.
 // SICHERHEIT: der Server prueft die Wartezeit selber ueber started_at.
@@ -11,7 +11,7 @@ import { PROVIDER, getProviderConfig } from "@/lib/ads";
 // der echte Reward kommt nur per /api/ads/callback vom Provider-Server.
 
 export async function POST(req) {
-  if (PROVIDER !== "simulator") {
+  if (getProvider() !== "simulator") {
     return NextResponse.json({ error: "Simulator-Endpunkt im Produktiv-Modus deaktiviert." }, { status: 403 });
   }
   const me = await getSessionUser();
