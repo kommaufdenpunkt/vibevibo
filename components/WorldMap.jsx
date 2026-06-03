@@ -223,6 +223,44 @@ export default function WorldMap({ onPickup }) {
   const [marketSheetOpen, setMarketSheetOpen] = useState(false);
 
   // Leaflet + Karte initialisieren wenn Position da
+  const tileLayerRef = useRef(null);
+  const [tileStyle, setTileStyle] = useState(() => {
+    if (typeof window === "undefined") return "voyager";
+    return window.localStorage?.getItem("vv-tile-style") || "voyager";
+  });
+
+  function buildTileLayer(L, style) {
+    const errorTile = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Crect width='256' height='256' fill='%23f5f5f7'/%3E%3C/svg%3E";
+    switch (style) {
+      case "positron":
+        return L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png", {
+          attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true, errorTileUrl: errorTile,
+        });
+      case "osm":
+        return L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19, crossOrigin: true, errorTileUrl: errorTile,
+        });
+      case "voyager":
+      default:
+        return L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png", {
+          attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true, errorTileUrl: errorTile,
+        });
+    }
+  }
+
+  // Stil-Wechsel zur Laufzeit: alten Layer abloesen, neuen drueber legen
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const L = window.L;
+    if (!L) return;
+    if (tileLayerRef.current) {
+      try { tileLayerRef.current.remove(); } catch {}
+    }
+    tileLayerRef.current = buildTileLayer(L, tileStyle).addTo(mapRef.current);
+    try { window.localStorage?.setItem("vv-tile-style", tileStyle); } catch {}
+  }, [tileStyle]);
+
   useEffect(() => {
     if (!pos || mapRef.current) return;
     let cancelled = false;
@@ -232,25 +270,10 @@ export default function WorldMap({ onPickup }) {
       const L = window.L;
       const map = L.map(containerRef.current, { zoomControl: true })
         .setView([pos.lat, pos.lng], 17);
-      // Primaerer Tile-Layer: OpenStreetMap (Standard).
-      // Fallback: CartoDB Voyager wenn Tiles 4xx/5xx liefern (z.B. wenn OSM
-      // den User-Agent rate-limited oder die Region blockiert).
-      const primary = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19, crossOrigin: true,
-        errorTileUrl: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Crect width='256' height='256' fill='%23f5f5f7'/%3E%3C/svg%3E",
-      });
-      let fallbackAttached = false;
-      primary.on("tileerror", () => {
-        if (fallbackAttached) return;
-        fallbackAttached = true;
-        // CartoDB Voyager — free tier, sehr stabil
-        L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png", {
-          attribution: '© OpenStreetMap, © CARTO',
-          subdomains: "abcd", maxZoom: 19,
-        }).addTo(map);
-      });
-      primary.addTo(map);
+      // Primaerer Tile-Layer: CartoDB Voyager (free CDN, sehr stabil, pastell-Look).
+      // User kann oben rechts auf "🗺 Stil" tappen um zu wechseln.
+      // OSM-direkter Endpoint blockt seit ~2024 viele User-Agents + rate-limited heftig.
+      tileLayerRef.current = buildTileLayer(L, tileStyle).addTo(map);
       meMarkerRef.current = L.marker([pos.lat, pos.lng], { icon: meIcon(L) }).addTo(map);
       radiusCircleRef.current = L.circle([pos.lat, pos.lng], {
         radius: 30, color: "#3b82f6", weight: 1, fillOpacity: 0.08,
@@ -637,7 +660,31 @@ export default function WorldMap({ onPickup }) {
 
   return (
     <div style={{ position: "relative", width: "100%", height: "calc(100dvh - 80px)" }}>
-      <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
+      <div ref={containerRef} style={{ position: "absolute", inset: 0, background: "#f5f5f7" }} />
+
+      {/* Tile-Style-Picker: oben rechts, klein */}
+      <div style={{
+        position: "absolute", top: 12, right: 12, zIndex: 1000,
+        display: "flex", gap: 4, padding: 4, borderRadius: 12,
+        background: "rgba(255,255,255,0.92)", boxShadow: "0 2px 10px rgba(0,0,0,0.18)",
+        backdropFilter: "blur(8px)",
+      }}>
+        {[
+          { v: "voyager",  emoji: "🗺", label: "Standard" },
+          { v: "positron", emoji: "🤍", label: "Hell" },
+          { v: "osm",      emoji: "🌍", label: "OSM" },
+        ].map((o) => (
+          <button key={o.v} type="button" onClick={() => setTileStyle(o.v)}
+            title={`Karten-Stil: ${o.label}`}
+            style={{
+              padding: "5px 9px", borderRadius: 8, border: "none",
+              background: tileStyle === o.v ? "linear-gradient(135deg,#ec4899,#be185d)" : "transparent",
+              color: tileStyle === o.v ? "#fff" : "#1c1c1e",
+              fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+            }}>{o.emoji}</button>
+        ))}
+      </div>
+
       {/* Wetter-Banner: beeinflusst welche Wild-VIBOs auftauchen */}
       {weather && (
         <div style={{
