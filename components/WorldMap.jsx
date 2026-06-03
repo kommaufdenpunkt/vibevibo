@@ -17,12 +17,16 @@ function loadLeaflet() {
   return new Promise((resolve) => {
     if (typeof window === "undefined") return resolve(false);
     if (window.L) return resolve(true);
+
+    // CSS einbinden (idempotent)
     if (!document.querySelector(`link[href="${LEAFLET_CSS}"]`)) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
       link.href = LEAFLET_CSS;
       document.head.appendChild(link);
     }
+
+    // Script einbinden (idempotent)
     let script = document.querySelector(`script[src="${LEAFLET_JS}"]`);
     if (!script) {
       script = document.createElement("script");
@@ -32,8 +36,15 @@ function loadLeaflet() {
     }
     script.addEventListener("load", () => resolve(true));
     script.addEventListener("error", () => resolve(false));
-    // Falls schon geladen
-    if (window.L) resolve(true);
+
+    // Robuster Fallback: alle 150ms pruefen ob L da ist (loose race conditions abfangen).
+    // Aufgrund Browser-Caching kann der "load"-Event verpasst werden, wenn das Script schon
+    // beim ersten Render geladen wurde - das Polling fängt das ab.
+    let tries = 0;
+    const poll = setInterval(() => {
+      if (window.L) { clearInterval(poll); resolve(true); }
+      else if (++tries > 40) { clearInterval(poll); resolve(false); } // 6 Sek Timeout
+    }, 150);
   });
 }
 
@@ -195,7 +206,7 @@ function offsetForCompanion(lat) {
   return { dLat, dLng };
 }
 
-export default function WorldMap({ onPickup }) {
+export default function WorldMap({ onPickup, compact = false, height }) {
   const mapRef = useRef(null);
   const containerRef = useRef(null);
   const meMarkerRef = useRef(null);
@@ -282,6 +293,17 @@ export default function WorldMap({ onPickup }) {
       merchantsLayerRef.current = L.layerGroup().addTo(map);
       poiLayerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
+
+      // Kontainer-Groesse erneut messen — wenn die Karte in einem Tab oder versteckten
+      // Container geladen wird, hat Leaflet die Dimensionen oft noch nicht.
+      // Nach kurzem Delay + bei Resize-Events neu berechnen, sonst bleibt's grau.
+      const recalcSize = () => { try { map.invalidateSize(); } catch {} };
+      setTimeout(recalcSize, 50);
+      setTimeout(recalcSize, 250);
+      setTimeout(recalcSize, 800);
+      window.addEventListener("resize", recalcSize);
+      // Cleanup-Listener im teardown unten (siehe return-Funktion)
+      mapRef.current._vvResizeHandler = recalcSize;
     })();
     return () => { cancelled = true; };
   }, [pos]);
@@ -659,7 +681,12 @@ export default function WorldMap({ onPickup }) {
   }
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "calc(100dvh - 80px)" }}>
+    <div style={{
+      position: "relative", width: "100%",
+      height: height || (compact ? "420px" : "calc(100dvh - 80px)"),
+      borderRadius: compact ? 14 : 0,
+      overflow: "hidden",
+    }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0, background: "#f5f5f7" }} />
 
       {/* Tile-Style-Picker: oben rechts, klein */}

@@ -17,6 +17,7 @@ import ViboPet from "@/components/ViboPet";
 import QuestPanel from "@/components/QuestPanel";
 import ShopPanel from "@/components/ShopPanel";
 import CardCollection from "@/components/CardCollection";
+import WorldMap from "@/components/WorldMap";
 import { getPresence } from "@/lib/presence";
 import { useTheme } from "@/lib/useTheme";
 import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
@@ -245,6 +246,21 @@ function MessengerInner() {
           <>
             <QuestPanel />
             <ViboPet />
+
+            {/* Karte direkt im VIBO-Tab — kompakte 420px-Variante */}
+            <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
+              <div style={{ padding: "12px 14px 8px", borderBottom: "1px solid var(--vv-border,#eee)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <h3 style={{ margin: 0, fontSize: 15 }}>🗺 Karte</h3>
+                  <Link href="/karte" className="vv-btn vv-btn-sm">↗ Vollbild</Link>
+                </div>
+                <div className="vv-muted" style={{ fontSize: 11, marginTop: 4 }}>
+                  Items einsammeln, Basar besuchen, fischen — auch in der Vollbild-Ansicht.
+                </div>
+              </div>
+              <WorldMap compact />
+            </div>
+
             <ShopPanel />
             <CardCollection />
           </>
