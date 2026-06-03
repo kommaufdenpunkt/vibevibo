@@ -59,6 +59,57 @@ const TABS = [
   ["audit", "📜 Audit-Log"],
 ];
 
+// Gruppierung fuer die moderne Sidebar.
+// Reihenfolge entspricht dem typischen Admin-Workflow: zuerst Übersicht,
+// dann Tagesgeschäft (Moderation), dann Community-Management, dann Ökonomie,
+// Marketing, System.
+const SIDEBAR_GROUPS = [
+  {
+    id: "dashboard", label: "Dashboard", emoji: "📊",
+    items: [["uebersicht", "📊", "Übersicht"]],
+  },
+  {
+    id: "moderation", label: "Moderation", emoji: "🛡",
+    items: [
+      ["profilbilder", "🖼", "Profilbilder", "pendingAvatars"],
+      ["fotos",         "📷", "Fotos", "pendingPhotos"],
+      ["meldungen",     "🚩", "Meldungen", "openReports"],
+      ["livemeldungen", "🎥", "Live-Meldungen"],
+      ["userakte",      "📁", "Userakte"],
+    ],
+  },
+  {
+    id: "community", label: "Community", emoji: "👥",
+    items: [
+      ["warteliste", "⏳", "Warteliste", "pending"],
+      ["mitglieder", "👥", "Mitglieder"],
+      ["banns",      "🔨", "Banns", "sanctions"],
+      ["geraete",    "📱", "Geräte", "deviceBans"],
+      ["ips",        "⛔", "IP-Sperren", "blockedIps"],
+    ],
+  },
+  {
+    id: "economy", label: "Ökonomie", emoji: "💰",
+    items: [
+      ["vibeslog", "✨", "Vibes-Log"],
+      ["events",   "🎉", "Saison-Events"],
+    ],
+  },
+  {
+    id: "marketing", label: "Marketing", emoji: "📣",
+    items: [
+      ["broadcast", "📢", "Broadcast"],
+      ["settings",  "⚙️", "Einstellungen + Werbung"],
+    ],
+  },
+  {
+    id: "system", label: "System", emoji: "🔧",
+    items: [
+      ["audit", "📜", "Audit-Log"],
+    ],
+  },
+];
+
 export default async function AdminPage({ searchParams }) {
   const sp = await searchParams;
   const pw = typeof sp?.pw === "string" ? sp.pw : "";
@@ -197,22 +248,62 @@ export default async function AdminPage({ searchParams }) {
   const stats = adminStats();
 
   return (
-    <>
-      <div className="vv-card">
-        <div className="vv-row">
-          <h2 style={{ flex: 1, margin: 0 }}>🔐 Admin · Fidolin</h2>
-          <a className="vv-btn" href={`/admin?${q}&tab=${tab}`}>↻ Aktualisieren</a>
-          <a className="vv-btn" href="/admin">↩ Logout</a>
-        </div>
-        <div className="vv-row" style={{ flexWrap: "wrap", gap: 6, marginTop: 12 }}>
-          {TABS.map(([id, label]) => (
-            <a key={id} href={`/admin?${q}&tab=${id}`}
-               className={`vv-btn${id === tab ? " vv-btn-pink" : ""}`}>{label}</a>
-          ))}
-        </div>
-      </div>
+    <div className="vv-adminshell">
+      {/* Mobile-Toggle: Checkbox-Hack (komplett CSS, keine Hydration noetig) */}
+      <input type="checkbox" id="vv-adminsidebar-toggle" className="vv-adminsidebar-toggle" defaultChecked={false} />
+      <label htmlFor="vv-adminsidebar-toggle" className="vv-adminsidebar-backdrop" aria-hidden="true" />
 
-      {tab === "uebersicht" && <Uebersicht stats={stats} />}
+      {/* SIDEBAR */}
+      <aside className="vv-adminsidebar">
+        <div className="vv-adminsidebar-head">
+          <div className="vv-adminsidebar-logo">🔐 VibeVibo</div>
+          <div className="vv-adminsidebar-sub">Admin · Fidolin {fidolinEnabled() ? "🤖" : "💤"}</div>
+        </div>
+
+        <nav className="vv-adminsidebar-nav">
+          {SIDEBAR_GROUPS.map((group) => (
+            <div key={group.id} className="vv-adminsidebar-group">
+              <div className="vv-adminsidebar-grouplabel">
+                <span>{group.emoji}</span> {group.label}
+              </div>
+              {group.items.map(([id, emoji, label, badgeKey]) => {
+                const active = id === tab;
+                const badge = badgeKey && stats[badgeKey] ? stats[badgeKey] : 0;
+                return (
+                  <a key={id} href={`/admin?${q}&tab=${id}`}
+                     className={`vv-adminsidebar-item${active ? " vv-adminsidebar-item-active" : ""}`}>
+                    <span className="vv-adminsidebar-emoji">{emoji}</span>
+                    <span className="vv-adminsidebar-label">{label}</span>
+                    {badge > 0 && (
+                      <span className="vv-adminsidebar-badge">{badge}</span>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        <div className="vv-adminsidebar-foot">
+          <a className="vv-btn vv-btn-sm" href={`/admin?${q}&tab=${tab}`}>↻ Reload</a>
+          <a className="vv-btn vv-btn-sm" href="/admin">↩ Logout</a>
+        </div>
+      </aside>
+
+      {/* MAIN */}
+      <main className="vv-adminmain">
+        {/* Mobile-Header mit Burger */}
+        <div className="vv-adminmain-head">
+          <label htmlFor="vv-adminsidebar-toggle" className="vv-adminmain-burger" aria-label="Menü">
+            <span /><span /><span />
+          </label>
+          <h2 style={{ flex: 1, margin: 0, fontSize: 18 }}>
+            {(SIDEBAR_GROUPS.flatMap((g) => g.items).find(([id]) => id === tab) || [null, "📊", "Übersicht"])[1]}{" "}
+            {(SIDEBAR_GROUPS.flatMap((g) => g.items).find(([id]) => id === tab) || [null, null, "Übersicht"])[2]}
+          </h2>
+        </div>
+
+      {tab === "uebersicht" && <Uebersicht stats={stats} q={q} />}
       {tab === "warteliste" && <Warteliste q={q} />}
       {tab === "mitglieder" && <Mitglieder q={q} />}
       {tab === "profilbilder" && <Profilbilder q={q} />}
@@ -228,7 +319,8 @@ export default async function AdminPage({ searchParams }) {
       {tab === "broadcast" && <AdminBroadcast pw={pw} />}
       {tab === "settings" && <AdminSettings pw={pw} />}
       {tab === "audit" && <AuditLog q={q} />}
-    </>
+      </main>
+    </div>
   );
 }
 
@@ -247,10 +339,72 @@ function StatTile({ label, value, color = "#1f5fa8", emoji }) {
   );
 }
 
-function Uebersicht({ stats }) {
+function Uebersicht({ stats, q = "" }) {
   const log = listRecentModLog(40);
+  const urgentCount = (stats.pendingAvatars || 0) + (stats.pendingPhotos || 0) + (stats.openReports || 0) + (stats.pending || 0);
   return (
     <>
+      {/* Headline-Karte mit "Was muss ich heute tun?" */}
+      <div className="vv-admindash-hero">
+        <div className="vv-admindash-hero-left">
+          <div className="vv-admindash-hero-greet">Willkommen zurück, Admin 👋</div>
+          <div className="vv-admindash-hero-status">
+            {urgentCount > 0
+              ? <><b>{urgentCount}</b> Sachen warten auf dich</>
+              : "Alles ruhig — nichts zu tun 🎉"}
+          </div>
+        </div>
+        <div className="vv-admindash-hero-pulse">
+          <span className="vv-admindash-pulse-dot" />
+          <span><b>{stats.onlineNow}</b> gerade online</span>
+        </div>
+      </div>
+
+      {/* Action-Center: wichtigste To-Dos */}
+      {urgentCount > 0 && (
+        <div className="vv-card vv-admindash-todos">
+          <h3 style={{ marginTop: 0 }}>🎯 Was du jetzt tun solltest</h3>
+          <div className="vv-admindash-todos-grid">
+            {stats.pendingAvatars > 0 && (
+              <a className="vv-admindash-todo vv-admindash-todo-warn" href={`/admin?${q}&tab=profilbilder`}>
+                <span className="vv-admindash-todo-emoji">🖼</span>
+                <span className="vv-admindash-todo-text">
+                  <b>{stats.pendingAvatars}</b> Profilbilder warten auf Freigabe
+                </span>
+                <span className="vv-admindash-todo-arrow">→</span>
+              </a>
+            )}
+            {stats.pendingPhotos > 0 && (
+              <a className="vv-admindash-todo vv-admindash-todo-warn" href={`/admin?${q}&tab=fotos`}>
+                <span className="vv-admindash-todo-emoji">📷</span>
+                <span className="vv-admindash-todo-text">
+                  <b>{stats.pendingPhotos}</b> Fotos warten auf Freigabe
+                </span>
+                <span className="vv-admindash-todo-arrow">→</span>
+              </a>
+            )}
+            {stats.openReports > 0 && (
+              <a className="vv-admindash-todo vv-admindash-todo-danger" href={`/admin?${q}&tab=meldungen`}>
+                <span className="vv-admindash-todo-emoji">🚩</span>
+                <span className="vv-admindash-todo-text">
+                  <b>{stats.openReports}</b> offene Meldungen
+                </span>
+                <span className="vv-admindash-todo-arrow">→</span>
+              </a>
+            )}
+            {stats.pending > 0 && (
+              <a className="vv-admindash-todo" href={`/admin?${q}&tab=warteliste`}>
+                <span className="vv-admindash-todo-emoji">⏳</span>
+                <span className="vv-admindash-todo-text">
+                  <b>{stats.pending}</b> User auf Warteliste
+                </span>
+                <span className="vv-admindash-todo-arrow">→</span>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Live-Aktivität */}
       <div className="vv-card">
         <h3>🟢 Live-Aktivität</h3>
