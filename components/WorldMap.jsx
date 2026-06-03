@@ -261,6 +261,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   }
 
   // Stil-Wechsel zur Laufzeit: alten Layer abloesen, neuen drueber legen
+  const labelLayerRef = useRef(null);
   useEffect(() => {
     if (!mapRef.current) return;
     const L = window.L;
@@ -268,7 +269,20 @@ export default function WorldMap({ onPickup, compact = false, height }) {
     if (tileLayerRef.current) {
       try { tileLayerRef.current.remove(); } catch {}
     }
+    if (labelLayerRef.current) {
+      try { labelLayerRef.current.remove(); } catch {}
+      labelLayerRef.current = null;
+    }
     tileLayerRef.current = buildTileLayer(L, tileStyle).addTo(mapRef.current);
+    // Voyager + Positron haben dezente Labels — wir legen das CartoDB-Labels-Overlay
+    // drueber, damit Strassennamen klar lesbar sind.
+    if (tileStyle === "voyager" || tileStyle === "positron") {
+      const labelStyle = tileStyle === "positron" ? "light_only_labels" : "voyager_only_labels";
+      labelLayerRef.current = L.tileLayer(
+        `https://cartodb-basemaps-{s}.global.ssl.fastly.net/${labelStyle}/{z}/{x}/{y}.png`,
+        { subdomains: "abcd", maxZoom: 19, pane: "shadowPane" }
+      ).addTo(mapRef.current);
+    }
     try { window.localStorage?.setItem("vv-tile-style", tileStyle); } catch {}
   }, [tileStyle]);
 
