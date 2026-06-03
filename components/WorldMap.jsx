@@ -726,60 +726,68 @@ export default function WorldMap({ onPickup, compact = false, height }) {
         ))}
       </div>
 
-      {/* Wetter-Banner: beeinflusst welche Wild-VIBOs auftauchen */}
+      {/* Wetter — kompakte Pille oben links neben dem Zoom-Control */}
       {weather && (
-        <div style={{
-          position: "absolute", top: 12, left: 12, right: 12,
-          background: "rgba(255,255,255,0.95)", borderRadius: 12,
-          padding: "8px 12px", zIndex: 999, display: "flex", alignItems: "center", gap: 10,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.18)", backdropFilter: "blur(8px)", color: "#1c1c1e",
-        }}>
-          <span style={{ fontSize: 26 }}>{weather.emoji}</span>
-          <div style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-            <div style={{ fontSize: 13, fontWeight: 800 }}>{weather.label} · {weather.temp}°C</div>
-            <div style={{ fontSize: 11, color: "#555" }}>{weather.note}</div>
-          </div>
+        <div title={`${weather.label} · ${weather.note}`}
+          style={{
+            position: "absolute", top: 12, left: 70, zIndex: 999,
+            background: "rgba(255,255,255,0.95)", borderRadius: 999,
+            padding: "5px 12px",
+            display: "inline-flex", alignItems: "center", gap: 6,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.18)", backdropFilter: "blur(6px)",
+            color: "#1c1c1e", fontSize: 13, fontWeight: 700,
+          }}>
+          <span style={{ fontSize: 16, lineHeight: 1 }}>{weather.emoji}</span>
+          <span>{weather.temp}°C</span>
         </div>
       )}
+
+      {/* Flash-Toast — zentriert oben */}
       {flash && (
         <div style={{
-          position: "absolute", top: weather ? 70 : 16, left: "50%", transform: "translateX(-50%)",
+          position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)",
           background: flash.startsWith("⚠") ? "#fef3c7" : "#fff",
           color: flash.startsWith("⚠") ? "#92400e" : "#1c1c1e",
           padding: "10px 16px", borderRadius: 12,
           boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
-          fontSize: 14, fontWeight: 700, zIndex: 1000,
+          fontSize: 14, fontWeight: 700, zIndex: 1001,
           maxWidth: "90%", textAlign: "center",
         }}>{flash}</div>
       )}
-      <div style={{
-        position: "absolute", bottom: 16, left: 12, right: 12,
-        background: "rgba(255,255,255,0.95)", borderRadius: 12,
-        padding: "10px 14px", fontSize: 13,
-        boxShadow: "0 -4px 16px rgba(0,0,0,0.15)",
-        zIndex: 1000, textAlign: "center", color: "#1c1c1e",
-        backdropFilter: "blur(10px)",
-      }}>
-        🎯 <strong>{items.length}</strong> Items in deiner Nähe ·
-        komm bis auf <strong>30 m</strong> heran und tippe zum Einsammeln.
-      </div>
 
-      {/* 🎮 Action-Bar unten — kompakte Icon-Only Buttons mit smarten Badges */}
+      {/* Item-Zaehler — kleine Pille unten links */}
+      {items.length > 0 && (
+        <div style={{
+          position: "absolute", bottom: 16, left: 12, zIndex: 999,
+          background: "rgba(255,255,255,0.95)", borderRadius: 999,
+          padding: "5px 12px", fontSize: 13, fontWeight: 700,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.18)", backdropFilter: "blur(6px)",
+          color: "#1c1c1e",
+        }}>
+          🎯 {items.length} in der Nähe
+        </div>
+      )}
+
+      {/* Action-Bar: schwebende Icon-Buttons unten rechts.
+          🏪 Basar wurde entfernt — Haendler-Marker liegen direkt auf der Karte.
+          Klick auf einen Haendler oeffnet Popup -> "Verkaufen" oeffnet das Basar-Sheet. */}
       <div style={{
-        position: "absolute", left: 8, right: 8, bottom: 8, zIndex: 1000,
-        display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6,
-        padding: 6, borderRadius: 16,
-        background: "rgba(255,255,255,0.92)",
-        boxShadow: "0 -4px 18px rgba(0,0,0,0.18)",
-        backdropFilter: "blur(8px)",
+        position: "absolute", right: 12, bottom: 16, zIndex: 1000,
+        display: "flex", flexDirection: "column", gap: 8,
       }}>
-        <ActionBtn emoji="🏪" title="Basar" color="#15803d"
-          badge={(() => {
-            const n = (market?.week || []).filter((m) => m.inRange).length;
-            return n > 0 ? n : null;
-          })()}
+        <ActionBtn emoji="🏪" title="Alle 3 Händler zeigen" color="#15803d"
+          badge={(market?.week?.length || 0) > 0 ? market.week.length : null}
           badgeColor="#16a34a"
-          onClick={() => setMarketSheetOpen(true)} />
+          onClick={() => {
+            if (!mapRef.current || !market?.week?.length) return;
+            const L = window.L;
+            if (!L) return;
+            const points = market.week.map((m) => [m.lat, m.lng]);
+            if (pos) points.push([pos.lat, pos.lng]);
+            try {
+              mapRef.current.fitBounds(L.latLngBounds(points), { padding: [60, 60], maxZoom: 17 });
+            } catch {}
+          }} />
         <ActionBtn emoji="🎒" title="Rucksack" color="#b45309"
           badge={(() => {
             const n = market?.items?.length || 0;
@@ -936,21 +944,23 @@ function ActionBtn({ emoji, title, color, badge, badgeColor, disabled, onClick }
       style={{
         position: "relative",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "10px 4px", borderRadius: 12, border: "none",
-        background: `linear-gradient(135deg, ${color}22, ${color}11)`,
-        color: "#1c1c1e", fontFamily: "inherit", cursor: "pointer",
-        opacity: disabled ? 0.6 : 1, minHeight: 52,
+        width: 52, height: 52, borderRadius: "50%", border: "none",
+        background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+        color: "#fff", fontFamily: "inherit", cursor: "pointer",
+        opacity: disabled ? 0.5 : 1,
+        boxShadow: "0 4px 14px rgba(0,0,0,0.28), 0 0 0 3px rgba(255,255,255,0.95)",
+        transition: "transform 0.12s",
       }}>
-      <span style={{ fontSize: 28, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 26, lineHeight: 1 }}>{emoji}</span>
       {badge != null && (
         <span style={{
-          position: "absolute", top: 4, right: 6,
+          position: "absolute", top: -4, right: -4,
           background: badgeColor || "#22c55e", color: "#fff",
           fontSize: 11, fontWeight: 800,
-          minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999,
+          minWidth: 20, height: 20, padding: "0 6px", borderRadius: 999,
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           border: "2px solid #fff",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.25)",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
           lineHeight: 1,
         }}>{badge}</span>
       )}
