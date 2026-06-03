@@ -7,6 +7,7 @@ import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
 import MentionText from "./MentionText";
 import WallComposer from "./WallComposer";
+import EmbeddedMedia from "./EmbeddedMedia";
 
 export default function Pinnwand({ profile, entries, onChange }) {
   const { me } = useMe();
@@ -64,6 +65,7 @@ export default function Pinnwand({ profile, entries, onChange }) {
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={entry.imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 320, borderRadius: 10, marginTop: 6 }} />
               )}
+              <EmbeddedMedia audioUrl={entry.audioUrl} mediaJson={entry.media} />
               <div style={{ marginTop: 6 }}>
                 {me ? (
                   <button

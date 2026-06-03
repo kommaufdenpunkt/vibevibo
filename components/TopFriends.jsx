@@ -86,7 +86,7 @@ export default function TopFriends({ username, isOwner = false }) {
                     padding: "1px 2px", width: "100%", lineHeight: 1.1,
                     whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     <OnlineName lastSeen={s.lastSeen}>
-                      <ColoredName gender={s.gender} age={s.age} name={s.displayName} />
+                      <ColoredName gender={s.gender} age={s.age} name={s.displayName} nameColor={s.nameColor} />
                     </OnlineName>
                   </div>
                 </div>

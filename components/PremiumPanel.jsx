@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import HelpCard from "./HelpCard";
+import RewardedAdButton from "./RewardedAdButton";
 import { PREMIUM_GROUPS } from "@/lib/premium";
 
 // Items die einen Text-Input brauchen (vor dem Kauf)
@@ -23,6 +24,22 @@ const FLAGS = {
   frame_rainbow: "rainbow", frame_neon: "frame_neon", frame_gold: "frame_gold",
   vanity_url: "vanity", bio_xl: "bio_xl", presence_invisible: "invisible",
   status_slot: "status_slot",
+  name_color_pink: "color_pink", name_color_cyan: "color_cyan", name_color_lila: "color_lila",
+  name_color_rainbow: "color_rainbow", name_color_glitter: "color_glitter",
+  name_color_sparkle_fx: "color_sparkle_fx", name_color_pride: "color_pride",
+  skin_y2k: "skin_y2k", skin_glitter: "skin_glitter", skin_skater: "skin_skater",
+  skin_anime: "skin_anime", skin_matrix: "skin_matrix", skin_sailor: "skin_sailor",
+  skin_pride: "skin_pride",
+};
+
+// Anzeige-Emoji pro Owned-Flag (für „Dein Bestand"-Zeile)
+const OWNED_EMOJI = {
+  gold: "🥇", diamond: "💎", rainbow: "🌈", frame_neon: "🟪", frame_gold: "🟨",
+  vanity: "🔗", bio_xl: "📝", invisible: "👻", status_slot: "⭐",
+  color_pink: "💗", color_cyan: "🩵", color_lila: "💜",
+  color_rainbow: "🌈", color_glitter: "✨", color_sparkle_fx: "💫", color_pride: "🏳️‍🌈",
+  skin_y2k: "💿", skin_glitter: "☁️", skin_skater: "🛹",
+  skin_anime: "🌸", skin_matrix: "🟢", skin_sailor: "🌙", skin_pride: "🏳️‍🌈",
 };
 
 export default function PremiumPanel() {
@@ -115,6 +132,27 @@ export default function PremiumPanel() {
         }}>✨ {data.balance}</div>
       </div>
 
+      {/* Wenn balance niedrig: Rewarded-Ad als Mini-Vibes-Quelle anbieten */}
+      {(data.balance || 0) < 100 && (
+        <div style={{ marginBottom: 12 }}>
+          <RewardedAdButton slot="shop_lowbal" label="Zu wenig Vibes? Werbung gucken!" />
+        </div>
+      )}
+
+      {/* Anti-Inflation: Sink-Counter (Transparenz) */}
+      {typeof data.sinkTotal === "number" && (
+        <div style={{
+          background: "linear-gradient(90deg, #fee2e2, #ffedd5)",
+          border: "1px solid #fca5a5",
+          borderRadius: 10, padding: "8px 12px", marginBottom: 12,
+          fontSize: 12, color: "#7c2d12", display: "flex",
+          justifyContent: "space-between", alignItems: "center",
+        }}>
+          <span><b>🔥 Vibes-Sink:</b> bisher verbrannt</span>
+          <span style={{ fontWeight: 800 }}>{data.sinkTotal.toLocaleString("de-DE")} ✨</span>
+        </div>
+      )}
+
       {/* Aktueller Bestand */}
       <div style={{
         background: "var(--vv-card,#fff)",
@@ -123,8 +161,11 @@ export default function PremiumPanel() {
       }}>
         <b>Dein Bestand:</b> {data.owned.picSlots} Profilbild-Slots
         {data.owned.badges.length > 0 && (
-          <> · Badges: {data.owned.badges.map((b) => b === "gold" ? "🥇" : b === "diamond" ? "💎" : "🌈").join(" ")}</>
+          <> · Frei: {data.owned.badges.map((b) => OWNED_EMOJI[b] || "•").join(" ")}</>
         )}
+        <div className="vv-muted" style={{ fontSize: 11, marginTop: 4 }}>
+          Aktive Name-Color &amp; Profil-Skin wählst du in <a href="/profile/edit" style={{ color: "#ec4899" }}>Profil bearbeiten → Look</a>.
+        </div>
       </div>
 
       {flash && (
@@ -162,11 +203,20 @@ export default function PremiumPanel() {
     const canAfford = data.balance >= it.price;
     const needsIn = NEEDS_INPUT[it.kind];
     const isConfirming = confirming === it.kind;
+
+    // Anti-Inflation-Status pro Item
+    const av = data.availability?.[it.kind] || {};
+    const soldOut = av.stockTotal && av.stockRemaining === 0;
+    const outOfSeason = av.inSeason === false;
+    const dailyHit = av.dailyMax && av.todaysPurchases >= av.dailyMax;
+    const blocked = soldOut || outOfSeason || dailyHit;
+
     return (
       <div key={it.kind} style={{
         background: "var(--vv-card,#fff)",
-        border: `2px solid ${owned ? "#10b981" : "var(--vv-border,#eee)"}`,
+        border: `2px solid ${owned ? "#10b981" : (blocked && !owned ? "#fca5a5" : "var(--vv-border,#eee)")}`,
         borderRadius: 12, padding: 12,
+        opacity: blocked && !owned ? 0.7 : 1,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ fontSize: 32, lineHeight: 1 }}>{it.emoji}</div>
@@ -176,6 +226,49 @@ export default function PremiumPanel() {
               {owned && <span style={{ marginLeft: 6, color: "#10b981", fontSize: 11 }}>✓ besitzt du</span>}
             </div>
             <div style={{ fontSize: 11, color: "var(--vv-muted,#666)" }}>{it.description}</div>
+
+            {/* Anti-Inflation-Hinweise (Stock, Saison, Tageslimit) */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+              {av.stockTotal && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  background: soldOut ? "#fee2e2" : "#fef3c7",
+                  color:      soldOut ? "#991b1b" : "#92400e",
+                  padding: "2px 6px", borderRadius: 999,
+                }}>
+                  {soldOut ? "AUSVERKAUFT" : `Nur ${av.stockRemaining}/${av.stockTotal} übrig`}
+                </span>
+              )}
+              {it.seasonFrom && it.seasonTo && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  background: outOfSeason ? "#e0e7ff" : "#dcfce7",
+                  color:      outOfSeason ? "#3730a3" : "#166534",
+                  padding: "2px 6px", borderRadius: 999,
+                }}>
+                  {outOfSeason ? `Saison: ${it.seasonFrom}..${it.seasonTo}` : `🎉 Saison läuft (${it.seasonTo})`}
+                </span>
+              )}
+              {av.dailyMax && !owned && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  background: dailyHit ? "#fee2e2" : "#f1f5f9",
+                  color:      dailyHit ? "#991b1b" : "#475569",
+                  padding: "2px 6px", borderRadius: 999,
+                }}>
+                  Heute {av.todaysPurchases}/{av.dailyMax}
+                </span>
+              )}
+              {it.expiresAfterDays && !owned && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  background: "#fef3c7", color: "#92400e",
+                  padding: "2px 6px", borderRadius: 999,
+                }}>
+                  ⏳ verfällt nach {it.expiresAfterDays} Tagen
+                </span>
+              )}
+            </div>
           </div>
           <div style={{
             background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
@@ -199,7 +292,15 @@ export default function PremiumPanel() {
 
         {!owned && (
           <div style={{ marginTop: 8 }}>
-            {!isConfirming ? (
+            {blocked ? (
+              <button type="button" disabled
+                className="vv-btn-big vv-btn-big-ghost"
+                style={{ width: "100%", padding: "10px 12px", fontSize: 13 }}>
+                {soldOut ? "🚫 Ausverkauft"
+                  : outOfSeason ? `📅 Erst wieder ab ${it.seasonFrom}`
+                  : `🛑 Tageslimit (${av.dailyMax}×) erreicht`}
+              </button>
+            ) : !isConfirming ? (
               <button type="button" disabled={!canAfford || busy === it.kind}
                 onClick={() => setConfirming(it.kind)}
                 className={canAfford ? "vv-btn-big vv-btn-big-violet" : "vv-btn-big vv-btn-big-ghost"}

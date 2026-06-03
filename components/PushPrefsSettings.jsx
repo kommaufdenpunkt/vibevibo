@@ -1,9 +1,11 @@
 "use client";
 
-// Pro-Typ-Toggle für Push-Benachrichtigungen. Settings sind sofort gespeichert.
+// Pro-Typ-Toggle für Push-Benachrichtigungen + Sound + Presence (Online-Status).
+// Settings sind sofort gespeichert.
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useMe } from "@/lib/useMe";
 
 const TYPES = [
   { id: "message",      emoji: "💬", label: "Chat-Nachrichten",     desc: "Wenn dir jemand schreibt" },
@@ -15,14 +17,48 @@ const TYPES = [
   { id: "mod",          emoji: "🛡", label: "Mod- / Cohost-Status",  desc: "Wenn du zum Mod / Cohost gemacht wirst" },
 ];
 
+const SOUNDS = [
+  { v: "icq",    label: 'ICQ „Oh-Oh"' },
+  { v: "msn",    label: 'MSN „Pling"' },
+  { v: "aim",    label: "AIM Tür" },
+  { v: "silent", label: "Stille" },
+];
+
+const PRESENCES = [
+  { v: "online",    label: "🟢 Online" },
+  { v: "away",      label: "🟡 Abwesend" },
+  { v: "busy",      label: "🔴 Beschäftigt" },
+  { v: "invisible", label: "⚪ Unsichtbar" },
+];
+
 export default function PushPrefsSettings() {
+  const { me, refresh } = useMe();
   const [prefs, setPrefs] = useState(null);
   const [flash, setFlash] = useState("");
+  const [sound, setSound] = useState(null);
+  const [presence, setPresence] = useState(null);
 
   const load = useCallback(() => {
     api.pushPrefs().then((r) => setPrefs(r.prefs)).catch(() => {});
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!me) return;
+    setSound(me.soundPack || "icq");
+    setPresence(me.presence || "online");
+  }, [me]);
+
+  async function setSoundPack(v) {
+    setSound(v);
+    try { await api.updateMyPrefs({ soundPack: v }); await refresh?.(); }
+    catch (e) { setFlash(`⚠ ${e.message}`); setTimeout(() => setFlash(""), 3000); }
+  }
+  async function setPresenceVal(v) {
+    setPresence(v);
+    try { await api.updateMyPrefs({ presence: v }); await refresh?.(); }
+    catch (e) { setFlash(`⚠ ${e.message}`); setTimeout(() => setFlash(""), 3000); }
+  }
 
   async function toggle(id) {
     if (!prefs) return;
@@ -49,6 +85,60 @@ export default function PushPrefsSettings() {
           borderRadius: 8, fontWeight: 700, fontSize: 12, marginBottom: 8,
         }}>{flash}</div>
       )}
+
+      {/* Status (Online/Abwesend/Beschäftigt/Unsichtbar) */}
+      {presence && (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Mein Status</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 6, marginBottom: 10 }}>
+            {PRESENCES.map((o) => (
+              <label key={o.v} style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "8px 10px",
+                border: `1px solid ${presence === o.v ? "#ec4899" : "var(--vv-border,#ddd)"}`,
+                borderRadius: 10,
+                background: presence === o.v ? "#fff5fb" : "var(--vv-card,#fff)",
+                color: "var(--vv-text,#1c1c1e)",
+                cursor: "pointer", fontSize: 13,
+              }}>
+                <input type="radio" name="vv-presence" value={o.v}
+                  checked={presence === o.v} onChange={() => setPresenceVal(o.v)} />
+                {o.label}
+              </label>
+            ))}
+          </div>
+          <div className="vv-muted" style={{ fontSize: 11, marginBottom: 12 }}>
+            Mit „Unsichtbar" siehst du für andere wie offline aus — kannst aber selber sehen, wer online ist.
+          </div>
+        </>
+      )}
+
+      {/* Benachrichtigungs-Sound */}
+      {sound && (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>🔊 Benachrichtigungs-Sound</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 6, marginBottom: 10 }}>
+            {SOUNDS.map((o) => (
+              <label key={o.v} style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "8px 10px",
+                border: `1px solid ${sound === o.v ? "#ec4899" : "var(--vv-border,#ddd)"}`,
+                borderRadius: 10,
+                background: sound === o.v ? "#fff5fb" : "var(--vv-card,#fff)",
+                color: "var(--vv-text,#1c1c1e)",
+                cursor: "pointer", fontSize: 13,
+              }}>
+                <input type="radio" name="vv-sound" value={o.v}
+                  checked={sound === o.v} onChange={() => setSoundPack(o.v)} />
+                {o.label}
+              </label>
+            ))}
+          </div>
+          <div className="vv-muted" style={{ fontSize: 11, marginBottom: 12 }}>
+            Gruppen-Nachrichten kommen immer im MSN-Pling — außer du wählst „Stille".
+          </div>
+        </>
+      )}
+
+      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Welche Push-Typen?</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {TYPES.map((t) => {
           const on = prefs[t.id] !== false;

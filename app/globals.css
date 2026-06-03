@@ -3227,3 +3227,125 @@ input[type="number"], input[type="tel"], textarea, select {
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* ============================================================
+   Premium Name-Color: Sparkle-FX (animierter Glanz hinter Namen)
+   ============================================================ */
+@keyframes vv-name-sparkle {
+  0%   { background-position: 0% 50%; filter: drop-shadow(0 0 0 rgba(253,224,138,0)); }
+  50%  { background-position: 100% 50%; filter: drop-shadow(0 0 4px rgba(253,224,138,0.9)); }
+  100% { background-position: 200% 50%; filter: drop-shadow(0 0 0 rgba(253,224,138,0)); }
+}
+.vv-name-sparkle {
+  background-size: 200% 100%;
+  animation: vv-name-sparkle 2.6s ease-in-out infinite;
+}
+
+/* ============================================================
+   Premium Profil-Skins (MySpace-Style) — auf vv-profile-shell aktiv,
+   damit nur das eigene Profil bedeckt wird, nicht der Rest der App.
+   Wird via data-skin="<key>" auf dem äußeren Container gesetzt.
+   ============================================================ */
+.vv-profile-shell[data-skin] {
+  --vv-skin-bg: transparent;
+  --vv-skin-overlay: transparent;
+  position: relative;
+  border-radius: 14px;
+  padding: 8px;
+  background: var(--vv-skin-bg);
+}
+.vv-profile-shell[data-skin]::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: 14px;
+  background: var(--vv-skin-overlay);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+}
+.vv-profile-shell[data-skin] > * { position: relative; z-index: 1; }
+
+/* Y2K-Lila */
+.vv-profile-shell[data-skin="y2k"] {
+  --vv-skin-bg: linear-gradient(135deg, #6d28d9 0%, #a855f7 50%, #ec4899 100%);
+  --vv-skin-overlay:
+    radial-gradient(2px 2px at 20% 30%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 70% 60%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 40% 80%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 85% 15%, #fff 50%, transparent 51%);
+}
+
+/* Glitzer-Wolke (Pastell) */
+.vv-profile-shell[data-skin="glitter"] {
+  --vv-skin-bg: linear-gradient(180deg, #fce7f3 0%, #ddd6fe 100%);
+  --vv-skin-overlay:
+    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.7), transparent 40%),
+    radial-gradient(circle at 75% 75%, rgba(255,255,255,0.6), transparent 35%);
+}
+
+/* Skater-Park */
+.vv-profile-shell[data-skin="skater"] {
+  --vv-skin-bg: linear-gradient(180deg, #1f2937 0%, #374151 100%);
+  --vv-skin-overlay:
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 6px, transparent 6px 14px);
+}
+
+/* Anime-Sakura */
+.vv-profile-shell[data-skin="anime"] {
+  --vv-skin-bg: linear-gradient(160deg, #ffe4ec 0%, #fbcfe8 60%, #fce7f3 100%);
+  --vv-skin-overlay:
+    radial-gradient(6px 8px at 20% 25%, #f9a8d4 60%, transparent 61%),
+    radial-gradient(5px 7px at 80% 15%, #f472b6 60%, transparent 61%),
+    radial-gradient(6px 8px at 60% 80%, #f9a8d4 60%, transparent 61%),
+    radial-gradient(5px 6px at 30% 70%, #fbcfe8 60%, transparent 61%);
+}
+
+/* Hacker-Matrix */
+.vv-profile-shell[data-skin="matrix"] {
+  --vv-skin-bg: #050a05;
+  --vv-skin-overlay:
+    repeating-linear-gradient(180deg, rgba(34,197,94,0.18) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at 50% 50%, rgba(34,197,94,0.15), transparent 60%);
+}
+.vv-profile-shell[data-skin="matrix"] { color: #c6f6c6; }
+
+/* Sailor-Moon */
+.vv-profile-shell[data-skin="sailor"] {
+  --vv-skin-bg: linear-gradient(135deg, #0f0f3d 0%, #6d28d9 50%, #db2777 100%);
+  --vv-skin-overlay:
+    radial-gradient(circle at 80% 20%, #fde68a 0 4px, transparent 5px),
+    radial-gradient(1.5px 1.5px at 30% 30%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 20% 70%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 65% 85%, #fff 50%, transparent 51%);
+}
+
+/* Pride-Parade — saisonal */
+.vv-profile-shell[data-skin="pride"] {
+  --vv-skin-bg: linear-gradient(180deg,
+    #e40303 0%, #e40303 14.2%,
+    #ff8c00 14.2%, #ff8c00 28.5%,
+    #ffed00 28.5%, #ffed00 42.8%,
+    #008026 42.8%, #008026 57.1%,
+    #004dff 57.1%, #004dff 71.4%,
+    #750787 71.4%, #750787 100%);
+  --vv-skin-overlay:
+    radial-gradient(2px 2px at 20% 30%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 70% 60%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 40% 80%, #fff 50%, transparent 51%);
+}
+
+/* Auswahl-Kachel im /profile/edit Look-Picker */
+.vv-skin-tile {
+  width: 100%; min-height: 64px; border-radius: 10px;
+  border: 2px solid var(--vv-border, #ddd);
+  cursor: pointer; padding: 6px; font-size: 11px; font-weight: 700;
+  color: #1c1c1e;
+  display: flex; align-items: flex-end; justify-content: center;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+.vv-skin-tile[data-active="true"] { border-color: #ec4899; box-shadow: 0 0 0 2px rgba(236,72,153,0.25); }
+.vv-skin-tile[data-locked="true"] { opacity: 0.5; cursor: not-allowed; }
+.vv-skin-tile-preview {
+  display: block; height: 36px; border-radius: 6px; margin-bottom: 4px;
+}
+

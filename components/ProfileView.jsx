@@ -129,6 +129,10 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
 
   return (
     <ProfileSkin css={profile.customCss}>
+      <div
+        className="vv-profile-shell"
+        {...(profile.profileSkin ? { "data-skin": profile.profileSkin } : {})}
+      >
       {(profile.bgMusic || profile.bgMusicUrl) && (
         <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} />
       )}
@@ -181,7 +185,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
           {/* Identitaet */}
           <div style={{ flex: "1 1 240px", paddingTop: 12, minWidth: 0 }}>
             <h2 style={{ margin: 0, lineHeight: 1.2, fontSize: 22, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} fallbackColor="#222" size="1em" />
+              <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} fallbackColor="#222" size="1em" />
               <PremiumBadges badges={profile.premiumBadges} size={20} />
             </h2>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
@@ -283,7 +287,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         <OnlineName lastSeen={v.lastSeen}>
-                          <ColoredName gender={v.gender} age={v.age} name={v.displayName} fallbackColor="#e8e8f0" />
+                          <ColoredName gender={v.gender} age={v.age} name={v.displayName} nameColor={v.nameColor} fallbackColor="#e8e8f0" />
                         </OnlineName>
                         <ActivityBars lastSeen={v.lastSeen} size="sm" />
                       </span>
@@ -299,6 +303,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
       </div>
 
       {toast && <div className="vv-toast">{toast}</div>}
+      </div>
     </ProfileSkin>
   );
 }

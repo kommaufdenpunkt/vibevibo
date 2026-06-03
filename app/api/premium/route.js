@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { PREMIUM_ITEMS } from "@/lib/premium";
-import { listPremiumBadges, getUserPicSlots, getCredits } from "@/lib/db";
+import {
+  listPremiumBadges,
+  getUserPicSlots,
+  getCredits,
+  getShopAvailability,
+  getShopSinkTotal,
+  getBuschfunkBoostStatus,
+} from "@/lib/db";
 
 export async function GET() {
   const me = await getSessionUser();
@@ -13,6 +20,11 @@ export async function GET() {
     owned: {
       picSlots: getUserPicSlots(me.id),
       badges: listPremiumBadges(me.id),
+      buschfunkBoosts: getBuschfunkBoostStatus(me.id),
     },
+    // Anti-Inflation: pro Item Stock-Rest, Tages-Käufe, Saison-Status.
+    availability: getShopAvailability(me.id),
+    // Globaler Sink (alle bisher verbrannten Vibes durch Shop-Käufe).
+    sinkTotal: getShopSinkTotal(),
   });
 }

@@ -9,6 +9,7 @@ import GenderAge from "@/components/GenderAge";
 import TwoFactorSetup from "@/components/TwoFactorSetup";
 import LocationSettings from "@/components/LocationSettings";
 import PushPrefsSettings from "@/components/PushPrefsSettings";
+import LookSettings from "@/components/LookSettings";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -20,14 +21,10 @@ export default function EditProfilePage() {
     if (loading) return;
     if (!me) { router.push("/login"); return; }
     setForm({
-      displayName: me.displayName || "",
-      mood: me.mood || "",
       aboutMe: me.aboutMe || "",
       interests: (me.interests || []).join(", "),
       bgMusic: me.bgMusic || "",
       bgMusicUrl: me.bgMusicUrl || "",
-      soundPack: me.soundPack || "icq",
-      presence: me.presence || "online",
     });
   }, [me, loading, router]);
 
@@ -42,14 +39,14 @@ export default function EditProfilePage() {
     setBusy(true);
     try {
       await api.updateMe(me.username, {
-        displayName: form.displayName.trim() || me.username,
-        mood: form.mood.trim(),
+        // displayName + mood sind read-only hier:
+        //   displayName → nur über /shop (Vibes)
+        //   mood        → nur über /profile/status (vordef. gratis, custom = Vibes)
         aboutMe: form.aboutMe,
         interests: form.interests.split(",").map((s) => s.trim()).filter(Boolean),
         bgMusic: form.bgMusic.trim(),
         bgMusicUrl: form.bgMusicUrl.trim(),
       });
-      await api.updateMyPrefs({ soundPack: form.soundPack, presence: form.presence });
       await refresh();
       router.push("/profile");
       router.refresh();
@@ -62,6 +59,7 @@ export default function EditProfilePage() {
 
   return (
     <div>
+      {/* ── Kopf ── */}
       <div className="vv-card">
         <div className="vv-row" style={{ alignItems: "center", gap: 12 }}>
           <div className="vv-avatar vv-avatar-sm" style={me.avatarUrl ? { overflow: "hidden" } : undefined}>
@@ -77,31 +75,72 @@ export default function EditProfilePage() {
         </div>
       </div>
 
-      <form onSubmit={submit}>
-        <div className="vv-card">
-          <h3>👤 Steckbrief</h3>
+      {/* ── Schnell-Aktionen (Direktlinks) ── */}
+      <div className="vv-card">
+        <h3 style={{ margin: "0 0 6px" }}>⚡ Schnell-Aktionen</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px,1fr))", gap: 8 }}>
+          <Link href="/profile"  className="vv-btn" style={{ textAlign: "center" }}>📷 Profilbilder</Link>
+          <Link href="/freunde"  className="vv-btn" style={{ textAlign: "center" }}>👥 Top-5 / Freunde</Link>
+          <Link href="/shop"     className="vv-btn vv-btn-pink" style={{ textAlign: "center" }}>✨ Shop</Link>
+          <Link href="/vibo"     className="vv-btn" style={{ textAlign: "center" }}>🥚 VIBO</Link>
+        </div>
+      </div>
 
-          <label><strong>Anzeigename</strong></label>
-          <input className="vv-input" value={form.displayName} maxLength={100} onChange={(e) => up("displayName", e.target.value)} />
+      <form onSubmit={submit}>
+        {/* 1) Identität — read-only, Vibes-pflichtig */}
+        <div className="vv-card">
+          <h3>① 👤 Steckbrief</h3>
+
+          <label><strong>Anzeigename</strong> <span className="vv-muted" style={{ fontWeight: "normal", fontSize: 12 }}>🔒 nur im Shop änderbar</span></label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input className="vv-input" value={me.displayName || ""} readOnly disabled
+              style={{ flex: 1, background: "var(--vv-surface,#f5f5f7)", cursor: "not-allowed", color: "var(--vv-muted,#666)" }} />
+            <Link href="/shop" className="vv-btn vv-btn-pink" style={{ fontSize: 12, padding: "6px 10px", whiteSpace: "nowrap" }}>
+              ✨ Ändern
+            </Link>
+          </div>
+
+          <label className="vv-mt-12"><strong>@username</strong> <span className="vv-muted" style={{ fontWeight: "normal", fontSize: 12 }}>🔒 nur im Shop änderbar</span></label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input className="vv-input" value={`@${me.username}`} readOnly disabled
+              style={{ flex: 1, background: "var(--vv-surface,#f5f5f7)", cursor: "not-allowed", color: "var(--vv-muted,#666)" }} />
+            <Link href="/shop" className="vv-btn vv-btn-pink" style={{ fontSize: 12, padding: "6px 10px", whiteSpace: "nowrap" }}>
+              ✨ Ändern
+            </Link>
+          </div>
+          <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>
+            Anzeigename: <b>100 ✨</b> · @username: <b>500 ✨</b> (max 1×/Jahr) oder <b>1500 ✨</b> sofort.
+          </div>
 
           <label className="vv-mt-12"><strong>Geschlecht &amp; Alter</strong></label>
           <div className="vv-row" style={{ alignItems: "center", gap: 8 }}>
             <GenderAge gender={me.gender} age={me.age} size="1em" />
             <span className="vv-muted" style={{ fontSize: 12 }}>
-              🔒 Geschlecht &amp; Alter sind nach der Anmeldung fest – nur das Team kann sie ändern.
+              🔒 Nach Anmeldung fest — nur das Team kann sie ändern.
             </span>
           </div>
 
           <div className="vv-muted vv-mt-12" style={{ fontSize: 12 }}>
-            📷 <strong>Profilbilder</strong> verwaltest du direkt auf deinem <Link href="/profile">Profil</Link> – mehrere Bilder hochladen, Hauptbild wählen, Fidolin prüft sie.
+            📷 <strong>Profilbilder</strong> verwaltest du direkt auf deinem <Link href="/profile">Profil</Link>.
           </div>
         </div>
 
+        {/* 2) Über dich */}
         <div className="vv-card">
-          <h3>💬 Über dich</h3>
+          <h3>② 💬 Über dich</h3>
 
-          <label><strong>Stimmung / Mood</strong></label>
-          <input className="vv-input" placeholder="z.B. verliebt 💘, chillig, zocken, ..." value={form.mood} maxLength={120} onChange={(e) => up("mood", e.target.value)} />
+          <label><strong>Status</strong> <span className="vv-muted" style={{ fontWeight: "normal", fontSize: 12 }}>(eigene Seite — gratis Auswahl oder Custom für 50 ✨)</span></label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
+            <div className="vv-input" style={{
+              flex: 1, background: "var(--vv-surface,#f5f5f7)", color: "var(--vv-text,#1c1c1e)",
+              cursor: "default", display: "flex", alignItems: "center", minHeight: 36,
+            }}>
+              {me.mood ? me.mood : <span className="vv-muted">— kein Status gesetzt —</span>}
+            </div>
+            <Link href="/profile/status" className="vv-btn vv-btn-pink" style={{ fontSize: 12, padding: "6px 10px", whiteSpace: "nowrap" }}>
+              💬 Status ändern
+            </Link>
+          </div>
 
           <label className="vv-mt-12"><strong>Über mich</strong></label>
           <textarea className="vv-textarea" rows={5} placeholder="Erzähl was über dich – wie früher im Steckbrief!" value={form.aboutMe} onChange={(e) => up("aboutMe", e.target.value)} />
@@ -117,8 +156,9 @@ export default function EditProfilePage() {
           )}
         </div>
 
+        {/* 3) Profilmusik */}
         <div className="vv-card">
-          <h3>🎵 Profilmusik <span className="vv-muted" style={{ fontSize: 12, fontWeight: "normal" }}>(wie früher bei MySpace)</span></h3>
+          <h3>③ 🎵 Profilmusik <span className="vv-muted" style={{ fontSize: 12, fontWeight: "normal" }}>(wie früher bei MySpace)</span></h3>
 
           <label><strong>Songtitel</strong> <span className="vv-muted">(zum Anzeigen)</span></label>
           <input className="vv-input" placeholder="z.B. Tokio Hotel - Durch den Monsun" value={form.bgMusic} maxLength={200} onChange={(e) => up("bgMusic", e.target.value)} />
@@ -126,60 +166,37 @@ export default function EditProfilePage() {
           <label className="vv-mt-12"><strong>▶ YouTube-Link</strong> <span className="vv-muted">(optional – damit der Song wirklich spielt)</span></label>
           <input className="vv-input" placeholder="https://www.youtube.com/watch?v=..." value={form.bgMusicUrl} onChange={(e) => up("bgMusicUrl", e.target.value)} />
           <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>
-            💡 Kopier den Link eines YouTube-Videos rein. Besucher deines Profils sehen einen Play-Button und können deinen Song hören.
+            💡 Besucher deines Profils sehen einen Play-Button und können deinen Song hören.
           </div>
         </div>
 
-        <div className="vv-card">
-          <h3>🔔 Sounds &amp; Status</h3>
-
-          <label><strong>Benachrichtigungs-Sound</strong></label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8, marginTop: 6 }}>
-            {[
-              { v: "icq", label: "ICQ „Oh-Oh“" },
-              { v: "msn", label: "MSN „Pling“" },
-              { v: "aim", label: "AIM Tür" },
-              { v: "silent", label: "Stille" },
-            ].map((o) => (
-              <label key={o.v} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${form.soundPack === o.v ? "#ff3e9d" : "#ddd"}`, borderRadius: 10, background: form.soundPack === o.v ? "#fff5fb" : "#fff", cursor: "pointer", fontSize: 13 }}>
-                <input type="radio" name="soundPack" value={o.v} checked={form.soundPack === o.v} onChange={() => up("soundPack", o.v)} />
-                {o.label}
-              </label>
-            ))}
-          </div>
-          <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>Gruppen-Nachrichten kommen immer im MSN-Pling, egal welcher Pack — außer du wählst „Stille".</div>
-
-          <label className="vv-mt-12"><strong>MSN-Status</strong></label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8, marginTop: 6 }}>
-            {[
-              { v: "online",    label: "🟢 Online" },
-              { v: "away",      label: "🟡 Abwesend" },
-              { v: "busy",      label: "🔴 Beschäftigt" },
-              { v: "invisible", label: "⚪ Unsichtbar" },
-            ].map((o) => (
-              <label key={o.v} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${form.presence === o.v ? "#ff3e9d" : "#ddd"}`, borderRadius: 10, background: form.presence === o.v ? "#fff5fb" : "#fff", cursor: "pointer", fontSize: 13 }}>
-                <input type="radio" name="presence" value={o.v} checked={form.presence === o.v} onChange={() => up("presence", o.v)} />
-                {o.label}
-              </label>
-            ))}
-          </div>
-          <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>
-            Dein Status-Text („chillen", „lernen", „im Bett"…) färbt den Avatar-Ring automatisch ein.
-            Mit „Unsichtbar" siehst du für andere wie offline aus, kannst aber selber sehen, wer online ist.
-          </div>
-        </div>
-
-        <LocationSettings />
-        <PushPrefsSettings />
-
-        <TwoFactorSetup has2fa={!!me?.has2fa} onChanged={refresh} />
-
-        <div className="vv-card vv-row" style={{ position: "sticky", bottom: 8, alignItems: "center" }}>
+        {/* Speichern-Bar nach den Text-Karten, damit man die Schreib-Felder direkt sichert */}
+        <div className="vv-card vv-row" style={{ alignItems: "center" }}>
           <Link href="/profile" className="vv-btn">↩ Abbrechen</Link>
           <div className="vv-spacer" />
-          <button type="submit" className="vv-btn vv-btn-pink" disabled={busy}>{busy ? "Speichert…" : "💾 Speichern"}</button>
+          <button type="submit" className="vv-btn vv-btn-pink" disabled={busy}>{busy ? "Speichert…" : "💾 Text speichern"}</button>
         </div>
       </form>
+
+      {/* Die folgenden Karten sind self-saving (sofort übernommen, kein Submit nötig). */}
+
+      {/* 4) Look */}
+      <div style={{ height: 4 }} />
+      <LookSettings />
+
+      {/* 5) Standort */}
+      <LocationSettings />
+
+      {/* 6) Status & Push */}
+      <PushPrefsSettings />
+
+      {/* 7) Sicherheit */}
+      <TwoFactorSetup has2fa={!!me?.has2fa} onChanged={refresh} />
+
+      {/* Footer-Hinweis */}
+      <div className="vv-card" style={{ textAlign: "center" }}>
+        <Link href="/profile" className="vv-btn">↩ Zurück zum Profil</Link>
+      </div>
     </div>
   );
 }

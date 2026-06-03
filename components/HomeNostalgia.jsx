@@ -60,7 +60,7 @@ export function TodaysBirthdays() {
               <span style={{ fontSize: 18 }}>🎈</span>
             )}
             <OnlineName lastSeen={u.lastSeen}>
-              <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+              <ColoredName gender={u.gender} age={u.age} name={u.displayName} nameColor={u.nameColor} />
             </OnlineName>
           </Link>
         ))}

@@ -82,21 +82,74 @@ function homeIcon(L) {
   });
 }
 
-function merchantIcon(L, emoji, inRange) {
+function merchantIcon(L, emoji, name, inRange) {
   const border = inRange ? "#22c55e" : "#f59e0b";
+  const ring   = inRange ? "0 0 0 6px rgba(34,197,94,0.25)" : "0 0 0 4px rgba(245,158,11,0.18)";
+  const safeName = String(name || "").replace(/[<>&"]/g, (c) => ({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c]));
   return L.divIcon({
     className: "vv-merchant-icon",
-    html: `<div style="
-      width:46px;height:46px;border-radius:50%;
-      background:#fff;border:3px solid ${border};
-      box-shadow:0 4px 14px rgba(0,0,0,0.35);
-      display:flex;align-items:center;justify-content:center;font-size:24px;
-      ${inRange ? "animation:vv-pop 1.6s ease-in-out infinite;" : ""}
-    ">${emoji}</div>
-    <style>@keyframes vv-pop {0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}</style>`,
-    iconSize: [46, 46],
-    iconAnchor: [23, 23],
+    html: `
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center;pointer-events:none;">
+        <div style="
+          width:52px;height:52px;border-radius:50%;
+          background:#fff;border:3px solid ${border};
+          box-shadow:${ring}, 0 5px 16px rgba(0,0,0,0.35);
+          display:flex;align-items:center;justify-content:center;font-size:26px;
+          ${inRange ? "animation:vv-pop 1.6s ease-in-out infinite;" : ""}
+          pointer-events:auto;
+        ">${emoji}</div>
+        <div style="
+          margin-top:4px; padding:3px 8px;
+          background:${inRange ? "linear-gradient(135deg,#22c55e,#16a34a)" : "rgba(255,255,255,0.95)"};
+          color:${inRange ? "#fff" : "#1c1c1e"};
+          font-family:Arial,sans-serif; font-size:11px; font-weight:800;
+          border-radius:999px; border:1px solid ${border};
+          box-shadow:0 2px 6px rgba(0,0,0,0.25);
+          white-space:nowrap; line-height:1;
+          pointer-events:auto;
+        ">🏪 ${safeName}</div>
+      </div>
+      <style>@keyframes vv-pop {0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}</style>`,
+    iconSize: [120, 76],
+    iconAnchor: [60, 26],
   });
+}
+
+// Inhalts-HTML für das Leaflet-Popup eines Verkäufers (Basar).
+function merchantPopupHtml(m, sellRadiusM) {
+  const safe = (s) => String(s || "").replace(/[<>&"]/g, (c) => ({ "<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;" }[c]));
+  const dist = m.distanceM != null ? `${m.distanceM} m` : "unbekannt";
+  const inR  = m.inRange;
+  const slot = m.slotLabel ? ` · 📅 ${safe(m.slotLabel)}` : "";
+  const mult = m.mult ? `<span style="opacity:0.85">×${Number(m.mult).toFixed(2)} Preis-Multiplikator</span>` : "";
+  const status = inR
+    ? `<span style="color:#16a34a;font-weight:800">✅ in Reichweite</span>`
+    : `<span style="color:#b45309;font-weight:800">📍 ${Math.max(0, (m.distanceM ?? 0) - (sellRadiusM || 30))} m noch laufen</span>`;
+  return `
+    <div style="font-family:Arial,sans-serif;min-width:200px;max-width:260px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div style="font-size:28px">${safe(m.emoji)}</div>
+        <div style="font-weight:800;font-size:15px;color:#1c1c1e">${safe(m.name)}</div>
+      </div>
+      <div style="font-size:12px;color:#4b5563;font-style:italic;margin-bottom:6px">
+        „${safe(m.blurb || "Händler im VIBO-Basar.")}"
+      </div>
+      <div style="font-size:12px;color:#1c1c1e;margin-bottom:8px;line-height:1.5">
+        ${status}<br>
+        ${dist} entfernt${slot}<br>
+        ${mult}
+      </div>
+      <button type="button" data-vv-merchant="${safe(m.id)}" ${inR ? "" : "disabled"}
+        style="
+          width:100%;padding:9px 12px;border:none;border-radius:10px;
+          background:${inR ? "linear-gradient(135deg,#ec4899,#be185d)" : "#e5e5e7"};
+          color:${inR ? "#fff" : "#9ca3af"};
+          font-weight:800;font-size:13px;cursor:${inR ? "pointer" : "not-allowed"};
+          font-family:inherit;
+        ">
+        🛒 ${inR ? "Verkaufen" : "Erst näher rangehen"}
+      </button>
+    </div>`;
 }
 
 function poiIcon(L, emoji, color, inRange, cooldownLeftMs) {
@@ -179,10 +232,25 @@ export default function WorldMap({ onPickup }) {
       const L = window.L;
       const map = L.map(containerRef.current, { zoomControl: true })
         .setView([pos.lat, pos.lng], 17);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      // Primaerer Tile-Layer: OpenStreetMap (Standard).
+      // Fallback: CartoDB Voyager wenn Tiles 4xx/5xx liefern (z.B. wenn OSM
+      // den User-Agent rate-limited oder die Region blockiert).
+      const primary = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+        maxZoom: 19, crossOrigin: true,
+        errorTileUrl: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Crect width='256' height='256' fill='%23f5f5f7'/%3E%3C/svg%3E",
+      });
+      let fallbackAttached = false;
+      primary.on("tileerror", () => {
+        if (fallbackAttached) return;
+        fallbackAttached = true;
+        // CartoDB Voyager — free tier, sehr stabil
+        L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png", {
+          attribution: '© OpenStreetMap, © CARTO',
+          subdomains: "abcd", maxZoom: 19,
+        }).addTo(map);
+      });
+      primary.addTo(map);
       meMarkerRef.current = L.marker([pos.lat, pos.lng], { icon: meIcon(L) }).addTo(map);
       radiusCircleRef.current = L.circle([pos.lat, pos.lng], {
         radius: 30, color: "#3b82f6", weight: 1, fillOpacity: 0.08,
@@ -238,17 +306,21 @@ export default function WorldMap({ onPickup }) {
         icon: homeIcon(L), zIndexOffset: -500,
       }).addTo(mapRef.current).bindTooltip("Dein Zuhause-Anker");
     }
+    const sellR = market.sellRadiusM || 30;
     for (const m of (market.week || [])) {
-      const marker = L.marker([m.lat, m.lng], { icon: merchantIcon(L, m.emoji, m.inRange) });
-      const distLbl = m.distanceM != null ? `${m.distanceM} m entfernt` : "";
-      marker.bindTooltip(`${m.emoji} ${m.name}${distLbl ? " · " + distLbl : ""}`);
-      marker.on("click", () => {
-        if (m.inRange) {
-          // Direkt Basar öffnen — Verkaufen-Knopf für genau diesen Händler
-          setMarketSheetOpen(true);
-        } else {
-          setFlash(`${m.emoji} ${m.name} · noch ${Math.max(0, (m.distanceM ?? 0) - (market.sellRadiusM || 30))} m`);
-          setTimeout(() => setFlash(""), 3500);
+      const marker = L.marker([m.lat, m.lng], { icon: merchantIcon(L, m.emoji, m.name, m.inRange) });
+      marker.bindPopup(merchantPopupHtml(m, sellR), {
+        maxWidth: 280, autoClose: true, closeButton: true, className: "vv-merchant-popup",
+      });
+      marker.on("popupopen", (e) => {
+        // Verkaufen-Button im Popup an React-State binden
+        const root = e.popup.getElement();
+        const btn = root?.querySelector?.(`button[data-vv-merchant="${m.id}"]`);
+        if (btn && m.inRange) {
+          btn.addEventListener("click", () => {
+            marker.closePopup();
+            setMarketSheetOpen(true);
+          }, { once: true });
         }
       });
       merchantsLayerRef.current.addLayer(marker);
@@ -604,7 +676,7 @@ export default function WorldMap({ onPickup }) {
         komm bis auf <strong>30 m</strong> heran und tippe zum Einsammeln.
       </div>
 
-      {/* 🎮 Action-Bar unten — Animal Crossing-Style mit 4 großen Buttons + Labels */}
+      {/* 🎮 Action-Bar unten — kompakte Icon-Only Buttons mit smarten Badges */}
       <div style={{
         position: "absolute", left: 8, right: 8, bottom: 8, zIndex: 1000,
         display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6,
@@ -613,15 +685,28 @@ export default function WorldMap({ onPickup }) {
         boxShadow: "0 -4px 18px rgba(0,0,0,0.18)",
         backdropFilter: "blur(8px)",
       }}>
-        <ActionBtn emoji="🏪" label="Basar" color="#15803d"
-          badge={market?.week?.some((m) => m.inRange) ? "in Reichweite" : null}
+        <ActionBtn emoji="🏪" title="Basar" color="#15803d"
+          badge={(() => {
+            const n = (market?.week || []).filter((m) => m.inRange).length;
+            return n > 0 ? n : null;
+          })()}
+          badgeColor="#16a34a"
           onClick={() => setMarketSheetOpen(true)} />
-        <ActionBtn emoji="🎒" label="Rucksack" color="#b45309"
+        <ActionBtn emoji="🎒" title="Rucksack" color="#b45309"
+          badge={(() => {
+            const n = market?.items?.length || 0;
+            return n > 0 ? n : null;
+          })()}
+          badgeColor="#b45309"
           onClick={() => setInvSheetOpen(true)} />
-        <ActionBtn emoji="💊" label="Pflege" color="#be185d"
-          badge={poiData?.pois?.some((p) => p.inRange && p.cooldownLeftMs === 0) ? "in Reichweite" : null}
+        <ActionBtn emoji="💊" title="Pflege" color="#be185d"
+          badge={(() => {
+            const n = (poiData?.pois || []).filter((p) => p.inRange && p.cooldownLeftMs === 0).length;
+            return n > 0 ? n : null;
+          })()}
+          badgeColor="#be185d"
           onClick={() => setPoiSheetOpen(true)} />
-        <ActionBtn emoji="🎣" label="Angeln" color="#0369a1"
+        <ActionBtn emoji="🎣" title="Angeln" color="#0369a1"
           disabled={fishing} onClick={goFishing} />
       </div>
 
@@ -756,26 +841,30 @@ export default function WorldMap({ onPickup }) {
   );
 }
 
-function ActionBtn({ emoji, label, color, badge, disabled, onClick }) {
+function ActionBtn({ emoji, title, color, badge, badgeColor, disabled, onClick }) {
   return (
-    <button type="button" disabled={disabled} onClick={onClick}
+    <button type="button" disabled={disabled} onClick={onClick} title={title}
+      aria-label={title}
       style={{
         position: "relative",
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        padding: "8px 4px", borderRadius: 12, border: "none",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "10px 4px", borderRadius: 12, border: "none",
         background: `linear-gradient(135deg, ${color}22, ${color}11)`,
         color: "#1c1c1e", fontFamily: "inherit", cursor: "pointer",
-        opacity: disabled ? 0.6 : 1,
+        opacity: disabled ? 0.6 : 1, minHeight: 52,
       }}>
-      <span style={{ fontSize: 24, lineHeight: 1 }}>{emoji}</span>
-      <span style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color }}>{label}</span>
-      {badge && (
+      <span style={{ fontSize: 28, lineHeight: 1 }}>{emoji}</span>
+      {badge != null && (
         <span style={{
-          position: "absolute", top: 2, right: 4,
-          background: "#22c55e", color: "#fff",
-          fontSize: 8, fontWeight: 700,
-          padding: "1px 4px", borderRadius: 999,
-        }}>● {badge}</span>
+          position: "absolute", top: 4, right: 6,
+          background: badgeColor || "#22c55e", color: "#fff",
+          fontSize: 11, fontWeight: 800,
+          minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          border: "2px solid #fff",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.25)",
+          lineHeight: 1,
+        }}>{badge}</span>
       )}
     </button>
   );

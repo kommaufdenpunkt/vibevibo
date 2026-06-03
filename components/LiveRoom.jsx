@@ -452,7 +452,7 @@ export default function LiveRoom({ streamId, meId }) {
                     fontSize: 10, padding: "0 4px 0 0", fontFamily:"inherit" }}>🚩</button>
               )}
               <OnlineName lastSeen={m.user.lastSeen}>
-                <ColoredName gender={m.user.gender} age={m.user.age} name={m.user.displayName} />
+                <ColoredName gender={m.user.gender} age={m.user.age} name={m.user.displayName} nameColor={m.user.nameColor} />
               </OnlineName>
               <span style={{ marginLeft: 6, color: "var(--vv-text,#1c1c1e)" }}>{m.text}</span>
             </div>
@@ -525,7 +525,7 @@ export default function LiveRoom({ streamId, meId }) {
               }}>
                 <span style={{ flex: 1 }}>
                   <OnlineName lastSeen={v.lastSeen}>
-                    <ColoredName gender={v.gender} age={v.age} name={v.displayName} />
+                    <ColoredName gender={v.gender} age={v.age} name={v.displayName} nameColor={v.nameColor} />
                   </OnlineName>
                 </span>
                 {canModerate && v.userId !== meId && v.userId !== stream.ownerId && (
@@ -552,7 +552,7 @@ export default function LiveRoom({ streamId, meId }) {
                 background: "var(--vv-surface,#f5f5f7)", borderRadius: 8,
               }}>
                 <span style={{ flex: 1, fontSize: 13 }}>
-                  <ColoredName gender={r.gender} age={r.age} name={r.displayName} />
+                  <ColoredName gender={r.gender} age={r.age} name={r.displayName} nameColor={r.nameColor} />
                 </span>
                 <button type="button" disabled={busy} onClick={() => decideRequest(r.id, true)}
                   style={{ background: "#22c55e", color: "#fff", border: "none",

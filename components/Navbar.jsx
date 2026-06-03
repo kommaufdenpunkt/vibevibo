@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
+import { STATUS_CATS } from "@/lib/status";
 import NotificationsBell from "./NotificationsBell";
 import VibesNavBadge from "./VibesNavBadge";
 
@@ -67,25 +68,6 @@ const LINKS = [
   { href: "/gruppen", icon: "🏘️", label: "Gruppen" },
   { href: "/geschenke", icon: "🎁", label: "Geschenke" },
   { href: "/shop", icon: "🛍️", label: "Shop" },
-];
-
-// Vorgefertigte Status nach Kategorien (Jappy-Stil)
-const STATUS_CATS = [
-  { title: "📍 Wo bin ich?", items: [
-    ["🏠", "zu Hause"], ["🚗", "unterwegs"], ["🏢", "auf der Arbeit"], ["🎓", "Schule/Uni"],
-    ["🛏️", "im Bett"], ["🏖️", "im Urlaub"], ["🌳", "draußen"], ["👯", "bei Freunden"],
-    ["🛒", "einkaufen"], ["☕", "im Café"], ["🏙️", "in der Stadt"], ["🚆", "im Zug"],
-  ] },
-  { title: "🎯 Was mache ich?", items: [
-    ["😎", "chillen"], ["🎮", "zocken"], ["📚", "lernen"], ["💼", "arbeiten"], ["😴", "schlafen"],
-    ["🎧", "Musik hören"], ["📺", "Serie gucken"], ["🍕", "essen"], ["🎉", "feiern"], ["📱", "am Handy"],
-    ["📖", "lesen"], ["🍳", "kochen"], ["🏃", "Sport"], ["🚶", "spazieren"], ["☎️", "telefonieren"],
-  ] },
-  { title: "💭 Wie geht's mir?", items: [
-    ["🤩", "super drauf"], ["😊", "glücklich"], ["😍", "verliebt"], ["😫", "gestresst"], ["🥱", "müde"],
-    ["😢", "traurig"], ["😐", "gelangweilt"], ["😡", "wütend"], ["😌", "entspannt"], ["🤔", "verträumt"],
-    ["🤒", "krank"], ["💪", "motiviert"], ["🥳", "gut gelaunt"], ["😅", "verpeilt"],
-  ] },
 ];
 
 export default function Navbar() {

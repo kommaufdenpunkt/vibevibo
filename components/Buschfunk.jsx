@@ -9,6 +9,7 @@ import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
 import PremiumBadges from "./PremiumBadges";
 import MentionText from "./MentionText";
+import EmbeddedMedia from "./EmbeddedMedia";
 
 // Farbe des Zeitstrahl-Punkts je Ereignis-Typ
 const NODE_COLOR = {
@@ -64,10 +65,19 @@ function renderEvent(ev, i, isLast) {
     text = <>{actor}: <strong><MentionText text={ev.detail} /></strong></>;
   }
 
+  const isBoosted = ev.type === "status" && (ev.boostedUntil || 0) > Date.now();
   return (
-    <div key={i} style={{ position: "relative", display: "flex", gap: 10, paddingBottom: isLast ? 0 : 14 }}>
+    <div key={i} style={{
+      position: "relative", display: "flex", gap: 10, paddingBottom: isLast ? 0 : 14,
+      ...(isBoosted ? {
+        background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
+        border: "2px solid #f59e0b",
+        borderRadius: 12, padding: 10, marginBottom: 8,
+        boxShadow: "0 0 14px rgba(245,158,11,0.3)",
+      } : {}),
+    }}>
       {/* Zeitstrahl-Linie */}
-      {!isLast && <div style={{ position: "absolute", left: 14, top: 30, bottom: 0, width: 2, background: "#ececf3" }} />}
+      {!isLast && !isBoosted && <div style={{ position: "absolute", left: 14, top: 30, bottom: 0, width: 2, background: "#ececf3" }} />}
       {/* Knoten */}
       <div style={{
         zIndex: 1, width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
@@ -76,8 +86,14 @@ function renderEvent(ev, i, isLast) {
       }}>{icon}</div>
       {/* Inhalt */}
       <div style={{ flex: 1, minWidth: 0 }}>
+        {isBoosted && (
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#b45309", marginBottom: 2 }}>
+            📣 BOOSTED · bleibt 24h oben
+          </div>
+        )}
         <div style={{ fontSize: 13, lineHeight: 1.45 }}>{text}</div>
         <div style={{ fontSize: 11, color: "#9a9aa8", marginTop: 2 }}>{relTime(ev.at)}</div>
+        <EmbeddedMedia audioUrl={ev.audioUrl} mediaJson={ev.media} compact />
       </div>
       {ev.picUrl && (
         <Link href={`/u/${ev.actor.username}`} style={{ flexShrink: 0 }}>

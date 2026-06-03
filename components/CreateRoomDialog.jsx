@@ -76,7 +76,7 @@ export default function CreateRoomDialog({ users, onClose, onCreated }) {
                   <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13 }}>
-                      <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+                      <ColoredName gender={u.gender} age={u.age} name={u.displayName} nameColor={u.nameColor} />
                     </div>
                     <div className="vv-muted" style={{ fontSize: 11 }}>@{u.username}</div>
                   </div>

@@ -27,9 +27,10 @@ export async function PATCH(req, { params }) {
   }
   const body = await req.json();
   const patch = {};
-  if (typeof body.displayName === "string") patch.displayName = body.displayName.slice(0, 100);
+  // Anti-Inflation: displayName + mood NICHT mehr ueber diesen Endpoint setzbar.
+  //   displayName -> nur ueber /api/premium/buy (kind: displayname_change|fast, kostet Vibes)
+  //   mood        -> nur ueber /api/status (Allowlist) oder /api/premium/buy (custom_status)
   if (typeof body.emoji === "string") patch.emoji = body.emoji.slice(0, 8);
-  if (typeof body.mood === "string") patch.mood = body.mood.slice(0, 120);
   if (typeof body.aboutMe === "string") patch.aboutMe = body.aboutMe.slice(0, 4000);
   if (typeof body.bgMusic === "string") patch.bgMusic = body.bgMusic.slice(0, 200);
   if (typeof body.bgMusicUrl === "string") patch.bgMusicUrl = body.bgMusicUrl.slice(0, 400);

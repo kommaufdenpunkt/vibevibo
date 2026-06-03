@@ -612,7 +612,7 @@ export default function ChatOverlay() {
                 <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
                   <div style={{ fontWeight: "bold", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13 }}>
                     {partnerInfo
-                      ? <ColoredName gender={partnerInfo.gender} age={partnerInfo.age} name={partnerInfo.displayName || activePartner} />
+                      ? <ColoredName gender={partnerInfo.gender} age={partnerInfo.age} name={partnerInfo.displayName || activePartner} nameColor={partnerInfo.nameColor} />
                       : activePartner}
                   </div>
                   <div style={{ fontSize: 10, opacity: 0.95, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
@@ -732,7 +732,7 @@ export default function ChatOverlay() {
                       <span style={{ flex: 1, minWidth: 0, color: "var(--vv-text,#222)" }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           <OnlineName lastSeen={u.lastSeen}>
-                            <ColoredName gender={u.gender} age={u.age} name={u.displayName} />
+                            <ColoredName gender={u.gender} age={u.age} name={u.displayName} nameColor={u.nameColor} />
                           </OnlineName>
                           <ActivityBars lastSeen={u.lastSeen} size="xs" />
                         </span>
