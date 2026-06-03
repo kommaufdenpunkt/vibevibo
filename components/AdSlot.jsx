@@ -1,26 +1,26 @@
 "use client";
 
-// AdSense-Display-Werbung. Wird nur geladen wenn:
+// Display-Banner mit Multi-Provider Support.
+// Provider wird im Admin-Panel ausgewaehlt (Ezoic / Adsterra / Aus).
+//
+// Banner laden nur wenn:
 //   - User hat Consent gegeben (ads_consent > 0)
 //   - User ist KEIN VIP
-//   - ENV ADSENSE_CLIENT ist gesetzt (sonst zeigen wir nur einen Platzhalter)
-//
-// Pro Auslieferung wird "data-ad-format" + Slot-ID gesetzt.
-// AdSense rendert selbst das Banner, wir laden nur das Script einmal.
+//   - Im Admin ein Display-Provider konfiguriert ist
 
 import { useEffect, useRef, useState } from "react";
 import { useMe } from "@/lib/useMe";
 
-const ADSENSE_SCRIPT_ID = "vv-adsense-script";
+const SCRIPT_ID = "vv-display-script";
 
-function loadAdsense(client) {
+function loadOnce(src, id = SCRIPT_ID, attrs = {}) {
   if (typeof window === "undefined") return;
-  if (document.getElementById(ADSENSE_SCRIPT_ID)) return;
+  if (document.getElementById(id)) return;
   const s = document.createElement("script");
-  s.id = ADSENSE_SCRIPT_ID;
+  s.id = id;
   s.async = true;
-  s.crossOrigin = "anonymous";
-  s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`;
+  s.src = src;
+  Object.entries(attrs).forEach(([k, v]) => s.setAttribute(k, v));
   document.head.appendChild(s);
 }
 
@@ -28,34 +28,38 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
   const { me } = useMe();
   const ref = useRef(null);
   const [pushed, setPushed] = useState(false);
-  const [client, setClient] = useState("");
+  const [display, setDisplay] = useState(null);
 
-  // Frontend kennt die Provider-Config NICHT direkt aus ENV — wir holen sie vom Server,
-  // wenn der Status gefragt wird. Hier reicht uns ein einfacher Lookup-Call.
   useEffect(() => {
     if (!me) return;
     if ((me.adsConsent || 0) <= 0) return;
     if (me.vip) return;
     fetch("/api/ads/status")
       .then((r) => r.json())
-      .then((d) => setClient(d?.config?.adsenseClient || ""))
+      .then((d) => setDisplay(d?.config?.display || null))
       .catch(() => {});
   }, [me]);
 
   useEffect(() => {
-    if (!client || !ref.current || pushed) return;
-    loadAdsense(client);
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    if (!display?.enabled || !ref.current || pushed) return;
+    if (display.provider === "ezoic" && display.siteId) {
+      loadOnce(`https://www.ezojs.com/ezoic/sa.min.js?id=${display.siteId}`, "vv-ezoic-script");
       setPushed(true);
-    } catch { /* silent */ }
-  }, [client, pushed]);
+    } else if (display.provider === "adsterra" && display.zoneId) {
+      // Adsterra-Banner-Embed: kapseln in eigenes Container-Div mit Zone-ID
+      const w = window;
+      w.atOptions = w.atOptions || {};
+      w.atOptions[display.zoneId] = { key: display.zoneId, format: "iframe", height: 250, width: 300 };
+      loadOnce(`https://www.profitableratecpm.com/${display.zoneId}/invoke.js`, "vv-adsterra-" + display.zoneId);
+      setPushed(true);
+    }
+  }, [display, pushed]);
 
   // Nichts rendern wenn kein Consent / VIP / kein Account
   if (!me || (me.adsConsent || 0) <= 0 || me.vip) return null;
 
-  // Kein Publisher-ID gesetzt -> grauer Platzhalter (Dev/Staging-Hinweis)
-  if (!client) {
+  // Provider noch nicht konfiguriert -> Hinweis-Platzhalter
+  if (!display || !display.enabled) {
     return (
       <div style={{
         background: "var(--vv-surface, #f5f5f7)",
@@ -63,26 +67,24 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
         borderRadius: 10, padding: 14, textAlign: "center",
         color: "var(--vv-muted, #888)", fontSize: 11, ...style,
       }}>
-        📦 {label} (AdSense noch nicht konfiguriert — setze ADSENSE_CLIENT in ENV)
+        📦 {label} (Display-Provider im Admin-Panel konfigurieren)
       </div>
     );
   }
 
-  // Klein als „Anzeige"-Tag drueber (DSGVO-Pflicht: Werbung muss gekennzeichnet sein)
   return (
     <div style={{ ...style }}>
       <div style={{ fontSize: 10, color: "var(--vv-muted, #888)", textAlign: "right", marginBottom: 2 }}>
         {label}
       </div>
-      <ins
-        ref={ref}
-        className="adsbygoogle"
-        style={{ display: "block", minHeight: 90 }}
-        data-ad-client={client}
-        data-ad-slot={slot}
-        data-ad-format={format}
-        data-full-width-responsive="true"
-      />
+      {display.provider === "ezoic" && (
+        <div ref={ref} id={`ezoic-pub-ad-placeholder-${slot}`} style={{ minHeight: 90 }} />
+      )}
+      {display.provider === "adsterra" && (
+        <div ref={ref} style={{ minHeight: 90, display: "flex", justifyContent: "center" }}>
+          <div id={`adsterra-${display.zoneId}`} />
+        </div>
+      )}
     </div>
   );
 }

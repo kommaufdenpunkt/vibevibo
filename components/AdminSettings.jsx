@@ -114,16 +114,34 @@ export default function AdminSettings({ pw }) {
 // ============================================================
 // Werbe-Konfiguration (Runtime, ohne Deploy umstellbar)
 // ============================================================
-function AdsConfigCard({ state, save, busy, pw, setFlash }) {
-  const [adsense, setAdsense] = useState(state.adsense_client || "");
-  const [provider, setProvider] = useState(state.ads_provider || "simulator");
-  const [secretAdgate, setSecretAdgate] = useState("***unchanged***");
-  const [secretPollfish, setSecretPollfish] = useState("***unchanged***");
-  const [secretGam, setSecretGam] = useState("***unchanged***");
+const DISPLAY_OPTIONS = [
+  { id: "off",      emoji: "⛔", name: "Aus", desc: "Keine Banner-Werbung" },
+  { id: "ezoic",    emoji: "🧠", name: "Ezoic", desc: "AI-Optimierung, leichtes Review", url: "https://www.ezoic.com" },
+  { id: "adsterra", emoji: "⚡", name: "Adsterra", desc: "Instant-Approval, gemischte Qualitaet", url: "https://adsterra.com" },
+];
+
+const EARNING_OPTIONS = [
+  { id: "simulator", emoji: "🧪", name: "Simulator",      desc: "Mock-Werbung zum Testen (kein Geld)" },
+  { id: "cpx",       emoji: "📋", name: "CPX Research",   desc: "Deutsche Umfragen, instant Approval",        url: "https://www.cpx-research.com/sign-up-as-publisher/" },
+  { id: "bitlabs",   emoji: "🧠", name: "Bitlabs",        desc: "Deutsche Umfragen, hohe RPMs",                url: "https://bitlabs.ai/publishers/" },
+  { id: "ayet",      emoji: "📲", name: "AyetStudios",    desc: "Offer-Wall: App-Install → Vibes",            url: "https://www.ayetstudios.com/publishers/" },
+  { id: "pollfish",  emoji: "📊", name: "Pollfish",       desc: "International, Surveys",                      url: "https://www.pollfish.com/" },
+  { id: "adgate",    emoji: "🎮", name: "Adgate Media",   desc: "Offer-Wall + Surveys, US-fokussiert",         url: "https://www.adgatemedia.com/" },
+];
+
+function AdsConfigCard({ state, save, busy }) {
+  const [display, setDisplay] = useState(state.display_provider || "off");
+  const [ezoicId, setEzoicId] = useState(state.ezoic_site_id || "");
+  const [adsterraZone, setAdsterraZone] = useState(state.adsterra_zone_id || "");
+  const [earningActive, setEarningActive] = useState(
+    (state.earning_providers_active || "simulator").split(",").map((s) => s.trim()).filter(Boolean)
+  );
+  const [secrets, setSecrets] = useState({
+    cpx: "***unchanged***", bitlabs: "***unchanged***", ayet: "***unchanged***",
+    pollfish: "***unchanged***", adgate: "***unchanged***", gam: "***unchanged***",
+  });
   const [testing, setTesting] = useState(false);
   const [testMsg, setTestMsg] = useState("");
-
-  const adsenseOk = /^ca-pub-\d{16}$/.test(adsense.trim());
   const sources = state.sources || {};
 
   function srcChip(k) {
@@ -137,48 +155,53 @@ function AdsConfigCard({ state, save, busy, pw, setFlash }) {
     );
   }
 
+  function toggleEarning(id) {
+    setEarningActive((arr) => arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
+  }
+
   async function saveAll() {
     const patch = {
-      ADSENSE_CLIENT: adsense.trim(),
-      ADS_PROVIDER: provider,
+      DISPLAY_PROVIDER: display,
+      EZOIC_SITE_ID: ezoicId.trim(),
+      ADSTERRA_ZONE_ID: adsterraZone.trim(),
+      EARNING_PROVIDERS_ACTIVE: earningActive.join(","),
     };
-    if (secretAdgate   !== "***unchanged***") patch.ADS_SECRET_ADGATE   = secretAdgate;
-    if (secretPollfish !== "***unchanged***") patch.ADS_SECRET_POLLFISH = secretPollfish;
-    if (secretGam      !== "***unchanged***") patch.ADS_SECRET_GAM      = secretGam;
+    for (const [k, v] of Object.entries(secrets)) {
+      if (v !== "***unchanged***") patch[`ADS_SECRET_${k.toUpperCase()}`] = v;
+    }
     await save(patch);
-    setSecretAdgate("***unchanged***");
-    setSecretPollfish("***unchanged***");
-    setSecretGam("***unchanged***");
+    setSecrets((s) => Object.fromEntries(Object.keys(s).map((k) => [k, "***unchanged***"])));
   }
 
   async function runTest() {
     setTesting(true); setTestMsg("");
-    try {
-      // Wir koennen nicht wirklich AdSense ohne echte Werbung pruefen — wir machen
-      // einen Plausibilitaets-Check: Format der Publisher-ID + Provider-Status.
-      const checks = [];
-      if (adsense) {
-        checks.push(adsenseOk
-          ? "✅ AdSense Publisher-ID korrekt formatiert (ca-pub-XXXXXXXXXXXXXXXX)"
-          : "❌ AdSense Publisher-ID falsch formatiert (sollte ca-pub-XXXXXXXXXXXXXXXX sein)");
-      } else {
-        checks.push("⚠ AdSense Publisher-ID leer — Display-Banner werden NICHT geschaltet");
+    const checks = [];
+
+    // Display
+    if (display === "off") {
+      checks.push("ℹ Display-Banner deaktiviert (kein Banner wird angezeigt)");
+    } else if (display === "ezoic") {
+      checks.push(ezoicId ? `✅ Ezoic Site-ID gesetzt: ${ezoicId}` : "❌ Ezoic Site-ID FEHLT — Banner inaktiv");
+    } else if (display === "adsterra") {
+      checks.push(adsterraZone ? `✅ Adsterra Zone-ID gesetzt: ${adsterraZone}` : "❌ Adsterra Zone-ID FEHLT — Banner inaktiv");
+    }
+
+    // Earning
+    if (earningActive.length === 0) {
+      checks.push("⚠ KEIN Earning-Provider aktiv — User koennen keine Vibes erspielen");
+    } else if (earningActive.length === 1 && earningActive[0] === "simulator") {
+      checks.push("ℹ Nur Simulator aktiv — User sehen Mock-Videos (kein echtes Geld)");
+    } else {
+      checks.push(`✅ ${earningActive.length} Earning-Provider aktiv: ${earningActive.join(", ")}`);
+      for (const id of earningActive) {
+        if (id === "simulator") continue;
+        const hasSecret = secrets[id] !== "***unchanged***" || sources[`ADS_SECRET_${id.toUpperCase()}`];
+        if (!hasSecret) checks.push(`  ⚠ Kein Webhook-Secret fuer ${id} — Rewards werden ABGELEHNT`);
       }
-      if (provider === "simulator") {
-        checks.push("ℹ Rewarded: Simulator-Modus aktiv (keine echte Werbung, User sehen Mock)");
-      } else {
-        checks.push(`✅ Rewarded-Provider gewaehlt: ${provider}`);
-        const hasSecret = (provider === "adgate" && secretAdgate !== "***unchanged***")
-                      || (provider === "pollfish" && secretPollfish !== "***unchanged***")
-                      || (provider === "gam" && secretGam !== "***unchanged***");
-        if (!hasSecret) {
-          checks.push(`⚠ Kein Webhook-Secret gespeichert fuer ${provider} — Rewards werden ABGELEHNT bis du das Secret eintraegst.`);
-        }
-      }
-      setTestMsg(checks.join("\n"));
-    } catch (e) {
-      setTestMsg("⚠ " + e.message);
-    } finally { setTesting(false); }
+    }
+
+    setTestMsg(checks.join("\n"));
+    setTesting(false);
   }
 
   return (
@@ -186,54 +209,104 @@ function AdsConfigCard({ state, save, busy, pw, setFlash }) {
       <h3>📺 Werbe-Konfiguration</h3>
       <p className="vv-muted" style={{ fontSize: 12, lineHeight: 1.5 }}>
         Live umstellbar ohne Deploy. <b>DB-Werte</b> haben Vorrang vor <b>ENV-Variablen</b>.
-        Leeres Feld = ENV-Fallback aktiv.
       </p>
 
-      {/* AdSense Client */}
-      <div className="vv-mt-12">
-        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
-          AdSense Publisher-ID {srcChip("ADSENSE_CLIENT")}
-        </label>
-        <input className="vv-input" value={adsense} onChange={(e) => setAdsense(e.target.value)}
-          placeholder="ca-pub-1234567890123456"
-          style={{ fontFamily: "monospace" }} />
-        {adsense && !adsenseOk && (
-          <div style={{ fontSize: 11, color: "#dc2626", marginTop: 4 }}>
-            ⚠ Format falsch — sollte mit „ca-pub-" beginnen, gefolgt von 16 Ziffern.
-          </div>
-        )}
-        {adsenseOk && (
-          <div style={{ fontSize: 11, color: "#16a34a", marginTop: 4 }}>
-            ✅ Format ok. Wird nach Speichern sofort fuer Display-Banner verwendet.
-          </div>
-        )}
+      {/* ============================================================ */}
+      {/* DISPLAY-WERBUNG (Banner)                                     */}
+      {/* ============================================================ */}
+      <h4 style={{ marginTop: 18, fontSize: 14 }}>🖼 Display-Banner</h4>
+      <div className="vv-muted" style={{ fontSize: 11, marginBottom: 8 }}>
+        Welcher Anbieter zeigt Banner-Werbung in der App? Nur EINER aktiv. {srcChip("DISPLAY_PROVIDER")}
       </div>
 
-      {/* Rewarded Provider */}
-      <div className="vv-mt-12">
-        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
-          Rewarded-Provider {srcChip("ADS_PROVIDER")}
-        </label>
-        <select className="vv-input" value={provider} onChange={(e) => setProvider(e.target.value)}>
-          <option value="simulator">🧪 Simulator (Mock — kein echtes Geld)</option>
-          <option value="adgate">🎁 Adgate Media (Offerwall)</option>
-          <option value="pollfish">📋 Pollfish (Surveys)</option>
-          <option value="gam">🎯 Google Ad Manager (Rewarded SSV)</option>
-        </select>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8 }}>
+        {DISPLAY_OPTIONS.map((o) => (
+          <label key={o.id} style={{
+            display: "block", padding: 10, borderRadius: 10, cursor: "pointer",
+            border: `2px solid ${display === o.id ? "#ec4899" : "var(--vv-border,#ddd)"}`,
+            background: display === o.id ? "#fff5fb" : "var(--vv-card,#fff)",
+          }}>
+            <input type="radio" name="display" value={o.id}
+              checked={display === o.id} onChange={() => setDisplay(o.id)}
+              style={{ marginRight: 6 }} />
+            <span style={{ fontWeight: 800, fontSize: 13 }}>{o.emoji} {o.name}</span>
+            <div style={{ fontSize: 11, color: "var(--vv-muted,#666)", marginTop: 2 }}>{o.desc}</div>
+            {o.url && (
+              <a href={o.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+                style={{ fontSize: 10, color: "#ec4899" }}>↗ Account anlegen</a>
+            )}
+          </label>
+        ))}
+      </div>
+
+      {display === "ezoic" && (
+        <div className="vv-mt-12">
+          <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+            Ezoic Site-ID {srcChip("EZOIC_SITE_ID")}
+          </label>
+          <input className="vv-input" value={ezoicId} onChange={(e) => setEzoicId(e.target.value)}
+            placeholder="z.B. 12345" style={{ fontFamily: "monospace" }} />
+        </div>
+      )}
+
+      {display === "adsterra" && (
+        <div className="vv-mt-12">
+          <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+            Adsterra Zone-ID {srcChip("ADSTERRA_ZONE_ID")}
+          </label>
+          <input className="vv-input" value={adsterraZone} onChange={(e) => setAdsterraZone(e.target.value)}
+            placeholder="z.B. abcdef1234567890" style={{ fontFamily: "monospace" }} />
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* EARNING-PROVIDER (Vibes-Verdienen)                           */}
+      {/* ============================================================ */}
+      <h4 style={{ marginTop: 24, fontSize: 14 }}>💰 Vibes-Verdienen (Reward-Hub)</h4>
+      <div className="vv-muted" style={{ fontSize: 11, marginBottom: 8 }}>
+        Mehrere parallel moeglich — User sieht alle aktiven Provider im Reward-Modal.
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
+        {EARNING_OPTIONS.map((o) => {
+          const on = earningActive.includes(o.id);
+          return (
+            <label key={o.id} style={{
+              display: "block", padding: 10, borderRadius: 10, cursor: "pointer",
+              border: `2px solid ${on ? "#16a34a" : "var(--vv-border,#ddd)"}`,
+              background: on ? "#f0fdf4" : "var(--vv-card,#fff)",
+            }}>
+              <input type="checkbox" checked={on} onChange={() => toggleEarning(o.id)}
+                style={{ marginRight: 6 }} />
+              <span style={{ fontWeight: 800, fontSize: 13 }}>{o.emoji} {o.name}</span>
+              <div style={{ fontSize: 11, color: "var(--vv-muted,#666)", marginTop: 2 }}>{o.desc}</div>
+              {o.url && (
+                <a href={o.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+                  style={{ fontSize: 10, color: "#ec4899" }}>↗ Account anlegen</a>
+              )}
+            </label>
+          );
+        })}
       </div>
 
       {/* Webhook-Secrets je Provider */}
-      <details style={{ marginTop: 12 }}>
+      <details style={{ marginTop: 16 }}>
         <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 13 }}>
-          🔐 Webhook-Secrets (nur wenn Provider != Simulator)
+          🔐 Webhook-Secrets (nur fuer aktive Provider ausser Simulator)
         </summary>
         <div style={{ paddingTop: 8 }}>
-          <SecretField label="Adgate Webhook-Secret"   src={srcChip("ADS_SECRET_ADGATE")}   mask={state.ads_secret_adgate_mask}   value={secretAdgate}   setValue={setSecretAdgate} />
-          <SecretField label="Pollfish Webhook-Secret" src={srcChip("ADS_SECRET_POLLFISH")} mask={state.ads_secret_pollfish_mask} value={secretPollfish} setValue={setSecretPollfish} />
-          <SecretField label="GAM SSV-Secret"          src={srcChip("ADS_SECRET_GAM")}      mask={state.ads_secret_gam_mask}      value={secretGam}      setValue={setSecretGam} />
+          {EARNING_OPTIONS.filter((o) => o.id !== "simulator").map((o) => (
+            <SecretField key={o.id}
+              label={`${o.emoji} ${o.name} Secret`}
+              src={srcChip(`ADS_SECRET_${o.id.toUpperCase()}`)}
+              mask={state[`ads_secret_${o.id}_mask`]}
+              value={secrets[o.id] || "***unchanged***"}
+              setValue={(v) => setSecrets((s) => ({ ...s, [o.id]: v }))} />
+          ))}
         </div>
       </details>
 
+      {/* Aktionen */}
       <div style={{ display: "flex", gap: 6, marginTop: 14 }}>
         <button type="button" onClick={saveAll} disabled={busy}
           className="vv-btn vv-btn-pink" style={{ flex: 1 }}>
@@ -241,7 +314,7 @@ function AdsConfigCard({ state, save, busy, pw, setFlash }) {
         </button>
         <button type="button" onClick={runTest} disabled={busy || testing}
           className="vv-btn" style={{ flex: 1 }}>
-          {testing ? "Test…" : "🧪 Konfig prufen"}
+          {testing ? "Test…" : "🧪 Konfig pruefen"}
         </button>
       </div>
 
