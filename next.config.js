@@ -1,20 +1,62 @@
 /** @type {import('next').NextConfig} */
 
 // Sicherheits-Header — werden auf JEDE Antwort gesetzt.
-// CSP ist bewusst pragmatisch: erlaubt Inline-Styles (wir nutzen viele style=-Props)
-// und Inline-Scripte (Next.js braucht das für Hydration). Default-src ist 'self',
-// alles andere wird explizit freigeschaltet (YouTube/Bild-Embeds, Web-Push).
+// CSP erlaubt explizit alle Drittanbieter-Quellen die wir tatsaechlich nutzen:
+// - Leaflet via unpkg
+// - Karten-Tiles (CartoDB, OSM)
+// - YouTube/Spotify Embeds
+// - Werbeanbieter (Ezoic/Adsterra) + Survey/Offerwall-Provider
 const csp = [
   "default-src 'self'",
-  // unpkg.com für Leaflet (Karte)
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com",
+
+  // Skripte: Leaflet, Werbe-SDKs, Provider
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'" +
+    " https://unpkg.com" +                                  // Leaflet
+    " https://www.ezojs.com https://*.ezoic.net" +          // Ezoic
+    " https://*.profitableratecpm.com" +                    // Adsterra
+    " https://offers.pollfish.com" +                        // Pollfish
+    " https://offers.cpx-research.com" +                    // CPX Research
+    " https://*.bitlabs.ai" +                               // Bitlabs
+    " https://*.ayetstudios.com" +                          // AyetStudios
+    " https://*.adgaterewards.com",                          // Adgate
+
+  // Styles: Leaflet-CSS
   "style-src 'self' 'unsafe-inline' https://unpkg.com",
-  // OpenStreetMap-Tile-Server
+
+  // Bilder: Karten-Tiles + Werbung + alles HTTPS
   "img-src 'self' data: blob: https:",
+
+  // Audio/Video: lokale + data/blob
   "media-src 'self' data: blob:",
+
   "font-src 'self' data:",
-  "connect-src 'self' https://proxycheck.io https://generativelanguage.googleapis.com https://api.pwnedpasswords.com https://*.tile.openstreetmap.org",
-  "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
+
+  // XHR/Fetch: Karten-Tiles + APIs
+  "connect-src 'self'" +
+    " https://proxycheck.io" +
+    " https://generativelanguage.googleapis.com" +
+    " https://api.pwnedpasswords.com" +
+    " https://*.tile.openstreetmap.org" +
+    " https://tile.openstreetmap.org" +
+    " https://cartodb-basemaps-a.global.ssl.fastly.net" +
+    " https://cartodb-basemaps-b.global.ssl.fastly.net" +
+    " https://cartodb-basemaps-c.global.ssl.fastly.net" +
+    " https://cartodb-basemaps-d.global.ssl.fastly.net" +
+    " https://*.ezoic.net" +
+    " https://*.bitlabs.ai",
+
+  // Iframes: YouTube + Spotify + Werbung
+  "frame-src" +
+    " https://www.youtube.com" +
+    " https://www.youtube-nocookie.com" +
+    " https://open.spotify.com" +
+    " https://*.ezoic.net" +
+    " https://offers.pollfish.com" +
+    " https://*.bitlabs.ai" +
+    " https://*.ayetstudios.com" +
+    " https://*.adgaterewards.com" +
+    " https://offers.cpx-research.com",
+
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -31,7 +73,6 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
   { key: "Content-Security-Policy", value: csp },
-  // X-XSS-Protection ist deprecated und in modernen Browsern eher schädlich; weggelassen.
 ];
 
 const nextConfig = {
