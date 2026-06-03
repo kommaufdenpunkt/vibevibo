@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits } from "@/lib/db";
+import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits, userRow, getUserById } from "@/lib/db";
 import { EARN } from "@/lib/credits";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
+import { sendPushToUser } from "@/lib/push";
 
 const MAX_IMG_BYTES = 700_000;
 const IMG_RE = /^data:image\/(png|jpeg|jpg|webp);base64,/;
@@ -49,6 +50,21 @@ export async function POST(req, { params }) {
       isGruscheln ? "gruscheln_send" : "pinnwand", { type: "to", id: target.id });
     awardCredits(target.id, isGruscheln ? EARN.gruscheln_recv : EARN.pinnwand_post,
       isGruscheln ? "gruscheln_recv" : "pinnwand", { type: "from", id: me.id });
+    // Lockscreen-Push an Profil-Inhaber
+    const sender = userRow(getUserById(me.id));
+    const preview = cleaned ? cleaned.slice(0, 140) : "📷 Foto";
+    sendPushToUser(target.id, {
+      title: isGruscheln
+        ? `🫶 ${sender?.displayName || me.username} hat dich gegruschelt!`
+        : `📌 ${sender?.displayName || me.username} schrieb auf deine Wand`,
+      body: preview,
+      url: `/u/${target.username}`,
+      tag: `wall-${me.id}-${target.id}`,
+      kind: "message",
+      fromUsername: me.username,
+      fromDisplayName: sender?.displayName || me.username,
+      fromUserId: me.id,
+    }).catch(() => {});
   }
   notifyMentions(me.id, cleaned, "pinnwand", newId);
 

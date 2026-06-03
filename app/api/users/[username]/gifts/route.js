@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import {
   getUserByUsername, addGift, getGifts, addNotification,
-  spendCredits, adminGrantCredits,
+  spendCredits, adminGrantCredits, userRow, getUserById,
 } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import {
   findGift, GIFT_RECIPIENT_PAYOUT_PCT, GIFT_NOTE_MAX, WRAPPING_MAP,
 } from "@/lib/gifts";
+import { sendPushToUser } from "@/lib/push";
 
 // POST { giftId, note?, visibility?: 'public'|'private', wrap?: id }
 // Vibes-Sink: Sender zahlt Preis + ggf. Verpackungs-Aufschlag.
@@ -51,6 +52,19 @@ export async function POST(req, { params }) {
     targetType: "gift", targetId: null,
     preview: `${wrap?.emoji || ""}${g.icon} ${g.name}${note ? `: "${note.slice(0, 60)}"` : ""}`,
   });
+
+  // Lockscreen-Push an Empfänger
+  const sender = userRow(getUserById(me.id));
+  sendPushToUser(target.id, {
+    title: `🎁 Geschenk von ${sender?.displayName || me.username}!`,
+    body: `${g.icon} ${g.name}${note ? ` · „${note.slice(0, 100)}"` : ""}`,
+    url: `/u/${target.username}`,
+    tag: `gift-${me.id}-${target.id}`,
+    kind: "gift",
+    fromUsername: me.username,
+    fromDisplayName: sender?.displayName || me.username,
+    fromUserId: me.id,
+  }).catch(() => {});
 
   return NextResponse.json({
     ok: true, balance: spend.balance, gifts: getGifts(target.id, me.id),

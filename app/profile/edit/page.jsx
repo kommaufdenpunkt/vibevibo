@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import GenderAge from "@/components/GenderAge";
 import TwoFactorSetup from "@/components/TwoFactorSetup";
 import LocationSettings from "@/components/LocationSettings";
+import PushPrefsSettings from "@/components/PushPrefsSettings";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -169,6 +170,7 @@ export default function EditProfilePage() {
         </div>
 
         <LocationSettings />
+        <PushPrefsSettings />
 
         <TwoFactorSetup has2fa={!!me?.has2fa} onChanged={refresh} />
 
