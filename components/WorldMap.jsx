@@ -215,6 +215,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   const merchantsLayerRef = useRef(null);
   const homeMarkerRef = useRef(null);
   const poiLayerRef = useRef(null);
+  const watersLayerRef = useRef(null);
   const companionMarkerRef = useRef(null);
 
   const [perm, setPerm] = useState("idle"); // idle | requesting | granted | denied
@@ -226,6 +227,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   const [weather, setWeather] = useState(null);
   const [market, setMarket] = useState(null);
   const [poiData, setPoiData] = useState(null); // { pois, useRadiusM, kinds }
+  const [waters, setWaters] = useState([]); // [{ id, kind, name, lat, lng, radiusM }]
   const [vibo, setVibo] = useState(null);
   const [poiSheetOpen, setPoiSheetOpen] = useState(false);
   const [poiBusy, setPoiBusy] = useState(false);
@@ -306,6 +308,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       itemsLayerRef.current = L.layerGroup().addTo(map);
       merchantsLayerRef.current = L.layerGroup().addTo(map);
       poiLayerRef.current = L.layerGroup().addTo(map);
+      watersLayerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
 
       // Kontainer-Groesse erneut messen — wenn die Karte in einem Tab oder versteckten
@@ -385,6 +388,76 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       merchantsLayerRef.current.addLayer(marker);
     }
   }, [market]);
+
+  // Wasser-Zonen zeichnen — Kreise so gross wie das Gewaesser, mit 🎣-Icon im Zentrum.
+  // Klick auf Zone -> wenn in Reichweite (= im Kreis), Angeln triggern. Sonst Hinweis.
+  useEffect(() => {
+    if (!mapRef.current || !watersLayerRef.current) return;
+    const L = window.L;
+    if (!L) return;
+    watersLayerRef.current.clearLayers();
+    if (!waters.length) return;
+
+    function distM(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = (d) => (d * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    for (const w of waters) {
+      const inZone = pos ? distM(pos.lat, pos.lng, w.lat, w.lng) <= w.radiusM + 10 : false;
+      // Wasser-Kreis (echte Grösse) — Klick auf Kreis öffnet Angel-Action
+      const circle = L.circle([w.lat, w.lng], {
+        radius: w.radiusM,
+        color: inZone ? "#0369a1" : "#0ea5e9",
+        weight: 2,
+        fillColor: "#bae6fd",
+        fillOpacity: inZone ? 0.35 : 0.18,
+        interactive: true,
+      });
+      circle.on("click", () => {
+        if (inZone) { goFishing(); }
+        else {
+          setFlash(`🎣 ${w.name} · komm noch ${Math.ceil(distM(pos.lat, pos.lng, w.lat, w.lng) - w.radiusM)} m näher`);
+          setTimeout(() => setFlash(""), 3500);
+        }
+      });
+      watersLayerRef.current.addLayer(circle);
+
+      // Angel-Icon im Zentrum, Groesse skaliert mit Radius
+      const iconPx = Math.min(64, Math.max(32, Math.round(w.radiusM / 4)));
+      const icon = L.divIcon({
+        className: "vv-water-icon",
+        html: `<div style="
+          width:${iconPx}px;height:${iconPx}px;border-radius:50%;
+          background:${inZone ? "linear-gradient(135deg,#0369a1,#075985)" : "rgba(255,255,255,0.9)"};
+          border:3px solid ${inZone ? "#fff" : "#0369a1"};
+          box-shadow:0 4px 12px rgba(2,132,199,0.4);
+          display:flex;align-items:center;justify-content:center;
+          font-size:${Math.round(iconPx * 0.55)}px;
+          ${inZone ? "animation:vv-pop 1.4s ease-in-out infinite;" : ""}
+          cursor:pointer;
+          color:${inZone ? "#fff" : "#0369a1"};
+        ">🎣</div>
+        <style>@keyframes vv-pop {0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}</style>`,
+        iconSize: [iconPx, iconPx],
+        iconAnchor: [iconPx / 2, iconPx / 2],
+      });
+      const marker = L.marker([w.lat, w.lng], { icon, interactive: true });
+      marker.bindTooltip(`🎣 ${w.name} (~${w.radiusM} m)${inZone ? " · in Reichweite" : ""}`);
+      marker.on("click", () => {
+        if (inZone) { goFishing(); }
+        else {
+          setFlash(`🎣 ${w.name} · komm noch ${Math.ceil(distM(pos.lat, pos.lng, w.lat, w.lng) - w.radiusM)} m näher`);
+          setTimeout(() => setFlash(""), 3500);
+        }
+      });
+      watersLayerRef.current.addLayer(marker);
+    }
+  }, [waters, pos]);
 
   // POI-Marker zeichnen
   useEffect(() => {
@@ -535,6 +608,18 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       .catch(() => {});
     load();
     const t = setInterval(load, 60_000);
+    return () => { alive = false; clearInterval(t); };
+  }, [perm, pos]);
+
+  // Gewaesser (Seen, Teiche, Fluesse) im Umkreis laden — alle 5 Min
+  useEffect(() => {
+    if (perm !== "granted" || !pos) return;
+    let alive = true;
+    const load = () => api.worldWaters(pos.lat, pos.lng, 800)
+      .then((r) => { if (alive) setWaters(r.waters || []); })
+      .catch(() => {});
+    load();
+    const t = setInterval(load, 5 * 60_000);
     return () => { alive = false; clearInterval(t); };
   }, [perm, pos]);
 
@@ -802,8 +887,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
           })()}
           badgeColor="#be185d"
           onClick={() => setPoiSheetOpen(true)} />
-        <ActionBtn emoji="🎣" title="Angeln" color="#0369a1"
-          disabled={fishing} onClick={goFishing} />
+        {/* 🎣 Floating-Button entfernt — Angel-Marker liegen direkt auf den Gewaessern */}
       </div>
 
       {/* Bottom-Sheet: Rucksack */}
