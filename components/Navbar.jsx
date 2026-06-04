@@ -72,6 +72,7 @@ const LINK_SECTIONS = [
     title: "Sozial",
     items: [
       { href: "/freunde", icon: "👯", label: "Freunde" },
+      { href: "/schulen", icon: "🏫", label: "Schulen" },
       { href: "/messenger", icon: "✉️", label: "Nachrichten" },
       { href: "/gruppen", icon: "🏘️", label: "Gruppen" },
       { href: "/live", icon: "🎥", label: "Live" },
@@ -186,11 +187,13 @@ export default function Navbar() {
       <div className="vv-nav2-bar">
         <button
           type="button"
-          className={`vv-burger${open ? " vv-burger-open" : ""}`}
+          className={`vv-burger-wrap${open ? " vv-burger-open" : ""}`}
           onClick={() => setOpen((o) => !o)}
-          aria-label="Menü"
+          aria-label="Menü öffnen"
+          title="Menü"
         >
-          <span /><span /><span />
+          <span className="vv-burger-icon"><span /><span /><span /></span>
+          <span className="vv-burger-label">Menü</span>
         </button>
 
         <Link href="/" className="vv-nav2-logo" onClick={() => setOpen(false)}>

@@ -39,6 +39,10 @@ export async function PATCH(req, { params }) {
   if (Array.isArray(body.interests)) {
     patch.interests = body.interests.map((s) => String(s).slice(0, 60)).filter(Boolean).slice(0, 30);
   }
+  // 🏫 Schule/Uni + Stadt fuers Verzeichnis (SchuelerVZ-Nostalgie). Werden trimmed
+  // damit "  Lessing-Gymnasium  " == "Lessing-Gymnasium" und keine Doppel-Eintraege entstehen.
+  if (typeof body.school === "string") patch.school = body.school.trim().slice(0, 80);
+  if (typeof body.city === "string") patch.city = body.city.trim().slice(0, 60);
   const updated = updateUser(me.id, patch);
   return NextResponse.json({ user: updated });
 }

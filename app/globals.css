@@ -2115,21 +2115,42 @@ a:hover { background: var(--vv-yellow); color: #000; }
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
-.vv-burger {
-  width: 36px;
-  height: 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  padding: 0 8px;
+/* Burger-Wrap: Icon + sichtbares "Menü"-Label nebeneinander. Macht klar wo das
+   Hauptmenue ist (User-Feedback: "ich sehe die Menueleiste nicht"). */
+.vv-burger-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px 5px 8px;
   background: linear-gradient(180deg, var(--vv-pink), var(--vv-pink-deep));
   border: 1px solid rgba(255,255,255,0.55);
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.18s ease;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
+  transition: background 0.18s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
 }
-.vv-burger span {
+.vv-burger-wrap:hover {
+  background: linear-gradient(180deg, var(--vv-yellow), var(--vv-orange));
+  color: #000;
+  text-shadow: none;
+}
+.vv-burger-wrap:hover .vv-burger-icon span { background: #000; }
+.vv-burger-wrap:active { transform: scale(0.96); }
+.vv-burger-icon {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  width: 18px;
+  height: 14px;
+}
+.vv-burger-icon span {
   display: block;
   height: 2px;
   background: #fff;
@@ -2137,11 +2158,10 @@ a:hover { background: var(--vv-yellow); color: #000; }
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
   transition: transform 0.25s, opacity 0.25s;
 }
-.vv-burger:hover { background: linear-gradient(180deg, var(--vv-yellow), var(--vv-orange)); }
-.vv-burger:hover span { background: #000; }
-.vv-burger-open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.vv-burger-open span:nth-child(2) { opacity: 0; }
-.vv-burger-open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+.vv-burger-open .vv-burger-icon span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+.vv-burger-open .vv-burger-icon span:nth-child(2) { opacity: 0; }
+.vv-burger-open .vv-burger-icon span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+.vv-burger-label { white-space: nowrap; }
 
 .vv-nav2-logo {
   font-family: "Comic Sans MS", "Chalkboard SE", cursive;

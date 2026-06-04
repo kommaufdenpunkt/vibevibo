@@ -16,6 +16,7 @@ import OnlineName from "./OnlineName";
 import OnlineSince from "./OnlineSince";
 import TopFriends from "./TopFriends";
 import Gaestebuch from "./Gaestebuch";
+import ComplimentModal from "./ComplimentModal";
 import { relTime } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
@@ -80,6 +81,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
   const [toast, setToast] = useState(null);
   const [wallTab, setWallTab] = useState("pinnwand");
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [complimentOpen, setComplimentOpen] = useState(false);
   const fileRef = useRef(null);
 
   const isOwner = me?.username === profile.username;
@@ -214,6 +216,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
                 <button type="button" className="vv-btn vv-btn-pink" onClick={gruscheln} style={sideBtn}>🫶 Gruscheln</button>
                 <Link className="vv-btn vv-btn-cyan" href={`/messenger/${profile.username}`} style={sideBtn}>✉️ Nachricht</Link>
                 <Link className="vv-btn" href={`/u/${profile.username}/fotos`} style={sideBtn}>📸 Fotos</Link>
+                <button type="button" className="vv-btn" onClick={() => setComplimentOpen(true)} style={{ ...sideBtn, background: "linear-gradient(135deg,#fce7f3,#fbcfe8)", color: "#831843" }}>💖 Kompliment</button>
               </>
             )}
             {isOwner && (
@@ -266,6 +269,27 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
                 </div>
               </>
             )}
+            {(profile.school || profile.city) && (
+              <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {profile.school && (
+                  <Link href={`/schulen/${encodeURIComponent(profile.school)}`}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "5px 11px", borderRadius: 12, fontSize: 12, fontWeight: 600,
+                      background: "linear-gradient(90deg,#fef3c7,#fde68a)", color: "#7c2d12",
+                      textDecoration: "none", border: "1px solid #f59e0b",
+                    }}>🏫 {profile.school}</Link>
+                )}
+                {profile.city && (
+                  <span style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    padding: "5px 11px", borderRadius: 12, fontSize: 12, fontWeight: 600,
+                    background: "rgba(255,255,255,0.08)", color: "var(--vv-text,#1c1c1e)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                  }}>📍 {profile.city}</span>
+                )}
+              </div>
+            )}
           </div>
 
           <GiftShelf profile={profile} gifts={gifts} onChange={onChange} />
@@ -303,6 +327,14 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
       </div>
 
       {toast && <div className="vv-toast">{toast}</div>}
+      {complimentOpen && (
+        <ComplimentModal
+          toUsername={profile.username}
+          toDisplayName={profile.displayName}
+          onClose={() => setComplimentOpen(false)}
+          onSent={() => setToast(`💖 Kompliment an ${profile.displayName} verschickt!`)}
+        />
+      )}
       </div>
     </ProfileSkin>
   );

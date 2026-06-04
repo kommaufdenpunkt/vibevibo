@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import ProfileView from "@/components/ProfileView";
+import ComplimentInbox from "@/components/ComplimentInbox";
 
 export default function MyProfilePage() {
   const { me, loading } = useMe();
@@ -31,14 +32,17 @@ export default function MyProfilePage() {
   if (!data) return <div className="vv-card">Lädt...</div>;
 
   return (
-    <ProfileView
-      profile={data.user}
-      pinnwand={data.pinnwand}
-      guestbook={data.guestbook}
-      gifts={data.gifts}
-      visitCount={data.visitCount}
-      visitors={data.visitors}
-      onChange={load}
-    />
+    <>
+      <ComplimentInbox />
+      <ProfileView
+        profile={data.user}
+        pinnwand={data.pinnwand}
+        guestbook={data.guestbook}
+        gifts={data.gifts}
+        visitCount={data.visitCount}
+        visitors={data.visitors}
+        onChange={load}
+      />
+    </>
   );
 }

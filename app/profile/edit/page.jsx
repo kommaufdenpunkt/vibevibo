@@ -25,6 +25,8 @@ export default function EditProfilePage() {
       interests: (me.interests || []).join(", "),
       bgMusic: me.bgMusic || "",
       bgMusicUrl: me.bgMusicUrl || "",
+      school: me.school || "",
+      city: me.city || "",
     });
   }, [me, loading, router]);
 
@@ -46,6 +48,8 @@ export default function EditProfilePage() {
         interests: form.interests.split(",").map((s) => s.trim()).filter(Boolean),
         bgMusic: form.bgMusic.trim(),
         bgMusicUrl: form.bgMusicUrl.trim(),
+        school: form.school.trim(),
+        city: form.city.trim(),
       });
       await refresh();
       router.push("/profile");
@@ -154,6 +158,16 @@ export default function EditProfilePage() {
               ))}
             </div>
           )}
+
+          <label className="vv-mt-12"><strong>🏫 Schule / Uni</strong>
+            {" "}<Link href="/schulen" style={{ fontSize: 11 }}>(alle anschauen →)</Link>
+          </label>
+          <input className="vv-input" placeholder="z.B. Lessing-Gymnasium" value={form.school}
+            maxLength={80} onChange={(e) => up("school", e.target.value)} />
+
+          <label className="vv-mt-12"><strong>📍 Stadt</strong></label>
+          <input className="vv-input" placeholder="z.B. Berlin" value={form.city}
+            maxLength={60} onChange={(e) => up("city", e.target.value)} />
         </div>
 
         {/* 3) Profilmusik */}

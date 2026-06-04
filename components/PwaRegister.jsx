@@ -23,6 +23,11 @@ export default function PwaRegister() {
     // Wenn der Heal-Marker noch nicht "v6" ist, einmal komplett aufraeumen und neuladen.
     async function heal() {
       try {
+        // NIEMALS auf /login heilen — der Reload mitten im Formular wuerde Login killen.
+        // Genauso wenig auf POST-aehnlichen Pfaden.
+        const path = location.pathname || "";
+        if (path.startsWith("/login") || path.startsWith("/api/")) return false;
+
         const marker = localStorage.getItem("vv-sw-heal");
         if (marker === "v6") return false; // schon geheilt
         // Pruefe ob ueberhaupt ein alter SW aktiv ist

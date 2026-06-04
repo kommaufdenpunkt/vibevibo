@@ -241,35 +241,23 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   // Leaflet + Karte initialisieren wenn Position da
   const tileLayerRef = useRef(null);
   const [tileStyle, setTileStyle] = useState(() => {
-    if (typeof window === "undefined") return "esri_streets";
-    // Migration v3: Wir wechseln den Default-Provider auf Esri-Street-Map.
-    // Esri-Tiles laufen auf ArcGIS-Online-CDN (US-Govt-Backbone) — extrem zuverlaessig,
-    // Strassennamen + Gebaeude direkt im Tile, weltweit verfuegbar.
-    // Wer schon mal bewusst gewechselt hat (v3-Marker), behaelt seine Wahl.
+    if (typeof window === "undefined") return "osmde";
+    // Migration v4: zurueck auf OSM-DE als Default — der hat Gebaeude-Outlines
+    // viel praesenter als ESRI (User-Feedback: "Gebaeude sehe ich nicht").
+    // Wer schon mal bewusst gewechselt hat (v4-Marker), behaelt seine Wahl.
     const saved = window.localStorage?.getItem("vv-tile-style");
-    const v3 = window.localStorage?.getItem("vv-tile-style-v3");
-    if (saved && v3 && TILE_PROVIDERS_KEYS.has(saved)) return saved;
-    try { window.localStorage?.setItem("vv-tile-style-v3", "1"); } catch {}
-    return "esri_streets";
+    const v4 = window.localStorage?.getItem("vv-tile-style-v4");
+    if (saved && v4 && TILE_PROVIDERS_KEYS.has(saved)) return saved;
+    try { window.localStorage?.setItem("vv-tile-style-v4", "1"); } catch {}
+    return "osmde";
   });
   // Lade-Status der Karten-Tiles: "idle" | "loading" | "ok" | "fallback" | "failed"
   const [tileStatus, setTileStatus] = useState("idle");
   const [tileMsg, setTileMsg] = useState("Karte wird geladen…");
 
-  // Esri ArcGIS World Street Map: rock-solid CDN (US-Govt/Behoerden-Niveau),
-  // Strassennamen + Gebaeude direkt im Tile gerendert, keine Subdomain-Roulette.
-  // Das ist die Primary, alle anderen sind Backup.
+  // OSM Deutschland: zeigt Gebaeude-Outlines (cremig-braun) + Strassennamen + Hausnummern
+  // direkt im Tile. Hosted in DE → schnell. Esri bleibt als Backup.
   const TILE_PROVIDERS = {
-    esri_streets: {
-      label: "Strassen", emoji: "🗺",
-      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-      opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
-    },
-    esri_topo: {
-      label: "Topo", emoji: "⛰",
-      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
-      opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
-    },
     osmde: {
       label: "OSM Deutschland", emoji: "🇩🇪",
       url: "https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png",
@@ -280,15 +268,25 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       opts: { attribution: '© OpenStreetMap', maxZoom: 19, crossOrigin: true },
     },
+    esri_streets: {
+      label: "Esri Strassen", emoji: "🗺",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+      opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
+    },
+    esri_topo: {
+      label: "Topo", emoji: "⛰",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+      opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
+    },
     esri_imagery: {
       label: "Satellit", emoji: "🛰",
       url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
     },
   };
-  const TILE_PROVIDERS_KEYS = new Set(["esri_streets","esri_topo","osmde","osm","esri_imagery"]);
-  // Auto-Fallback-Reihenfolge: Esri zuerst, dann OSM-Varianten als Backup.
-  const FALLBACK_ORDER = ["esri_streets", "osmde", "osm", "esri_topo"];
+  const TILE_PROVIDERS_KEYS = new Set(["osmde","osm","esri_streets","esri_topo","esri_imagery"]);
+  // Auto-Fallback-Reihenfolge: OSM-DE (Gebaeude!) zuerst, dann OSM Standard, dann Esri als Notnagel.
+  const FALLBACK_ORDER = ["osmde", "osm", "esri_streets", "esri_topo"];
 
   function buildTileLayer(L, style) {
     const p = TILE_PROVIDERS[style] || TILE_PROVIDERS.voyager;
@@ -787,19 +785,45 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   }
 
   const [fishing, setFishing] = useState(false);
+  // Cooldown nach Fischfang (sichtbarer Balken oben). Verhindert Spam-Klicken.
+  const [fishCooldownUntil, setFishCooldownUntil] = useState(0);
+  const [fishCooldownTick, setFishCooldownTick] = useState(0);
+  useEffect(() => {
+    if (!fishCooldownUntil) return;
+    const t = setInterval(() => {
+      if (Date.now() >= fishCooldownUntil) {
+        clearInterval(t);
+        setFishCooldownUntil(0);
+      } else {
+        setFishCooldownTick((x) => x + 1);
+      }
+    }, 250);
+    return () => clearInterval(t);
+  }, [fishCooldownUntil]);
+
   // water (optional): { lat, lng, radiusM, name } - das angeklickte Gewaesser.
   // Wenn mitgegeben, prueft der Server zusaetzlich ob der User wirklich
   // INNERHALB dieses Gewaessers steht (nicht nur "irgendwo Wasser nah").
   async function goFishing(water) {
     const p = posRef.current || pos;
     if (!p || fishing) return;
+    // Wenn Cooldown noch laeuft: hartes No (zusaetzlich zum Server-Cooldown)
+    if (Date.now() < fishCooldownUntil) {
+      const wait = Math.ceil((fishCooldownUntil - Date.now()) / 1000);
+      setFlash(`⏳ Noch ${wait}s warten — die Fische sind scheu!`);
+      setTimeout(() => setFlash(""), 2200);
+      return;
+    }
     setFishing(true);
     setFlash("🎣 Auswerfen…");
     try {
       const r = await api.worldFish(p.lat, p.lng, p.acc, water);
       const f = r.fish;
-      setFlash(`${f.emoji} ${f.msg}${f.vibes ? ` (+${f.vibes} ✨)` : ""}${r.viboFed ? " · VIBO gefüttert 🍽️" : ""}`);
-      setTimeout(() => setFlash(""), 4200);
+      const valueHint = f.value ? ` · 💰 ${f.value} ✨ am Basar` : "";
+      setFlash(`${f.emoji} ${f.msg}${r.viboFed ? " · VIBO gefüttert 🍽️" : ""}${valueHint}`);
+      setTimeout(() => setFlash(""), 4500);
+      // Cooldown 20s clientseitig sichtbar (matched FISH_COOLDOWN_MS auf dem Server)
+      setFishCooldownUntil(Date.now() + 20_000);
     } catch (e) {
       setFlash(`⚠ ${e.message}`);
       setTimeout(() => setFlash(""), 4200);
@@ -1001,6 +1025,33 @@ export default function WorldMap({ onPickup, compact = false, height }) {
           }}>
           <span style={{ fontSize: 16, lineHeight: 1 }}>{weather.emoji}</span>
           <span>{weather.temp}°C</span>
+        </div>
+      )}
+
+      {/* Fisch-Cooldown-Balken: sichtbar nach Fang, verhindert Spam-Klicken.
+          Laeuft 20s, dann automatisch weg. Tick wird via setInterval erzwungen. */}
+      {fishCooldownUntil > 0 && Date.now() < fishCooldownUntil && (
+        <div style={{
+          position: "absolute", top: 56, left: 12, right: 12, zIndex: 999,
+          background: "rgba(10, 4, 32, 0.9)", borderRadius: 12,
+          padding: "8px 12px", color: "#fff", fontSize: 12, fontWeight: 700,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+          maxWidth: 360, margin: "0 auto",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+            <span>🎣 Die Fische sind scheu — gleich wieder</span>
+            <span style={{ marginLeft: "auto", opacity: 0.7 }}>
+              {Math.max(0, Math.ceil((fishCooldownUntil - Date.now()) / 1000))}s
+            </span>
+          </div>
+          <div style={{ height: 6, background: "rgba(255,255,255,0.18)", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{
+              height: "100%",
+              width: `${Math.max(0, Math.min(100, ((fishCooldownUntil - Date.now()) / 20_000) * 100))}%`,
+              background: "linear-gradient(90deg, #ec4899, #f59e0b)",
+              transition: "width 0.25s linear",
+            }} />
+          </div>
         </div>
       )}
 

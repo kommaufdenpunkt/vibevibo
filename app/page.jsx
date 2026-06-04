@@ -6,7 +6,7 @@ import Marquee from "@/components/Marquee";
 import Landing from "@/components/Landing";
 import Buschfunk from "@/components/Buschfunk";
 import WallComposer from "@/components/WallComposer";
-import { FortuneCookie, TodaysBirthdays } from "@/components/HomeNostalgia";
+import { FortuneCookie, TodaysBirthdays, MemberSince } from "@/components/HomeNostalgia";
 import PwaInfo from "@/components/PwaInfo";
 import InstallNow from "@/components/InstallNow";
 import RewardedAdButton from "@/components/RewardedAdButton";
@@ -120,6 +120,7 @@ export default function HomePage() {
             <WallComposer targetUsername={me.username} onPosted={() => setFeedTick((t) => t + 1)} placeholder="Erzähl was – mit @user markierst du Freunde" />
           </div>
 
+          <MemberSince />
           <FortuneCookie />
           <TodaysBirthdays />
 
