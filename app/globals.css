@@ -5731,3 +5731,188 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-tx-row { flex-wrap: wrap; }
   .vv-tx-amount { width: 100%; text-align: center; margin-top: 4px; min-width: 0; }
 }
+
+/* =================================================================
+   🥚 VIBO-PAGE — 2007er-Style mit eigenem Hero
+   ================================================================= */
+.vv-vibo-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif;
+  color: #4a044e;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.vv-vibo-hero {
+  position: relative;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(196,181,253,0.55), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(125,211,252,0.45), transparent 45%),
+    linear-gradient(135deg, #ede9fe 0%, #f5d0fe 45%, #dbeafe 100%);
+  border: 4px double #a855f7;
+  border-radius: 18px;
+  padding: 22px 16px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(168,85,247,0.28);
+}
+.vv-vibo-hero-stars {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; justify-content: space-around;
+  padding: 8px 12px; font-size: 17px; color: #c026d3;
+}
+.vv-vibo-hero-stars span {
+  animation: vv-nost-twinkle 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px #fff);
+}
+.vv-vibo-hero-stars span:nth-child(2n) { animation-delay: 0.3s; color: #06b6d4; }
+.vv-vibo-hero-stars span:nth-child(3n) { animation-delay: 0.6s; color: #ec4899; }
+.vv-vibo-hero-emoji {
+  position: relative;
+  font-size: 56px;
+  margin-bottom: 4px;
+  display: inline-block;
+  animation: vv-vibo-bounce 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 6px 10px rgba(168,85,247,0.5));
+}
+@keyframes vv-vibo-bounce {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+}
+.vv-vibo-hero-title {
+  position: relative;
+  font-size: 30px;
+  font-weight: 900;
+  margin: 2px 0;
+  letter-spacing: 1.5px;
+  background: linear-gradient(180deg, #fff 0%, #c4b5fd 40%, #a855f7 70%, #4c1d95 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 0 #fff, 3px 3px 0 #c4b5fd, 5px 5px 8px rgba(0,0,0,0.3);
+  transform: perspective(360px) rotateX(8deg);
+}
+.vv-vibo-hero-sub {
+  position: relative;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #581c87;
+  text-shadow: 0 1px 0 #fff;
+  margin-bottom: 10px;
+}
+.vv-vibo-hero-actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.vv-vibo-hero-link {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.85);
+  color: #581c87 !important;
+  font-weight: 800;
+  font-size: 12px;
+  text-decoration: none !important;
+  border: 2px solid #a855f7;
+  transition: transform 0.1s;
+}
+.vv-vibo-hero-link:hover { transform: translateY(-1px); background: #fff; }
+
+/* Grid */
+.vv-vibo-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 14px;
+}
+.vv-vibo-col-main, .vv-vibo-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .vv-vibo-grid { grid-template-columns: 1fr; }
+}
+
+/* Cards */
+.vv-vibo-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid currentColor;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.vv-vibo-card[data-tone="pink"]   { color: #ec4899; }
+.vv-vibo-card[data-tone="violet"] { color: #a855f7; }
+.vv-vibo-card[data-tone="cyan"]   { color: #06b6d4; }
+.vv-vibo-card[data-tone="gold"]   { color: #f59e0b; }
+.vv-vibo-card-title {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+  background-size: 200% 100%;
+  animation: vv-nost-titlewave 6s ease-in-out infinite;
+}
+.vv-vibo-card[data-tone="pink"]   .vv-vibo-card-title { background-image: linear-gradient(90deg, #ec4899, #f472b6, #ec4899); }
+.vv-vibo-card[data-tone="violet"] .vv-vibo-card-title { background-image: linear-gradient(90deg, #a855f7, #c084fc, #a855f7); }
+.vv-vibo-card[data-tone="cyan"]   .vv-vibo-card-title { background-image: linear-gradient(90deg, #06b6d4, #67e8f9, #06b6d4); }
+.vv-vibo-card[data-tone="gold"]   .vv-vibo-card-title { background-image: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b); }
+.vv-vibo-card-body { padding: 12px; background: #fff; color: #4a044e; }
+.vv-vibo-card[data-tone="pink"]   .vv-vibo-card-body { background: linear-gradient(180deg, #fff, #fdf2f8); }
+.vv-vibo-card[data-tone="violet"] .vv-vibo-card-body { background: linear-gradient(180deg, #fff, #faf5ff); }
+.vv-vibo-card[data-tone="cyan"]   .vv-vibo-card-body { background: linear-gradient(180deg, #fff, #ecfeff); }
+.vv-vibo-card[data-tone="gold"]   .vv-vibo-card-body { background: linear-gradient(180deg, #fff, #fffbeb); }
+
+.vv-vibo-fullmap-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #06b6d4, #0e7490);
+  color: #fff !important;
+  font-weight: 800;
+  font-size: 12px;
+  text-decoration: none !important;
+  border: 2px solid #155e75;
+  box-shadow: 0 3px 0 #155e75;
+}
+
+.vv-vibo-footer {
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  color: #581c87;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.5px;
+  background: repeating-linear-gradient(90deg, #ede9fe 0 16px, #ddd6fe 16px 32px);
+  border: 2px ridge #a855f7;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.vv-vibo-footer span:first-child,
+.vv-vibo-footer span:last-child {
+  color: #a855f7;
+  font-size: 16px;
+  animation: vv-nost-twinkle 1.8s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  .vv-vibo-hero { padding: 16px 12px; border-width: 3px; }
+  .vv-vibo-hero-title { font-size: 22px; }
+  .vv-vibo-hero-emoji { font-size: 44px; }
+  .vv-vibo-hero-sub { font-size: 11px; }
+  .vv-vibo-hero-link { font-size: 11px; padding: 5px 12px; }
+  .vv-vibo-card-title { font-size: 12px; padding: 6px 10px; letter-spacing: 1px; }
+  .vv-vibo-card-body { padding: 10px; }
+  .vv-vibo-fullmap-btn { font-size: 11px; padding: 7px 14px; }
+}
