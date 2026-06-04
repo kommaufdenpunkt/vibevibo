@@ -33,9 +33,34 @@ export async function POST(req) {
     return NextResponse.json({ error: "Genug geangelt für heute! 🎣 Komm morgen wieder." }, { status: 429 });
   }
 
-  const water = await waterNearby(lat, lng, 150);
-  if (water === false) {
-    return NextResponse.json({ error: "🌊 Kein Gewässer in der Nähe. Geh näher an einen See, Fluss oder die Küste!" }, { status: 403 });
+  // Strikter Standort-Check:
+  // 1. Wenn der Client das geklickte Gewaesser mitgibt, MUSS der User innerhalb
+  //    dessen Radius stehen (Server-seitige Distanz-Rechnung).
+  // 2. Wenn nicht (z.B. Reichweiten-Check uebersprungen oder direkter API-Call):
+  //    eng begrenzten Umkreis pruefen — Default war 150m, jetzt 60m.
+  function distM(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  const w = body?.water;
+  if (w && Number.isFinite(w.lat) && Number.isFinite(w.lng) && Number.isFinite(w.radiusM)) {
+    const d = distM(lat, lng, Number(w.lat), Number(w.lng));
+    if (d > Number(w.radiusM) + 5) { // 5m GPS-Toleranz
+      return NextResponse.json({
+        error: `🌊 Zu weit weg vom Wasser — noch ${Math.ceil(d - w.radiusM)} m bis ${w.name || "zum Gewässer"}.`,
+      }, { status: 403 });
+    }
+  } else {
+    // Kein Wasser mitgegeben -> sehr enger Standard-Check
+    const water = await waterNearby(lat, lng, 60);
+    if (water === false) {
+      return NextResponse.json({ error: "🌊 Kein Gewässer in der Nähe. Geh näher an einen See, Fluss oder die Küste!" }, { status: 403 });
+    }
   }
 
   // Wetter + Tageszeit beeinflussen den Fang

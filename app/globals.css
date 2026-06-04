@@ -2100,47 +2100,48 @@ a:hover { background: var(--vv-yellow); color: #000; }
 
 .vv-nav2 {
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   z-index: 50;
 }
 
 .vv-nav2-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: 10px;
+  padding: 6px 10px;
   background: linear-gradient(180deg, #2a1654, #0e0428);
-  border: 2px ridge var(--vv-pink);
-  border-radius: 6px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--vv-pink);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 .vv-burger {
-  width: 42px;
-  height: 36px;
+  width: 36px;
+  height: 32px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
-  padding: 0 9px;
+  gap: 4px;
+  padding: 0 8px;
   background: linear-gradient(180deg, var(--vv-pink), var(--vv-pink-deep));
-  border: 2px outset #fff;
-  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 6px;
   cursor: pointer;
+  transition: background 0.18s ease;
 }
 .vv-burger span {
   display: block;
-  height: 3px;
+  height: 2px;
   background: #fff;
   border-radius: 2px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
   transition: transform 0.25s, opacity 0.25s;
 }
 .vv-burger:hover { background: linear-gradient(180deg, var(--vv-yellow), var(--vv-orange)); }
 .vv-burger:hover span { background: #000; }
-.vv-burger-open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.vv-burger-open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
 .vv-burger-open span:nth-child(2) { opacity: 0; }
-.vv-burger-open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+.vv-burger-open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
 .vv-nav2-logo {
   font-family: "Comic Sans MS", "Chalkboard SE", cursive;
@@ -2189,8 +2190,8 @@ a:hover { background: var(--vv-yellow); color: #000; }
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  width: 280px;
-  max-width: 90vw;
+  width: 320px;
+  max-width: 92vw;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
@@ -2201,68 +2202,111 @@ a:hover { background: var(--vv-yellow); color: #000; }
   pointer-events: none;
 }
 .vv-nav2-panel.vv-open {
-  max-height: 520px;
+  max-height: 70vh;
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
 }
 
 .vv-nav2-panel-inner {
-  background: linear-gradient(180deg, #1a0a3e, #0a0420);
-  border: 2px ridge var(--vv-pink);
-  border-radius: 8px;
+  background: linear-gradient(180deg, #1a0a3e 0%, #0a0420 100%);
+  border: 1px solid rgba(255, 62, 157, 0.65);
+  border-radius: 10px;
   padding: 8px;
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 62, 157, 0.4);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.4) inset;
+  max-height: calc(70vh - 12px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Kompakter Header oberhalb der Links: Title + Hairline */
+.vv-nav2-section {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  padding: 6px 8px 4px;
+  font-weight: 700;
+}
+.vv-nav2-divider {
+  height: 1px;
+  margin: 6px 4px;
+  background: linear-gradient(90deg, transparent, rgba(255,62,157,0.4), transparent);
+}
+
+/* 2-Spalten-Grid auf etwas breiteren Screens, dann sind alle Links sichtbar */
+.vv-nav2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+@media (max-width: 380px) {
+  .vv-nav2-grid { grid-template-columns: 1fr; }
 }
 
 .vv-nav2-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  margin: 3px 0;
-  background: linear-gradient(180deg, #fff, #d8d8d8);
-  color: #000 !important;
+  gap: 8px;
+  padding: 8px 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  color: #f3eaff !important;
   text-decoration: none;
-  border: 2px outset #fff;
-  border-radius: 5px;
-  font-weight: bold;
-  text-shadow: 1px 1px 0 #fff;
-  font-size: 14px;
-  /* iOS-Tap-Highlight weg */
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 7px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  min-height: 38px;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
   -webkit-tap-highlight-color: transparent;
 }
-/* Hover NUR bei echtem Hover-fähigen Gerät — verhindert das Hängenbleiben
-   des gelben Highlights auf Touchscreens. */
 @media (hover: hover) and (pointer: fine) {
   .vv-nav2-item:hover {
-    background: linear-gradient(180deg, var(--vv-yellow), var(--vv-orange));
-    transform: translateX(3px);
+    background: linear-gradient(180deg, rgba(255,62,157,0.22), rgba(255,62,157,0.06));
+    border-color: rgba(255,62,157,0.5);
   }
 }
 .vv-nav2-item:active {
-  background: linear-gradient(180deg, var(--vv-yellow), var(--vv-orange));
-  border-style: inset;
-  transform: translateX(2px);
+  transform: scale(0.97);
+  background: linear-gradient(180deg, rgba(255,62,157,0.35), rgba(255,62,157,0.12));
 }
 .vv-nav2-item.vv-active {
-  background: linear-gradient(180deg, var(--vv-pink), var(--vv-violet));
+  background: linear-gradient(180deg, var(--vv-pink), var(--vv-pink-deep));
   color: #fff !important;
-  text-shadow: 1px 1px 0 #000;
-  border-style: inset;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.5);
+  box-shadow: 0 2px 8px rgba(255,62,157,0.45), 0 0 0 1px rgba(0,0,0,0.2) inset;
 }
-.vv-nav2-icon { font-size: 22px; width: 26px; text-align: center; flex-shrink: 0; }
-.vv-nav2-label { flex: 1; }
+.vv-nav2-icon {
+  font-size: 16px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.4));
+}
+.vv-nav2-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .vv-nav2-logout {
-  margin-top: 10px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--vv-pink);
-  background: linear-gradient(180deg, #ffd0d0, #ff9999) !important;
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  background: linear-gradient(180deg, rgba(239,68,68,0.25), rgba(239,68,68,0.08)) !important;
+  border-color: rgba(239,68,68,0.55) !important;
+  color: #ffd6d6 !important;
+  justify-content: center;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  min-height: 34px;
 }
 .vv-nav2-logout:active {
-  background: linear-gradient(180deg, #ff9999, #ff7777) !important;
+  background: linear-gradient(180deg, rgba(239,68,68,0.45), rgba(239,68,68,0.2)) !important;
 }
 
 .vv-nav2-backdrop {

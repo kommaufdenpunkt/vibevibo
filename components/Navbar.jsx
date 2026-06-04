@@ -56,18 +56,35 @@ function CustomStatusBox({ onSet }) {
   );
 }
 
-const LINKS = [
-  { href: "/", icon: "🏠", label: "Start" },
-  { href: "/profile", icon: "👤", label: "Mein Profil" },
-  { href: "/messenger?tab=vibo", icon: "🥚", label: "Mein VIBO" },
-  { href: "/karte", icon: "🗺️", label: "Realitätskarte" },
-  { href: "/live", icon: "🎥", label: "Live" },
-  { href: "/freunde", icon: "👯", label: "Freunde" },
-  { href: "/messenger", icon: "✉️", label: "Nachrichten" },
-  { href: "/fotos", icon: "📸", label: "Fotos" },
-  { href: "/gruppen", icon: "🏘️", label: "Gruppen" },
-  { href: "/geschenke", icon: "🎁", label: "Geschenke" },
-  { href: "/shop", icon: "🛍️", label: "Shop" },
+// Gruppiert für die ruhigere Optik: 4 Sektionen mit Hairline-Trennern.
+// Reihenfolge orientiert sich an Nutzungsfrequenz.
+const LINK_SECTIONS = [
+  {
+    title: "Du",
+    items: [
+      { href: "/", icon: "🏠", label: "Start" },
+      { href: "/profile", icon: "👤", label: "Profil" },
+      { href: "/messenger?tab=vibo", icon: "🥚", label: "Mein VIBO" },
+      { href: "/karte", icon: "🗺️", label: "Karte" },
+    ],
+  },
+  {
+    title: "Sozial",
+    items: [
+      { href: "/freunde", icon: "👯", label: "Freunde" },
+      { href: "/messenger", icon: "✉️", label: "Nachrichten" },
+      { href: "/gruppen", icon: "🏘️", label: "Gruppen" },
+      { href: "/live", icon: "🎥", label: "Live" },
+    ],
+  },
+  {
+    title: "Inhalte",
+    items: [
+      { href: "/fotos", icon: "📸", label: "Fotos" },
+      { href: "/geschenke", icon: "🎁", label: "Geschenke" },
+      { href: "/shop", icon: "🛍️", label: "Shop" },
+    ],
+  },
 ];
 
 export default function Navbar() {
@@ -287,16 +304,24 @@ export default function Navbar() {
 
       <div className={`vv-nav2-panel${open ? " vv-open" : ""}`}>
         <div className="vv-nav2-panel-inner">
-          {LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`vv-nav2-item${isActive(l.href) ? " vv-active" : ""}`}
-              onClick={(e) => handleLinkClick(e, l.href)}
-            >
-              <span className="vv-nav2-icon">{l.icon}</span>
-              <span className="vv-nav2-label">{l.label}</span>
-            </Link>
+          {LINK_SECTIONS.map((sec, idx) => (
+            <div key={sec.title}>
+              {idx > 0 && <div className="vv-nav2-divider" />}
+              <div className="vv-nav2-section">{sec.title}</div>
+              <div className="vv-nav2-grid">
+                {sec.items.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className={`vv-nav2-item${isActive(l.href) ? " vv-active" : ""}`}
+                    onClick={(e) => handleLinkClick(e, l.href)}
+                  >
+                    <span className="vv-nav2-icon">{l.icon}</span>
+                    <span className="vv-nav2-label">{l.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
           {me && (
             <a

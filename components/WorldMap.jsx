@@ -221,6 +221,9 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   const [perm, setPerm] = useState("idle"); // idle | requesting | granted | denied
   const [consent, setConsent] = useState(null); // null=lädt, 1=ja, -1=nein, 0=unbestimmt
   const [pos, setPos] = useState(null);
+  // Live-Referenz auf pos fuer Closures (Klick-Handler), die nach Mount-Zeit feuern.
+  const posRef = useRef(null);
+  useEffect(() => { posRef.current = pos; }, [pos]);
   const [items, setItems] = useState([]);
   const [flash, setFlash] = useState("");
   const [error, setError] = useState("");
@@ -407,8 +410,30 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
+    // Klick-Handler wird live ausgewertet (nutzt posRef, NICHT die Closure-pos),
+    // damit eine Bewegung nach Render-Zeit erkannt wird.
+    function handleWaterClick(w) {
+      const p = posRef.current;
+      if (!p) {
+        setFlash("📍 Standort wird noch ermittelt…");
+        setTimeout(() => setFlash(""), 2500);
+        return;
+      }
+      const d = distM(p.lat, p.lng, w.lat, w.lng);
+      const insideZone = d <= w.radiusM; // strikt: kein Bonus
+      if (!insideZone) {
+        const m = Math.ceil(d - w.radiusM);
+        setFlash(`🎣 ${w.name} · komm noch ${m} m näher`);
+        setTimeout(() => setFlash(""), 3500);
+        return;
+      }
+      goFishing(w); // dem Server das angeklickte Gewaesser mitgeben
+    }
+
     for (const w of waters) {
-      const inZone = pos ? distM(pos.lat, pos.lng, w.lat, w.lng) <= w.radiusM + 10 : false;
+      // initialer Zustand fuer die Optik (Animation/Farbe)
+      const inZone = pos ? distM(pos.lat, pos.lng, w.lat, w.lng) <= w.radiusM : false;
+
       // Wasser-Kreis (echte Grösse) — Klick auf Kreis öffnet Angel-Action
       const circle = L.circle([w.lat, w.lng], {
         radius: w.radiusM,
@@ -418,13 +443,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
         fillOpacity: inZone ? 0.35 : 0.18,
         interactive: true,
       });
-      circle.on("click", () => {
-        if (inZone) { goFishing(); }
-        else {
-          setFlash(`🎣 ${w.name} · komm noch ${Math.ceil(distM(pos.lat, pos.lng, w.lat, w.lng) - w.radiusM)} m näher`);
-          setTimeout(() => setFlash(""), 3500);
-        }
-      });
+      circle.on("click", () => handleWaterClick(w));
       watersLayerRef.current.addLayer(circle);
 
       // Angel-Icon im Zentrum, Groesse skaliert mit Radius
@@ -447,14 +466,8 @@ export default function WorldMap({ onPickup, compact = false, height }) {
         iconAnchor: [iconPx / 2, iconPx / 2],
       });
       const marker = L.marker([w.lat, w.lng], { icon, interactive: true });
-      marker.bindTooltip(`🎣 ${w.name} (~${w.radiusM} m)${inZone ? " · in Reichweite" : ""}`);
-      marker.on("click", () => {
-        if (inZone) { goFishing(); }
-        else {
-          setFlash(`🎣 ${w.name} · komm noch ${Math.ceil(distM(pos.lat, pos.lng, w.lat, w.lng) - w.radiusM)} m näher`);
-          setTimeout(() => setFlash(""), 3500);
-        }
-      });
+      marker.bindTooltip(`🎣 ${w.name} (~${w.radiusM} m)${inZone ? " · in Reichweite" : " · zu weit weg"}`);
+      marker.on("click", () => handleWaterClick(w));
       watersLayerRef.current.addLayer(marker);
     }
   }, [waters, pos]);
@@ -684,12 +697,16 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   }
 
   const [fishing, setFishing] = useState(false);
-  async function goFishing() {
-    if (!pos || fishing) return;
+  // water (optional): { lat, lng, radiusM, name } - das angeklickte Gewaesser.
+  // Wenn mitgegeben, prueft der Server zusaetzlich ob der User wirklich
+  // INNERHALB dieses Gewaessers steht (nicht nur "irgendwo Wasser nah").
+  async function goFishing(water) {
+    const p = posRef.current || pos;
+    if (!p || fishing) return;
     setFishing(true);
     setFlash("🎣 Auswerfen…");
     try {
-      const r = await api.worldFish(pos.lat, pos.lng, pos.acc);
+      const r = await api.worldFish(p.lat, p.lng, p.acc, water);
       const f = r.fish;
       setFlash(`${f.emoji} ${f.msg}${f.vibes ? ` (+${f.vibes} ✨)` : ""}${r.viboFed ? " · VIBO gefüttert 🍽️" : ""}`);
       setTimeout(() => setFlash(""), 4200);
