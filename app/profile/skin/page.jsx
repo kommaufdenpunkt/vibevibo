@@ -135,23 +135,67 @@ const EXAMPLE = `/* Hier kannst du dein Profil designen!
  */
 `;
 
-// Komponenten, die im Color-Builder einzeln gefärbt werden können
+// Komponenten, die im Color-Builder einzeln gefärbt werden können.
+// Jede Gruppe (group) wird im UI als eigene Sektion gerendert.
 const COMPONENTS = [
-  { key: "body",     label: "🌅 Hintergrund",     selectors: "body",                                                  prop: "background" },
-  { key: "hero",     label: "🎀 Titelbild (Hero)", selectors: ".vv-nost-hero",                                         prop: "background" },
-  { key: "wordart",  label: "✨ Name (WordArt)",   selectors: ".vv-nost-wordart",                                      prop: "color", fill: true },
-  { key: "card",     label: "📋 Karten-Inhalt",    selectors: ".vv-card, .vv-nost-card-body",                          prop: "background" },
-  { key: "cardTitle",label: "🏷 Karten-Titel",      selectors: ".vv-card h2, .vv-card h3, .vv-nost-card-title",         prop: "background" },
-  { key: "cardText", label: "📝 Karten-Titel-Text", selectors: ".vv-card h2, .vv-card h3, .vv-nost-card-title",         prop: "color" },
-  { key: "border",   label: "🟪 Karten-Rahmen",     selectors: ".vv-card, .vv-nost-card",                               prop: "border-color" },
-  { key: "btn",      label: "🔘 Buttons (Aktionen)", selectors: ".vv-btn, .vv-nost-action",                            prop: "background" },
-  { key: "btnText",  label: "🔠 Button-Text",       selectors: ".vv-btn, .vv-nost-action",                              prop: "color" },
-  { key: "pin",      label: "📌 Pinnwand-Eintrag",  selectors: ".vv-pinnwand-entry",                                    prop: "background" },
-  { key: "pinBorder",label: "📍 Pinnwand-Rahmen",   selectors: ".vv-pinnwand-entry",                                    prop: "border-color" },
-  { key: "mood",     label: "💭 Mood-Bubble",       selectors: ".vv-mood, .vv-nost-mood",                               prop: "background" },
-  { key: "chip",     label: "🏷 Interessen-Chips",   selectors: ".vv-nost-chip",                                         prop: "background" },
-  { key: "text",     label: "📃 Allgemeiner Text",   selectors: ".vv-nost-page, .vv-nost-card-body",                    prop: "color" },
+  // === Seite & Hintergrund ===
+  { group: "Seite",      key: "body",        label: "🌅 Hintergrund",          selectors: "body",                                                    prop: "background" },
+  { group: "Seite",      key: "text",        label: "📃 Allgemeiner Text",     selectors: ".vv-nost-page, .vv-nost-card-body",                       prop: "color" },
+
+  // === Marquee (Banner ganz oben) ===
+  { group: "Marquee",    key: "marquee",     label: "🎀 Marquee-Hintergrund",  selectors: ".vv-nost-marquee",                                        prop: "background" },
+  { group: "Marquee",    key: "marqueeText", label: "🎨 Marquee-Text",          selectors: ".vv-nost-marquee",                                        prop: "color" },
+
+  // === Hero / Titelbild ===
+  { group: "Titelbild",  key: "hero",        label: "🌈 Titelbild (Hero)",      selectors: ".vv-nost-hero",                                           prop: "background" },
+  { group: "Titelbild",  key: "heroBorder",  label: "🟪 Titelbild-Rahmen",      selectors: ".vv-nost-hero",                                           prop: "border-color" },
+  { group: "Titelbild",  key: "wordart",     label: "✨ Name (WordArt)",        selectors: ".vv-nost-wordart",                                        prop: "color", fill: true },
+  { group: "Titelbild",  key: "username",    label: "🆔 @username-Farbe",       selectors: ".vv-nost-username",                                       prop: "color" },
+  { group: "Titelbild",  key: "stars",       label: "⭐ Hero-Sterne",           selectors: ".vv-nost-hero-stars span",                                prop: "color" },
+  { group: "Titelbild",  key: "mood",        label: "💭 Mood-Bubble",           selectors: ".vv-mood, .vv-nost-mood",                                 prop: "background" },
+  { group: "Titelbild",  key: "moodText",    label: "💬 Mood-Text",             selectors: ".vv-mood, .vv-nost-mood",                                 prop: "color" },
+  { group: "Titelbild",  key: "moodBorder",  label: "🔲 Mood-Rahmen",           selectors: ".vv-mood, .vv-nost-mood",                                 prop: "border-color" },
+
+  // === Mitglieds-Zertifikat ===
+  { group: "Zertifikat", key: "cert",        label: "📜 Zertifikat-BG",         selectors: ".vv-nost-cert",                                           prop: "background" },
+  { group: "Zertifikat", key: "certBorder",  label: "🔲 Zertifikat-Rahmen",     selectors: ".vv-nost-cert",                                           prop: "border-color" },
+  { group: "Zertifikat", key: "certText",    label: "📝 Zertifikat-Text",       selectors: ".vv-nost-cert, .vv-nost-cert-row",                        prop: "color" },
+  { group: "Zertifikat", key: "certTitle",   label: "🏆 Zertifikat-Titel",      selectors: ".vv-nost-cert-title",                                     prop: "color" },
+
+  // === Action-Buttons (Profil bearbeiten, Status, Skin, Fotos, Shop, Transaktionen) ===
+  { group: "Aktionen",   key: "action",      label: "🔘 Action-Button BG",      selectors: ".vv-nost-action",                                         prop: "background" },
+  { group: "Aktionen",   key: "actionText",  label: "🔠 Action-Button Text",    selectors: ".vv-nost-action, .vv-nost-action span",                   prop: "color" },
+  { group: "Aktionen",   key: "actionBorder",label: "🟧 Action-Button Rahmen",  selectors: ".vv-nost-action",                                         prop: "border-color" },
+  { group: "Aktionen",   key: "btn",         label: "🔘 Normale Buttons",       selectors: ".vv-btn",                                                 prop: "background" },
+  { group: "Aktionen",   key: "btnText",     label: "🔠 Normale Buttons-Text",  selectors: ".vv-btn",                                                 prop: "color" },
+
+  // === Cards (Steckbrief, Über mich, Pinnwand, Top5, Geschenke etc.) ===
+  { group: "Karten",     key: "card",        label: "📋 Karten-Inhalt",         selectors: ".vv-card, .vv-nost-card-body",                            prop: "background" },
+  { group: "Karten",     key: "cardTitle",   label: "🏷 Karten-Titel-BG",        selectors: ".vv-card h2, .vv-card h3, .vv-nost-card-title",           prop: "background" },
+  { group: "Karten",     key: "cardText",    label: "📝 Karten-Titel-Text",     selectors: ".vv-card h2, .vv-card h3, .vv-nost-card-title",           prop: "color" },
+  { group: "Karten",     key: "border",      label: "🟪 Karten-Rahmen",         selectors: ".vv-card, .vv-nost-card",                                 prop: "border-color" },
+  { group: "Karten",     key: "cardBody",    label: "📃 Karten-Body-Text",      selectors: ".vv-nost-card-body, .vv-card",                            prop: "color" },
+
+  // === Steckbrief ===
+  { group: "Steckbrief", key: "stbLabel",    label: "🔖 Steckbrief-Label",      selectors: ".vv-nost-steckbrief-label",                               prop: "color" },
+  { group: "Steckbrief", key: "stbValue",    label: "📌 Steckbrief-Werte",      selectors: ".vv-nost-steckbrief-value",                               prop: "color" },
+  { group: "Steckbrief", key: "chip",        label: "🏷 Interessen-Chips",      selectors: ".vv-nost-chip",                                           prop: "background" },
+  { group: "Steckbrief", key: "chipText",    label: "🔤 Chip-Text",             selectors: ".vv-nost-chip",                                           prop: "color" },
+
+  // === Pinnwand / Gästebuch ===
+  { group: "Pinnwand",   key: "pin",         label: "📌 Pinnwand-Eintrag",      selectors: ".vv-pinnwand-entry",                                      prop: "background" },
+  { group: "Pinnwand",   key: "pinBorder",   label: "📍 Pinnwand-Rahmen",       selectors: ".vv-pinnwand-entry",                                      prop: "border-color" },
+  { group: "Pinnwand",   key: "pinText",     label: "✍ Pinnwand-Text",          selectors: ".vv-pinnwand-entry",                                      prop: "color" },
+  { group: "Pinnwand",   key: "tab",         label: "🔖 Tab aktiv (Pinnwand)",  selectors: ".vv-nost-tab.active",                                     prop: "background" },
+  { group: "Pinnwand",   key: "tabInactive", label: "🔖 Tab inaktiv",           selectors: ".vv-nost-tab:not(.active)",                               prop: "background" },
+
+  // === Footer ===
+  { group: "Footer",     key: "footer",      label: "🦶 Footer-BG",             selectors: ".vv-nost-footer",                                         prop: "background" },
+  { group: "Footer",     key: "footerText",  label: "🔤 Footer-Text",           selectors: ".vv-nost-footer",                                         prop: "color" },
+  { group: "Footer",     key: "footerBorder",label: "🔲 Footer-Rahmen",         selectors: ".vv-nost-footer",                                         prop: "border-color" },
 ];
+
+const COMPONENT_GROUPS = ["Seite", "Marquee", "Titelbild", "Zertifikat", "Aktionen", "Karten", "Steckbrief", "Pinnwand", "Footer"];
 
 function buildCssFromColors(colors) {
   const lines = [];
@@ -278,32 +322,69 @@ export default function SkinPage() {
         </div>
       </div>
 
-      {/* === Color-Builder === */}
+      {/* === Color-Builder mit Sektionen === */}
       <div className="vv-card" style={{ marginTop: 12, background: "linear-gradient(135deg,#fce7f3,#f5d0fe)", border: "2px dashed #ec4899" }}>
-        <h3 style={{ marginTop: 0, color: "#831843" }}>🖌 Farb-Builder — jede Komponente einzeln</h3>
+        <h3 style={{ marginTop: 0, color: "#831843" }}>🖌 Farb-Builder — alles einzeln änderbar</h3>
         <p className="vv-muted" style={{ marginTop: 0 }}>
-          Klick auf das Farbfeld, wähl deine Farbe — fertig. Mit „→ In CSS-Editor übernehmen" landet alles unten als CSS-Block.
+          Klick auf ein Farbfeld, wähl deine Farbe — fertig. Mit „→ In CSS-Editor übernehmen" landet alles unten als CSS-Block.
+          <b> Sticky Buttons</b> ganz unten zeigen wieviele Farben aktiv sind.
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
-          {COMPONENTS.map((c) => (
-            <label key={c.key} style={{
-              display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-              background: "rgba(255,255,255,0.7)", borderRadius: 10, border: "1px solid #ec4899",
-              cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#831843",
-            }}>
-              <input type="color"
-                value={colors[c.key] || "#ec4899"}
-                onChange={(e) => setColor(c.key, e.target.value)}
-                style={{ width: 36, height: 36, border: "none", padding: 0, cursor: "pointer", background: "none", borderRadius: 8 }} />
-              <span style={{ flex: 1, minWidth: 0 }}>{c.label}</span>
-              {colors[c.key] && (
-                <button type="button" onClick={(e) => { e.preventDefault(); setColor(c.key, undefined); }}
-                  style={{ background: "none", border: "none", color: "#831843", cursor: "pointer", fontSize: 14 }} title="Zurücksetzen">×</button>
-              )}
-            </label>
-          ))}
-        </div>
-        <div className="vv-row vv-mt-8">
+
+        {COMPONENT_GROUPS.map((group) => {
+          const items = COMPONENTS.filter((c) => c.group === group);
+          if (!items.length) return null;
+          const activeInGroup = items.filter((c) => colors[c.key]).length;
+          return (
+            <div key={group} style={{ marginTop: 14 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8,
+                marginBottom: 6, padding: "5px 10px",
+                background: "rgba(255,255,255,0.55)",
+                borderRadius: 999, fontWeight: 800, fontSize: 12,
+                color: "#831843", border: "1px solid #ec4899",
+              }}>
+                <span style={{ flex: 1 }}>📂 {group}</span>
+                {activeInGroup > 0 && (
+                  <span style={{
+                    background: "#ec4899", color: "#fff",
+                    padding: "1px 8px", borderRadius: 999,
+                    fontSize: 10, fontWeight: 700,
+                  }}>{activeInGroup} aktiv</span>
+                )}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 6 }}>
+                {items.map((c) => (
+                  <label key={c.key} style={{
+                    display: "flex", alignItems: "center", gap: 8, padding: "7px 9px",
+                    background: colors[c.key] ? "#fff" : "rgba(255,255,255,0.7)",
+                    borderRadius: 10,
+                    border: colors[c.key] ? "2px solid #ec4899" : "1px solid #f9a8d4",
+                    cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#831843",
+                    transition: "border-color 0.15s",
+                  }}>
+                    <input type="color"
+                      value={colors[c.key] || "#ec4899"}
+                      onChange={(e) => setColor(c.key, e.target.value)}
+                      style={{ width: 30, height: 30, border: "none", padding: 0, cursor: "pointer", background: "none", borderRadius: 6 }} />
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 11.5 }}>{c.label}</span>
+                    {colors[c.key] && (
+                      <button type="button" onClick={(e) => { e.preventDefault(); setColor(c.key, undefined); }}
+                        style={{ background: "none", border: "none", color: "#831843", cursor: "pointer", fontSize: 16, lineHeight: 1 }}
+                        title="Zurücksetzen">×</button>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        <div className="vv-row vv-mt-12" style={{
+          position: "sticky", bottom: 8, zIndex: 5,
+          background: "linear-gradient(135deg,#fce7f3,#f5d0fe)",
+          padding: 8, borderRadius: 10, border: "2px solid #ec4899",
+          marginTop: 16,
+        }}>
           <button type="button" className="vv-btn vv-btn-pink" onClick={applyBuilderToCss}>
             → In CSS-Editor übernehmen
           </button>
@@ -311,7 +392,7 @@ export default function SkinPage() {
             ↺ Builder leeren
           </button>
           <span className="vv-muted" style={{ fontSize: 11, alignSelf: "center" }}>
-            {Object.keys(colors).filter((k) => colors[k]).length} Komponenten ausgewählt
+            {Object.keys(colors).filter((k) => colors[k]).length} von {COMPONENTS.length} Komponenten gefärbt
           </span>
         </div>
       </div>
