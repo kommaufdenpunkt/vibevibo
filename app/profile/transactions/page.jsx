@@ -155,159 +155,151 @@ export default function TransactionsPage() {
     };
   }, [data, catFilter, dirFilter, dateFilter, search]);
 
-  if (loading || !me || !data) return <div className="vv-page">Lade Transaktionen…</div>;
+  if (loading || !me || !data) return (
+    <div className="vv-tx-page">
+      <div className="vv-tx-hero"><div className="vv-tx-hero-title">💰 Lade Transaktionen…</div></div>
+    </div>
+  );
 
   return (
-    <div className="vv-page">
-      <div style={{ maxWidth: 760, margin: "0 auto" }}>
-        {/* Vibes-Saldo + Daily-Bonus + Tipps oben (vorher auf "Mein VIBO") */}
-        <CreditsPanel embedded />
-
-        {/* Header der Transaktions-Liste */}
-        <div className="vv-card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <div>
-              <h2 style={{ margin: 0 }}>💰 Transaktionen</h2>
-              <div className="vv-muted" style={{ fontSize: 12, marginTop: 4 }}>
-                Vollständiger Vibes-Verlauf — alle Quellen vereint, alles filterbar.
-              </div>
-            </div>
-            <Link href="/profile" className="vv-btn">← Profil</Link>
+    <div className="vv-tx-page">
+      {/* ★ HERO ★ */}
+      <div className="vv-tx-hero">
+        <div className="vv-tx-hero-stars">
+          <span>✨</span><span>★</span><span>✿</span><span>♡</span><span>♥</span><span>★</span><span>✿</span><span>✩</span>
+        </div>
+        <div className="vv-tx-hero-coin">💰</div>
+        <h1 className="vv-tx-hero-title">★ VIBES-VERLAUF ★</h1>
+        <div className="vv-tx-hero-sub">
+          ✿ Alle deine Buchungen · auf einen Blick · filterbar ✿
+        </div>
+        <div className="vv-tx-hero-stats">
+          <div className="vv-tx-hero-stat" data-tone="green">
+            <div className="vv-tx-stat-label">↑ Eingänge</div>
+            <div className="vv-tx-stat-val">+{stats.earn} ✨</div>
           </div>
-
-          {/* Stats-Kacheln */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 12 }}>
-            <div style={statBox("#dcfce7", "#166534")}>
-              <div style={{ fontSize: 11, opacity: 0.85 }}>↑ Eingänge</div>
-              <div style={{ fontSize: 20, fontWeight: 800 }}>+{stats.earn} ✨</div>
-            </div>
-            <div style={statBox("#fee2e2", "#991b1b")}>
-              <div style={{ fontSize: 11, opacity: 0.85 }}>↓ Ausgaben</div>
-              <div style={{ fontSize: 20, fontWeight: 800 }}>−{stats.spend} ✨</div>
-            </div>
-            <div style={statBox("#e0e7ff", "#3730a3")}>
-              <div style={{ fontSize: 11, opacity: 0.85 }}>Σ Buchungen</div>
-              <div style={{ fontSize: 20, fontWeight: 800 }}>{stats.count}</div>
-            </div>
+          <div className="vv-tx-hero-stat" data-tone="red">
+            <div className="vv-tx-stat-label">↓ Ausgaben</div>
+            <div className="vv-tx-stat-val">−{stats.spend} ✨</div>
+          </div>
+          <div className="vv-tx-hero-stat" data-tone="violet">
+            <div className="vv-tx-stat-label">Σ Buchungen</div>
+            <div className="vv-tx-stat-val">{stats.count}</div>
           </div>
         </div>
+        <Link href="/profile" className="vv-tx-back-btn">↩ Zurück zum Profil</Link>
+      </div>
 
-        {/* Filter-Block */}
-        <div className="vv-card">
-          {/* Suche */}
+      {/* Credits-Saldo + Daily Bonus */}
+      <CreditsPanel embedded />
+
+      {/* Filter Card */}
+      <div className="vv-tx-card" data-tone="pink">
+        <div className="vv-tx-card-title">🔍 FILTER & SUCHE</div>
+        <div className="vv-tx-card-body">
           <input
             type="text" value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="🔍 Suchen (Titel, Username…)"
-            className="vv-input"
-            style={{ width: "100%", marginBottom: 10, fontSize: 14 }}
+            className="vv-tx-search"
           />
 
-          {/* Richtung */}
-          <div style={{ fontSize: 11, color: "var(--vv-muted,#666)", fontWeight: 700, marginBottom: 4 }}>Richtung</div>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+          <div className="vv-tx-filter-label">⇅ Richtung</div>
+          <div className="vv-tx-chip-row">
             {[["all","Alle"], ["earn","↑ Eingänge"], ["spend","↓ Ausgaben"]].map(([k, l]) => (
-              <button key={k} type="button" onClick={() => setDirFilter(k)} style={chip(dirFilter === k, "#ec4899")}>{l}</button>
+              <button key={k} type="button" onClick={() => setDirFilter(k)}
+                className={`vv-tx-chip${dirFilter === k ? " active" : ""}`}
+                style={dirFilter === k ? { background: "#ec4899", borderColor: "#831843" } : undefined}>
+                {l}
+              </button>
             ))}
           </div>
 
-          {/* Zeitraum */}
-          <div style={{ fontSize: 11, color: "var(--vv-muted,#666)", fontWeight: 700, marginBottom: 4 }}>Zeitraum</div>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+          <div className="vv-tx-filter-label">📅 Zeitraum</div>
+          <div className="vv-tx-chip-row">
             {DATE_FILTERS.map((f) => (
-              <button key={f.id} type="button" onClick={() => setDateFilter(f.id)} style={chip(dateFilter === f.id, "#3b82f6")}>{f.label}</button>
+              <button key={f.id} type="button" onClick={() => setDateFilter(f.id)}
+                className={`vv-tx-chip${dateFilter === f.id ? " active" : ""}`}
+                style={dateFilter === f.id ? { background: "#3b82f6", borderColor: "#1e3a8a" } : undefined}>
+                {f.label}
+              </button>
             ))}
           </div>
 
-          {/* Kategorien */}
-          <div style={{ fontSize: 11, color: "var(--vv-muted,#666)", fontWeight: 700, marginBottom: 4 }}>Kategorie</div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <div className="vv-tx-filter-label">📂 Kategorie</div>
+          <div className="vv-tx-chip-row">
             {CATEGORIES.map((c) => (
-              <button key={c.id} type="button" onClick={() => setCatFilter(c.id)} style={chip(catFilter === c.id, c.color)}>
+              <button key={c.id} type="button" onClick={() => setCatFilter(c.id)}
+                className={`vv-tx-chip${catFilter === c.id ? " active" : ""}`}
+                style={catFilter === c.id ? { background: c.color, borderColor: "rgba(0,0,0,0.3)" } : undefined}>
                 {c.emoji} {c.label}
               </button>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Listen nach Tag gruppiert */}
-        {groups.length === 0 ? (
-          <div className="vv-card" style={{ textAlign: "center", color: "var(--vv-muted,#666)", padding: 28 }}>
-            Keine Einträge in dieser Ansicht.
+      {/* Listen nach Tag gruppiert */}
+      {groups.length === 0 ? (
+        <div className="vv-tx-card" data-tone="violet">
+          <div className="vv-tx-card-title">📭 NICHTS GEFUNDEN</div>
+          <div className="vv-tx-card-body" style={{ textAlign: "center", padding: 24 }}>
+            <div style={{ fontSize: 40, marginBottom: 6 }}>🥺</div>
+            Keine Buchungen in dieser Ansicht — probier andere Filter.
           </div>
-        ) : groups.map((g) => (
-          <div key={g.day} className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
-            <div style={{
-              padding: "10px 14px", background: "linear-gradient(90deg, #ec4899, #8b5cf6)",
-              color: "#fff", fontWeight: 700, fontSize: 13, letterSpacing: 0.3,
-            }}>
-              📅 {g.day}
-              <span style={{ float: "right", opacity: 0.85, fontWeight: 600 }}>
-                {g.items.length} Buchungen
-              </span>
-            </div>
-            {g.items.map((tx, i) => {
+        </div>
+      ) : groups.map((g) => (
+        <div key={g.day} className="vv-tx-day">
+          <div className="vv-tx-day-header">
+            <span>📅 {g.day}</span>
+            <span className="vv-tx-day-count">{g.items.length} Buchungen</span>
+          </div>
+          <div className="vv-tx-day-list">
+            {g.items.map((tx) => {
               const m = tx._meta;
               const cat = CATEGORIES.find((c) => c.id === m.cat) || CATEGORIES[0];
               const positive = tx.amount > 0;
               return (
-                <div key={tx.id} style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "11px 14px",
-                  borderBottom: i < g.items.length - 1 ? "1px solid var(--vv-border,#eee)" : "none",
-                }}>
-                  <div style={{ fontSize: 22, flexShrink: 0, width: 32, textAlign: "center" }}>{m.emoji}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--vv-text,#1c1c1e)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {m.title}
-                    </div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 3 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: cat.color, padding: "2px 7px", borderRadius: 999, textTransform: "uppercase" }}>
+                <div key={tx.id} className={`vv-tx-row${positive ? " positive" : " negative"}`}>
+                  <div className="vv-tx-row-emoji">{m.emoji}</div>
+                  <div className="vv-tx-row-main">
+                    <div className="vv-tx-row-title">{m.title}</div>
+                    <div className="vv-tx-row-meta">
+                      <span className="vv-tx-cat" style={{ background: cat.color }}>
                         {cat.label}
                       </span>
-                      <span style={{ fontSize: 11, color: "var(--vv-muted,#666)" }}>
-                        {timeLabel(tx.at)}
-                      </span>
+                      <span className="vv-tx-time">⏰ {timeLabel(tx.at)}</span>
                     </div>
                   </div>
-                  <div style={{
-                    color: positive ? "#0d8a3f" : "#c2185b",
-                    fontWeight: 800, fontSize: 17, minWidth: 80, textAlign: "right",
-                  }}>
+                  <div className={`vv-tx-amount${positive ? " positive" : " negative"}`}>
                     {positive ? "+" : ""}{tx.amount} ✨
                   </div>
                 </div>
               );
             })}
           </div>
-        ))}
-
-        {/* Pagination */}
-        <div style={{ display: "flex", gap: 10, marginTop: 12, justifyContent: "center", alignItems: "center" }}>
-          <button type="button" disabled={busy || offset === 0}
-            onClick={() => load(Math.max(0, offset - PAGE))}
-            className="vv-btn">← Neuere</button>
-          <span style={{ fontSize: 13, color: "var(--vv-muted,#666)" }}>
-            {data.total === 0 ? "0" : `${offset + 1}–${Math.min(offset + PAGE, data.total)}`} von {data.total}
-          </span>
-          <button type="button" disabled={busy || offset + PAGE >= data.total}
-            onClick={() => load(offset + PAGE)}
-            className="vv-btn">Ältere →</button>
         </div>
+      ))}
+
+      {/* Pagination */}
+      <div className="vv-tx-pagination">
+        <button type="button" disabled={busy || offset === 0}
+          onClick={() => load(Math.max(0, offset - PAGE))}
+          className="vv-tx-page-btn">← Neuere</button>
+        <span className="vv-tx-page-info">
+          {data.total === 0 ? "0" : `${offset + 1}–${Math.min(offset + PAGE, data.total)}`} von {data.total}
+        </span>
+        <button type="button" disabled={busy || offset + PAGE >= data.total}
+          onClick={() => load(offset + PAGE)}
+          className="vv-tx-page-btn">Ältere →</button>
+      </div>
+
+      {/* Footer */}
+      <div className="vv-tx-footer">
+        <span>★</span>
+        <span>Vibes ✨ verdienst du durch Pinnwand-Einträge, Geschenke, Quests, Tages-Bonus und mehr</span>
+        <span>★</span>
       </div>
     </div>
   );
-}
-
-function statBox(bg, color) {
-  return { background: bg, color, padding: 10, borderRadius: 10, textAlign: "center" };
-}
-
-function chip(active, activeColor) {
-  return {
-    padding: "5px 11px", borderRadius: 10, border: "none", cursor: "pointer",
-    background: active ? activeColor : "rgba(120,120,128,0.15)",
-    color: active ? "#fff" : "var(--vv-text,#1c1c1e)",
-    fontSize: 12, fontWeight: 700, fontFamily: "inherit",
-  };
 }

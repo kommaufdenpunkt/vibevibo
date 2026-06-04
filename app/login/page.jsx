@@ -1,5 +1,8 @@
 "use client";
 
+// 🔑 LOGIN — komplett im 2007er-Style mit WordArt, Glitzer-Avatar und neon Vibes.
+// Tabs für Login/Registrieren, 2FA, Emoji-Picker mit Animation, Mobile-First.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -56,122 +59,177 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="vv-grid-2">
-      <div className="vv-card vv-login-card">
-        <h2>{mode === "login" ? "🔑 Einloggen" : "✿ Account erstellen"}</h2>
-        <div className="vv-row vv-mt-8" style={{ marginBottom: 10 }}>
-          <button
-            type="button"
-            className={`vv-btn ${mode === "login" ? "vv-btn-pink" : ""}`}
-            onClick={() => { setMode("login"); setNeedsTotp(false); setTotp(""); }}
-          >Login</button>
-          <button
-            type="button"
-            className={`vv-btn ${mode === "register" ? "vv-btn-pink" : ""}`}
-            onClick={() => { setMode("register"); setNeedsTotp(false); setTotp(""); }}
-          >Registrieren</button>
+    <div className="vv-login-page">
+      {/* ★ HERO ★ */}
+      <div className="vv-login-hero">
+        <div className="vv-login-hero-stars">
+          <span>✿</span><span>★</span><span>✩</span><span>♡</span>
+          <span>♥</span><span>★</span><span>✿</span><span>✩</span>
         </div>
-        <form onSubmit={submit}>
-          <label>Benutzername</label>
-          <input
-            className="vv-input"
-            placeholder="z.B. lisa_2003"
-            value={form.username}
-            onChange={(e) => up("username", e.target.value)}
-            autoFocus
-            disabled={needsTotp}
-          />
-          {mode === "register" && (
-            <>
-              <label>Anzeigename (optional)</label>
-              <input
-                className="vv-input"
-                placeholder="z.B. Lisa* °·.¸"
-                value={form.displayName}
-                onChange={(e) => up("displayName", e.target.value)}
-              />
-              <label>Avatar-Emoji</label>
-              <div className="vv-row" style={{ flexWrap: "wrap" }}>
-                {EMOJIS.map((e) => (
-                  <button
-                    type="button"
-                    key={e}
-                    onClick={() => up("emoji", e)}
-                    className="vv-smiley"
-                    style={{
-                      fontSize: 24,
-                      outline: form.emoji === e ? "3px solid #ff3e9d" : "none",
-                    }}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-          <label>Passwort</label>
-          <input
-            type="password"
-            className="vv-input"
-            value={form.password}
-            onChange={(e) => up("password", e.target.value)}
-            disabled={needsTotp}
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-          />
-          {mode === "register" && (
-            <div className="vv-muted vv-mt-8" style={{ fontSize: 11 }}>
-              Mind. 10 Zeichen. Wir prüfen gegen bekannte Datenlecks (haveibeenpwned, sicher per k-Anonymity).
-            </div>
-          )}
-          {needsTotp && (
-            <>
-              <label className="vv-mt-12">🔐 2FA-Code aus deiner Authenticator-App</label>
-              <input
-                type="text" inputMode="numeric" autoComplete="one-time-code"
-                pattern="[0-9]{6}" maxLength={6}
-                className="vv-input"
-                value={totp}
-                onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="123 456"
-                autoFocus
-                style={{ letterSpacing: 4, fontSize: 22, textAlign: "center" }}
-              />
-            </>
-          )}
-          {error && (
-            <div className="vv-mt-8" style={{ color: "#a00", fontWeight: "bold" }}>
-              ⚠ {error}
-            </div>
-          )}
-          <div className="vv-mt-12">
-            <button type="submit" className="vv-btn vv-btn-pink" disabled={busy || (needsTotp && totp.length !== 6)}>
-              ▶ {mode === "login" ? (needsTotp ? "Code prüfen" : "Einloggen") : "Loslegen"}
-            </button>
-            {needsTotp && (
-              <button type="button" className="vv-btn vv-mt-8" onClick={() => { setNeedsTotp(false); setTotp(""); setError(null); }}>
-                ← zurück
-              </button>
-            )}
-          </div>
-        </form>
+        <div className="vv-login-hero-avatar">
+          <span>{form.emoji || "🙂"}</span>
+        </div>
+        <h1 className="vv-login-hero-title">★ Vibe★Vibo ★</h1>
+        <div className="vv-login-hero-sub">
+          ✿ deine Erinnerungen · deine Community · dein Vibe ✿
+        </div>
       </div>
 
-      <div className="vv-card">
-        <h3>🌟 Willkommen zurück</h3>
-        <p className="vv-muted">
-          VibeVibo lebt vom nostalgischen Vibe — Profile mit Lieblingssong, Pinnwand,
-          ICQ-Oh-Oh-Sound, Buschfunk und gemütliche Gruppenchats.
-        </p>
-        <div className="vv-mt-12" style={{ fontSize: 13 }}>
-          <strong>Noch keinen Account?</strong>
-          {" "}Klick oben links auf <em>Registrieren</em> — Fidolin (unsere KI-Moderation) hat
-          ein Auge auf alles, damit hier niemand belästigt wird.
+      <div className="vv-login-grid">
+        {/* Login/Register Card */}
+        <div className="vv-login-card">
+          <div className="vv-login-card-title">
+            {mode === "login" ? "🔑 EINLOGGEN" : "✿ ACCOUNT ERSTELLEN ✿"}
+          </div>
+          <div className="vv-login-card-body">
+            <div className="vv-login-tabs">
+              <button type="button"
+                className={`vv-login-tab${mode === "login" ? " active" : ""}`}
+                onClick={() => { setMode("login"); setNeedsTotp(false); setTotp(""); setError(null); }}>
+                🔑 Login
+              </button>
+              <button type="button"
+                className={`vv-login-tab${mode === "register" ? " active" : ""}`}
+                onClick={() => { setMode("register"); setNeedsTotp(false); setTotp(""); setError(null); }}>
+                ✨ Registrieren
+              </button>
+            </div>
+
+            <form onSubmit={submit} className="vv-login-form">
+              <label className="vv-login-label">👤 Benutzername</label>
+              <input
+                className="vv-login-input"
+                placeholder="z.B. lisa_2003"
+                value={form.username}
+                onChange={(e) => up("username", e.target.value)}
+                autoFocus
+                disabled={needsTotp}
+                autoComplete="username"
+              />
+
+              {mode === "register" && (
+                <>
+                  <label className="vv-login-label">✏ Anzeigename (optional)</label>
+                  <input
+                    className="vv-login-input"
+                    placeholder="z.B. Lisa* °·.¸"
+                    value={form.displayName}
+                    onChange={(e) => up("displayName", e.target.value)}
+                  />
+
+                  <label className="vv-login-label">😎 Avatar-Emoji</label>
+                  <div className="vv-login-emoji-row">
+                    {EMOJIS.map((emo) => (
+                      <button
+                        type="button" key={emo}
+                        onClick={() => up("emoji", emo)}
+                        className={`vv-login-emoji${form.emoji === emo ? " active" : ""}`}
+                        aria-label={emo}
+                      >
+                        {emo}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <label className="vv-login-label">🔒 Passwort</label>
+              <input
+                type="password"
+                className="vv-login-input"
+                value={form.password}
+                onChange={(e) => up("password", e.target.value)}
+                disabled={needsTotp}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+              />
+
+              {mode === "register" && (
+                <div className="vv-login-hint">
+                  💡 Mind. 10 Zeichen. Wir prüfen gegen bekannte Datenlecks (haveibeenpwned).
+                </div>
+              )}
+
+              {needsTotp && (
+                <>
+                  <label className="vv-login-label">🔐 2FA-Code (Authenticator-App)</label>
+                  <input
+                    type="text" inputMode="numeric" autoComplete="one-time-code"
+                    pattern="[0-9]{6}" maxLength={6}
+                    className="vv-login-input vv-login-totp"
+                    value={totp}
+                    onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="123 456"
+                    autoFocus
+                  />
+                </>
+              )}
+
+              {error && (
+                <div className="vv-login-error">⚠ {error}</div>
+              )}
+
+              <div className="vv-login-actions">
+                <button type="submit" className="vv-login-submit"
+                  disabled={busy || (needsTotp && totp.length !== 6)}>
+                  {busy ? "…" : (
+                    mode === "login"
+                      ? (needsTotp ? "🔐 Code prüfen" : "▶ Einloggen")
+                      : "🎉 Loslegen!"
+                  )}
+                </button>
+                {needsTotp && (
+                  <button type="button" className="vv-login-back"
+                    onClick={() => { setNeedsTotp(false); setTotp(""); setError(null); }}>
+                    ← zurück
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         </div>
-        <div className="vv-mt-12 vv-muted" style={{ fontSize: 11 }}>
-          🛡️ <strong>Sicherheit:</strong> Login-Versuche werden begrenzt. VPN/Tor-Verbindungen
-          sind beim Registrieren nicht erlaubt. Wer hier mit Hacker-Absicht aufschlägt, wird
-          protokolliert — Strafanzeige nach §§ 202a/202c StGB ist drin.
+
+        {/* Infobox */}
+        <div className="vv-login-card vv-login-card-info">
+          <div className="vv-login-card-title">🌟 WILLKOMMEN ZURÜCK!</div>
+          <div className="vv-login-card-body">
+            <div className="vv-login-marquee-text">
+              ✨ Profile mit Lieblingssong ✨ Pinnwand wie früher ✨ Glitzer-Smileys ✨ ICQ-Oh-Oh-Sound ✨ Buschfunk ✨ Gruppen-Chats ✨
+            </div>
+
+            <div className="vv-login-info-block">
+              <div className="vv-login-info-icon">🎁</div>
+              <div>
+                <strong>Noch keinen Account?</strong>
+                <p>Klick oben auf <em>✨ Registrieren</em>. Fidolin (unsere KI-Moderation) sorgt dafür, dass hier niemand belästigt wird.</p>
+              </div>
+            </div>
+
+            <div className="vv-login-info-block vv-login-info-safe">
+              <div className="vv-login-info-icon">🛡️</div>
+              <div>
+                <strong>Sicherheit</strong>
+                <p>Login-Versuche werden begrenzt. VPN/Tor bei der Registrierung gesperrt. Hacker-Versuche werden protokolliert — Strafanzeige nach §§ 202a/202c StGB ist drin.</p>
+              </div>
+            </div>
+
+            <div className="vv-login-info-features">
+              <div className="vv-login-feat">📌 Pinnwand & Gästebuch</div>
+              <div className="vv-login-feat">🎵 Profilmusik (YouTube/Spotify)</div>
+              <div className="vv-login-feat">💖 Komplimente verschicken</div>
+              <div className="vv-login-feat">👯 Top-5-Freunde</div>
+              <div className="vv-login-feat">🎁 Geschenke-Vitrine</div>
+              <div className="vv-login-feat">🥚 VIBO-Pet großziehen</div>
+              <div className="vv-login-feat">🗺️ Realitätskarte</div>
+              <div className="vv-login-feat">📣 Buschfunk-Feed</div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div className="vv-login-footer">
+        <span>★</span>
+        <span>VibeVibo © 2026 · made with ♥ for everyone who misses the old web</span>
+        <span>★</span>
       </div>
     </div>
   );

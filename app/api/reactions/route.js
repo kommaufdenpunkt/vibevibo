@@ -4,7 +4,7 @@ import { toggleReaction, countReaction, addNotification, getPinnwandAuthorId } f
 import { sendPushToUser } from "@/lib/push";
 
 const ALLOWED_TARGETS = new Set(["pinnwand", "status", "grouppost"]);
-const ALLOWED_KINDS = new Set(["like"]);
+const ALLOWED_KINDS = new Set(["like", "love", "haha", "wow", "fire", "sad"]);
 
 export async function POST(req) {
   const me = await getSessionUser();
@@ -15,17 +15,22 @@ export async function POST(req) {
   }
   const tid = Number(targetId);
   if (!tid) return NextResponse.json({ error: "invalid id" }, { status: 400 });
-  const iLiked = toggleReaction(targetType, tid, me.id, kind);
-  // Benachrichtigung beim Pinnwand-Like (nur wenn neu hinzugefuegt)
-  if (iLiked && targetType === "pinnwand") {
+  const REACTION_EMOJI = { like: "👍", love: "❤️", haha: "😂", wow: "😍", fire: "🔥", sad: "😢" };
+  const REACTION_VERB  = { like: "gefällt", love: "liebt", haha: "lacht über", wow: "ist begeistert von", fire: "feiert", sad: "trauert um" };
+
+  const iReacted = toggleReaction(targetType, tid, me.id, kind);
+  // Benachrichtigung beim Pinnwand-Reaktion (nur wenn neu hinzugefügt)
+  if (iReacted && targetType === "pinnwand") {
     const authorId = getPinnwandAuthorId(tid);
     if (authorId && authorId !== me.id) {
-      addNotification({ userId: authorId, actorId: me.id, type: "like", targetType: "pinnwand", targetId: tid, preview: "Gefällt mir" });
+      const emoji = REACTION_EMOJI[kind] || "❤️";
+      const verb = REACTION_VERB[kind] || "reagierte auf";
+      addNotification({ userId: authorId, actorId: me.id, type: "like", targetType: "pinnwand", targetId: tid, preview: `${emoji} Reaktion` });
       sendPushToUser(authorId, {
-        title: `❤️ ${me.displayName} mag deinen Eintrag`,
+        title: `${emoji} ${me.displayName} ${verb} deinen Eintrag`,
         body: "Schau mal nach!",
         url: `/u/${me.username}`,
-        tag: `vv-like-${tid}`,
+        tag: `vv-react-${tid}-${kind}`,
         kind: "message",
         fromUserId: me.id,
         fromUsername: me.username,
@@ -33,5 +38,5 @@ export async function POST(req) {
       }).catch(() => {});
     }
   }
-  return NextResponse.json({ iLiked, count: countReaction(targetType, tid, kind) });
+  return NextResponse.json({ iReacted, kind, count: countReaction(targetType, tid, kind) });
 }

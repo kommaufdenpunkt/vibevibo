@@ -66,22 +66,7 @@ export default function Pinnwand({ profile, entries, onChange }) {
                 <img src={entry.imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 320, borderRadius: 10, marginTop: 6 }} />
               )}
               <EmbeddedMedia audioUrl={entry.audioUrl} mediaJson={entry.media} />
-              <div style={{ marginTop: 6 }}>
-                {me ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try { await api.toggleReaction("pinnwand", entry.id); onChange?.(); }
-                      catch (e) { alert(e.message); }
-                    }}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: entry.iLiked ? "#ff3e9d" : "#666", padding: 0, fontSize: 13 }}
-                  >
-                    {entry.iLiked ? "❤️ Gefällt dir" : "🤍 Gefällt mir"}{entry.likeCount ? ` · ${entry.likeCount}` : ""}
-                  </button>
-                ) : entry.likeCount > 0 ? (
-                  <span className="vv-muted" style={{ fontSize: 12 }}>❤️ {entry.likeCount}</span>
-                ) : null}
-              </div>
+              <ReactionBar entry={entry} me={me} onChange={onChange} />
             </div>
           );
         })}
@@ -89,3 +74,54 @@ export default function Pinnwand({ profile, entries, onChange }) {
     </div>
   );
 }
+
+const REACTIONS = [
+  { key: "like", emoji: "👍", label: "Gefällt mir", color: "#3b82f6" },
+  { key: "love", emoji: "❤️", label: "Liebe",        color: "#ef4444" },
+  { key: "haha", emoji: "😂", label: "Haha",         color: "#f59e0b" },
+  { key: "wow",  emoji: "😍", label: "Wow",          color: "#ec4899" },
+  { key: "fire", emoji: "🔥", label: "Feuer",        color: "#f97316" },
+  { key: "sad",  emoji: "😢", label: "Traurig",      color: "#6b7280" },
+];
+
+function ReactionBar({ entry, me, onChange }) {
+  const counts = entry.reactionCounts || (entry.likeCount ? { like: entry.likeCount } : {});
+  const mine = new Set(entry.myReactions || (entry.iLiked ? ["like"] : []));
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
+
+  async function toggle(kind) {
+    try { await api.toggleReaction("pinnwand", entry.id, kind); onChange?.(); }
+    catch (e) { alert(e.message); }
+  }
+
+  if (!me) {
+    if (!total) return null;
+    return (
+      <div className="vv-pin-reactions-readonly">
+        {REACTIONS.filter((r) => counts[r.key]).map((r) => (
+          <span key={r.key}>{r.emoji} {counts[r.key]}</span>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="vv-pin-reactions">
+      {REACTIONS.map((r) => {
+        const active = mine.has(r.key);
+        const n = counts[r.key] || 0;
+        return (
+          <button key={r.key} type="button" onClick={() => toggle(r.key)}
+            className={`vv-pin-react${active ? " active" : ""}`}
+            title={r.label}
+            style={{ borderColor: active ? r.color : "transparent", color: active ? r.color : "inherit" }}
+          >
+            <span className="vv-pin-react-emoji">{r.emoji}</span>
+            {n > 0 && <span className="vv-pin-react-n">{n}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+

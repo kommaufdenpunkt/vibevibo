@@ -197,7 +197,55 @@ const COMPONENTS = [
 
 const COMPONENT_GROUPS = ["Seite", "Marquee", "Titelbild", "Zertifikat", "Aktionen", "Karten", "Steckbrief", "Pinnwand", "Footer"];
 
-function buildCssFromColors(colors) {
+// 7 nostalgische Web-Schriftarten
+const FONT_CHOICES = [
+  { id: "default",   name: "Standard",         family: "" },
+  { id: "comic",     name: "Comic Sans (2007)", family: '"Comic Sans MS", "Trebuchet MS", cursive' },
+  { id: "trebuchet", name: "Trebuchet (sauber)", family: '"Trebuchet MS", Arial, sans-serif' },
+  { id: "georgia",   name: "Georgia (Magazin)", family: 'Georgia, "Times New Roman", serif' },
+  { id: "courier",   name: "Courier (Retro-Code)", family: '"Courier New", monospace' },
+  { id: "verdana",   name: "Verdana (klar)",   family: 'Verdana, Geneva, sans-serif' },
+  { id: "impact",    name: "Impact (laut)",     family: 'Impact, "Arial Black", sans-serif' },
+];
+
+// Hex zu RGB
+function hexToRgb(hex) {
+  if (!hex) return null;
+  let h = hex.replace("#", "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length !== 6) return null;
+  return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16) };
+}
+// Luminanz (WCAG-Formel, vereinfacht)
+function luminance(hex) {
+  const c = hexToRgb(hex);
+  if (!c) return 0.5;
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+}
+function autoContrast(bg) {
+  if (!bg) return null;
+  return luminance(bg) > 0.45 ? "#1c1c1e" : "#fff";
+}
+
+// Auto-Contrast Map: pro Hintergrund-Key gibt's einen Text-Key der mitgesetzt wird
+const AUTO_CONTRAST = {
+  body:       { textKey: "text" },
+  hero:       { textKey: "username" },
+  cert:       { textKey: "certText" },
+  action:     { textKey: "actionText" },
+  card:       { textKey: "cardBody" },
+  cardTitle:  { textKey: "cardText" },
+  pin:        { textKey: "pinText" },
+  mood:       { textKey: "moodText" },
+  chip:       { textKey: "chipText" },
+  footer:     { textKey: "footerText" },
+  marquee:    { textKey: "marqueeText" },
+  btn:        { textKey: "btnText" },
+  tab:        { textKey: null }, // tab-text wird automatisch korrigiert
+};
+
+function buildCssFromColors(colors, fontId, autoContrastEnabled) {
   const lines = [];
   for (const c of COMPONENTS) {
     const v = colors[c.key];
@@ -207,6 +255,25 @@ function buildCssFromColors(colors) {
     } else {
       lines.push(`${c.selectors} { ${c.prop}: ${v} !important; }`);
     }
+  }
+  // Auto-Contrast: wenn aktiv und User keinen Text gesetzt hat, passenden Text mitsetzen
+  if (autoContrastEnabled) {
+    for (const [bgKey, info] of Object.entries(AUTO_CONTRAST)) {
+      const bg = colors[bgKey];
+      if (!bg) continue;
+      if (info.textKey && colors[info.textKey]) continue; // User hat Text explizit gewählt
+      if (!info.textKey) continue;
+      const textComp = COMPONENTS.find((x) => x.key === info.textKey);
+      if (!textComp) continue;
+      const fg = autoContrast(bg);
+      if (!fg) continue;
+      lines.push(`${textComp.selectors} { color: ${fg} !important; }`);
+    }
+  }
+  // Schriftart
+  const font = FONT_CHOICES.find((f) => f.id === fontId);
+  if (font && font.family) {
+    lines.push(`body, .vv-nost-page, .vv-card, .vv-nost-card-body, .vv-pinnwand-entry { font-family: ${font.family} !important; }`);
   }
   return lines.join("\n");
 }
@@ -218,6 +285,8 @@ export default function SkinPage() {
   const [busy, setBusy] = useState(false);
   const [colors, setColors] = useState({});
   const [chatTheme, setChatTheme] = useState("default");
+  const [fontId, setFontId] = useState("default");
+  const [autoContrastEnabled, setAutoContrastEnabled] = useState(true);
 
   useEffect(() => {
     if (loading) return;
@@ -226,7 +295,7 @@ export default function SkinPage() {
     try { setChatTheme(localStorage.getItem("vv-chat-theme") || "default"); } catch {}
   }, [me, loading, router]);
 
-  const builtCss = useMemo(() => buildCssFromColors(colors), [colors]);
+  const builtCss = useMemo(() => buildCssFromColors(colors, fontId, autoContrastEnabled), [colors, fontId, autoContrastEnabled]);
 
   if (loading || !me) return null;
 
@@ -320,6 +389,47 @@ export default function SkinPage() {
           <button type="button" className="vv-btn" onClick={() => { setCss(""); setColors({}); }}
             style={{ fontSize: 12, padding: "8px 10px" }}>🧹 Alles leeren</button>
         </div>
+      </div>
+
+      {/* === Schriftart + Auto-Kontrast === */}
+      <div className="vv-card" style={{ marginTop: 12, background: "linear-gradient(135deg,#dbeafe,#e9d5ff)", border: "2px dashed #6366f1" }}>
+        <h3 style={{ marginTop: 0, color: "#3730a3" }}>🔤 Schrift & Kontrast</h3>
+        <p className="vv-muted" style={{ marginTop: 0 }}>
+          Schriftart fürs ganze Profil wählen. <b>Auto-Kontrast</b> setzt automatisch hellen Text auf dunklem Hintergrund (kein schwarz auf schwarz).
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 6 }}>
+          {FONT_CHOICES.map((f) => (
+            <button key={f.id} type="button" onClick={() => setFontId(f.id)}
+              style={{
+                padding: "10px 12px", borderRadius: 10, fontSize: 13, fontWeight: 700,
+                border: `2px solid ${fontId === f.id ? "#6366f1" : "#c4b5fd"}`,
+                background: fontId === f.id ? "#6366f1" : "#fff",
+                color: fontId === f.id ? "#fff" : "#3730a3",
+                fontFamily: f.family || "inherit",
+                cursor: "pointer", textAlign: "left",
+              }}>
+              {f.name}
+              {fontId === f.id && <span style={{ float: "right" }}>✓</span>}
+            </button>
+          ))}
+        </div>
+        <label style={{
+          display: "flex", alignItems: "center", gap: 10, marginTop: 12, padding: "10px 12px",
+          background: autoContrastEnabled ? "linear-gradient(135deg, #dcfce7, #bbf7d0)" : "#fff",
+          border: `2px solid ${autoContrastEnabled ? "#22c55e" : "#c4b5fd"}`,
+          borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 13,
+          color: autoContrastEnabled ? "#166534" : "#3730a3",
+        }}>
+          <input type="checkbox" checked={autoContrastEnabled}
+            onChange={(e) => setAutoContrastEnabled(e.target.checked)}
+            style={{ width: 18, height: 18 }} />
+          <span style={{ flex: 1 }}>
+            🌗 Auto-Kontrast — bei dunkler BG-Farbe automatisch helle Schrift
+            <div style={{ fontSize: 11, opacity: 0.75, fontWeight: 500, marginTop: 2 }}>
+              Wird übersteuert wenn du Text-Farbe selbst wählst.
+            </div>
+          </span>
+        </label>
       </div>
 
       {/* === Color-Builder mit Sektionen === */}
