@@ -959,7 +959,34 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       )}
 
       {/* Tile-Style-Picker entfernt — User wollte saubere Karte ohne UI-Symbole.
-          Standard ist OSM Deutschland (gesetzt via tileStyle-State Default). */}
+          Standard ist ESRI Street Map. */}
+
+      {/* Mini-Notausgang: kleiner ↻-Button unten rechts der Karte zur Komplettheilung,
+          falls Tiles dauerhaft nicht laden (z.B. wegen verklemmtem SW-Cache). */}
+      <button type="button"
+        title="Karte neu laden + Cache leeren"
+        onClick={async () => {
+          try { localStorage.removeItem("vv-tile-style"); localStorage.removeItem("vv-sw-heal"); } catch {}
+          try {
+            if ("caches" in window) {
+              const ks = await caches.keys();
+              await Promise.all(ks.map((k) => caches.delete(k)));
+            }
+            if ("serviceWorker" in navigator) {
+              const regs = await navigator.serviceWorker.getRegistrations();
+              for (const r of regs) { try { await r.unregister(); } catch {} }
+            }
+          } catch {}
+          location.reload();
+        }}
+        style={{
+          position: "absolute", bottom: 12, right: 12, zIndex: 950,
+          width: 36, height: 36, borderRadius: 18, border: "none",
+          background: "rgba(255,255,255,0.92)", color: "#1c1c1e",
+          fontSize: 18, cursor: "pointer",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.22)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>↻</button>
 
       {/* Wetter — kompakte Pille oben links neben dem Zoom-Control */}
       {weather && (

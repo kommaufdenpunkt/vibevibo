@@ -17,8 +17,43 @@ export default function PwaRegister() {
     let reg = null;
     let intervalId = null;
 
+    // EINMALIGE SELBSTHEILUNG: alte Service-Worker-Versionen (v3, v4, v5) hatten
+    // kaputte Cache-Strategien — die JS-Bundles + Karten-Tiles wurden mit Muell
+    // zwischengespeichert (z.B. wurde "/" als Fallback fuer 404 zurueckgegeben).
+    // Wenn der Heal-Marker noch nicht "v6" ist, einmal komplett aufraeumen und neuladen.
+    async function heal() {
+      try {
+        const marker = localStorage.getItem("vv-sw-heal");
+        if (marker === "v6") return false; // schon geheilt
+        // Pruefe ob ueberhaupt ein alter SW aktiv ist
+        const regs = await navigator.serviceWorker.getRegistrations();
+        const had = regs.length > 0;
+        if (!had) {
+          // Frischer Browser, nichts zu heilen
+          localStorage.setItem("vv-sw-heal", "v6");
+          return false;
+        }
+        // Alle SW unregistrieren + alle Caches loeschen
+        for (const r of regs) { try { await r.unregister(); } catch {} }
+        if ("caches" in window) {
+          const ks = await caches.keys();
+          await Promise.all(ks.map((k) => caches.delete(k)));
+        }
+        // Karten-Stil-Praeferenz auf neuen Default zuruecksetzen
+        try { localStorage.removeItem("vv-tile-style"); } catch {}
+        localStorage.setItem("vv-sw-heal", "v6");
+        // Sanft neu laden — der frische SW v6 wird beim naechsten Visit gezogen
+        location.reload();
+        return true;
+      } catch { return false; }
+    }
+
     async function setup() {
       try {
+        // ZUERST: Selbstheilung. Bei Reload kommt useEffect erneut — dann ist Marker gesetzt.
+        const healed = await heal();
+        if (healed) return; // Reload laeuft, kein register noetig
+
         reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
 
         // Update-Erkennung: wenn ein neuer SW im "waiting"-Zustand sitzt, Toast zeigen
