@@ -23,6 +23,7 @@ import { useTheme } from "@/lib/useTheme";
 import { isOnlineActivity, formatLastActive, activityLabel, activityLevel } from "@/lib/activity";
 import { getAutoLogoutMinutes, setAutoLogoutMinutes } from "@/components/IdleGuard";
 import PwaInfo from "@/components/PwaInfo";
+import InstallNow from "@/components/InstallNow";
 
 const VALID_TABS = ["chats", "freunde", "vibo", "profil"];
 
@@ -275,6 +276,7 @@ function MessengerInner() {
               {me.mood && <div style={{ marginTop: 8, fontSize: 14, fontStyle: "italic", color: "#666" }}>„{me.mood}"</div>}
             </div>
 
+            <InstallNow appName="VV Messenger" appEmoji="💬" appColor="#2d7dd2" />
             <PwaInfo id="pwa-messenger" appName="VV Messenger"
               appEmoji="💬" appPurpose="den Messenger" />
 

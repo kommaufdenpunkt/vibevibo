@@ -8,6 +8,7 @@ import Buschfunk from "@/components/Buschfunk";
 import WallComposer from "@/components/WallComposer";
 import { FortuneCookie, TodaysBirthdays } from "@/components/HomeNostalgia";
 import PwaInfo from "@/components/PwaInfo";
+import InstallNow from "@/components/InstallNow";
 import RewardedAdButton from "@/components/RewardedAdButton";
 import AdSlot from "@/components/AdSlot";
 import { api } from "@/lib/api";
@@ -128,6 +129,7 @@ export default function HomePage() {
           {/* Display-Werbung (AdSense, nur mit Consent + ohne VIP) */}
           <AdSlot slot="home-feed" format="auto" style={{ marginBottom: 12 }} />
 
+          <InstallNow appName="VibeVibo" appEmoji="✨" appColor="#ff3e9d" />
           <PwaInfo id="pwa-community" appName="VibeVibo Community"
             appEmoji="🎨" appPurpose="die Community" />
           <Buschfunk key={feedTick} />

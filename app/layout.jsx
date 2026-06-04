@@ -1,10 +1,9 @@
 import "./globals.css";
 import Layout from "@/components/Layout";
-import InstallPrompt from "@/components/InstallPrompt";
+import PwaRegister from "@/components/PwaRegister";
 import ScreenshotGuard from "@/components/ScreenshotGuard";
 import MessageNotifier from "@/components/MessageNotifier";
 import ChatOverlay from "@/components/ChatOverlay";
-import InstallHelp from "@/components/InstallHelp";
 import PushSetup from "@/components/PushSetup";
 import LiveCallShell from "@/components/LiveCallShell";
 import IdleGuard from "@/components/IdleGuard";
@@ -18,12 +17,30 @@ export const metadata = {
   description:
     "VibeVibo bringt das Gefühl von MySpace, SchülerVZ, Jappy, Lokalisten und wer-kennt-wen zurück. Profile mit Hintergrundmusik, Pinnwand, Geschenke, Fotos, Gruppen und Echtzeit-Messenger.",
   applicationName: "VibeVibo",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     title: "VibeVibo",
     statusBarStyle: "black-translucent",
+    startupImage: ["/icon-512.png"],
   },
   formatDetection: { telephone: false },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/icon-192.png"],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "VibeVibo",
+    "msapplication-TileColor": "#ff3e9d",
+    "msapplication-tap-highlight": "no",
+  },
 };
 
 export const viewport = {
@@ -43,11 +60,10 @@ export default function RootLayout({ children }) {
       <body>
         <MeProvider>
           <Layout>{children}</Layout>
-          <InstallPrompt />
+          <PwaRegister />
           <ScreenshotGuard />
           <MessageNotifier />
           <ChatOverlay />
-          <InstallHelp />
           <PushSetup />
           <LiveCallShell />
           <IdleGuard />

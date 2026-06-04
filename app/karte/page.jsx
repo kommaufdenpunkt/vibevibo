@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import WorldMap from "@/components/WorldMap";
 import PwaInfo from "@/components/PwaInfo";
+import InstallNow from "@/components/InstallNow";
 
 export default function KartePage() {
   const { me, loading } = useMe();
@@ -17,6 +18,7 @@ export default function KartePage() {
   );
   return (
     <>
+      <InstallNow appName="Mein VIBO" appEmoji="🐾" appColor="#ec4899" />
       <PwaInfo id="pwa-vibo" appName="Mein VIBO" appEmoji="🐾"
         appPurpose="dein VIBO + die Realitätskarte" />
       <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>

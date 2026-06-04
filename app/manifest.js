@@ -5,10 +5,17 @@ export default function manifest() {
     description:
       "Die kleine, persönliche Community für alle, die das Internet von früher vermissen.",
     start_url: "/",
+    scope: "/",
+    id: "/",
     display: "standalone",
+    display_override: ["standalone", "minimal-ui", "browser"],
     background_color: "#0a0420",
     theme_color: "#ff3e9d",
     orientation: "portrait",
+    lang: "de",
+    dir: "ltr",
+    categories: ["social", "lifestyle", "entertainment"],
+    prefer_related_applications: false,
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
