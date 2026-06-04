@@ -131,6 +131,10 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
                 <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} />
               </Card>
             )}
+
+            <Card title="🎁 MEINE GESCHENKE-VITRINE 🎁" tone="violet">
+              <GiftShelf profile={profile} gifts={gifts} onChange={onChange} />
+            </Card>
           </aside>
 
           {/* MITTE: Pinnwand + Gästebuch */}
@@ -150,10 +154,6 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
               {wallTab === "guestbook" && (
                 <Gaestebuch profile={profile} initialEntries={guestbook} />
               )}
-            </Card>
-
-            <Card title="🎁 MEINE GESCHENKE-VITRINE 🎁" tone="violet">
-              <GiftShelf profile={profile} gifts={gifts} onChange={onChange} />
             </Card>
           </main>
 

@@ -4049,3 +4049,514 @@ input[type="number"], input[type="tel"], textarea, select {
   font-size: 18px;
   animation: vv-nost-twinkle 1.8s ease-in-out infinite;
 }
+
+/* =================================================================
+   💬 CHAT OVERLAY — Nostalgie-Themes + Marker-Klassen zum Customizen
+   ================================================================= */
+.vv-chat-overlay {
+  --vv-chat-bg: #fff;
+  --vv-chat-text: #1c1c1e;
+  --vv-chat-header-bg: linear-gradient(180deg, #5fb0ff 0%, #2d7dd2 55%, #1f5fa8 100%);
+  --vv-chat-header-text: #fff;
+  --vv-chat-bubble-me: linear-gradient(135deg, #2d7dd2, #5fb0ff);
+  --vv-chat-bubble-me-text: #fff;
+  --vv-chat-bubble-them: #fff;
+  --vv-chat-bubble-them-text: #1c1c1e;
+  --vv-chat-accent: #2d7dd2;
+}
+
+/* Theme: NOSTALGIE PINK (MSN/SchülerVZ-Feeling) */
+.vv-chat-theme-pink {
+  --vv-chat-bg: #fff5fb;
+  --vv-chat-header-bg: linear-gradient(180deg, #ff9ed4 0%, #ff3e9d 60%, #b91c6e 100%);
+  --vv-chat-bubble-me: linear-gradient(135deg, #ff3e9d, #ff66c4);
+  --vv-chat-bubble-me-text: #fff;
+  --vv-chat-bubble-them: #fff0fa;
+  --vv-chat-bubble-them-text: #831843;
+  --vv-chat-accent: #ff3e9d;
+}
+
+/* Theme: MSN CLASSIC (orange-grün 2005) */
+.vv-chat-theme-msn {
+  --vv-chat-bg: #f5f5ed;
+  --vv-chat-header-bg: linear-gradient(180deg, #b8d4f0 0%, #5b94d6 50%, #2e5a9e 100%);
+  --vv-chat-bubble-me: linear-gradient(135deg, #ff8c00, #ffa733);
+  --vv-chat-bubble-me-text: #fff;
+  --vv-chat-bubble-them: #fff;
+  --vv-chat-bubble-them-text: #1c1c1e;
+  --vv-chat-accent: #2e5a9e;
+}
+
+/* Theme: NEON RAVE */
+.vv-chat-theme-neon {
+  --vv-chat-bg: #000;
+  --vv-chat-text: #0ff;
+  --vv-chat-header-bg: linear-gradient(90deg, #0ff, #f0f, #0ff);
+  --vv-chat-header-text: #000;
+  --vv-chat-bubble-me: linear-gradient(135deg, #f0f, #0ff);
+  --vv-chat-bubble-me-text: #000;
+  --vv-chat-bubble-them: #001020;
+  --vv-chat-bubble-them-text: #0ff;
+  --vv-chat-accent: #f0f;
+}
+
+/* Theme: DARK EMO */
+.vv-chat-theme-dark {
+  --vv-chat-bg: #1a0030;
+  --vv-chat-text: #e5b0ff;
+  --vv-chat-header-bg: linear-gradient(180deg, #000, #2a004a);
+  --vv-chat-header-text: #ff3e9d;
+  --vv-chat-bubble-me: linear-gradient(135deg, #ff3e9d, #b91c6e);
+  --vv-chat-bubble-me-text: #fff;
+  --vv-chat-bubble-them: #2a004a;
+  --vv-chat-bubble-them-text: #e5b0ff;
+  --vv-chat-accent: #ff3e9d;
+}
+
+/* Theme: GOLD GLAMOUR */
+.vv-chat-theme-gold {
+  --vv-chat-bg: #fffbe6;
+  --vv-chat-header-bg: linear-gradient(180deg, #fde68a 0%, #f59e0b 60%, #b45309 100%);
+  --vv-chat-header-text: #78350f;
+  --vv-chat-bubble-me: linear-gradient(135deg, #f59e0b, #fbbf24);
+  --vv-chat-bubble-me-text: #fff;
+  --vv-chat-bubble-them: #fffbeb;
+  --vv-chat-bubble-them-text: #78350f;
+  --vv-chat-accent: #b45309;
+}
+
+/* Theme: OCEAN */
+.vv-chat-theme-ocean {
+  --vv-chat-bg: #e0f4ff;
+  --vv-chat-header-bg: linear-gradient(180deg, #67e8f9 0%, #06b6d4 50%, #155e75 100%);
+  --vv-chat-bubble-me: linear-gradient(135deg, #06b6d4, #67e8f9);
+  --vv-chat-bubble-me-text: #fff;
+  --vv-chat-bubble-them: #fff;
+  --vv-chat-bubble-them-text: #155e75;
+  --vv-chat-accent: #06b6d4;
+}
+
+/* Theme: REGENBOGEN — Header animiert */
+.vv-chat-theme-rainbow {
+  --vv-chat-bg: #fff;
+  --vv-chat-header-bg: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff7f, #00bfff, #8a2be2, #ff0080);
+  --vv-chat-header-text: #fff;
+  --vv-chat-bubble-me: linear-gradient(135deg, #ff0080, #8a2be2);
+  --vv-chat-bubble-me-text: #fff;
+  --vv-chat-bubble-them: #fff;
+  --vv-chat-bubble-them-text: #1c1c1e;
+  --vv-chat-accent: #ff0080;
+}
+.vv-chat-theme-rainbow .vv-chat-overlay-header {
+  background-size: 300% 100% !important;
+  animation: rainbow-bg 8s linear infinite !important;
+}
+@keyframes rainbow-bg {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Marker-Klassen — werden von ChatOverlay gesetzt und durch die Variablen oben gesteuert */
+.vv-chat-overlay-panel {
+  background: var(--vv-chat-bg) !important;
+  color: var(--vv-chat-text) !important;
+}
+.vv-chat-overlay-header {
+  background: var(--vv-chat-header-bg) !important;
+  color: var(--vv-chat-header-text) !important;
+}
+.vv-chat-overlay-bubble-me {
+  background: var(--vv-chat-bubble-me) !important;
+  color: var(--vv-chat-bubble-me-text) !important;
+}
+.vv-chat-overlay-bubble-them {
+  background: var(--vv-chat-bubble-them) !important;
+  color: var(--vv-chat-bubble-them-text) !important;
+}
+.vv-chat-overlay-send {
+  background: var(--vv-chat-accent) !important;
+  color: #fff !important;
+}
+
+/* Nostalgie-Bonus: Ridge-Borders und kleine Stars im Header bei Nostalgie-Themes */
+.vv-chat-theme-pink .vv-chat-overlay-header,
+.vv-chat-theme-msn .vv-chat-overlay-header,
+.vv-chat-theme-gold .vv-chat-overlay-header,
+.vv-chat-theme-dark .vv-chat-overlay-header {
+  border-bottom: 2px ridge rgba(255,255,255,0.4) !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3), 0 0 6px rgba(255,255,255,0.3) !important;
+  font-family: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif !important;
+}
+.vv-chat-theme-pink .vv-chat-overlay-panel,
+.vv-chat-theme-gold .vv-chat-overlay-panel {
+  border: 3px double currentColor !important;
+}
+
+/* =================================================================
+   ✎ PROFIL BEARBEITEN — 2007er-Style, bunte Cards mit Tones
+   ================================================================= */
+.vv-edit-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif;
+  color: #4a044e;
+}
+
+.vv-edit-hero {
+  position: relative;
+  background:
+    radial-gradient(circle at 25% 20%, rgba(253,224,71,0.5), transparent 45%),
+    radial-gradient(circle at 75% 30%, rgba(125,211,252,0.5), transparent 45%),
+    linear-gradient(135deg, #fce7f3, #f5d0fe, #dbeafe);
+  border: 4px double #ec4899;
+  border-radius: 18px;
+  padding: 22px 18px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(236,72,153,0.25);
+}
+.vv-edit-hero-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding: 8px 12px;
+  font-size: 18px;
+  color: #f472b6;
+}
+.vv-edit-hero-stars span {
+  animation: vv-nost-twinkle 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px #fff);
+}
+.vv-edit-hero-stars span:nth-child(2n) { animation-delay: 0.4s; color: #c026d3; }
+.vv-edit-hero-stars span:nth-child(3n) { animation-delay: 0.8s; color: #38bdf8; }
+.vv-edit-hero-avatar {
+  position: relative;
+  display: inline-block;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 8px;
+  padding: 5px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #ec4899, #f472b6, #a855f7, #06b6d4, #fbbf24, #ec4899);
+  animation: vv-nost-spin 6s linear infinite;
+  box-shadow: 0 0 18px rgba(236,72,153,0.5);
+}
+.vv-edit-hero-avatar img,
+.vv-edit-hero-avatar span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 42px;
+  object-fit: cover;
+  animation: vv-nost-counter-spin 6s linear infinite;
+  border: 3px solid #fff;
+}
+.vv-edit-hero-title {
+  position: relative;
+  font-size: 30px;
+  font-weight: 900;
+  margin: 4px 0 2px;
+  background: linear-gradient(180deg, #fff 0%, #fbcfe8 40%, #ec4899 70%, #831843 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow:
+    2px 2px 0 #fff,
+    3px 3px 0 #f0abfc,
+    5px 5px 8px rgba(0,0,0,0.3);
+  transform: perspective(360px) rotateX(8deg);
+}
+.vv-edit-hero-sub {
+  position: relative;
+  font-size: 13px;
+  font-weight: 700;
+  color: #831843;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.vv-edit-flash {
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 14px;
+  animation: vv-edit-flash-in 0.3s ease;
+}
+.vv-edit-flash[data-tone="ok"] {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  color: #166534;
+  border: 2px solid #22c55e;
+}
+.vv-edit-flash[data-tone="warn"] {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 2px solid #f59e0b;
+}
+@keyframes vv-edit-flash-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Quick-Tiles === */
+.vv-edit-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+.vv-edit-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 8px;
+  border-radius: 14px;
+  text-decoration: none !important;
+  text-align: center;
+  font-family: inherit;
+  transition: transform 0.1s, box-shadow 0.1s;
+  border: 3px solid currentColor;
+}
+.vv-edit-tile:hover { transform: translateY(-2px); }
+.vv-edit-tile:active { transform: translateY(2px); }
+.vv-edit-tile[data-tone="pink"] {
+  background: linear-gradient(160deg, #fce7f3, #fbcfe8 60%, #f9a8d4);
+  color: #831843;
+  box-shadow: 0 4px 0 #be185d, 0 8px 14px rgba(236,72,153,0.25);
+}
+.vv-edit-tile[data-tone="violet"] {
+  background: linear-gradient(160deg, #f5d0fe, #e9d5ff 60%, #d8b4fe);
+  color: #581c87;
+  box-shadow: 0 4px 0 #7c3aed, 0 8px 14px rgba(168,85,247,0.25);
+}
+.vv-edit-tile[data-tone="cyan"] {
+  background: linear-gradient(160deg, #cffafe, #a5f3fc 60%, #67e8f9);
+  color: #155e75;
+  box-shadow: 0 4px 0 #0e7490, 0 8px 14px rgba(6,182,212,0.25);
+}
+.vv-edit-tile[data-tone="gold"] {
+  background: linear-gradient(160deg, #fef3c7, #fde68a 60%, #fcd34d);
+  color: #78350f;
+  box-shadow: 0 4px 0 #b45309, 0 8px 14px rgba(245,158,11,0.25);
+}
+.vv-edit-tile-emoji { font-size: 30px; line-height: 1; margin-bottom: 4px; }
+.vv-edit-tile-label { font-weight: 900; font-size: 13px; letter-spacing: 0.4px; }
+.vv-edit-tile-sub   { font-size: 10px; opacity: 0.75; font-weight: 700; }
+
+/* === Cards === */
+.vv-edit-card {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 3px solid currentColor;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.6);
+}
+.vv-edit-card[data-tone="pink"]   { color: #ec4899; }
+.vv-edit-card[data-tone="violet"] { color: #a855f7; }
+.vv-edit-card[data-tone="cyan"]   { color: #06b6d4; }
+.vv-edit-card[data-tone="gold"]   { color: #f59e0b; }
+
+.vv-edit-card-title {
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.35), 0 0 6px rgba(255,255,255,0.4);
+  background-size: 200% 100%;
+  animation: vv-nost-titlewave 6s ease-in-out infinite;
+  border-bottom: 2px ridge rgba(255,255,255,0.6);
+}
+.vv-edit-card[data-tone="pink"]   .vv-edit-card-title { background-image: linear-gradient(90deg, #ec4899, #f472b6, #ec4899); }
+.vv-edit-card[data-tone="violet"] .vv-edit-card-title { background-image: linear-gradient(90deg, #a855f7, #c084fc, #a855f7); }
+.vv-edit-card[data-tone="cyan"]   .vv-edit-card-title { background-image: linear-gradient(90deg, #06b6d4, #67e8f9, #06b6d4); }
+.vv-edit-card[data-tone="gold"]   .vv-edit-card-title { background-image: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b); }
+
+.vv-edit-card-body {
+  padding: 14px;
+  background: #fff;
+  color: #4a044e;
+}
+.vv-edit-card[data-tone="pink"]   .vv-edit-card-body { background: linear-gradient(180deg, #fff, #fdf2f8); }
+.vv-edit-card[data-tone="violet"] .vv-edit-card-body { background: linear-gradient(180deg, #fff, #faf5ff); }
+.vv-edit-card[data-tone="cyan"]   .vv-edit-card-body { background: linear-gradient(180deg, #fff, #ecfeff); }
+.vv-edit-card[data-tone="gold"]   .vv-edit-card-body { background: linear-gradient(180deg, #fff, #fffbeb); }
+
+/* === Form-Felder === */
+.vv-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 600px) {
+  .vv-edit-row { grid-template-columns: 1fr; }
+}
+.vv-edit-field { display: flex; flex-direction: column; gap: 4px; }
+.vv-edit-field label,
+.vv-edit-card-body > label {
+  display: block;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: currentColor;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  margin-top: 0;
+}
+.vv-edit-spaced { margin-top: 14px !important; }
+
+.vv-edit-input {
+  width: 100%;
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 2px solid currentColor;
+  border-radius: 10px;
+  background: #fff;
+  color: #1c1c1e;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.vv-edit-input:focus {
+  box-shadow: 0 0 0 3px rgba(236,72,153,0.25), inset 0 1px 3px rgba(0,0,0,0.08);
+}
+.vv-edit-textarea { resize: vertical; min-height: 80px; line-height: 1.4; }
+
+.vv-edit-readonly {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  background: linear-gradient(180deg, #f9fafb, #f3f4f6);
+  border: 2px dashed currentColor;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #4a044e;
+}
+.vv-edit-readonly > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vv-edit-lock { font-size: 11px; opacity: 0.7; font-style: italic; }
+
+.vv-edit-mini-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ec4899, #f472b6);
+  color: #fff !important;
+  text-decoration: none !important;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid #be185d;
+  box-shadow: 0 2px 4px rgba(236,72,153,0.3);
+}
+.vv-edit-mini-btn:hover { transform: scale(1.05); }
+
+.vv-edit-mini-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: currentColor !important;
+  text-decoration: none;
+  opacity: 0.8;
+}
+.vv-edit-mini-link:hover { text-decoration: underline; opacity: 1; }
+
+.vv-edit-counter {
+  text-align: right;
+  font-size: 10px;
+  color: var(--vv-muted, #888);
+  margin-top: 3px;
+  font-weight: 700;
+}
+
+.vv-edit-hint {
+  background: rgba(255,255,255,0.6);
+  border-left: 4px solid currentColor;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  font-style: italic;
+  color: #4a044e;
+}
+
+.vv-edit-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.vv-edit-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5d0fe, #fbcfe8);
+  border: 1.5px solid #c026d3;
+  color: #701a75;
+  font-size: 11px;
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* === Save-Bar === */
+.vv-edit-savebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #fce7f3, #f5d0fe, #fce7f3);
+  border: 2px ridge #ec4899;
+  box-shadow: 0 4px 12px rgba(236,72,153,0.2);
+}
+.vv-edit-savebar-cancel {
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: #fff;
+  color: #831843 !important;
+  text-decoration: none !important;
+  font-weight: 700;
+  font-size: 12px;
+  border: 2px solid #ec4899;
+}
+.vv-edit-savebar-save {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  border: 2px solid #831843;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #831843, 0 6px 10px rgba(236,72,153,0.3);
+  font-family: inherit;
+  letter-spacing: 0.5px;
+}
+.vv-edit-savebar-save:hover:not(:disabled) { transform: translateY(-1px); }
+.vv-edit-savebar-save:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #831843; }
+.vv-edit-savebar-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.vv-edit-section-title {
+  margin: 18px 0 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(168,85,247,0.18), transparent);
+  border-left: 4px solid #a855f7;
+  font-size: 14px;
+  font-weight: 900;
+  color: #581c87;
+  letter-spacing: 1px;
+}
+
+.vv-edit-footer {
+  text-align: center;
+  padding: 14px;
+}

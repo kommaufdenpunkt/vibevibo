@@ -30,6 +30,9 @@ const FLAGS = {
   skin_y2k: "skin_y2k", skin_glitter: "skin_glitter", skin_skater: "skin_skater",
   skin_anime: "skin_anime", skin_matrix: "skin_matrix", skin_sailor: "skin_sailor",
   skin_pride: "skin_pride",
+  status_pack_movie: "status_pack_movie", status_pack_party: "status_pack_party",
+  status_pack_love:  "status_pack_love",  status_pack_emo:   "status_pack_emo",
+  status_pack_glam:  "status_pack_glam",
 };
 
 // Anzeige-Emoji pro Owned-Flag (für „Dein Bestand"-Zeile)
@@ -40,6 +43,8 @@ const OWNED_EMOJI = {
   color_rainbow: "🌈", color_glitter: "✨", color_sparkle_fx: "💫", color_pride: "🏳️‍🌈",
   skin_y2k: "💿", skin_glitter: "☁️", skin_skater: "🛹",
   skin_anime: "🌸", skin_matrix: "🟢", skin_sailor: "🌙", skin_pride: "🏳️‍🌈",
+  status_pack_movie: "🎬", status_pack_party: "🎉", status_pack_love: "💘",
+  status_pack_emo: "🖤", status_pack_glam: "✨",
 };
 
 export default function PremiumPanel() {
@@ -180,16 +185,23 @@ export default function PremiumPanel() {
       {PREMIUM_GROUPS.map((group) => {
         const items = itemsByGroup.get(group.id) || [];
         if (!items.length) return null;
+        const ownedCount = items.filter((it) => badgeOwned(it.kind)).length;
         return (
           <div key={group.id} style={{ marginTop: 18 }}>
             <h3 style={{
               margin: "0 0 8px", fontSize: 14, fontWeight: 800,
               color: "var(--vv-text,#1c1c1e)", letterSpacing: 0.2,
-              padding: "6px 10px", borderRadius: 8,
-              background: "linear-gradient(90deg, rgba(139,92,246,0.18), transparent)",
+              padding: "8px 12px", borderRadius: 10,
+              background: "linear-gradient(90deg, rgba(139,92,246,0.18), rgba(236,72,153,0.08), transparent)",
               borderLeft: "4px solid #8b5cf6",
-            }}>{group.label}</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <span>{group.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--vv-muted,#666)" }}>
+                {ownedCount}/{items.length} {ownedCount === items.length ? "✓" : ""}
+              </span>
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
               {items.map((it) => renderItem(it))}
             </div>
           </div>
@@ -209,7 +221,10 @@ export default function PremiumPanel() {
     const soldOut = av.stockTotal && av.stockRemaining === 0;
     const outOfSeason = av.inSeason === false;
     const dailyHit = av.dailyMax && av.todaysPurchases >= av.dailyMax;
-    const blocked = soldOut || outOfSeason || dailyHit;
+    // Cascading-Lock: das hier braucht ein vorheriges Status-Pack
+    const requiresFlag = it.requiresPack ? `status_pack_${it.requiresPack}` : null;
+    const lockedByPrev = requiresFlag && !data.owned.badges.includes(requiresFlag);
+    const blocked = soldOut || outOfSeason || dailyHit || lockedByPrev;
 
     return (
       <div key={it.kind} style={{
@@ -298,6 +313,7 @@ export default function PremiumPanel() {
                 style={{ width: "100%", padding: "10px 12px", fontSize: 13 }}>
                 {soldOut ? "🚫 Ausverkauft"
                   : outOfSeason ? `📅 Erst wieder ab ${it.seasonFrom}`
+                  : lockedByPrev ? `🔒 Erst „${it.requiresPack}" freischalten`
                   : `🛑 Tageslimit (${av.dailyMax}×) erreicht`}
               </button>
             ) : !isConfirming ? (

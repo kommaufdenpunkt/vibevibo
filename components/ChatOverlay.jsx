@@ -74,12 +74,26 @@ export default function ChatOverlay() {
   const typingTimer = useRef(0);
   const prevUnreadRef = useRef(-1);
   const pressTimer = useRef(0);
+  const [chatTheme, setChatTheme] = useState("default");
 
   useEffect(() => {
     const check = () => setIsDesktop(window.innerWidth >= 900);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    try { setChatTheme(localStorage.getItem("vv-chat-theme") || "default"); } catch {}
+    const onChange = () => {
+      try { setChatTheme(localStorage.getItem("vv-chat-theme") || "default"); } catch {}
+    };
+    window.addEventListener("vv-chat-theme-change", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("vv-chat-theme-change", onChange);
+      window.removeEventListener("storage", onChange);
+    };
   }, []);
 
   // Body-Scroll-Lock wenn Overlay offen — Hintergrund-Page bleibt stehen
@@ -557,27 +571,25 @@ export default function ChatOverlay() {
       </div>
 
       {open && (
-        <div style={{
+        <div className={`vv-chat-overlay vv-chat-overlay-panel vv-chat-theme-${chatTheme}`} style={{
           position: "fixed",
           bottom: "calc(86px + env(safe-area-inset-bottom, 0px))",
           right: 18, zIndex: 99,
           width: "min(380px, 94vw)",
           maxHeight: "calc(100dvh - 110px - env(safe-area-inset-bottom, 0px))",
           height: view === "chat" ? "78dvh" : "min(78dvh, 620px)",
-          background: "var(--vv-card, #fff)", borderRadius: 18, overflow: "hidden",
+          borderRadius: 18, overflow: "hidden",
           boxShadow: "0 20px 60px rgba(0,0,0,0.42), 0 4px 12px rgba(0,0,0,0.12)",
           display: "flex", flexDirection: "column",
           fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
           animation: "vv-overlay-in 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28)",
           transformOrigin: "bottom right",
           border: "1px solid var(--vv-border, rgba(0,0,0,0.08))",
-          color: "var(--vv-text, #1c1c1e)",
         }}>
           {/* Kopfleiste */}
-          <div style={{
+          <div className="vv-chat-overlay-header" style={{
             display: "flex", alignItems: "center", gap: 8, padding: "10px 12px",
-            background: "linear-gradient(180deg, #5fb0ff 0%, #2d7dd2 55%, #1f5fa8 100%)",
-            color: "#fff", textShadow: "0 1px 0 rgba(0,0,0,0.25)",
+            textShadow: "0 1px 0 rgba(0,0,0,0.25)",
           }}>
             {view === "chat" && (
               <button type="button" onClick={backToList} aria-label="Zurück"
@@ -585,9 +597,23 @@ export default function ChatOverlay() {
             )}
             {view === "list" ? (
               <>
-                <div style={{ flex: 1, fontWeight: "bold", fontSize: 14, minWidth: 0 }}>
-                  💬 Chats · <span style={{ color: "#bff5cc" }}>{onlineCount} online</span>
-                  {totalUnread > 0 && <> · {totalUnread} ungelesen</>}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: "bold", fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    💬 Chats · <span style={{ color: "#bff5cc" }}>{onlineCount} online</span>
+                    {totalUnread > 0 && <> · {totalUnread} ungelesen</>}
+                  </div>
+                  {me?.mood && (
+                    <Link href="/profile/status"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 4, marginTop: 3,
+                        fontSize: 11, color: "#fff", textDecoration: "none",
+                        background: "rgba(255,255,255,0.18)", padding: "1px 8px", borderRadius: 999,
+                        maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>
+                      <span style={{ opacity: 0.8, fontSize: 10 }}>Du:</span>
+                      <em style={{ fontStyle: "normal", fontWeight: 700 }}>{me.mood}</em>
+                    </Link>
+                  )}
                 </div>
                 {vibes && (
                   <span title={`Du hast ${vibes.balance} Vibes`}
@@ -769,12 +795,10 @@ export default function ChatOverlay() {
                 )}
                 {messages.map((m) => (
                   <div key={m.id} style={{ display: "flex", justifyContent: m.fromMe ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 4, marginBottom: 4 }}>
-                    <div style={{
+                    <div className={m.fromMe ? "vv-chat-overlay-bubble-me" : "vv-chat-overlay-bubble-them"} style={{
                       maxWidth: "78%", padding: m.imageUrl ? "4px" : "6px 10px", borderRadius: 14,
-                      background: m.fromMe ? "linear-gradient(135deg, #2d7dd2, #5fb0ff)" : "var(--vv-card,#fff)",
-                      color: m.fromMe ? "#fff" : "var(--vv-text,#222)",
                       border: m.fromMe ? "none" : "1px solid var(--vv-border,#d8def0)",
-                      boxShadow: m.fromMe ? "0 2px 6px rgba(45,125,210,0.25)" : "0 1px 2px rgba(0,0,0,0.06)",
+                      boxShadow: m.fromMe ? "0 2px 6px rgba(0,0,0,0.18)" : "0 1px 2px rgba(0,0,0,0.06)",
                       borderBottomRightRadius: m.fromMe ? 4 : 14,
                       borderBottomLeftRadius: m.fromMe ? 14 : 4,
                       fontSize: 13, lineHeight: 1.3, wordBreak: "break-word",
@@ -824,7 +848,7 @@ export default function ChatOverlay() {
                     style={{ flex: 1, margin: 0, fontSize: 14, minWidth: 0 }}
                     placeholder={`An ${partnerInfo?.displayName || activePartner}…`}
                   />
-                  <button type="submit" className="vv-btn vv-btn-pink" disabled={!text.trim() && !pendingImage} style={{ flexShrink: 0 }}>▶</button>
+                  <button type="submit" className="vv-btn vv-chat-overlay-send" disabled={!text.trim() && !pendingImage} style={{ flexShrink: 0 }}>▶</button>
                 </div>
               </form>
               <div style={{ padding: "6px 10px", borderTop: "1px solid var(--vv-border,#eee)", background: "var(--vv-surface,#fafafd)", fontSize: 11, textAlign: "right" }}>
