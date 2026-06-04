@@ -40,6 +40,8 @@ const csp = [
     " https://tile.openstreetmap.org" +
     " https://*.tile.openstreetmap.de" +
     " https://tile.openstreetmap.de" +
+    " https://*.tile.openstreetmap.fr" +
+    " https://tile.openstreetmap.fr" +
     " https://cartodb-basemaps-a.global.ssl.fastly.net" +
     " https://cartodb-basemaps-b.global.ssl.fastly.net" +
     " https://cartodb-basemaps-c.global.ssl.fastly.net" +

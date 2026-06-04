@@ -241,37 +241,45 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   // Leaflet + Karte initialisieren wenn Position da
   const tileLayerRef = useRef(null);
   const [tileStyle, setTileStyle] = useState(() => {
-    if (typeof window === "undefined") return "voyager";
-    return window.localStorage?.getItem("vv-tile-style") || "voyager";
+    if (typeof window === "undefined") return "osmde";
+    // Migration: alte User hatten "voyager" als Default — der lädt Strassennamen
+    // als separates Overlay, das oft ausfällt. OSM-DE hat die Namen direkt im Tile drin.
+    // Wer schon mal bewusst auf einen anderen Stil gewechselt hat (v2-Marker), behält ihn.
+    const saved = window.localStorage?.getItem("vv-tile-style");
+    const v2 = window.localStorage?.getItem("vv-tile-style-v2");
+    if (saved && v2) return saved;
+    try { window.localStorage?.setItem("vv-tile-style-v2", "1"); } catch {}
+    return "osmde";
   });
   // Lade-Status der Karten-Tiles: "idle" | "loading" | "ok" | "fallback" | "failed"
   const [tileStatus, setTileStatus] = useState("idle");
   const [tileMsg, setTileMsg] = useState("Karte wird geladen…");
 
-  // Mehrere Provider als Fallback-Kette — wenn der primäre nicht lädt,
-  // wechselt der useEffect automatisch zum nächsten.
+  // Mehrere Provider als Fallback-Kette. Wichtig: die ersten 3 (OSM-Familie)
+  // haben Strassennamen DIREKT im Tile gerendert — kein Labels-Overlay nötig.
+  // Voyager/Positron (CartoDB) brauchen ein Overlay für Namen — das ist instabil.
   const TILE_PROVIDERS = {
-    voyager: {
-      label: "Standard", emoji: "🗺",
-      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png",
-      opts: { attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true },
-      labels: "voyager_only_labels",
+    osmde: {
+      // Standard: zeigt JEDES Gebäude (Outline + Hausnummern ab Z18) und JEDE Straße mit Namen ab Z15.
+      label: "OSM Deutschland", emoji: "🇩🇪",
+      url: "https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png",
+      opts: { attribution: '© OpenStreetMap Deutschland', subdomains: "abc", maxZoom: 19, crossOrigin: true },
     },
     osm: {
-      label: "OpenStreetMap", emoji: "🌍",
+      label: "OSM Standard", emoji: "🌍",
       url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       opts: { attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19, crossOrigin: true },
     },
-    osmde: {
-      label: "OSM Deutschland", emoji: "🇩🇪",
-      url: "https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png",
-      opts: { attribution: '© OpenStreetMap', subdomains: "abc", maxZoom: 18, crossOrigin: true },
+    osmfr: {
+      label: "OSM France", emoji: "🇫🇷",
+      url: "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
+      opts: { attribution: '© OpenStreetMap France', subdomains: "abc", maxZoom: 19, crossOrigin: true },
     },
-    positron: {
-      label: "Hell", emoji: "🤍",
-      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
+    voyager: {
+      label: "Pastell", emoji: "🗺",
+      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png",
       opts: { attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true },
-      labels: "light_only_labels",
+      labels: "voyager_only_labels",
     },
     esri: {
       label: "Satellit", emoji: "🛰",
@@ -279,8 +287,8 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
     },
   };
-  // Reihenfolge der Auto-Fallbacks (wenn primärer fehlschlägt, nächsten probieren)
-  const FALLBACK_ORDER = ["voyager", "osm", "osmde", "positron"];
+  // Auto-Fallback-Reihenfolge: drei zuverlässige OSM-Varianten zuerst, dann Pastell als letzte Option.
+  const FALLBACK_ORDER = ["osmde", "osm", "osmfr", "voyager"];
 
   function buildTileLayer(L, style) {
     const p = TILE_PROVIDERS[style] || TILE_PROVIDERS.voyager;
@@ -933,11 +941,11 @@ export default function WorldMap({ onPickup, compact = false, height }) {
         backdropFilter: "blur(8px)",
       }}>
         {[
-          { v: "voyager",  emoji: "🗺", label: "Standard" },
-          { v: "osm",      emoji: "🌍", label: "OSM" },
-          { v: "osmde",    emoji: "🇩🇪", label: "OSM-DE" },
-          { v: "positron", emoji: "🤍", label: "Hell" },
-          { v: "esri",     emoji: "🛰", label: "Satellit" },
+          { v: "osmde",   emoji: "🇩🇪", label: "OSM-DE — mit Straßennamen" },
+          { v: "osm",     emoji: "🌍", label: "OSM Standard" },
+          { v: "osmfr",   emoji: "🇫🇷", label: "OSM France" },
+          { v: "voyager", emoji: "🗺", label: "Pastell" },
+          { v: "esri",    emoji: "🛰", label: "Satellit" },
         ].map((o) => (
           <button key={o.v} type="button" onClick={() => setTileStyle(o.v)}
             title={`Karten-Stil: ${o.label}`}
