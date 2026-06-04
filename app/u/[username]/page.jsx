@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import ProfileView from "@/components/ProfileView";
+import NostalgicProfileView from "@/components/NostalgicProfileView";
 
 export default function PublicProfilePage() {
   const params = useParams();
   const username = decodeURIComponent(params.username || "");
-  const [data, setData] = useState(undefined); // undefined=loading, null=notfound
+  const [data, setData] = useState(undefined);
 
   const load = useCallback(async () => {
     try {
@@ -23,7 +23,6 @@ export default function PublicProfilePage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Profilbesuch registrieren (Backend ignoriert Selbstbesuche & Spam)
   useEffect(() => {
     if (username) api.recordVisit(username).catch(() => {});
   }, [username]);
@@ -40,7 +39,7 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <ProfileView
+    <NostalgicProfileView
       profile={data.user}
       pinnwand={data.pinnwand}
       guestbook={data.guestbook}
