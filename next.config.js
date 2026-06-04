@@ -31,17 +31,22 @@ const csp = [
 
   "font-src 'self' data:",
 
-  // XHR/Fetch: Karten-Tiles + APIs
+  // XHR/Fetch: Karten-Tiles (mehrere Anbieter als Fallback) + APIs
   "connect-src 'self'" +
     " https://proxycheck.io" +
     " https://generativelanguage.googleapis.com" +
     " https://api.pwnedpasswords.com" +
     " https://*.tile.openstreetmap.org" +
     " https://tile.openstreetmap.org" +
+    " https://*.tile.openstreetmap.de" +
+    " https://tile.openstreetmap.de" +
     " https://cartodb-basemaps-a.global.ssl.fastly.net" +
     " https://cartodb-basemaps-b.global.ssl.fastly.net" +
     " https://cartodb-basemaps-c.global.ssl.fastly.net" +
     " https://cartodb-basemaps-d.global.ssl.fastly.net" +
+    " https://server.arcgisonline.com" +
+    " https://overpass-api.de" +
+    " https://api.open-meteo.com" +
     " https://*.ezoic.net" +
     " https://*.bitlabs.ai",
 

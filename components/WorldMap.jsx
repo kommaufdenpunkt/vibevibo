@@ -244,29 +244,56 @@ export default function WorldMap({ onPickup, compact = false, height }) {
     if (typeof window === "undefined") return "voyager";
     return window.localStorage?.getItem("vv-tile-style") || "voyager";
   });
+  // Lade-Status der Karten-Tiles: "idle" | "loading" | "ok" | "fallback" | "failed"
+  const [tileStatus, setTileStatus] = useState("idle");
+  const [tileMsg, setTileMsg] = useState("Karte wird geladen…");
+
+  // Mehrere Provider als Fallback-Kette — wenn der primäre nicht lädt,
+  // wechselt der useEffect automatisch zum nächsten.
+  const TILE_PROVIDERS = {
+    voyager: {
+      label: "Standard", emoji: "🗺",
+      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png",
+      opts: { attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true },
+      labels: "voyager_only_labels",
+    },
+    osm: {
+      label: "OpenStreetMap", emoji: "🌍",
+      url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      opts: { attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19, crossOrigin: true },
+    },
+    osmde: {
+      label: "OSM Deutschland", emoji: "🇩🇪",
+      url: "https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png",
+      opts: { attribution: '© OpenStreetMap', subdomains: "abc", maxZoom: 18, crossOrigin: true },
+    },
+    positron: {
+      label: "Hell", emoji: "🤍",
+      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
+      opts: { attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true },
+      labels: "light_only_labels",
+    },
+    esri: {
+      label: "Satellit", emoji: "🛰",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
+    },
+  };
+  // Reihenfolge der Auto-Fallbacks (wenn primärer fehlschlägt, nächsten probieren)
+  const FALLBACK_ORDER = ["voyager", "osm", "osmde", "positron"];
 
   function buildTileLayer(L, style) {
+    const p = TILE_PROVIDERS[style] || TILE_PROVIDERS.voyager;
     const errorTile = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Crect width='256' height='256' fill='%23f5f5f7'/%3E%3C/svg%3E";
-    switch (style) {
-      case "positron":
-        return L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png", {
-          attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true, errorTileUrl: errorTile,
-        });
-      case "osm":
-        return L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19, crossOrigin: true, errorTileUrl: errorTile,
-        });
-      case "voyager":
-      default:
-        return L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png", {
-          attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true, errorTileUrl: errorTile,
-        });
-    }
+    return L.tileLayer(p.url, { ...p.opts, errorTileUrl: errorTile });
   }
 
-  // Stil-Wechsel zur Laufzeit: alten Layer abloesen, neuen drueber legen
+  // Stil-Wechsel zur Laufzeit: alten Layer abloesen, neuen drueber legen.
+  // Mit Tile-Fehler-Erkennung + Auto-Fallback: wenn der primäre Provider
+  // zu viele Tile-Errors innerhalb der ersten 4 Sek liefert, schaltet wir
+  // automatisch auf den nächsten in FALLBACK_ORDER um.
   const labelLayerRef = useRef(null);
+  const fallbackTimerRef = useRef(null);
   useEffect(() => {
     if (!mapRef.current) return;
     const L = window.L;
@@ -278,17 +305,72 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       try { labelLayerRef.current.remove(); } catch {}
       labelLayerRef.current = null;
     }
-    tileLayerRef.current = buildTileLayer(L, tileStyle).addTo(mapRef.current);
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+
+    const provider = TILE_PROVIDERS[tileStyle] || TILE_PROVIDERS.voyager;
+    setTileStatus("loading");
+    setTileMsg(`Lade ${provider.label}…`);
+
+    const layer = buildTileLayer(L, tileStyle);
+    let errorCount = 0;
+    let firstTileOk = false;
+
+    layer.on("tileload", () => {
+      if (!firstTileOk) {
+        firstTileOk = true;
+        setTileStatus("ok");
+        setTileMsg("");
+        if (fallbackTimerRef.current) {
+          clearTimeout(fallbackTimerRef.current);
+          fallbackTimerRef.current = null;
+        }
+      }
+    });
+    layer.on("tileerror", () => {
+      errorCount += 1;
+      // Wenn schon viele Errors UND noch kein Tile erfolgreich → sofort fallback
+      if (errorCount >= 4 && !firstTileOk) {
+        autoFallback();
+      }
+    });
+
+    function autoFallback() {
+      const idx = FALLBACK_ORDER.indexOf(tileStyle);
+      const nextStyle = idx >= 0 && idx < FALLBACK_ORDER.length - 1
+        ? FALLBACK_ORDER[idx + 1]
+        : null;
+      if (nextStyle) {
+        setTileStatus("fallback");
+        setTileMsg(`${provider.label} antwortet nicht — wechsle zu ${TILE_PROVIDERS[nextStyle].label}…`);
+        setTimeout(() => setTileStyle(nextStyle), 600);
+      } else {
+        setTileStatus("failed");
+        setTileMsg("⚠ Karten-Tiles können nicht geladen werden — bitte Internet/Adblocker prüfen oder oben rechts einen anderen Stil wählen.");
+      }
+    }
+
+    // 5-Sek-Watchdog: wenn nach 5 Sek noch KEIN tile geladen → fallback
+    fallbackTimerRef.current = setTimeout(() => {
+      if (!firstTileOk) autoFallback();
+    }, 5000);
+
+    tileLayerRef.current = layer.addTo(mapRef.current);
     // Voyager + Positron haben dezente Labels — wir legen das CartoDB-Labels-Overlay
     // drueber, damit Strassennamen klar lesbar sind.
-    if (tileStyle === "voyager" || tileStyle === "positron") {
-      const labelStyle = tileStyle === "positron" ? "light_only_labels" : "voyager_only_labels";
+    if (provider.labels) {
       labelLayerRef.current = L.tileLayer(
-        `https://cartodb-basemaps-{s}.global.ssl.fastly.net/${labelStyle}/{z}/{x}/{y}.png`,
+        `https://cartodb-basemaps-{s}.global.ssl.fastly.net/${provider.labels}/{z}/{x}/{y}.png`,
         { subdomains: "abcd", maxZoom: 19, pane: "shadowPane" }
       ).addTo(mapRef.current);
     }
     try { window.localStorage?.setItem("vv-tile-style", tileStyle); } catch {}
+
+    return () => {
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+    };
   }, [tileStyle]);
 
   useEffect(() => {
@@ -803,7 +885,45 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       borderRadius: compact ? 14 : 0,
       overflow: "hidden",
     }}>
-      <div ref={containerRef} style={{ position: "absolute", inset: 0, background: "#f5f5f7" }} />
+      <div ref={containerRef} style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(135deg, #e8e8ed 0%, #d8d8df 100%)",
+      }} />
+
+      {/* Lade-/Status-Overlay: deckt das weiße Loch ab solange noch nichts da ist */}
+      {(tileStatus === "loading" || tileStatus === "fallback" || tileStatus === "failed") && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 500,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: tileStatus === "failed"
+            ? "linear-gradient(135deg, #fef2f2, #fee2e2)"
+            : "linear-gradient(135deg, #f0f9ff, #e0f2fe)",
+          pointerEvents: "none",
+        }}>
+          <div style={{
+            background: "rgba(255,255,255,0.97)", padding: "16px 22px",
+            borderRadius: 14, boxShadow: "0 6px 24px rgba(0,0,0,0.18)",
+            maxWidth: "82%", textAlign: "center", pointerEvents: "auto",
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>
+              {tileStatus === "failed" ? "🗺️💔" : tileStatus === "fallback" ? "🔄" : "🗺️"}
+            </div>
+            <div style={{ fontSize: 13, color: "#1c1c1e", fontWeight: 700 }}>
+              {tileMsg}
+            </div>
+            {tileStatus === "failed" && (
+              <button type="button" onClick={() => setTileStyle("osm")}
+                style={{
+                  marginTop: 10, padding: "7px 14px", borderRadius: 8, border: "none",
+                  background: "#ec4899", color: "#fff", fontWeight: 700, cursor: "pointer",
+                  fontSize: 12,
+                }}>
+                🌍 OSM erzwingen
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Tile-Style-Picker: oben rechts, klein */}
       <div style={{
@@ -814,8 +934,10 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       }}>
         {[
           { v: "voyager",  emoji: "🗺", label: "Standard" },
-          { v: "positron", emoji: "🤍", label: "Hell" },
           { v: "osm",      emoji: "🌍", label: "OSM" },
+          { v: "osmde",    emoji: "🇩🇪", label: "OSM-DE" },
+          { v: "positron", emoji: "🤍", label: "Hell" },
+          { v: "esri",     emoji: "🛰", label: "Satellit" },
         ].map((o) => (
           <button key={o.v} type="button" onClick={() => setTileStyle(o.v)}
             title={`Karten-Stil: ${o.label}`}
