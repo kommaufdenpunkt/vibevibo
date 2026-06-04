@@ -1,11 +1,13 @@
-// VibeVibo Service Worker — v5
+// VibeVibo Service Worker — v6
+// Defensiver Cache-Strategie. Wichtig: NIE etwas cachen das nicht OK ist —
+// kaputte Tile-Responses bleiben sonst fuer immer im Cache und blocken die Karte.
 // - App-Shell-Caching (offline-fähige PWA für /, /karte, /messenger, /live)
 // - Network-first für HTML mit cache-fallback
-// - Cache-first für statische Assets (Icons, Fonts, CDN)
+// - Cache-first für statische Assets (Icons, Fonts), aber nur 200-OK
 // - Update-Toast: Client wird informiert wenn neue SW-Version aktiv
 // - Web Push: bestehende Lockscreen-Notifications + Click-Routing
 
-const CACHE_VERSION = "vibevibo-v5";
+const CACHE_VERSION = "vibevibo-v6";
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const STATIC_CACHE   = `${CACHE_VERSION}-static`;
 
@@ -81,16 +83,20 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
+// Nur 2xx-Responses cachen, NIE Opaque/Error/Redirect — sonst bleibt Muell im Cache.
+function shouldCache(resp) {
+  return resp && resp.ok && resp.status >= 200 && resp.status < 300 && resp.type === "basic";
+}
+
 async function cacheFirst(req) {
   const cache = await caches.open(STATIC_CACHE);
   const hit = await cache.match(req);
   if (hit) return hit;
   try {
     const resp = await fetch(req);
-    if (resp.ok) cache.put(req, resp.clone());
+    if (shouldCache(resp)) cache.put(req, resp.clone());
     return resp;
   } catch {
-    // Wenn das Asset offline auch nicht da ist: leeres Bild für Bilder, sonst raw error
     return new Response("", { status: 504, statusText: "offline" });
   }
 }
@@ -99,7 +105,7 @@ async function networkFirstWithFallback(req) {
   const cache = await caches.open(APP_SHELL_CACHE);
   try {
     const resp = await fetch(req);
-    if (resp.ok) cache.put(req, resp.clone());
+    if (shouldCache(resp)) cache.put(req, resp.clone());
     return resp;
   } catch {
     const hit = await cache.match(req) || await cache.match("/");
@@ -120,7 +126,7 @@ async function staleWhileRevalidate(req, cacheName) {
   const cache = await caches.open(cacheName);
   const hit = await cache.match(req);
   const fetchPromise = fetch(req).then((resp) => {
-    if (resp.ok) cache.put(req, resp.clone());
+    if (shouldCache(resp)) cache.put(req, resp.clone());
     return resp;
   }).catch(() => hit);
   return hit || fetchPromise;

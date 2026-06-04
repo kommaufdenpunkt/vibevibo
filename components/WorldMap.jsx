@@ -241,26 +241,36 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   // Leaflet + Karte initialisieren wenn Position da
   const tileLayerRef = useRef(null);
   const [tileStyle, setTileStyle] = useState(() => {
-    if (typeof window === "undefined") return "osmde";
-    // Migration: alte User hatten "voyager" als Default — der lädt Strassennamen
-    // als separates Overlay, das oft ausfällt. OSM-DE hat die Namen direkt im Tile drin.
-    // Wer schon mal bewusst auf einen anderen Stil gewechselt hat (v2-Marker), behält ihn.
+    if (typeof window === "undefined") return "esri_streets";
+    // Migration v3: Wir wechseln den Default-Provider auf Esri-Street-Map.
+    // Esri-Tiles laufen auf ArcGIS-Online-CDN (US-Govt-Backbone) — extrem zuverlaessig,
+    // Strassennamen + Gebaeude direkt im Tile, weltweit verfuegbar.
+    // Wer schon mal bewusst gewechselt hat (v3-Marker), behaelt seine Wahl.
     const saved = window.localStorage?.getItem("vv-tile-style");
-    const v2 = window.localStorage?.getItem("vv-tile-style-v2");
-    if (saved && v2) return saved;
-    try { window.localStorage?.setItem("vv-tile-style-v2", "1"); } catch {}
-    return "osmde";
+    const v3 = window.localStorage?.getItem("vv-tile-style-v3");
+    if (saved && v3 && TILE_PROVIDERS_KEYS.has(saved)) return saved;
+    try { window.localStorage?.setItem("vv-tile-style-v3", "1"); } catch {}
+    return "esri_streets";
   });
   // Lade-Status der Karten-Tiles: "idle" | "loading" | "ok" | "fallback" | "failed"
   const [tileStatus, setTileStatus] = useState("idle");
   const [tileMsg, setTileMsg] = useState("Karte wird geladen…");
 
-  // Mehrere Provider als Fallback-Kette. Wichtig: die ersten 3 (OSM-Familie)
-  // haben Strassennamen DIREKT im Tile gerendert — kein Labels-Overlay nötig.
-  // Voyager/Positron (CartoDB) brauchen ein Overlay für Namen — das ist instabil.
+  // Esri ArcGIS World Street Map: rock-solid CDN (US-Govt/Behoerden-Niveau),
+  // Strassennamen + Gebaeude direkt im Tile gerendert, keine Subdomain-Roulette.
+  // Das ist die Primary, alle anderen sind Backup.
   const TILE_PROVIDERS = {
+    esri_streets: {
+      label: "Strassen", emoji: "🗺",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+      opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
+    },
+    esri_topo: {
+      label: "Topo", emoji: "⛰",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+      opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
+    },
     osmde: {
-      // Standard: zeigt JEDES Gebäude (Outline + Hausnummern ab Z18) und JEDE Straße mit Namen ab Z15.
       label: "OSM Deutschland", emoji: "🇩🇪",
       url: "https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png",
       opts: { attribution: '© OpenStreetMap Deutschland', subdomains: "abc", maxZoom: 19, crossOrigin: true },
@@ -268,27 +278,17 @@ export default function WorldMap({ onPickup, compact = false, height }) {
     osm: {
       label: "OSM Standard", emoji: "🌍",
       url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      opts: { attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19, crossOrigin: true },
+      opts: { attribution: '© OpenStreetMap', maxZoom: 19, crossOrigin: true },
     },
-    osmfr: {
-      label: "OSM France", emoji: "🇫🇷",
-      url: "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
-      opts: { attribution: '© OpenStreetMap France', subdomains: "abc", maxZoom: 19, crossOrigin: true },
-    },
-    voyager: {
-      label: "Pastell", emoji: "🗺",
-      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/voyager/{z}/{x}/{y}.png",
-      opts: { attribution: '© OpenStreetMap, © CARTO', subdomains: "abcd", maxZoom: 19, crossOrigin: true },
-      labels: "voyager_only_labels",
-    },
-    esri: {
+    esri_imagery: {
       label: "Satellit", emoji: "🛰",
       url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       opts: { attribution: '© Esri', maxZoom: 19, crossOrigin: true },
     },
   };
-  // Auto-Fallback-Reihenfolge: drei zuverlässige OSM-Varianten zuerst, dann Pastell als letzte Option.
-  const FALLBACK_ORDER = ["osmde", "osm", "osmfr", "voyager"];
+  const TILE_PROVIDERS_KEYS = new Set(["esri_streets","esri_topo","osmde","osm","esri_imagery"]);
+  // Auto-Fallback-Reihenfolge: Esri zuerst, dann OSM-Varianten als Backup.
+  const FALLBACK_ORDER = ["esri_streets", "osmde", "osm", "esri_topo"];
 
   function buildTileLayer(L, style) {
     const p = TILE_PROVIDERS[style] || TILE_PROVIDERS.voyager;
@@ -920,14 +920,39 @@ export default function WorldMap({ onPickup, compact = false, height }) {
               {tileMsg}
             </div>
             {tileStatus === "failed" && (
-              <button type="button" onClick={() => setTileStyle("osm")}
-                style={{
-                  marginTop: 10, padding: "7px 14px", borderRadius: 8, border: "none",
-                  background: "#ec4899", color: "#fff", fontWeight: 700, cursor: "pointer",
-                  fontSize: 12,
-                }}>
-                🌍 OSM erzwingen
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+                <button type="button" onClick={() => setTileStyle("osm")}
+                  style={{
+                    padding: "8px 14px", borderRadius: 8, border: "none",
+                    background: "#ec4899", color: "#fff", fontWeight: 700, cursor: "pointer",
+                    fontSize: 12,
+                  }}>
+                  🌍 OSM Standard erzwingen
+                </button>
+                <button type="button" onClick={async () => {
+                  // Karten-Komplettreset: localStorage + Service-Worker-Caches + Reload.
+                  // Notausgang wenn alles haengt (z.B. wegen Adblocker oder verklemmtem SW-Cache).
+                  try { localStorage.removeItem("vv-tile-style"); localStorage.removeItem("vv-tile-style-v3"); } catch {}
+                  try {
+                    if ("caches" in window) {
+                      const keys = await caches.keys();
+                      await Promise.all(keys.map((k) => caches.delete(k)));
+                    }
+                    if ("serviceWorker" in navigator) {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      for (const r of regs) { try { await r.unregister(); } catch {} }
+                    }
+                  } catch {}
+                  location.reload();
+                }}
+                  style={{
+                    padding: "8px 14px", borderRadius: 8, border: "1px solid #b91c1c",
+                    background: "#fff", color: "#b91c1c", fontWeight: 700, cursor: "pointer",
+                    fontSize: 12,
+                  }}>
+                  🧹 Karte + Cache zurücksetzen
+                </button>
+              </div>
             )}
           </div>
         </div>
