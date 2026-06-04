@@ -193,9 +193,13 @@ export default function HomePage() {
               </div>
             </div>
           )}
+
+          {/* LINKS extra: Mitglieder-Zertifikat + Glückskeks */}
+          <MemberSince />
+          <FortuneCookie />
         </div>
 
-        {/* MITTE: Feed + Buschfunk */}
+        {/* MITTE: Was machst du gerade? → direkt Buschfunk */}
         <div className="vv-home-col">
           <div className="vv-home-card" data-tone="pink">
             <div className="vv-home-card-title">📝 WAS MACHST DU GERADE?</div>
@@ -207,16 +211,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          <MemberSince />
-          <FortuneCookie />
-          <TodaysBirthdays />
-
-          <RewardedAdButton slot="home" />
-          <AdSlot slot="home-feed" format="auto" style={{ marginBottom: 12 }} />
-
-          <InstallNow appName="VibeVibo" appEmoji="✨" appColor="#ff3e9d" />
-          <PwaInfo id="pwa-community" appName="VibeVibo Community" appEmoji="🎨" appPurpose="die Community" />
-
           <div className="vv-home-card" data-tone="violet">
             <div className="vv-home-card-title">📣 BUSCHFUNK</div>
             <div className="vv-home-card-body">
@@ -225,7 +219,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* RECHTS: Online + Tipps */}
+        {/* RECHTS: Online + Tipps + Geburtstage + Werbung + Install */}
         <div className="vv-home-col">
           <div className="vv-home-card" data-tone="pink">
             <div className="vv-home-card-title">🟢 ONLINE JETZT ({onlineUsers.length})</div>
@@ -274,6 +268,19 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+
+          {/* Geburtstage des Tages */}
+          <TodaysBirthdays />
+
+          {/* Rewarded-Ad als „Gratis-Vibes"-Card */}
+          <RewardedAdButton slot="home" />
+
+          {/* Display-Ad nur unten, kompakt */}
+          <AdSlot slot="home-feed" format="auto" style={{ marginBottom: 0 }} />
+
+          {/* Install-Hinweise (klein, am Ende der rechten Spalte) */}
+          <InstallNow appName="VibeVibo" appEmoji="✨" appColor="#ff3e9d" />
+          <PwaInfo id="pwa-community" appName="VibeVibo Community" appEmoji="🎨" appPurpose="die Community" />
         </div>
       </div>
     </div>
