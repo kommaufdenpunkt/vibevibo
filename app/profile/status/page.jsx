@@ -16,7 +16,6 @@ export default function StatusPage() {
   const { me, loading, refresh } = useMe();
   const [pending, setPending] = useState(null);
   const [query, setQuery] = useState("");
-  const [customText, setCustomText] = useState("");
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
   const [useBoost, setUseBoost] = useState(false);
@@ -51,22 +50,6 @@ export default function StatusPage() {
     } catch (e) {
       setFlash(`⚠ ${e.message}`);
       setTimeout(() => setFlash(""), 4000);
-    } finally { setBusy(false); }
-  }
-
-  async function buyCustom() {
-    const t = customText.trim();
-    if (!t) return;
-    setBusy(true);
-    try {
-      await api.premiumBuy("custom_status", { text: t });
-      await refresh();
-      setCustomText("");
-      setFlash(`✨ Custom-Status gesetzt für 50 ✨ — viel Spaß!`);
-      setTimeout(() => setFlash(""), 4000);
-    } catch (e) {
-      setFlash(`⚠ ${e.message}`);
-      setTimeout(() => setFlash(""), 5000);
     } finally { setBusy(false); }
   }
 
@@ -155,33 +138,6 @@ export default function StatusPage() {
             style={{ marginTop: 8, width: "100%", padding: 8, borderRadius: 10,
               border: "none", background: "transparent", color: "var(--vv-muted,#888)", cursor: "pointer" }}>
             ← Andere Auswahl
-          </button>
-        </div>
-      )}
-
-      {/* Custom-Status (Vibes-pflichtig) */}
-      {!pending && (
-        <div className="vv-card" style={{
-          background: "linear-gradient(135deg, #fef3c7, #fde68a)",
-          border: "2px dashed #f59e0b",
-        }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#92400e", marginBottom: 4 }}>
-            ✏️ Eigenen Status schreiben <span style={{ float: "right" }}>50 ✨</span>
-          </div>
-          <div style={{ fontSize: 11, color: "#92400e", opacity: 0.85, marginBottom: 8 }}>
-            Schreib was eigenes — Anti-Inflation: kostet 50 ✨ pro Setzen.
-          </div>
-          <input
-            type="text" value={customText} maxLength={80}
-            onChange={(e) => setCustomText(e.target.value)}
-            placeholder="z.B. 🚀 voll im Flow"
-            className="vv-input"
-            style={{ background: "#fffbeb", border: "1px solid #d97706" }}
-          />
-          <button type="button" disabled={busy || !customText.trim()} onClick={buyCustom}
-            className="vv-btn-big vv-btn-big-pink"
-            style={{ marginTop: 8, width: "100%", padding: "10px 12px", fontSize: 13 }}>
-            {busy ? "wird gesetzt…" : "Für 50 ✨ posten"}
           </button>
         </div>
       )}

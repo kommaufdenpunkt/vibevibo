@@ -86,32 +86,6 @@ export default function PushPrefsSettings() {
         }}>{flash}</div>
       )}
 
-      {/* Status (Online/Abwesend/Beschäftigt/Unsichtbar) */}
-      {presence && (
-        <>
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Mein Status</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 6, marginBottom: 10 }}>
-            {PRESENCES.map((o) => (
-              <label key={o.v} style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "8px 10px",
-                border: `1px solid ${presence === o.v ? "#ec4899" : "var(--vv-border,#ddd)"}`,
-                borderRadius: 10,
-                background: presence === o.v ? "#fff5fb" : "var(--vv-card,#fff)",
-                color: "var(--vv-text,#1c1c1e)",
-                cursor: "pointer", fontSize: 13,
-              }}>
-                <input type="radio" name="vv-presence" value={o.v}
-                  checked={presence === o.v} onChange={() => setPresenceVal(o.v)} />
-                {o.label}
-              </label>
-            ))}
-          </div>
-          <div className="vv-muted" style={{ fontSize: 11, marginBottom: 12 }}>
-            Mit „Unsichtbar" siehst du für andere wie offline aus — kannst aber selber sehen, wer online ist.
-          </div>
-        </>
-      )}
-
       {/* Benachrichtigungs-Sound */}
       {sound && (
         <>

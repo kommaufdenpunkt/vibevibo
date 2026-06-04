@@ -3,6 +3,7 @@ import { getUserByUsername, addGuestbookEntry, getGuestbookEntries, deleteGuestb
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
+import { sendPushToUser } from "@/lib/push";
 
 const MAX_IMG_BYTES = 700_000;
 const IMG_RE = /^data:image\/(png|jpeg|jpg|webp);base64,/;
@@ -50,6 +51,16 @@ export async function POST(req, { params }) {
   if (target.id !== me.id) {
     addNotification({ userId: target.id, actorId: me.id, type: "guestbook", targetType: "guestbook", targetId: newId, preview: cleaned || "📷 Bild" });
     try { bumpQuestProgress(me.id, "guestbook"); } catch {}
+    sendPushToUser(target.id, {
+      title: `${me.displayName} schrieb ins Gästebuch`,
+      body: cleaned ? cleaned.slice(0, 140) : "📷 Bild",
+      url: `/u/${target.username}`,
+      tag: `vv-gb-${newId}`,
+      kind: "message",
+      fromUserId: me.id,
+      fromUsername: me.username,
+      fromDisplayName: me.displayName,
+    }).catch(() => {});
   }
   notifyMentions(me.id, cleaned, "guestbook", newId);
 
