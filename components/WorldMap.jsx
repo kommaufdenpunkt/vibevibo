@@ -933,30 +933,8 @@ export default function WorldMap({ onPickup, compact = false, height }) {
         </div>
       )}
 
-      {/* Tile-Style-Picker: oben rechts, klein */}
-      <div style={{
-        position: "absolute", top: 12, right: 12, zIndex: 1000,
-        display: "flex", gap: 4, padding: 4, borderRadius: 12,
-        background: "rgba(255,255,255,0.92)", boxShadow: "0 2px 10px rgba(0,0,0,0.18)",
-        backdropFilter: "blur(8px)",
-      }}>
-        {[
-          { v: "osmde",   emoji: "🇩🇪", label: "OSM-DE — mit Straßennamen" },
-          { v: "osm",     emoji: "🌍", label: "OSM Standard" },
-          { v: "osmfr",   emoji: "🇫🇷", label: "OSM France" },
-          { v: "voyager", emoji: "🗺", label: "Pastell" },
-          { v: "esri",    emoji: "🛰", label: "Satellit" },
-        ].map((o) => (
-          <button key={o.v} type="button" onClick={() => setTileStyle(o.v)}
-            title={`Karten-Stil: ${o.label}`}
-            style={{
-              padding: "5px 9px", borderRadius: 8, border: "none",
-              background: tileStyle === o.v ? "linear-gradient(135deg,#ec4899,#be185d)" : "transparent",
-              color: tileStyle === o.v ? "#fff" : "#1c1c1e",
-              fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
-            }}>{o.emoji}</button>
-        ))}
-      </div>
+      {/* Tile-Style-Picker entfernt — User wollte saubere Karte ohne UI-Symbole.
+          Standard ist OSM Deutschland (gesetzt via tileStyle-State Default). */}
 
       {/* Wetter — kompakte Pille oben links neben dem Zoom-Control */}
       {weather && (
