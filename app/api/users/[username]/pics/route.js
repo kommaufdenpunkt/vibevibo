@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { getUserByUsername, listProfilePics, addProfilePic, countProfilePics, getUserPicSlots, logMod } from "@/lib/db";
+import { getUserByUsername, listProfilePics, addProfilePic, countProfilePics, getUserPicSlots, logMod, bumpXP } from "@/lib/db";
 import { moderateImage } from "@/lib/fidolin";
 
 const MAX_BYTES = 700_000;
@@ -40,5 +40,6 @@ export async function POST(req, { params }) {
 
   const id = addProfilePic(me.id, s, status, reason);
   logMod({ userId: me.id, kind: "avatar", decision: status, reason: reason || "Profilbild geprüft", by: verdict.by || "fidolin" });
+  if (status === "approved") { try { bumpXP(me.id, "photo_upload"); } catch {} }
   return NextResponse.json({ id, status, reason });
 }

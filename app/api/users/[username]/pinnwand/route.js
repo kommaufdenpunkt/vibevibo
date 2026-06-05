@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits, userRow, getUserById } from "@/lib/db";
+import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits, userRow, getUserById, bumpXP } from "@/lib/db";
 import { EARN } from "@/lib/credits";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
@@ -76,6 +76,7 @@ export async function POST(req, { params }) {
       isGruscheln ? "gruscheln_send" : "pinnwand", { type: "to", id: target.id });
     awardCredits(target.id, isGruscheln ? EARN.gruscheln_recv : EARN.pinnwand_post,
       isGruscheln ? "gruscheln_recv" : "pinnwand", { type: "from", id: me.id });
+    try { bumpXP(me.id, "pinnwand_post"); } catch {}
     const sender = userRow(getUserById(me.id));
     sendPushToUser(target.id, {
       title: isGruscheln

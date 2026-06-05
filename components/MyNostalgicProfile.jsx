@@ -71,6 +71,23 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
             <PremiumBadges premiumBadges={profile.premiumBadges} />
           </div>
 
+          {/* 🏅 Rang-Badge mit Fortschrittsbalken */}
+          {profile.rankInfo && (
+            <Link href="/rang" className="vv-nost-rank" style={{ color: profile.rankInfo.rankColor }}>
+              <span className="vv-nost-rank-emoji">{profile.rankInfo.rankEmoji}</span>
+              <span className="vv-nost-rank-text">Rang {profile.rankInfo.rank}</span>
+              <span style={{ opacity: 0.7, fontSize: 11 }}>· {profile.rankInfo.rankName}</span>
+              {profile.rankInfo.rank < 200 && (
+                <>
+                  <div className="vv-nost-rank-bar">
+                    <div className="vv-nost-rank-bar-fill" style={{ width: `${Math.round(profile.rankInfo.progress * 100)}%` }} />
+                  </div>
+                  <span className="vv-nost-rank-pct">{Math.round(profile.rankInfo.progress * 100)}%</span>
+                </>
+              )}
+            </Link>
+          )}
+
           {/* Mitglieder-Zertifikat */}
           <div className="vv-nost-cert">
             <div className="vv-nost-cert-title">★ OFFIZIELLES VIBE★VIBO MITGLIED ★</div>

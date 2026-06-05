@@ -140,6 +140,11 @@ export default function HomePage() {
           <span>Vibes</span>
           <span className="vv-home-tile-sub">Verlauf</span>
         </Link>
+        <Link href="/rang" className="vv-home-tile" data-tone="gold">
+          <span className="vv-home-tile-emoji">🏅</span>
+          <span>Rang</span>
+          <span className="vv-home-tile-sub">XP & Levels</span>
+        </Link>
       </div>
 
       {/* 3-Spalten-Layout */}

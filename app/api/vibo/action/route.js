@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { applyViboAction, getViboCooldowns, checkAndAwardAchievements } from "@/lib/db";
+import { applyViboAction, getViboCooldowns, checkAndAwardAchievements, bumpXP } from "@/lib/db";
 import { getStage, stageInfo, moodFromStats, ageDaysFrom, traitInfo, viboThought, SICKNESSES } from "@/lib/vibo";
 
 function shape(v, cooldowns, newly = []) {
@@ -36,6 +36,7 @@ export async function POST(req) {
   try {
     const v = applyViboAction(me.id, String(body?.action || ""));
     const res = checkAndAwardAchievements(me.id, v);
+    try { bumpXP(me.id, "vibo_care"); } catch {} // Cooldown 5min im rank.js
     return NextResponse.json({ vibo: shape(v, getViboCooldowns(me.id), res.newly) });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });

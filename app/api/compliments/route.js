@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
-  getUserByUsername, sendCompliment, complimentsSentToday, spendCredits,
+  getUserByUsername, sendCompliment, complimentsSentToday, spendCredits, bumpXP,
   COMPLIMENT_DAILY_CAP, COMPLIMENT_COST, COMPLIMENT_COST_CUSTOM,
 } from "@/lib/db";
 
@@ -71,6 +71,7 @@ export async function POST(req) {
 
   const anonymous = body?.anonymous !== false; // default: anonym
   const id = sendCompliment(me.id, target.id, { text, emoji, anonymous });
+  try { bumpXP(me.id, "compliment_send"); bumpXP(target.id, "compliment_recv"); } catch {}
   return NextResponse.json({ ok: true, id, balance: spend.balance, sentToday: sentToday + 1, cap: COMPLIMENT_DAILY_CAP });
 }
 

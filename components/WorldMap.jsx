@@ -181,20 +181,52 @@ function poiIcon(L, emoji, color, inRange, cooldownLeftMs) {
   });
 }
 
-function companionIcon(L, emoji) {
+function companionIcon(L, emoji, stats) {
+  const hunger = Math.max(0, Math.min(100, stats?.hunger ?? 100));
+  const affection = Math.max(0, Math.min(100, stats?.affection ?? 100));
+  const health = Math.max(0, Math.min(100, stats?.health ?? 100));
+  const lowest = Math.min(hunger, affection, health);
+  const mood = lowest > 60 ? "😊" : lowest > 30 ? "😐" : "😢";
+  const aura = lowest < 30 ? "0 0 20px rgba(239,68,68,0.5)" : "0 4px 14px rgba(236,72,153,0.5)";
+  const ringColor = lowest < 30 ? "#ef4444" : lowest < 60 ? "#f59e0b" : "#22c55e";
   return L.divIcon({
-    className: "vv-companion-icon",
+    className: "vv-companion-icon vv-tamagotchi",
     html: `<div style="
-      width:34px;height:34px;border-radius:50%;
-      background:linear-gradient(135deg,#fff,#fce7f3);
-      border:2px solid #ec4899;
-      box-shadow:0 3px 10px rgba(236,72,153,0.4);
-      display:flex;align-items:center;justify-content:center;font-size:20px;
+      position:relative;
+      width:64px;height:78px;
+      display:flex;flex-direction:column;align-items:center;
       animation:vv-walk 2.2s ease-in-out infinite;
-    ">${emoji}</div>
-    <style>@keyframes vv-walk {0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(3deg)}}</style>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
+    ">
+      <div style="
+        width:64px;height:64px;border-radius:50% 50% 45% 45%;
+        background:linear-gradient(135deg,#fff 0%,#fce7f3 50%,#f9a8d4 100%);
+        border:4px solid ${ringColor};
+        box-shadow:${aura}, inset 0 -8px 12px rgba(236,72,153,0.2), 0 0 0 1px rgba(255,255,255,0.7);
+        display:flex;align-items:center;justify-content:center;
+        font-size:32px;line-height:1;position:relative;
+      ">${emoji}
+        <span style="position:absolute;bottom:-2px;right:-2px;font-size:13px;background:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:1.5px solid ${ringColor};line-height:1;">${mood}</span>
+      </div>
+      <div style="
+        margin-top:3px;width:54px;
+        background:rgba(255,255,255,0.85);border-radius:6px;
+        padding:2px 3px;display:flex;flex-direction:column;gap:1px;
+        border:1px solid #ec4899;box-shadow:0 2px 4px rgba(0,0,0,0.18);
+      ">
+        <div style="height:3px;background:#fce7f3;border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${hunger}%;background:linear-gradient(90deg,#f97316,#fbbf24);"></div>
+        </div>
+        <div style="height:3px;background:#fce7f3;border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${affection}%;background:linear-gradient(90deg,#ec4899,#f472b6);"></div>
+        </div>
+        <div style="height:3px;background:#fce7f3;border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${health}%;background:linear-gradient(90deg,#22c55e,#86efac);"></div>
+        </div>
+      </div>
+    </div>
+    <style>@keyframes vv-walk {0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}</style>`,
+    iconSize: [64, 78],
+    iconAnchor: [32, 32],
   });
 }
 
@@ -235,6 +267,25 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   const [poiSheetOpen, setPoiSheetOpen] = useState(false);
   const [poiBusy, setPoiBusy] = useState(false);
   const [companionBubble, setCompanionBubble] = useState("");
+  const [tamaOpen, setTamaOpen] = useState(false);
+  const [tamaBusy, setTamaBusy] = useState("");
+  const [tamaFlash, setTamaFlash] = useState("");
+
+  async function tamaAction(action) {
+    if (tamaBusy) return;
+    setTamaBusy(action);
+    try {
+      const r = await api.viboAction(action);
+      if (r?.vibo) setVibo(r.vibo);
+      setTamaFlash(r?.note || `✓ ${action}`);
+      setTimeout(() => setTamaFlash(""), 1800);
+    } catch (e) {
+      setTamaFlash(`⚠ ${e.message}`);
+      setTimeout(() => setTamaFlash(""), 2500);
+    } finally {
+      setTamaBusy("");
+    }
+  }
   const [invSheetOpen, setInvSheetOpen] = useState(false);
   const [marketSheetOpen, setMarketSheetOpen] = useState(false);
 
@@ -603,15 +654,12 @@ export default function WorldMap({ onPickup, compact = false, height }) {
     const { dLat, dLng } = offsetForCompanion(pos.lat);
     if (!companionMarkerRef.current) {
       companionMarkerRef.current = L.marker([pos.lat + dLat, pos.lng + dLng], {
-        icon: companionIcon(L, speciesEmoji),
+        icon: companionIcon(L, speciesEmoji, vibo),
         zIndexOffset: 500,
       }).addTo(mapRef.current);
-      companionMarkerRef.current.on("click", () => {
-        setCompanionBubble(vibo.thought || `${vibo.name || "VIBO"}: Hi! 🐾`);
-        setTimeout(() => setCompanionBubble(""), 4500);
-      });
+      companionMarkerRef.current.on("click", () => setTamaOpen(true));
     } else {
-      companionMarkerRef.current.setIcon(companionIcon(L, speciesEmoji));
+      companionMarkerRef.current.setIcon(companionIcon(L, speciesEmoji, vibo));
     }
   }, [pos, vibo]);
 
@@ -1179,6 +1227,130 @@ export default function WorldMap({ onPickup, compact = false, height }) {
         }}>
           🐾 {companionBubble}
         </div>
+      )}
+
+      {/* Tamagotchi-Action-Panel — bei Klick aufs VIBO-Icon */}
+      {tamaOpen && vibo && (
+        <>
+          <div onClick={() => setTamaOpen(false)} style={{
+            position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)",
+            zIndex: 2200,
+          }} />
+          <div style={{
+            position: "absolute", left: "50%", bottom: "50%",
+            transform: "translate(-50%, 50%)",
+            zIndex: 2201,
+            width: "min(340px, 92%)",
+            background: "linear-gradient(180deg, #fff, #fce7f3)",
+            border: "3px solid #ec4899",
+            borderRadius: 16,
+            boxShadow: "0 20px 60px rgba(236,72,153,0.5)",
+            padding: 14,
+            fontFamily: "'Comic Sans MS', 'Trebuchet MS', Verdana, sans-serif",
+            color: "#831843",
+          }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: "50% 50% 45% 45%",
+                background: "linear-gradient(135deg,#fff,#fce7f3)",
+                border: "3px solid #ec4899",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 30, boxShadow: "0 3px 10px rgba(236,72,153,0.3)",
+              }}>{({sprout:"🌱",kitsune:"🦊",drago:"🐉",knuddi:"🫧",stella:"⭐",maunzi:"🐱",boo:"👻",robi:"🤖"})[vibo.species] || "🐾"}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 17, fontWeight: 900 }}>{vibo.name || "Dein VIBO"}</div>
+                <div style={{ fontSize: 11, opacity: 0.8 }}>Lvl {vibo.level || 1} · {vibo.species}</div>
+              </div>
+              <button type="button" onClick={() => setTamaOpen(false)} style={{
+                background: "none", border: "none", color: "#831843",
+                fontSize: 22, cursor: "pointer", padding: 0,
+              }}>×</button>
+            </div>
+
+            {/* Stats */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 12 }}>
+              {[
+                { label: "🍕 Hunger", val: vibo.hunger ?? 100, color: "linear-gradient(90deg,#f97316,#fbbf24)" },
+                { label: "💗 Zuneigung", val: vibo.affection ?? 100, color: "linear-gradient(90deg,#ec4899,#f472b6)" },
+                { label: "💚 Gesundheit", val: vibo.health ?? 100, color: "linear-gradient(90deg,#22c55e,#86efac)" },
+                { label: "✨ Hygiene", val: vibo.hygiene ?? 100, color: "linear-gradient(90deg,#06b6d4,#67e8f9)" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 700, marginBottom: 2 }}>
+                    <span>{s.label}</span><span>{Math.round(s.val)}%</span>
+                  </div>
+                  <div style={{ height: 7, background: "#fce7f3", borderRadius: 4, overflow: "hidden", border: "1px solid rgba(236,72,153,0.3)" }}>
+                    <div style={{ height: "100%", width: `${Math.max(0, Math.min(100, s.val))}%`, background: s.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Thought */}
+            {vibo.thought && (
+              <div style={{
+                background: "#fff", border: "2px dashed #f472b6",
+                borderRadius: 12, padding: "7px 10px", marginBottom: 10,
+                fontSize: 12, fontStyle: "italic", textAlign: "center",
+              }}>💭 „{vibo.thought}"</div>
+            )}
+
+            {tamaFlash && (
+              <div style={{
+                background: tamaFlash.startsWith("⚠") ? "#fef3c7" : "#dcfce7",
+                color: tamaFlash.startsWith("⚠") ? "#92400e" : "#166534",
+                padding: "6px 10px", borderRadius: 8, fontSize: 12,
+                fontWeight: 700, textAlign: "center", marginBottom: 8,
+              }}>{tamaFlash}</div>
+            )}
+
+            {/* Action-Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+              {[
+                { a: "feed",  e: "🍱", label: "Füttern" },
+                { a: "play",  e: "🎮", label: "Spielen" },
+                { a: "sleep", e: "😴", label: "Schlafen" },
+                { a: "clean", e: "🛁", label: "Putzen" },
+                { a: "pet",   e: "🫶", label: "Streicheln" },
+                { a: "heal",  e: "💊", label: "Heilen" },
+              ].map((b) => (
+                <button key={b.a} type="button" disabled={!!tamaBusy}
+                  onClick={() => tamaAction(b.a)}
+                  style={{
+                    padding: "9px 4px", borderRadius: 10,
+                    background: tamaBusy === b.a
+                      ? "linear-gradient(135deg, #fbbf24, #f59e0b)"
+                      : "linear-gradient(160deg, #fce7f3, #f9a8d4)",
+                    border: "2px solid #ec4899",
+                    color: "#831843", cursor: tamaBusy ? "wait" : "pointer",
+                    fontFamily: "inherit", fontWeight: 800, fontSize: 11,
+                    boxShadow: "0 2px 0 #be185d",
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", gap: 2,
+                  }}>
+                  <span style={{ fontSize: 22 }}>{b.e}</span>
+                  <span>{b.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 10, display: "flex", gap: 6 }}>
+              <Link href="/vibo" onClick={() => setTamaOpen(false)} style={{
+                flex: 1, padding: "9px 10px", borderRadius: 10,
+                background: "linear-gradient(135deg, #a855f7, #7c3aed)",
+                color: "#fff", textDecoration: "none", textAlign: "center",
+                fontWeight: 800, fontSize: 12,
+              }}>🥚 VIBO-Seite</Link>
+              <Link href="/shop" onClick={() => setTamaOpen(false)} style={{
+                flex: 1, padding: "9px 10px", borderRadius: 10,
+                background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                color: "#fff", textDecoration: "none", textAlign: "center",
+                fontWeight: 800, fontSize: 12,
+              }}>🛒 Shop</Link>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Bottom-Sheet: Pflege-Orte */}

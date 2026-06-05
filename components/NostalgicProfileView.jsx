@@ -93,6 +93,15 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
             <PremiumBadges premiumBadges={profile.premiumBadges} />
           </div>
 
+          {/* 🏅 Rang-Badge (für fremdes Profil ohne Progress) */}
+          {profile.rank != null && (
+            <Link href="/rang" className="vv-nost-rank" style={{ color: profile.rankColor || "#a855f7" }}>
+              <span className="vv-nost-rank-emoji">{profile.rankEmoji || "🏅"}</span>
+              <span className="vv-nost-rank-text">Rang {profile.rank}</span>
+              {profile.rankName && <span style={{ opacity: 0.7, fontSize: 11 }}>· {profile.rankName}</span>}
+            </Link>
+          )}
+
           {/* Mitglieder-Zertifikat */}
           <div className="vv-nost-cert">
             <div className="vv-nost-cert-title">★ OFFIZIELLES VIBE★VIBO MITGLIED ★</div>

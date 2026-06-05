@@ -5920,3 +5920,363 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-vibo-card-body { padding: 10px; }
   .vv-vibo-fullmap-btn { font-size: 11px; padding: 7px 14px; }
 }
+
+/* =================================================================
+   🏅 RANG-SEITE — 2007er-Style, Fortschritt + Tabelle
+   ================================================================= */
+.vv-rang-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif;
+  color: #4a044e;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.vv-rang-hero {
+  position: relative;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(253,224,71,0.5), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(196,181,253,0.5), transparent 45%),
+    linear-gradient(135deg, #fef3c7 0%, #fce7f3 45%, #f5d0fe 100%);
+  border: 4px double #ec4899;
+  border-radius: 18px;
+  padding: 24px 16px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+.vv-rang-hero-stars {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; justify-content: space-around;
+  padding: 8px 12px; font-size: 17px; color: #ec4899;
+}
+.vv-rang-hero-stars span {
+  animation: vv-nost-twinkle 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px #fff);
+}
+.vv-rang-hero-stars span:nth-child(2n) { animation-delay: 0.3s; color: #fbbf24; }
+.vv-rang-hero-stars span:nth-child(3n) { animation-delay: 0.6s; color: #a855f7; }
+.vv-rang-hero-emoji {
+  position: relative;
+  font-size: 76px;
+  margin-bottom: 6px;
+  line-height: 1;
+  display: inline-block;
+  animation: vv-rang-shine 3s ease-in-out infinite;
+}
+@keyframes vv-rang-shine {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50% { transform: scale(1.1) rotate(3deg); }
+}
+.vv-rang-hero-title {
+  position: relative;
+  font-size: 30px;
+  font-weight: 900;
+  margin: 4px 0 2px;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, #fff 0%, #fde68a 40%, #f59e0b 70%, #78350f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 0 #fff, 4px 4px 8px rgba(0,0,0,0.3);
+  transform: perspective(360px) rotateX(8deg);
+}
+.vv-rang-hero-name {
+  position: relative;
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  text-shadow: 0 1px 0 #fff;
+}
+.vv-rang-hero-xp {
+  position: relative;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a044e;
+  opacity: 0.85;
+  margin-bottom: 14px;
+}
+.vv-rang-progress {
+  position: relative;
+  max-width: 560px;
+  margin: 0 auto 12px;
+  background: rgba(255,255,255,0.85);
+  border: 2px solid #ec4899;
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.vv-rang-progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 11.5px; font-weight: 800; color: #831843;
+  margin-bottom: 5px;
+}
+.vv-rang-progress-bar {
+  position: relative;
+  height: 22px;
+  background: linear-gradient(180deg, #fce7f3, #fbcfe8);
+  border-radius: 11px;
+  border: 2px solid #be185d;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+}
+.vv-rang-progress-fill {
+  height: 100%;
+  border-radius: 9px 0 0 9px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 10px rgba(255,255,255,0.6);
+  position: relative;
+}
+.vv-rang-progress-shine {
+  position: absolute; top: 0; bottom: 0; left: -100%; width: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+  animation: vv-rang-shine-anim 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes vv-rang-shine-anim {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+.vv-rang-progress-sub {
+  font-size: 10.5px;
+  text-align: center;
+  margin-top: 4px;
+  color: #831843;
+  opacity: 0.75;
+}
+.vv-rang-max {
+  position: relative;
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24);
+  background-size: 200% 100%;
+  animation: vv-nost-rainbow 4s linear infinite;
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  margin-bottom: 10px;
+  border: 3px solid #78350f;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+.vv-rang-back-btn {
+  position: relative;
+  display: inline-block;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.85);
+  color: #831843 !important;
+  font-weight: 800;
+  font-size: 12px;
+  text-decoration: none !important;
+  border: 2px solid #ec4899;
+}
+
+/* Cards */
+.vv-rang-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid currentColor;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.vv-rang-card[data-tone="pink"]   { color: #ec4899; }
+.vv-rang-card[data-tone="violet"] { color: #a855f7; }
+.vv-rang-card[data-tone="cyan"]   { color: #06b6d4; }
+.vv-rang-card[data-tone="gold"]   { color: #f59e0b; }
+.vv-rang-card-title {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+  background-size: 200% 100%;
+  animation: vv-nost-titlewave 6s ease-in-out infinite;
+}
+.vv-rang-card[data-tone="pink"]   .vv-rang-card-title { background-image: linear-gradient(90deg, #ec4899, #f472b6, #ec4899); }
+.vv-rang-card[data-tone="violet"] .vv-rang-card-title { background-image: linear-gradient(90deg, #a855f7, #c084fc, #a855f7); }
+.vv-rang-card[data-tone="cyan"]   .vv-rang-card-title { background-image: linear-gradient(90deg, #06b6d4, #67e8f9, #06b6d4); }
+.vv-rang-card[data-tone="gold"]   .vv-rang-card-title { background-image: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b); }
+.vv-rang-card-body { padding: 12px; background: #fff; color: #4a044e; }
+.vv-rang-card[data-tone="pink"]   .vv-rang-card-body { background: linear-gradient(180deg, #fff, #fdf2f8); }
+.vv-rang-card[data-tone="violet"] .vv-rang-card-body { background: linear-gradient(180deg, #fff, #faf5ff); }
+.vv-rang-card[data-tone="cyan"]   .vv-rang-card-body { background: linear-gradient(180deg, #fff, #ecfeff); }
+.vv-rang-card[data-tone="gold"]   .vv-rang-card-body { background: linear-gradient(180deg, #fff, #fffbeb); }
+
+/* Stats-Grid */
+.vv-rang-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.vv-rang-stat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+  border: 1.5px solid #c084fc;
+}
+.vv-rang-stat-emoji { font-size: 26px; line-height: 1; }
+.vv-rang-stat-text { flex: 1; min-width: 0; }
+.vv-rang-stat-label { font-size: 12.5px; font-weight: 800; color: #581c87; }
+.vv-rang-stat-sub { font-size: 10.5px; color: #581c87; opacity: 0.75; }
+
+/* Log */
+.vv-rang-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.vv-rang-log-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: rgba(6,182,212,0.06);
+  font-size: 12.5px;
+}
+.vv-rang-log-emoji { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+.vv-rang-log-label { flex: 1; min-width: 0; font-weight: 700; color: #155e75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vv-rang-log-time { font-size: 10.5px; color: #06b6d4; opacity: 0.85; flex-shrink: 0; }
+.vv-rang-log-amount {
+  font-weight: 900; font-size: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  padding: 2px 8px; border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Features-Tabelle */
+.vv-rang-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+.vv-rang-feat {
+  position: relative;
+  padding: 11px;
+  border-radius: 11px;
+  background: repeating-linear-gradient(45deg, #f9fafb 0 10px, #f3f4f6 10px 20px);
+  border: 2px dashed #9ca3af;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  opacity: 0.65;
+}
+.vv-rang-feat.reached {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #f59e0b;
+  opacity: 1;
+  box-shadow: 0 3px 8px rgba(245,158,11,0.2);
+}
+.vv-rang-feat-rank {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #92400e;
+}
+.vv-rang-feat-emoji { font-size: 22px; line-height: 1; }
+.vv-rang-feat-text { font-size: 12.5px; line-height: 1.4; color: #4a044e; font-weight: 600; }
+.vv-rang-feat-check {
+  font-size: 10px; font-weight: 900;
+  color: #166534;
+  background: #dcfce7;
+  display: inline-block; padding: 2px 8px;
+  border-radius: 999px; margin-top: 3px;
+  border: 1px solid #22c55e;
+}
+
+/* Rewards */
+.vv-rang-rewards { display: flex; flex-direction: column; gap: 5px; }
+.vv-rang-reward {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: rgba(236,72,153,0.05);
+  font-size: 13px;
+  color: #831843;
+}
+.vv-rang-reward-xp {
+  font-weight: 900;
+  font-size: 12.5px;
+  color: #fff;
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  padding: 3px 10px; border-radius: 999px;
+}
+
+/* Footer */
+.vv-rang-footer {
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  color: #4a044e;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.5px;
+  background: repeating-linear-gradient(90deg, #fef3c7 0 16px, #fde68a 16px 32px);
+  border: 2px ridge #f59e0b;
+  border-radius: 10px;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+}
+.vv-rang-footer span:first-child,
+.vv-rang-footer span:last-child {
+  color: #f59e0b; font-size: 16px;
+  animation: vv-nost-twinkle 1.8s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  .vv-rang-hero { padding: 16px 12px; border-width: 3px; }
+  .vv-rang-hero-title { font-size: 24px; }
+  .vv-rang-hero-emoji { font-size: 56px; }
+  .vv-rang-hero-name { font-size: 14px; }
+  .vv-rang-card-title { font-size: 12px; padding: 6px 10px; }
+  .vv-rang-card-body { padding: 10px; }
+  .vv-rang-progress-label { font-size: 10.5px; }
+  .vv-rang-progress-bar { height: 18px; }
+  .vv-rang-features { grid-template-columns: 1fr; }
+  .vv-rang-stat-emoji { font-size: 22px; }
+  .vv-rang-log-row { font-size: 11.5px; }
+}
+
+/* =================================================================
+   🏅 RANG-BADGE im Hero des eigenen + fremden Profils
+   ================================================================= */
+.vv-nost-rank {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px auto 0;
+  padding: 5px 14px;
+  background: rgba(255,255,255,0.92);
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-decoration: none !important;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.vv-nost-rank:hover { transform: translateY(-1px); }
+.vv-nost-rank-emoji { font-size: 18px; line-height: 1; }
+.vv-nost-rank-text { font-weight: 900; }
+.vv-nost-rank-bar {
+  width: 80px; height: 7px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px; overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+.vv-nost-rank-bar-fill {
+  height: 100%; transition: width 0.4s ease;
+  background: linear-gradient(90deg, currentColor, #fff);
+}
+.vv-nost-rank-pct {
+  font-size: 10px; font-weight: 700; opacity: 0.85;
+}

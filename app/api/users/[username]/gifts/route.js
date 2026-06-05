@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getUserByUsername, addGift, getGifts, addNotification,
-  spendCredits, adminGrantCredits, userRow, getUserById,
+  spendCredits, adminGrantCredits, userRow, getUserById, bumpXP,
 } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import {
@@ -52,6 +52,7 @@ export async function POST(req, { params }) {
     targetType: "gift", targetId: null,
     preview: `${wrap?.emoji || ""}${g.icon} ${g.name}${note ? `: "${note.slice(0, 60)}"` : ""}`,
   });
+  try { bumpXP(me.id, "gift_send"); bumpXP(target.id, "gift_recv"); } catch {}
 
   // Lockscreen-Push an Empfänger
   const sender = userRow(getUserById(me.id));

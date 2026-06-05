@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { claimDailyBonus } from "@/lib/db";
+import { claimDailyBonus, bumpXP } from "@/lib/db";
 import { dailyBonusFor } from "@/lib/credits";
 
 export async function POST() {
@@ -15,5 +15,6 @@ export async function POST() {
   if (!res.claimed) {
     return NextResponse.json({ error: res.reason || "Heute schon abgeholt." }, { status: 429 });
   }
+  try { bumpXP(me.id, "daily_login"); } catch {}
   return NextResponse.json({ ok: true, amount: res.amount, streak: res.streak });
 }
