@@ -112,6 +112,116 @@ body { background: linear-gradient(135deg, #ffd1dc, #e0bbff, #c4faff, #d4ffea) !
 .vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #ffd1dc, #e0bbff, #c4faff, #d4ffea) !important; color: #6b4d8a !important; }
 .vv-pinnwand-entry { background: #fafafa !important; border-color: #e0bbff !important; }
 `,
+
+  // ===== Nostalgische Marken-Style Presets =====
+  MySpace_OG: `
+body { background: #0c0c54 !important; }
+.vv-card, .vv-nost-card-body { background: #fff !important; color: #000 !important; border: 1px solid #6f6fb3 !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: #6f6fb3 !important; color: #fff !important; font-family: "Arial", sans-serif !important; }
+.vv-pinnwand-entry { background: #f4f4ff !important; border-color: #6f6fb3 !important; color: #000 !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #6f6fb3, #0c0c54) !important; border-color: #fff !important; }
+.vv-nost-wordart { color: #fff !important; -webkit-text-fill-color: #fff !important; }
+`,
+  SchuelerVZ_Blau: `
+body { background: linear-gradient(180deg, #e0eaf6, #c4d6ea) !important; }
+.vv-card, .vv-nost-card-body { background: #fff !important; color: #1c4f8c !important; border: 1px solid #5d8ec0 !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(180deg, #6ba0d6, #1c4f8c) !important; color: #fff !important; }
+.vv-pinnwand-entry { background: #f5f9ff !important; border-color: #5d8ec0 !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #e0eaf6, #6ba0d6) !important; border-color: #1c4f8c !important; }
+`,
+  Jappy_Orange: `
+body { background: linear-gradient(135deg, #ff9e2c, #ffd966) !important; }
+.vv-card, .vv-nost-card-body { background: #fffaf0 !important; color: #7a3700 !important; border: 2px solid #ff7a00 !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #ff7a00, #ffae00) !important; color: #fff !important; }
+.vv-pinnwand-entry { background: #fff5e0 !important; border-color: #ff9e2c !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #ff7a00, #ffae00, #ffd966) !important; border-color: #fff !important; }
+`,
+  Knuddels_Holz: `
+body { background: linear-gradient(180deg, #4a2b14, #7a4524) !important; }
+.vv-card, .vv-nost-card-body { background: linear-gradient(180deg, #fff8e8, #fde6b5) !important; color: #4a2b14 !important; border: 3px solid #8b5a2b !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #8b5a2b, #b87333) !important; color: #fff8e8 !important; font-family: "Georgia", serif !important; }
+.vv-pinnwand-entry { background: #fff8e8 !important; border-color: #8b5a2b !important; }
+.vv-nost-hero { background: radial-gradient(circle, #fde6b5, #b87333) !important; border-color: #4a2b14 !important; }
+`,
+
+  // ===== Pop-Kultur Presets =====
+  Tokio_Hotel_Emo: `
+body { background: linear-gradient(135deg, #000, #2b0a14, #000) !important; }
+.vv-card, .vv-nost-card-body { background: #1a0008 !important; color: #ff6b9d !important; border: 2px solid #c2185b !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: #000 !important; color: #ff1744 !important; text-shadow: 0 0 8px #ff1744 !important; font-family: "Impact", sans-serif !important; }
+.vv-pinnwand-entry { background: #0a0004 !important; color: #ffb1c9 !important; border-color: #ff1744 !important; }
+.vv-nost-hero { background: radial-gradient(circle at 30% 30%, #500015, #000) !important; border-color: #ff1744 !important; }
+.vv-nost-wordart { color: #ff1744 !important; -webkit-text-fill-color: #ff1744 !important; text-shadow: 0 0 12px #ff1744, 2px 2px 0 #000 !important; }
+`,
+  Hannah_Montana: `
+body { background: linear-gradient(45deg, #ff66cc, #c81a7d, #ffd700, #ff66cc) !important; background-size: 300% 300% !important; animation: rainbow-bg 12s linear infinite !important; }
+@keyframes rainbow-bg { 0%{background-position:0% 50%} 100%{background-position:300% 50%} }
+.vv-card, .vv-nost-card-body { background: linear-gradient(180deg, #fff, #ffe0f3) !important; border: 4px solid #c81a7d !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #c81a7d, #ffd700, #c81a7d) !important; color: #fff !important; text-shadow: 1px 1px 0 #500030 !important; }
+.vv-pinnwand-entry { background: #fff5fb !important; border-color: #ff66cc !important; }
+`,
+  Skater_Boy: `
+body { background: linear-gradient(180deg, #2c2c2c, #555) !important; }
+.vv-card, .vv-nost-card-body { background: #fff !important; color: #1c1c1c !important; border: 3px solid #ff6f00 !important; box-shadow: 5px 5px 0 #1c1c1c !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(45deg, #ff6f00 25%, #fff 25%, #fff 50%, #ff6f00 50%, #ff6f00 75%, #fff 75%) !important; background-size: 28px 28px !important; color: #1c1c1c !important; font-family: "Impact", sans-serif !important; text-shadow: 1px 1px 0 #fff !important; }
+.vv-pinnwand-entry { background: #f5f5f5 !important; border-color: #ff6f00 !important; }
+.vv-nost-hero { background: repeating-linear-gradient(45deg, #1c1c1c, #1c1c1c 12px, #2c2c2c 12px, #2c2c2c 24px) !important; border-color: #ff6f00 !important; }
+`,
+
+  // ===== Aesthetic-Style Presets =====
+  Vaporwave: `
+body { background: linear-gradient(180deg, #ff71ce, #b967ff, #01cdfe, #05ffa1) !important; }
+.vv-card, .vv-nost-card-body { background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,113,206,0.15)) !important; color: #2d0a4e !important; border: 3px solid #b967ff !important; box-shadow: 5px 5px 0 #01cdfe, 10px 10px 0 #05ffa1 !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #ff71ce, #01cdfe, #b967ff) !important; color: #fff !important; font-family: "Courier New", monospace !important; letter-spacing: 4px !important; }
+.vv-pinnwand-entry { background: rgba(255,255,255,0.7) !important; border-color: #01cdfe !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #ff71ce, #01cdfe) !important; border-color: #b967ff !important; }
+`,
+  Cottagecore: `
+body { background: linear-gradient(180deg, #f5e6c4, #c9d8a0, #8aa67a) !important; }
+.vv-card, .vv-nost-card-body { background: #fff8e8 !important; color: #4d3a1f !important; border: 2px solid #8aa67a !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #8aa67a, #b5c896) !important; color: #fff8e8 !important; font-family: "Georgia", serif !important; }
+.vv-pinnwand-entry { background: #fff5e1 !important; border-color: #8aa67a !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #fff8e8, #c9d8a0) !important; border-color: #8aa67a !important; }
+`,
+  Dark_Academia: `
+body { background: linear-gradient(180deg, #2b1810, #4a2c1d) !important; }
+.vv-card, .vv-nost-card-body { background: #f4e8d0 !important; color: #2b1810 !important; border: 2px solid #8b5a3c !important; font-family: "Georgia", serif !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: #2b1810 !important; color: #d4af37 !important; font-family: "Georgia", serif !important; letter-spacing: 3px !important; }
+.vv-pinnwand-entry { background: #f8f0e0 !important; border-color: #8b5a3c !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #4a2c1d, #2b1810) !important; border-color: #d4af37 !important; }
+.vv-nost-wordart { color: #d4af37 !important; -webkit-text-fill-color: #d4af37 !important; font-family: "Georgia", serif !important; }
+`,
+  Goth_Princess: `
+body { background: radial-gradient(circle at 30% 20%, #4a004a, #1a0033, #000) !important; }
+.vv-card, .vv-nost-card-body { background: #1a0033 !important; color: #e9c5ff !important; border: 3px solid #800080 !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #4a004a, #800080, #4a004a) !important; color: #e9c5ff !important; text-shadow: 0 0 6px #ff66ff !important; font-family: "Georgia", serif !important; }
+.vv-pinnwand-entry { background: #2a004a !important; color: #ffd1ff !important; border-color: #800080 !important; }
+.vv-nost-hero { background: radial-gradient(circle, #4a004a, #000) !important; border-color: #800080 !important; }
+.vv-nost-wordart { color: #ff66ff !important; -webkit-text-fill-color: #ff66ff !important; text-shadow: 0 0 12px #ff66ff !important; }
+`,
+  Kawaii_Sakura: `
+body { background: linear-gradient(180deg, #ffe1ec, #ffd0e3, #ffb8d5) !important; }
+.vv-card, .vv-nost-card-body { background: #fff !important; color: #c2185b !important; border: 3px dotted #ff8fbf !important; border-radius: 22px !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #ff8fbf, #ffb8d5, #ff8fbf) !important; color: #fff !important; font-family: "Comic Sans MS", cursive !important; }
+.vv-pinnwand-entry { background: #fff5fa !important; border: 2px dotted #ff8fbf !important; border-radius: 18px !important; }
+.vv-nost-hero { background: radial-gradient(circle at 30% 30%, #ffd0e3, #ff8fbf) !important; border: 4px dotted #c2185b !important; }
+.vv-nost-chip { background: linear-gradient(135deg, #ffe1ec, #ffb8d5) !important; }
+`,
+  Y2K_Chrome: `
+body { background: linear-gradient(135deg, #c0c0c0, #e0e0e0, #c0c0c0) !important; }
+.vv-card, .vv-nost-card-body { background: linear-gradient(180deg, #fff, #e0e0e0) !important; color: #2c2c2c !important; border: 2px solid #808080 !important; box-shadow: inset 0 0 0 2px #fff, 0 4px 8px rgba(0,0,0,0.3) !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(180deg, #fff, #c0c0c0, #808080) !important; color: #2c2c2c !important; text-shadow: 0 1px 0 #fff !important; font-family: "Impact", sans-serif !important; }
+.vv-pinnwand-entry { background: #f0f0f0 !important; border-color: #808080 !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #d8b4fe, #c0c0c0, #67e8f9) !important; border-color: #808080 !important; }
+`,
+  Bubble_Tea: `
+body { background: linear-gradient(180deg, #d4a574, #b8865b, #8b5a2b) !important; }
+.vv-card, .vv-nost-card-body { background: linear-gradient(180deg, #fff, #f5e6d3) !important; color: #5d3317 !important; border: 3px solid #8b5a2b !important; }
+.vv-card h2, .vv-card h3, .vv-nost-card-title { background: linear-gradient(90deg, #5d3317, #8b5a2b, #d4a574) !important; color: #fff !important; }
+.vv-pinnwand-entry { background: #faf0e0 !important; border-color: #b8865b !important; }
+.vv-nost-hero { background: linear-gradient(135deg, #d4a574, #b8865b) !important; border-color: #5d3317 !important; }
+.vv-nost-chip { background: radial-gradient(circle, #3d1f0a 0%, #3d1f0a 30%, #d4a574 32%) !important; color: #5d3317 !important; }
+`,
 };
 
 const CHAT_THEMES = [

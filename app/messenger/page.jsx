@@ -244,27 +244,75 @@ function MessengerInner() {
         )}
 
         {tab === "vibo" && (
-          <>
-            <QuestPanel />
+          <div style={{ padding: 14 }}>
+            {/* Promo-Banner: VIBO hat jetzt eine eigene 2007er-Seite */}
+            <div style={{
+              position: "relative",
+              background: "radial-gradient(circle at 20% 25%, rgba(196,181,253,0.55), transparent 45%), radial-gradient(circle at 80% 70%, rgba(125,211,252,0.45), transparent 45%), linear-gradient(135deg, #ede9fe 0%, #f5d0fe 45%, #dbeafe 100%)",
+              border: "4px double #a855f7",
+              borderRadius: 18,
+              padding: "22px 16px",
+              textAlign: "center",
+              overflow: "hidden",
+              boxShadow: "0 10px 30px rgba(168,85,247,0.28)",
+              fontFamily: "'Comic Sans MS', 'Trebuchet MS', Verdana, sans-serif",
+              color: "#4a044e",
+              marginBottom: 14,
+            }}>
+              <div style={{
+                fontSize: 60, marginBottom: 4, lineHeight: 1,
+                animation: "vv-vibo-bounce 2.2s ease-in-out infinite",
+                filter: "drop-shadow(0 6px 10px rgba(168,85,247,0.5))",
+                display: "inline-block",
+              }}>🥚</div>
+              <h2 style={{
+                fontSize: 24, fontWeight: 900, margin: "4px 0",
+                letterSpacing: 1.5,
+                background: "linear-gradient(180deg, #fff 0%, #c4b5fd 40%, #a855f7 70%, #4c1d95 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+                textShadow: "2px 2px 0 #fff, 3px 3px 0 #c4b5fd, 5px 5px 8px rgba(0,0,0,0.3)",
+              }}>★ MEIN VIBO ★</h2>
+              <div style={{ fontSize: 12.5, color: "#581c87", fontWeight: 700, marginBottom: 14 }}>
+                ✿ Dein virtuelles Pet hat jetzt eine eigene Seite mit 2007er-Style ✿
+              </div>
+              <Link href="/vibo" style={{
+                display: "inline-block",
+                padding: "12px 24px",
+                borderRadius: 14,
+                background: "linear-gradient(135deg, #a855f7, #7c3aed)",
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: 15,
+                textDecoration: "none",
+                border: "3px solid #4c1d95",
+                boxShadow: "0 4px 0 #4c1d95, 0 8px 14px rgba(168,85,247,0.3)",
+              }}>🚀 Zur VIBO-Seite</Link>
+              <div style={{ marginTop: 12, fontSize: 11, color: "#581c87", opacity: 0.75 }}>
+                Inklusive: Pet-Stats · Quests · Karte · Shop · Sammelkarten · Tamagotchi-Modus
+              </div>
+            </div>
+
+            {/* Quick-Inline: Mini-VIBO + Karten-Link */}
             <ViboPet />
 
-            {/* Karte direkt im VIBO-Tab — kompakte 420px-Variante */}
-            <div className="vv-card" style={{ padding: 0, overflow: "hidden" }}>
+            <div className="vv-card" style={{ padding: 0, overflow: "hidden", marginTop: 10 }}>
               <div style={{ padding: "12px 14px 8px", borderBottom: "1px solid var(--vv-border,#eee)" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <h3 style={{ margin: 0, fontSize: 15 }}>🗺 Karte</h3>
                   <Link href="/karte" className="vv-btn vv-btn-sm">↗ Vollbild</Link>
                 </div>
-                <div className="vv-muted" style={{ fontSize: 11, marginTop: 4 }}>
-                  Items einsammeln, Basar besuchen, fischen — auch in der Vollbild-Ansicht.
-                </div>
               </div>
               <WorldMap compact />
             </div>
 
-            <ShopPanel />
-            <CardCollection />
-          </>
+            <div style={{ marginTop: 10, padding: 10, textAlign: "center",
+              background: "linear-gradient(135deg, #fef3c7, #fde68a)",
+              border: "2px dashed #f59e0b", borderRadius: 12, fontSize: 12, color: "#92400e", fontWeight: 700 }}>
+              💡 Quests, Shop & Sammelkarten findest du auf der vollen VIBO-Seite oben ☝
+            </div>
+          </div>
         )}
 
         {tab === "profil" && (
