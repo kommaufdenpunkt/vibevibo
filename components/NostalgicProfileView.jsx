@@ -78,7 +78,7 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
           </div>
 
           <h1 className="vv-nost-wordart">
-            <span>彡</span> {profile.displayName} <span>彡</span>
+            <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} size="32px" />
           </h1>
           <div className="vv-nost-username">@{profile.username}</div>
 

@@ -3755,28 +3755,15 @@ input[type="number"], input[type="tel"], textarea, select {
 
 .vv-nost-wordart {
   position: relative;
-  font-family: "Impact", "Comic Sans MS", sans-serif;
-  font-size: 38px;
+  font-size: 32px;
   font-weight: 900;
-  letter-spacing: 1px;
-  margin: 6px 0 2px;
-  background: linear-gradient(180deg, #fff 0%, #fbcfe8 40%, #ec4899 65%, #831843 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow:
-    2px 2px 0 #fff,
-    3px 3px 0 #f0abfc,
-    4px 4px 0 #a855f7,
-    6px 6px 8px rgba(0,0,0,0.35);
-  filter: drop-shadow(0 0 6px rgba(236,72,153,0.45));
-  transform: perspective(360px) rotateX(8deg);
-}
-.vv-nost-wordart span {
-  -webkit-text-fill-color: #ec4899;
-  color: #ec4899;
-  background: none;
-  text-shadow: 0 0 6px #fff, 2px 2px 0 #831843;
+  margin: 8px 0 2px;
+  display: inline-block;
+  padding: 4px 14px;
+  background: rgba(255,255,255,0.55);
+  border-radius: 12px;
+  border: 2px dashed rgba(236,72,153,0.4);
+  text-shadow: 0 1px 0 #fff, 0 2px 4px rgba(0,0,0,0.15);
 }
 .vv-nost-username {
   position: relative;
@@ -3900,7 +3887,7 @@ input[type="number"], input[type="tel"], textarea, select {
 @media (max-width: 700px) {
   .vv-nost-grid { grid-template-columns: 1fr; }
   .vv-nost-col-center { order: 0; }
-  .vv-nost-wordart { font-size: 28px; }
+  .vv-nost-wordart { font-size: 24px; padding: 3px 11px; }
   .vv-nost-avatar-frame .vv-avatar,
   .vv-nost-avatar { width: 90px !important; height: 90px !important; }
 }
@@ -4971,7 +4958,7 @@ input[type="number"], input[type="tel"], textarea, select {
 @media (max-width: 640px) {
   /* Profil-Hero kompakter */
   .vv-nost-hero { padding: 16px 12px; border-width: 3px; }
-  .vv-nost-wordart { font-size: 24px !important; }
+  .vv-nost-wordart { font-size: 22px; padding: 3px 10px; }
   .vv-nost-avatar-frame .vv-avatar,
   .vv-nost-avatar { width: 80px !important; height: 80px !important; }
   .vv-nost-username { font-size: 12px; }
@@ -5037,7 +5024,7 @@ input[type="number"], input[type="tel"], textarea, select {
 
 /* Sehr kleine Screens (iPhone SE) */
 @media (max-width: 380px) {
-  .vv-nost-wordart { font-size: 20px !important; }
+  .vv-nost-wordart { font-size: 18px; padding: 3px 9px; }
   .vv-nost-actions { grid-template-columns: repeat(2, 1fr); }
   .vv-edit-tiles { grid-template-columns: repeat(2, 1fr); }
   .vv-home-tiles { grid-template-columns: repeat(2, 1fr); }
@@ -6310,22 +6297,7 @@ input[type="number"], input[type="tel"], textarea, select {
   box-shadow: 0 0 18px rgba(45,125,210,0.6);
 }
 .vv-nost-page[data-gender="m"] .vv-nost-wordart {
-  background: linear-gradient(180deg, #fff 0%, #bfdbfe 40%, #2d7dd2 65%, #1e3a8a 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow:
-    2px 2px 0 #fff,
-    3px 3px 0 #93c5fd,
-    4px 4px 0 #3b82f6,
-    6px 6px 8px rgba(0,0,0,0.35);
-  filter: drop-shadow(0 0 6px rgba(45,125,210,0.45));
-}
-.vv-nost-page[data-gender="m"] .vv-nost-wordart span {
-  -webkit-text-fill-color: #2d7dd2;
-  color: #2d7dd2;
-  background: none;
-  text-shadow: 0 0 6px #fff, 2px 2px 0 #1e3a8a;
+  border-color: rgba(45,125,210,0.4);
 }
 .vv-nost-page[data-gender="m"] .vv-nost-username { color: #1e3a8a; }
 .vv-nost-page[data-gender="m"] .vv-nost-mood {
