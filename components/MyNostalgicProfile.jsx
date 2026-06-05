@@ -123,6 +123,9 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
               {profile.gender && <SteckbriefRow label="Geschlecht" value={profile.gender === "m" ? "♂ männlich" : "♀ weiblich"} />}
               {profile.city && <SteckbriefRow label="Stadt" value={`📍 ${profile.city}`} />}
               {profile.school && <SteckbriefRow label="Schule" value={<Link href={`/schulen/${encodeURIComponent(profile.school)}`} style={{ color: "#831843", fontWeight: 700 }}>🏫 {profile.school}</Link>} />}
+              {profile.relationshipStatus && (
+                <SteckbriefRow label="Beziehung" value={<RelationshipDisplay profile={profile} />} />
+              )}
               <SteckbriefRow label="Profil-Besuche" value={`👀 ${visitCount}`} />
               <SteckbriefRow label="Komplimente" value={`💖 ${profile.complimentsTotal || 0}`} />
             </Card>
@@ -252,5 +255,38 @@ function SteckbriefRow({ label, value }) {
       <span className="vv-nost-steckbrief-label">{label}:</span>
       <span className="vv-nost-steckbrief-value">{value}</span>
     </div>
+  );
+}
+
+const REL_LABELS = {
+  single:      "💚 Single",
+  taken:       "💕 vergeben",
+  engaged:     "💍 verlobt",
+  married:     "💒 verheiratet",
+  complicated: "🤯 es ist kompliziert",
+  open:        "🌈 offene Beziehung",
+};
+
+function RelationshipDisplay({ profile }) {
+  const [partner, setPartner] = useState(null);
+  const [mutual, setMutual] = useState(false);
+  useEffect(() => {
+    if (!profile.partnerUserId) return;
+    api.getRelationship().then((r) => {
+      setPartner(r.partner || null);
+      setMutual(!!r.mutual);
+    }).catch(() => {});
+  }, [profile.partnerUserId]);
+  const label = REL_LABELS[profile.relationshipStatus] || profile.relationshipStatus;
+  if (!partner) return <span>{label}</span>;
+  return (
+    <span>
+      {label}
+      {" · "}
+      <Link href={`/u/${partner.username}`} style={{ color: "#831843", fontWeight: 800 }}>
+        @{partner.username}
+      </Link>
+      {mutual ? " 💞" : " 🥺"}
+    </span>
   );
 }

@@ -13,6 +13,7 @@ import TwoFactorSetup from "@/components/TwoFactorSetup";
 import LocationSettings from "@/components/LocationSettings";
 import PushPrefsSettings from "@/components/PushPrefsSettings";
 import LookSettings from "@/components/LookSettings";
+import RelationshipSettings from "@/components/RelationshipSettings";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -236,6 +237,9 @@ export default function EditProfilePage() {
       </form>
 
       {/* 5) Look (self-saving) */}
+      <div className="vv-edit-section-title">💑 Beziehung & Flirt</div>
+      <RelationshipSettings />
+
       <div className="vv-edit-section-title">🎨 Look & Style</div>
       <LookSettings />
 

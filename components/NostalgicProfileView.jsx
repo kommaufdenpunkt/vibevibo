@@ -160,6 +160,9 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
               {profile.gender && <SteckbriefRow label="Geschlecht" value={profile.gender === "m" ? "♂ männlich" : "♀ weiblich"} />}
               {profile.city && <SteckbriefRow label="Stadt" value={`📍 ${profile.city}`} />}
               {profile.school && <SteckbriefRow label="Schule" value={<Link href={`/schulen/${encodeURIComponent(profile.school)}`} style={{ color: "#831843", fontWeight: 700 }}>🏫 {profile.school}</Link>} />}
+              {profile.relationshipStatus && (
+                <SteckbriefRow label="Beziehung" value={REL_LABELS[profile.relationshipStatus] || profile.relationshipStatus} />
+              )}
               <SteckbriefRow label="Profil-Besuche" value={`👀 ${visitCount}`} />
               <SteckbriefRow label="Komplimente" value={`💖 ${profile.complimentsTotal || 0}`} />
             </Card>
@@ -308,3 +311,12 @@ function SteckbriefRow({ label, value }) {
     </div>
   );
 }
+
+const REL_LABELS = {
+  single:      "💚 Single",
+  taken:       "💕 vergeben",
+  engaged:     "💍 verlobt",
+  married:     "💒 verheiratet",
+  complicated: "🤯 es ist kompliziert",
+  open:        "🌈 offene Beziehung",
+};

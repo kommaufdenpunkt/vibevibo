@@ -132,36 +132,38 @@ export default function RangPage() {
         </div>
       </div>
 
-      {/* Was bringt XP? */}
+      {/* Wie verdient man XP? — Quellen sichtbar, Werte geheim */}
       <div className="vv-rang-card" data-tone="pink">
-        <div className="vv-rang-card-title">⚡ WAS GIBT WIE VIEL XP?</div>
+        <div className="vv-rang-card-title">⚡ WIE VERDIENT MAN XP?</div>
         <div className="vv-rang-card-body">
+          <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 8, fontStyle: "italic", color: "#831843" }}>
+            🤫 Die genauen XP-Werte halten wir geheim — sonst farmt jeder optimiert. Aktiv bleiben lohnt sich!
+          </div>
           <div className="vv-rang-rewards">
-            {Object.entries(data.rewards).map(([source, amount]) => {
-              const SOURCE = {
-                pinnwand_post:   ["📌", "Pinnwand-Eintrag"],
-                guestbook_post:  ["📖", "Gästebuch-Eintrag"],
-                gift_send:       ["🎁", "Geschenk verschickt"],
-                gift_recv:       ["🎀", "Geschenk bekommen"],
-                compliment_send: ["💌", "Kompliment verschickt"],
-                compliment_recv: ["💖", "Kompliment bekommen"],
-                photo_upload:    ["📸", "Foto hochgeladen"],
-                daily_login:     ["🎁", "Tages-Bonus"],
-                quest_complete:  ["🥇", "Quest abgeschlossen"],
-                vibo_care:       ["🥚", "VIBO gepflegt"],
-                world_pickup:    ["🗺", "Karten-Item gefunden"],
-                status_set:      ["💬", "Status gesetzt"],
-                group_post:      ["🏘", "Gruppen-Post"],
-              };
-              const [emoji, label] = SOURCE[source] || ["✨", source];
-              return (
-                <div key={source} className="vv-rang-reward">
-                  <span style={{ fontSize: 22 }}>{emoji}</span>
-                  <span style={{ flex: 1, fontWeight: 600 }}>{label}</span>
-                  <span className="vv-rang-reward-xp">+{amount} XP</span>
-                </div>
-              );
-            })}
+            {[
+              ["📌", "Pinnwand-Einträge schreiben"],
+              ["📖", "Gästebuch-Einträge schreiben"],
+              ["🎁", "Geschenke verschicken"],
+              ["🎀", "Geschenke bekommen"],
+              ["💌", "Komplimente verschicken & bekommen"],
+              ["📸", "Profilbilder hochladen"],
+              ["🎁", "Tages-Bonus täglich abholen"],
+              ["🥇", "Quests abschließen"],
+              ["🥚", "VIBO pflegen (Feed/Play/Clean…)"],
+              ["🗺", "Items auf der Karte einsammeln"],
+              ["🏘", "Aktiv in Gruppen posten"],
+            ].map(([emoji, label]) => (
+              <div key={label} className="vv-rang-reward">
+                <span style={{ fontSize: 22 }}>{emoji}</span>
+                <span style={{ flex: 1, fontWeight: 600 }}>{label}</span>
+                <span className="vv-rang-reward-xp" style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)" }}>+?</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, marginTop: 10, padding: "8px 10px", borderRadius: 8,
+            background: "linear-gradient(135deg, #fef3c7, #fde68a)", border: "1px dashed #f59e0b",
+            color: "#92400e", fontWeight: 700 }}>
+            ⚠ Anti-Spam: Es gibt Tages-Caps. Wer farmt, kriegt ab einer bestimmten Menge keine XP mehr für diese Quelle bis Mitternacht.
           </div>
         </div>
       </div>

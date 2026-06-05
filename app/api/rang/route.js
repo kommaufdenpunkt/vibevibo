@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { getXpLog, getXpSourceStats } from "@/lib/db";
-import { rankProgress, rankName, rankEmoji, rankColor, RANK_FEATURES, XP_REWARDS } from "@/lib/rank";
+import { rankProgress, rankName, rankEmoji, rankColor, RANK_FEATURES } from "@/lib/rank";
 
 const SOURCE_LABELS = {
   pinnwand_post:   ["📌", "Pinnwand-Eintrag"],
@@ -43,7 +43,8 @@ export async function GET(req) {
     neededXp: p.neededXp,
     totalToNext: p.totalToNext,
     features: RANK_FEATURES,
-    rewards: XP_REWARDS,
+    // XP_REWARDS bewusst NICHT mitsenden — die genauen Werte bleiben geheim,
+    // damit niemand sein XP-Farming optimiert. Server validiert intern.
     log,
     stats,
   });
