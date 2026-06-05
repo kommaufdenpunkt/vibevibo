@@ -6280,3 +6280,252 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-nost-rank-pct {
   font-size: 10px; font-weight: 700; opacity: 0.85;
 }
+
+/* =================================================================
+   💙 GENDER-THEME: Männer = Blau, Frauen behalten Pink (default)
+   data-gender="m" wird auf .vv-nost-page / .vv-home-page / .vv-edit-page gesetzt
+   ================================================================= */
+
+/* ---------- NOSTALGIC PROFILE (vv-nost-*) ---------- */
+.vv-nost-page[data-gender="m"] .vv-nost-marquee {
+  background: linear-gradient(90deg, #2d7dd2, #5fb0ff, #06b6d4, #5fb0ff, #2d7dd2);
+  background-size: 300% 100%;
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 14px rgba(45,125,210,0.35), inset 0 0 12px rgba(255,255,255,0.4);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-hero {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(253,224,71,0.45), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(167,243,208,0.45), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(96,165,250,0.5), transparent 45%),
+    linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #c4dffc 100%);
+  border-color: #2d7dd2;
+  box-shadow: 0 10px 30px rgba(45,125,210,0.28);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-hero-stars { color: #2d7dd2; }
+.vv-nost-page[data-gender="m"] .vv-nost-hero-stars span:nth-child(2n) { color: #0891b2; }
+.vv-nost-page[data-gender="m"] .vv-nost-hero-stars span:nth-child(3n) { color: #38bdf8; }
+.vv-nost-page[data-gender="m"] .vv-nost-avatar-frame {
+  background: conic-gradient(from 0deg, #2d7dd2, #5fb0ff, #06b6d4, #38bdf8, #1e40af, #2d7dd2);
+  box-shadow: 0 0 18px rgba(45,125,210,0.6);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-wordart {
+  background: linear-gradient(180deg, #fff 0%, #bfdbfe 40%, #2d7dd2 65%, #1e3a8a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow:
+    2px 2px 0 #fff,
+    3px 3px 0 #93c5fd,
+    4px 4px 0 #3b82f6,
+    6px 6px 8px rgba(0,0,0,0.35);
+  filter: drop-shadow(0 0 6px rgba(45,125,210,0.45));
+}
+.vv-nost-page[data-gender="m"] .vv-nost-wordart span {
+  -webkit-text-fill-color: #2d7dd2;
+  color: #2d7dd2;
+  background: none;
+  text-shadow: 0 0 6px #fff, 2px 2px 0 #1e3a8a;
+}
+.vv-nost-page[data-gender="m"] .vv-nost-username { color: #1e3a8a; }
+.vv-nost-page[data-gender="m"] .vv-nost-mood {
+  border-color: #5fb0ff;
+  color: #1e3a8a;
+  box-shadow: 0 2px 6px rgba(45,125,210,0.25);
+}
+
+/* Aktions-Bar: blaue Knöpfe */
+.vv-nost-page[data-gender="m"] .vv-nost-actions .vv-nost-action {
+  background: linear-gradient(160deg, #dbeafe 0%, #bfdbfe 60%, #93c5fd 100%);
+  border: 2px solid #2d7dd2;
+  color: #1e3a8a;
+  box-shadow: 0 3px 0 #1e40af, 0 6px 10px rgba(45,125,210,0.25);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-actions .vv-nost-action:hover {
+  box-shadow: 0 5px 0 #1e40af, 0 8px 14px rgba(45,125,210,0.35);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-actions .vv-nost-action:active {
+  box-shadow: 0 1px 0 #1e40af;
+}
+
+/* Pink-Cards → Blau-Cards bei Männern */
+.vv-nost-page[data-gender="m"] .vv-nost-card-pink { border-color: #2d7dd2; }
+.vv-nost-page[data-gender="m"] .vv-nost-card-pink .vv-nost-card-title {
+  background-image: linear-gradient(90deg, #2d7dd2, #5fb0ff, #2d7dd2);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-card-pink .vv-nost-card-body {
+  background: linear-gradient(180deg, #fff 0%, #eff6ff 100%);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-card-violet { border-color: #0891b2; }
+.vv-nost-page[data-gender="m"] .vv-nost-card-violet .vv-nost-card-title {
+  background-image: linear-gradient(90deg, #0891b2, #38bdf8, #0891b2);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-card-violet .vv-nost-card-body {
+  background: linear-gradient(180deg, #fff 0%, #ecfeff 100%);
+}
+.vv-nost-page[data-gender="m"] .vv-nost-card-cyan { border-color: #1e40af; }
+.vv-nost-page[data-gender="m"] .vv-nost-card-cyan .vv-nost-card-title {
+  background-image: linear-gradient(90deg, #1e40af, #3b82f6, #1e40af);
+}
+
+/* Steckbrief-Labels + Trennlinien */
+.vv-nost-page[data-gender="m"] .vv-nost-steckbrief-label { color: #1e3a8a; }
+.vv-nost-page[data-gender="m"] .vv-nost-steckbrief-row { border-bottom-color: #93c5fd; }
+.vv-nost-page[data-gender="m"] .vv-nost-card-body { color: #1e3a8a; }
+.vv-nost-page[data-gender="m"] .vv-nost-chip {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border-color: #3b82f6;
+  color: #1e3a8a;
+}
+
+/* Tabs (Pinnwand/Gästebuch) */
+.vv-nost-page[data-gender="m"] .vv-nost-tabs { border-bottom-color: #bfdbfe; }
+.vv-nost-page[data-gender="m"] .vv-nost-tab {
+  background: linear-gradient(180deg, #bfdbfe, #93c5fd);
+  border-color: #1e40af;
+  color: #1e3a8a;
+}
+.vv-nost-page[data-gender="m"] .vv-nost-tab.active {
+  background: linear-gradient(180deg, #fff 0%, #dbeafe 100%);
+  color: #1e40af;
+  box-shadow: inset 0 -3px 0 #fff, 0 -2px 6px rgba(45,125,210,0.2);
+}
+
+/* Footer */
+.vv-nost-page[data-gender="m"] .vv-nost-footer {
+  background: repeating-linear-gradient(90deg, #dbeafe 0 16px, #bfdbfe 16px 32px);
+  border-color: #2d7dd2;
+  color: #1e3a8a;
+}
+.vv-nost-page[data-gender="m"] .vv-nost-footer span:first-child,
+.vv-nost-page[data-gender="m"] .vv-nost-footer span:last-child { color: #0891b2; }
+
+/* Zertifikat: subtil Blau-Stich */
+.vv-nost-page[data-gender="m"] .vv-nost-cert {
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(45,125,210,0.06) 8px, rgba(45,125,210,0.06) 16px),
+    linear-gradient(180deg, #eff6ff, #dbeafe);
+  border-color: #1e40af;
+  color: #1e3a8a;
+}
+.vv-nost-page[data-gender="m"] .vv-nost-cert-title { color: #1e40af; }
+.vv-nost-page[data-gender="m"] .vv-nost-cert-row b { color: #1e40af; }
+
+/* Rang-Badge */
+.vv-nost-page[data-gender="m"] .vv-nost-rank { color: #2d7dd2; }
+
+/* ---------- HOME-PAGE (vv-home-*) ---------- */
+.vv-home-page[data-gender="m"] .vv-home-hero {
+  background:
+    radial-gradient(circle at 20% 25%, rgba(253,224,71,0.4), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(167,243,208,0.4), transparent 45%),
+    linear-gradient(135deg, #dbeafe 0%, #bfdbfe 45%, #c4dffc 100%);
+  border-color: #2d7dd2;
+  box-shadow: 0 10px 30px rgba(45,125,210,0.28);
+}
+.vv-home-page[data-gender="m"] .vv-home-hero-stars { color: #2d7dd2; }
+.vv-home-page[data-gender="m"] .vv-home-hero-stars span:nth-child(2n) { color: #0891b2; }
+.vv-home-page[data-gender="m"] .vv-home-hero-stars span:nth-child(3n) { color: #38bdf8; }
+.vv-home-page[data-gender="m"] .vv-home-hero-avatar {
+  background: conic-gradient(from 0deg, #2d7dd2, #5fb0ff, #06b6d4, #38bdf8, #1e40af, #2d7dd2);
+  box-shadow: 0 0 18px rgba(45,125,210,0.5);
+}
+.vv-home-page[data-gender="m"] .vv-home-hero-title {
+  background: linear-gradient(180deg, #fff 0%, #bfdbfe 40%, #2d7dd2 70%, #1e3a8a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 0 #fff, 4px 4px 8px rgba(0,0,0,0.3);
+}
+.vv-home-page[data-gender="m"] .vv-home-hero-sub { color: #1e3a8a; }
+.vv-home-page[data-gender="m"] .vv-home-hero-stat {
+  border-color: #2d7dd2;
+  color: #1e3a8a;
+}
+
+/* Home-Tiles: tone="pink" wird zu Blau bei Männern */
+.vv-home-page[data-gender="m"] .vv-home-tile[data-tone="pink"] {
+  background: linear-gradient(160deg, #dbeafe, #93c5fd);
+  color: #1e3a8a;
+  box-shadow: 0 3px 0 #1e40af, 0 6px 10px rgba(45,125,210,0.25);
+}
+
+/* Home-Cards Pink → Blau */
+.vv-home-page[data-gender="m"] .vv-home-card[data-tone="pink"] { color: #2d7dd2; }
+.vv-home-page[data-gender="m"] .vv-home-card[data-tone="pink"] .vv-home-card-title {
+  background-image: linear-gradient(90deg, #2d7dd2, #5fb0ff, #2d7dd2);
+}
+.vv-home-page[data-gender="m"] .vv-home-card[data-tone="pink"] .vv-home-card-body {
+  background: linear-gradient(180deg, #fff, #eff6ff);
+}
+
+/* ---------- EDIT-PAGE (vv-edit-*) ---------- */
+.vv-edit-page[data-gender="m"] .vv-edit-hero {
+  background:
+    radial-gradient(circle at 25% 20%, rgba(253,224,71,0.4), transparent 45%),
+    radial-gradient(circle at 75% 30%, rgba(167,243,208,0.4), transparent 45%),
+    linear-gradient(135deg, #dbeafe, #bfdbfe, #c4dffc);
+  border-color: #2d7dd2;
+  box-shadow: 0 10px 28px rgba(45,125,210,0.25);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-hero-stars { color: #2d7dd2; }
+.vv-edit-page[data-gender="m"] .vv-edit-hero-stars span:nth-child(2n) { color: #0891b2; }
+.vv-edit-page[data-gender="m"] .vv-edit-hero-stars span:nth-child(3n) { color: #38bdf8; }
+.vv-edit-page[data-gender="m"] .vv-edit-hero-avatar {
+  background: conic-gradient(from 0deg, #2d7dd2, #5fb0ff, #06b6d4, #38bdf8, #1e40af, #2d7dd2);
+  box-shadow: 0 0 18px rgba(45,125,210,0.5);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-hero-title {
+  background: linear-gradient(180deg, #fff 0%, #bfdbfe 40%, #2d7dd2 70%, #1e3a8a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 0 #fff, 3px 3px 0 #93c5fd, 5px 5px 8px rgba(0,0,0,0.3);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-hero-sub { color: #1e3a8a; }
+
+/* Edit-Tiles tone="pink" → Blau */
+.vv-edit-page[data-gender="m"] .vv-edit-tile[data-tone="pink"] {
+  background: linear-gradient(160deg, #dbeafe, #bfdbfe 60%, #93c5fd);
+  color: #1e3a8a;
+  box-shadow: 0 4px 0 #1e40af, 0 8px 14px rgba(45,125,210,0.25);
+}
+/* Edit-Cards tone="pink" → Blau */
+.vv-edit-page[data-gender="m"] .vv-edit-card[data-tone="pink"] { color: #2d7dd2; }
+.vv-edit-page[data-gender="m"] .vv-edit-card[data-tone="pink"] .vv-edit-card-title {
+  background-image: linear-gradient(90deg, #2d7dd2, #5fb0ff, #2d7dd2);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-card[data-tone="pink"] .vv-edit-card-body {
+  background: linear-gradient(180deg, #fff, #eff6ff);
+}
+
+/* Save-Bar */
+.vv-edit-page[data-gender="m"] .vv-edit-savebar {
+  background: linear-gradient(90deg, #dbeafe, #bfdbfe, #dbeafe);
+  border-color: #2d7dd2;
+  box-shadow: 0 4px 12px rgba(45,125,210,0.2);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-savebar-save {
+  background: linear-gradient(135deg, #2d7dd2, #1e40af);
+  border-color: #1e3a8a;
+  box-shadow: 0 3px 0 #1e3a8a, 0 6px 10px rgba(45,125,210,0.3);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-savebar-cancel {
+  color: #1e3a8a;
+  border-color: #2d7dd2;
+}
+
+/* Form-Felder: Pink-Akzente → Blau */
+.vv-edit-page[data-gender="m"] .vv-edit-mini-btn {
+  background: linear-gradient(135deg, #2d7dd2, #1e40af);
+  border-color: #1e3a8a;
+  box-shadow: 0 2px 4px rgba(45,125,210,0.3);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-input:focus {
+  box-shadow: 0 0 0 3px rgba(45,125,210,0.25), inset 0 1px 3px rgba(0,0,0,0.08);
+}
+.vv-edit-page[data-gender="m"] .vv-edit-chip {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border-color: #3b82f6;
+  color: #1e3a8a;
+}

@@ -55,7 +55,7 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
 
   return (
     <ProfileSkin css={profile.customCss}>
-      <div className="vv-nost-page">
+      <div className="vv-nost-page" data-gender={profile.gender || ""}>
 
         {/* ⭐ Marquee oben */}
         <div className="vv-nost-marquee">

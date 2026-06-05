@@ -65,7 +65,7 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="vv-edit-page">
+    <div className="vv-edit-page" data-gender={me.gender || ""}>
       {/* ★ Hero ★ */}
       <div className="vv-edit-hero">
         <div className="vv-edit-hero-stars">

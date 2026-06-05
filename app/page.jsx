@@ -50,7 +50,7 @@ export default function HomePage() {
   const newest = [...users].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 6);
 
   return (
-    <div className="vv-home-page">
+    <div className="vv-home-page" data-gender={me.gender || ""}>
       <Marquee speed={60}>
         {customMarquee
           ? customMarquee

@@ -33,7 +33,7 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
 
   return (
     <ProfileSkin css={profile.customCss}>
-      <div className="vv-nost-page">
+      <div className="vv-nost-page" data-gender={profile.gender || ""}>
 
         {/* ⭐ Glitzer-Marquee oben */}
         <div className="vv-nost-marquee">
