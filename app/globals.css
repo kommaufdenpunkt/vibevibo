@@ -6501,3 +6501,348 @@ input[type="number"], input[type="tel"], textarea, select {
   border-color: #3b82f6;
   color: #1e3a8a;
 }
+
+/* =================================================================
+   👯 FREUNDE / MITGLIEDER — 2007er-Style mit Filter-Chips & bunten Tiles
+   ================================================================= */
+.vv-friends-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif;
+  color: #4a044e;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.vv-friends-hero {
+  position: relative;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(253,224,71,0.5), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(125,211,252,0.45), transparent 45%),
+    linear-gradient(135deg, #fce7f3 0%, #f5d0fe 45%, #dbeafe 100%);
+  border: 4px double #ec4899;
+  border-radius: 18px;
+  padding: 22px 16px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(236,72,153,0.28);
+}
+.vv-friends-hero-stars {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; justify-content: space-around;
+  padding: 8px 12px; font-size: 17px; color: #f472b6;
+}
+.vv-friends-hero-stars span {
+  animation: vv-nost-twinkle 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px #fff);
+}
+.vv-friends-hero-stars span:nth-child(2n) { animation-delay: 0.3s; color: #c026d3; }
+.vv-friends-hero-stars span:nth-child(3n) { animation-delay: 0.6s; color: #38bdf8; }
+.vv-friends-hero-emoji {
+  position: relative;
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 4px;
+  animation: vv-friends-wiggle 2.4s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes vv-friends-wiggle {
+  0%, 100% { transform: rotate(-5deg) scale(1); }
+  50% { transform: rotate(5deg) scale(1.06); }
+}
+.vv-friends-hero-title {
+  position: relative;
+  font-size: 26px;
+  font-weight: 900;
+  margin: 4px 0 2px;
+  letter-spacing: 1.5px;
+  background: linear-gradient(180deg, #fff 0%, #fbcfe8 40%, #ec4899 70%, #831843 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 0 #fff, 4px 4px 8px rgba(0,0,0,0.3);
+}
+.vv-friends-hero-sub {
+  position: relative;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #831843;
+  text-shadow: 0 1px 0 #fff;
+}
+
+/* Toolbar */
+.vv-friends-toolbar {
+  background: linear-gradient(180deg, #fff, #fdf2f8);
+  border: 3px solid #ec4899;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 4px 14px rgba(236,72,153,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vv-friends-search {
+  width: 100%;
+  padding: 10px 13px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 2px solid #ec4899;
+  border-radius: 10px;
+  background: #fff;
+  color: #1c1c1e;
+  outline: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+}
+.vv-friends-search:focus { box-shadow: 0 0 0 3px rgba(236,72,153,0.25); }
+.vv-friends-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+.vv-friends-chip-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #831843;
+  margin-right: 4px;
+}
+.vv-friends-chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 2px solid #f9a8d4;
+  background: #fff;
+  color: #831843;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.vv-friends-chip:hover { transform: translateY(-1px); }
+.vv-friends-chip.active {
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  color: #fff;
+  border-color: #831843;
+  box-shadow: 0 2px 0 #831843;
+}
+.vv-friends-chip-m.active { background: linear-gradient(135deg, #2d7dd2, #1e40af); border-color: #1e3a8a; box-shadow: 0 2px 0 #1e3a8a; }
+.vv-friends-chip-w.active { background: linear-gradient(135deg, #ec4899, #be185d); border-color: #831843; box-shadow: 0 2px 0 #831843; }
+.vv-friends-online-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border: 1.5px solid #22c55e;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #166534;
+  cursor: pointer;
+}
+.vv-friends-online-toggle input { width: 16px; height: 16px; }
+
+/* Result-Bar */
+.vv-friends-result-bar {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #fef3c7, #fde68a);
+  border: 1.5px dashed #f59e0b;
+  font-size: 12.5px;
+  color: #92400e;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.vv-friends-result-bar b { font-size: 16px; color: #b45309; }
+.vv-friends-reset {
+  background: rgba(255,255,255,0.85);
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #92400e;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Mitglieder-Grid */
+.vv-friends-grid-nost {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+.vv-friends-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #fff, #fdf2f8);
+  border: 3px solid #ec4899;
+  text-decoration: none !important;
+  text-align: center;
+  color: #4a044e !important;
+  box-shadow: 0 4px 0 #be185d, 0 8px 12px rgba(236,72,153,0.2);
+  transition: transform 0.1s;
+  font-family: inherit;
+}
+.vv-friends-tile:hover { transform: translateY(-2px); }
+.vv-friends-tile[data-gender="m"] {
+  background: linear-gradient(160deg, #fff, #eff6ff);
+  border-color: #2d7dd2;
+  box-shadow: 0 4px 0 #1e40af, 0 8px 12px rgba(45,125,210,0.2);
+}
+.vv-friends-tile-avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+  flex-shrink: 0;
+}
+.vv-friends-tile-avatar .vv-avatar {
+  width: 100% !important;
+  height: 100% !important;
+  font-size: 28px !important;
+}
+.vv-friends-tile-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #22c55e, 0 0 8px rgba(34,197,94,0.6);
+  animation: vv-friends-pulse 1.6s ease-in-out infinite;
+}
+@keyframes vv-friends-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+.vv-friends-tile-name {
+  margin-top: 4px;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.vv-friends-tile-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+}
+.vv-friends-tile-rank {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1.5px solid;
+  font-size: 10px;
+  font-weight: 900;
+}
+.vv-friends-tile-mood {
+  font-size: 11px;
+  font-style: italic;
+  color: #6b21a8;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.vv-friends-tile-loc {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: #831843;
+  margin-top: 2px;
+}
+.vv-friends-tile-loc span {
+  background: rgba(255,255,255,0.8);
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(236,72,153,0.3);
+}
+.vv-friends-tile-badges {
+  display: flex;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.vv-friends-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #fff, #fdf2f8);
+  border: 2px dashed #ec4899;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #831843;
+}
+
+.vv-friends-loginhint {
+  padding: 10px 14px;
+  background: linear-gradient(90deg, #fef3c7, #fde68a);
+  border: 1.5px solid #f59e0b;
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: #92400e;
+  text-align: center;
+}
+
+.vv-friends-footer {
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  color: #831843;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.5px;
+  background: repeating-linear-gradient(90deg, #fce7f3 0 16px, #fbcfe8 16px 32px);
+  border: 2px ridge #ec4899;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.vv-friends-footer span:first-child,
+.vv-friends-footer span:last-child {
+  color: #c026d3;
+  font-size: 16px;
+  animation: vv-nost-twinkle 1.8s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  .vv-friends-hero { padding: 16px 12px; border-width: 3px; }
+  .vv-friends-hero-title { font-size: 20px; }
+  .vv-friends-hero-emoji { font-size: 44px; }
+  .vv-friends-hero-sub { font-size: 11px; }
+  .vv-friends-toolbar { padding: 10px; }
+  .vv-friends-grid-nost { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .vv-friends-tile { padding: 10px 6px; border-width: 2px; box-shadow: 0 3px 0 #be185d; }
+  .vv-friends-tile-avatar { width: 54px; height: 54px; border-width: 2px; }
+  .vv-friends-tile-name { font-size: 12px; }
+  .vv-friends-tile-mood { font-size: 10.5px; }
+  .vv-friends-chip { font-size: 11px; padding: 4px 9px; }
+}
+
+@media (max-width: 380px) {
+  .vv-friends-grid-nost { grid-template-columns: 1fr; }
+}
