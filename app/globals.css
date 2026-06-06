@@ -7237,3 +7237,317 @@ input[type="number"], input[type="tel"], textarea, select {
   border-left-color: #2d7dd2;
   background: rgba(219,234,254,0.5);
 }
+
+/* =================================================================
+   🗺 KARTE / REALITÄTSKARTE — 2007er-Style mit Map-Frame
+   ================================================================= */
+.vv-karte-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif;
+  color: #4a044e;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vv-karte-hero {
+  position: relative;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(125,211,252,0.5), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(167,243,208,0.5), transparent 45%),
+    linear-gradient(135deg, #dbeafe 0%, #d1fae5 45%, #fce7f3 100%);
+  border: 4px double #06b6d4;
+  border-radius: 18px;
+  padding: 22px 16px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(6,182,212,0.28);
+}
+.vv-karte-hero-stars {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; justify-content: space-around;
+  padding: 8px 12px; font-size: 17px; color: #06b6d4;
+}
+.vv-karte-hero-stars span {
+  animation: vv-nost-twinkle 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px #fff);
+}
+.vv-karte-hero-stars span:nth-child(2n) { animation-delay: 0.3s; color: #ec4899; }
+.vv-karte-hero-stars span:nth-child(3n) { animation-delay: 0.6s; color: #fbbf24; }
+.vv-karte-hero-emoji {
+  position: relative;
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 4px;
+  display: inline-block;
+  animation: vv-karte-bob 3s ease-in-out infinite;
+  filter: drop-shadow(0 6px 10px rgba(6,182,212,0.5));
+}
+@keyframes vv-karte-bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+.vv-karte-hero-title {
+  position: relative;
+  font-size: 28px;
+  font-weight: 900;
+  margin: 4px 0 2px;
+  letter-spacing: 1.5px;
+  background: linear-gradient(180deg, #fff 0%, #a5f3fc 40%, #06b6d4 70%, #155e75 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 0 #fff, 4px 4px 8px rgba(0,0,0,0.3);
+}
+.vv-karte-hero-sub {
+  position: relative;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #155e75;
+  text-shadow: 0 1px 0 #fff;
+  margin-bottom: 12px;
+}
+
+/* Quick-Tiles */
+.vv-karte-quick {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  max-width: 480px;
+  margin: 10px auto 0;
+}
+.vv-karte-quick-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 2px solid currentColor;
+  text-decoration: none !important;
+  font-weight: 800;
+  font-size: 11px;
+  font-family: inherit;
+  transition: transform 0.1s;
+}
+.vv-karte-quick-tile:hover { transform: translateY(-2px); }
+.vv-karte-quick-tile[data-tone="pink"]   { background: linear-gradient(160deg, #fce7f3, #f9a8d4); color: #831843; box-shadow: 0 3px 0 #be185d; }
+.vv-karte-quick-tile[data-tone="violet"] { background: linear-gradient(160deg, #f5d0fe, #d8b4fe); color: #581c87; box-shadow: 0 3px 0 #7c3aed; }
+.vv-karte-quick-tile[data-tone="gold"]   { background: linear-gradient(160deg, #fef3c7, #fcd34d); color: #78350f; box-shadow: 0 3px 0 #b45309; }
+.vv-karte-quick-tile[data-tone="green"]  { background: linear-gradient(160deg, #dcfce7, #86efac); color: #14532d; box-shadow: 0 3px 0 #15803d; }
+.vv-karte-quick-emoji { font-size: 22px; line-height: 1; margin-bottom: 3px; }
+
+/* VIBO-Mini-Stats */
+.vv-karte-vibo-stats {
+  position: relative;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.85);
+  border: 2px dashed #a855f7;
+  border-radius: 12px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.vv-karte-vibo-line {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #4c1d95;
+  margin-bottom: 5px;
+}
+.vv-karte-vibo-bars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  font-size: 14px;
+}
+.vv-karte-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.vv-karte-stat > div {
+  flex: 1;
+  height: 7px;
+  background: #f3e8ff;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(168,85,247,0.3);
+}
+.vv-karte-stat > div > div {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7, #c084fc);
+  transition: width 0.4s;
+}
+
+.vv-karte-pwa-cta {
+  position: relative;
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  color: #fff !important;
+  font-weight: 900;
+  font-size: 14px;
+  text-decoration: none !important;
+  border: 3px solid #831843;
+  box-shadow: 0 4px 0 #831843, 0 8px 14px rgba(236,72,153,0.3);
+  margin-top: 10px;
+}
+
+/* PWA-Promo-Banner */
+.vv-karte-pwa-promo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a, #fbbf24);
+  border: 4px double #b45309;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(245,158,11,0.3);
+}
+.vv-karte-pwa-promo-emoji {
+  font-size: 50px;
+  line-height: 1;
+  animation: vv-karte-bounce 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes vv-karte-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.vv-karte-pwa-promo-text { flex: 1; min-width: 0; }
+.vv-karte-pwa-promo-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #7c2d12;
+  margin-bottom: 3px;
+}
+.vv-karte-pwa-promo-sub {
+  font-size: 12.5px;
+  color: #92400e;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.vv-karte-pwa-promo-btn { flex-shrink: 0; }
+
+/* Map-Frame */
+.vv-karte-frame {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 4px ridge #ec4899;
+  box-shadow: 0 10px 30px rgba(236,72,153,0.25);
+}
+.vv-karte-frame-title {
+  padding: 10px 14px;
+  background-image: linear-gradient(90deg, #ec4899, #a855f7, #06b6d4, #a855f7, #ec4899);
+  background-size: 300% 100%;
+  animation: vv-nost-rainbow 10s linear infinite;
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3), 0 0 6px rgba(255,255,255,0.4);
+  border-bottom: 2px ridge rgba(255,255,255,0.5);
+}
+.vv-karte-frame-body {
+  background: #fff;
+  position: relative;
+}
+
+/* Tipps */
+.vv-karte-tips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.vv-karte-tip {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid currentColor;
+  background: rgba(255,255,255,0.9);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.vv-karte-tip-emoji { font-size: 24px; line-height: 1; flex-shrink: 0; }
+.vv-karte-tip[data-tone="pink"]   { color: #ec4899; }
+.vv-karte-tip[data-tone="violet"] { color: #a855f7; }
+.vv-karte-tip[data-tone="cyan"]   { color: #06b6d4; }
+.vv-karte-tip[data-tone="gold"]   { color: #f59e0b; }
+.vv-karte-tip b { font-size: 13px; color: #1c1c1e; }
+.vv-karte-tip span { color: #4a044e; }
+
+/* Footer */
+.vv-karte-footer {
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  color: #155e75;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.5px;
+  background: repeating-linear-gradient(90deg, #cffafe 0 16px, #a5f3fc 16px 32px);
+  border: 2px ridge #06b6d4;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.vv-karte-footer span:first-child,
+.vv-karte-footer span:last-child {
+  color: #0e7490;
+  font-size: 16px;
+  animation: vv-nost-twinkle 1.8s ease-in-out infinite;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .vv-karte-hero { padding: 16px 12px; border-width: 3px; }
+  .vv-karte-hero-title { font-size: 22px; }
+  .vv-karte-hero-emoji { font-size: 44px; }
+  .vv-karte-hero-sub { font-size: 11px; }
+  .vv-karte-quick { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .vv-karte-quick-tile { padding: 8px 4px; font-size: 10px; }
+  .vv-karte-quick-emoji { font-size: 18px; }
+  .vv-karte-pwa-promo { padding: 10px; flex-direction: column; text-align: center; }
+  .vv-karte-pwa-promo-emoji { font-size: 40px; }
+  .vv-karte-pwa-promo-title { font-size: 15px; }
+  .vv-karte-pwa-promo-sub { font-size: 11px; }
+  .vv-karte-frame-title { font-size: 12px; padding: 8px 10px; letter-spacing: 1px; }
+  .vv-karte-tips { grid-template-columns: 1fr; }
+}
+
+/* =================================================================
+   💬 BUSCHFUNK-COMMENT REAKTIONEN (👍❤️😂😍🔥😢)
+   ================================================================= */
+.vv-bf-comment-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+.vv-bf-comment-react {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  background: rgba(236,72,153,0.06);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.1s;
+}
+.vv-bf-comment-react:hover { background: rgba(236,72,153,0.14); transform: translateY(-1px); }
+.vv-bf-comment-react.active { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+.vv-bf-comment-react > span:first-child { font-size: 14px; }
+.vv-bf-react-n { font-size: 10px; opacity: 0.85; }

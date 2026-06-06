@@ -12,6 +12,17 @@ import PremiumBadges from "./PremiumBadges";
 import MentionText from "./MentionText";
 import EmbeddedMedia from "./EmbeddedMedia";
 import Avatar from "./Avatar";
+import VoiceRecorder from "./VoiceRecorder";
+import VoiceMessage from "./VoiceMessage";
+
+const COMMENT_REACTIONS = [
+  { key: "like", emoji: "👍", color: "#3b82f6" },
+  { key: "love", emoji: "❤️", color: "#ef4444" },
+  { key: "haha", emoji: "😂", color: "#f59e0b" },
+  { key: "wow",  emoji: "😍", color: "#ec4899" },
+  { key: "fire", emoji: "🔥", color: "#f97316" },
+  { key: "sad",  emoji: "😢", color: "#6b7280" },
+];
 
 const NODE_COLOR = {
   pinnwand: "#ff8fd0",
@@ -41,12 +52,14 @@ function truncate(s, n) {
   return s.length > n ? s.slice(0, n) + "…" : s;
 }
 
-// Kommentar-Reihe (mit optionalem Reply-Indent)
-function CommentRow({ c, me, isReply, allComments, onReply, onDelete, onReport }) {
+// Kommentar-Reihe mit Voice + Reaktionen
+function CommentRow({ c, me, isReply, allComments, onReply, onDelete, onReport, onReact }) {
   const parent = c.replyToId
     ? allComments.find((x) => x.id === c.replyToId)
     : null;
   const canDelete = me && (c.isMine || c.from.username === me.username);
+  const counts = c.reactionCounts || {};
+  const mine = new Set(c.myReactions || []);
 
   return (
     <div className="vv-bf-comment" data-reply={isReply ? "1" : "0"}>
@@ -72,9 +85,33 @@ function CommentRow({ c, me, isReply, allComments, onReply, onDelete, onReport }
           </div>
         ) : (
           <>
-            <div className="vv-bf-comment-text">
-              <MentionText text={c.text} />
-            </div>
+            {c.audioUrl && (
+              <div style={{ marginTop: 4 }}>
+                <VoiceMessage message={{ id: c.id, audioUrl: c.audioUrl, kind: "voice" }} fromMe={c.isMine} />
+              </div>
+            )}
+            {c.text && (
+              <div className="vv-bf-comment-text">
+                <MentionText text={c.text} />
+              </div>
+            )}
+            {/* Reaktions-Toolbar */}
+            {me && (
+              <div className="vv-bf-comment-reactions">
+                {COMMENT_REACTIONS.map((r) => {
+                  const active = mine.has(r.key);
+                  const n = counts[r.key] || 0;
+                  return (
+                    <button key={r.key} type="button"
+                      onClick={() => onReact(c, r.key)}
+                      className={`vv-bf-comment-react${active ? " active" : ""}`}
+                      style={{ color: active ? r.color : "inherit", borderColor: active ? r.color : "transparent" }}>
+                      <span>{r.emoji}</span>{n > 0 && <span className="vv-bf-react-n">{n}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {me && (
               <div className="vv-bf-comment-actions">
                 <button type="button" onClick={() => onReply(c)} className="vv-bf-comment-action">
@@ -97,8 +134,8 @@ function CommentRow({ c, me, isReply, allComments, onReply, onDelete, onReport }
   );
 }
 
-// Comments-Sektion unter einem Buschfunk-Post
-function CommentsSection({ postId }) {
+// Comments-Sektion unter einem Buschfunk-Event (type bestimmt was kommentiert wird)
+function CommentsSection({ postId, type = "status" }) {
   const { me } = useMe();
   const [open, setOpen] = useState(false);
   const [comments, setComments] = useState([]);
@@ -110,22 +147,21 @@ function CommentsSection({ postId }) {
 
   async function load() {
     try {
-      const r = await api.listBuschfunkComments(postId);
+      const r = await api.listBuschfunkComments(postId, type);
       setComments(r.comments || []);
       setCount((r.comments || []).filter((x) => !x.deleted).length);
     } catch {}
   }
 
   useEffect(() => {
-    // Lazy-Count beim Mount
-    api.listBuschfunkComments(postId).then((r) => {
+    api.listBuschfunkComments(postId, type).then((r) => {
       const list = r.comments || [];
       setComments(list);
       setCount(list.filter((x) => !x.deleted).length);
     }).catch(() => setCount(0));
-  }, [postId]);
+  }, [postId, type]);
 
-  async function send() {
+  async function sendText() {
     const t = draft.trim();
     if (!t) return;
     if (!me) { setFlash("⚠ Bitte einloggen"); return; }
@@ -133,7 +169,7 @@ function CommentsSection({ postId }) {
     try {
       const replyToId = replyTo?.id || 0;
       const effective = replyTo && !t.includes("@") ? `@${replyTo.from.username} ${t}` : t;
-      const r = await api.addBuschfunkComment(postId, effective, replyToId);
+      const r = await api.addBuschfunkComment(postId, effective, replyToId, type);
       setComments(r.comments || []);
       setCount((r.comments || []).filter((x) => !x.deleted).length);
       setDraft("");
@@ -144,10 +180,26 @@ function CommentsSection({ postId }) {
     } finally { setBusy(false); }
   }
 
+  async function sendVoice(audioUrl) {
+    if (!audioUrl) return;
+    if (!me) { setFlash("⚠ Bitte einloggen"); return; }
+    setBusy(true);
+    try {
+      const replyToId = replyTo?.id || 0;
+      const r = await api.addBuschfunkComment(postId, "", replyToId, type, audioUrl);
+      setComments(r.comments || []);
+      setCount((r.comments || []).filter((x) => !x.deleted).length);
+      setReplyTo(null);
+    } catch (e) {
+      setFlash(`⚠ ${e.message}`);
+      setTimeout(() => setFlash(""), 5000);
+    } finally { setBusy(false); }
+  }
+
   async function onDelete(c) {
     if (!confirm("Kommentar wirklich löschen?")) return;
     try {
-      const r = await api.deleteBuschfunkComment(postId, c.id);
+      const r = await api.deleteBuschfunkComment(postId, c.id, type);
       setComments(r.comments || []);
       setCount((r.comments || []).filter((x) => !x.deleted).length);
     } catch (e) {
@@ -163,6 +215,16 @@ function CommentsSection({ postId }) {
       await api.reportBuschfunkComment(c.id, reason);
       setFlash("✅ Kommentar gemeldet — Fidolin schaut drauf.");
       setTimeout(() => setFlash(""), 3500);
+    } catch (e) {
+      setFlash(`⚠ ${e.message}`);
+      setTimeout(() => setFlash(""), 4000);
+    }
+  }
+
+  async function onReact(c, kind) {
+    try {
+      await api.toggleReaction("buschfunk_comment", c.id, kind);
+      await load();
     } catch (e) {
       setFlash(`⚠ ${e.message}`);
       setTimeout(() => setFlash(""), 4000);
@@ -219,9 +281,12 @@ function CommentsSection({ postId }) {
               />
               <div className="vv-bf-comments-footer">
                 <span className="vv-bf-comments-counter">{draft.length} / 500</span>
-                <button type="button" onClick={send} disabled={busy || !draft.trim()} className="vv-bf-comments-send">
-                  {busy ? "…" : "💌 Posten"}
-                </button>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <VoiceRecorder onSend={sendVoice} />
+                  <button type="button" onClick={sendText} disabled={busy || !draft.trim()} className="vv-bf-comments-send">
+                    {busy ? "…" : "💌 Posten"}
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -292,8 +357,8 @@ function renderEvent(ev, i, isLast) {
         <div style={{ fontSize: 11, color: "#9a9aa8", marginTop: 2 }}>{relTime(ev.at)}</div>
         <EmbeddedMedia audioUrl={ev.audioUrl} mediaJson={ev.media} compact />
         {/* Kommentare nur für Status-Posts (Buschfunk-eigene Posts) */}
-        {ev.type === "status" && ev.postId > 0 && (
-          <CommentsSection postId={ev.postId} />
+        {ev.postId > 0 && ["status","pinnwand","gift","grouppost","newpic"].includes(ev.type) && (
+          <CommentsSection postId={ev.postId} type={ev.type} />
         )}
       </div>
       {ev.picUrl && (

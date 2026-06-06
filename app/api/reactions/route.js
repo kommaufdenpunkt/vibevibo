@@ -3,7 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import { toggleReaction, countReaction, addNotification, getPinnwandAuthorId } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
 
-const ALLOWED_TARGETS = new Set(["pinnwand", "status", "grouppost"]);
+const ALLOWED_TARGETS = new Set(["pinnwand", "status", "grouppost", "buschfunk_comment"]);
 const ALLOWED_KINDS = new Set(["like", "love", "haha", "wow", "fire", "sad"]);
 
 export async function POST(req) {

@@ -1,6 +1,7 @@
-// 💬 Kommentare unter einem Buschfunk-Post.
-// GET    /api/buschfunk/[id]/comments               — Liste
-// POST   /api/buschfunk/[id]/comments  { text, replyToId? }  — neuer Kommentar (Fidolin-geprüft)
+// 💬 Kommentare auf JEDES Buschfunk-Event-Typ (status/pinnwand/gift/grouppost/newpic).
+// GET    ?type=...                              — Liste
+// POST   { text, replyToId?, audioUrl?, type }  — neuer Kommentar (Fidolin-geprüft)
+// DELETE ?cid=...                               — eigenen Kommentar löschen
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
@@ -10,13 +11,25 @@ import {
 } from "@/lib/db";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 
-export async function GET(_req, { params }) {
+const ALLOWED_TYPES = new Set(["status", "pinnwand", "gift", "grouppost", "newpic"]);
+
+function pickType(req, body) {
+  let t = body?.type;
+  if (!t) {
+    const url = new URL(req.url);
+    t = url.searchParams.get("type") || "status";
+  }
+  return ALLOWED_TYPES.has(t) ? t : "status";
+}
+
+export async function GET(req, { params }) {
   const { id } = await params;
   const postId = Number(id);
   if (!postId) return NextResponse.json({ error: "invalid id" }, { status: 400 });
+  const type = pickType(req, null);
   const me = await getSessionUser();
-  const comments = listBuschfunkComments(postId, { byUserId: me?.id });
-  return NextResponse.json({ comments });
+  const comments = listBuschfunkComments(type, postId, { byUserId: me?.id });
+  return NextResponse.json({ comments, type });
 }
 
 export async function POST(req, { params }) {
@@ -27,23 +40,28 @@ export async function POST(req, { params }) {
   const postId = Number(id);
   if (!postId) return NextResponse.json({ error: "invalid id" }, { status: 400 });
   const body = await req.json().catch(() => ({}));
+  const type = pickType(req, body);
   const text = String(body?.text || "").trim();
+  const audioUrl = String(body?.audioUrl || "").trim();
   const replyToId = Number(body?.replyToId || 0);
-  if (!text) return NextResponse.json({ error: "Kommentar leer." }, { status: 400 });
+
+  if (!text && !audioUrl) return NextResponse.json({ error: "Kommentar leer." }, { status: 400 });
   if (text.length > 500) return NextResponse.json({ error: "Kommentar zu lang (max 500 Zeichen)." }, { status: 400 });
 
-  // Fidolin-Check
-  const verdict = await checkTextPost(me.id, "buschfunk_comment", text);
-  if (!verdict.ok) {
-    return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
+  // Text-Moderation (Voice wird hier nicht moderiert — Audio-Moderation ist separat)
+  if (text) {
+    const verdict = await checkTextPost(me.id, "buschfunk_comment", text);
+    if (!verdict.ok) {
+      return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
+    }
   }
 
   try {
-    const newId = addBuschfunkComment(postId, me.id, text, replyToId);
-    notifyMentions(me.id, text, "buschfunk_comment", newId);
+    const newId = addBuschfunkComment(type, postId, me.id, text, replyToId, audioUrl);
+    if (text) notifyMentions(me.id, text, "buschfunk_comment", newId);
     try { bumpXP(me.id, "group_post"); } catch {}
-    const comments = listBuschfunkComments(postId, { byUserId: me.id });
-    return NextResponse.json({ ok: true, id: newId, comments });
+    const comments = listBuschfunkComments(type, postId, { byUserId: me.id });
+    return NextResponse.json({ ok: true, id: newId, comments, type });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });
   }
@@ -57,10 +75,11 @@ export async function DELETE(req, { params }) {
   if (!postId) return NextResponse.json({ error: "invalid id" }, { status: 400 });
   const url = new URL(req.url);
   const commentId = Number(url.searchParams.get("cid"));
+  const type = url.searchParams.get("type") || "status";
   if (!commentId) return NextResponse.json({ error: "cid fehlt" }, { status: 400 });
   try {
     deleteBuschfunkComment(commentId, me.id, "user");
-    const comments = listBuschfunkComments(postId, { byUserId: me.id });
+    const comments = listBuschfunkComments(type, postId, { byUserId: me.id });
     return NextResponse.json({ ok: true, comments });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });

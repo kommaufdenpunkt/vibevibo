@@ -112,9 +112,66 @@ export default function NotificationsBell() {
     }
   }
 
-  function enablePush() {
-    // Öffnet den Push-Banner (PushSetup hört auf das Event)
-    window.dispatchEvent(new Event("vv-push-open"));
+  function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const b64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const raw = atob(b64);
+    const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  }
+  async function enablePush() {
+    try {
+      if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+        alert("Dein Browser unterstützt leider keine Push-Benachrichtigungen.");
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") {
+        if (perm === "denied") {
+          alert("Du hast Push-Benachrichtigungen blockiert. Geh in die Browser-Einstellungen → Benachrichtigungen → Vibevibo.de zulassen.");
+        }
+        return;
+      }
+      const { publicKey, enabled } = await api.pushKey();
+      if (!enabled || !publicKey) {
+        alert("Push-Server ist gerade nicht verfügbar. Bitte später erneut versuchen.");
+        return;
+      }
+      // SW sicherstellen
+      await navigator.serviceWorker.register("/sw.js").catch(() => {});
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+      }
+      await api.pushSubscribe(sub.toJSON());
+      setPushOn(true);
+      try {
+        // Permanent merken: nie wieder Banner anbieten
+        localStorage.setItem("vv:push:dismissed", "1");
+      } catch {}
+      alert("✅ Sperrbildschirm-Benachrichtigungen aktiviert! Du bekommst jetzt Push.");
+    } catch (e) {
+      alert("Fehler beim Aktivieren: " + (e?.message || "unbekannt"));
+    }
+  }
+  async function disablePush() {
+    if (!confirm("Sperrbildschirm-Benachrichtigungen wirklich ausschalten?")) return;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await api.pushUnsubscribe(sub.endpoint).catch(() => {});
+        await sub.unsubscribe().catch(() => {});
+      }
+      setPushOn(false);
+    } catch (e) {
+      alert("Fehler: " + (e?.message || "unbekannt"));
+    }
   }
 
   function openToast() {
@@ -162,11 +219,14 @@ export default function NotificationsBell() {
                 <span>🔔 Benachrichtigungen</span>
                 {pushOn === false && (
                   <button type="button" className="vv-notif-pop-push" onClick={enablePush}>
-                    📲 Sperrbildschirm aktivieren
+                    📲 1-Klick aktivieren
                   </button>
                 )}
                 {pushOn === true && (
-                  <span className="vv-notif-pop-push-on" title="Du bekommst Push-Benachrichtigungen auf den Sperrbildschirm">✓ Push aktiv</span>
+                  <button type="button" className="vv-notif-pop-push-on" onClick={disablePush}
+                    title="Klick um Push wieder auszuschalten" style={{ cursor: "pointer" }}>
+                    ✓ Push aktiv · ✕ ausschalten
+                  </button>
                 )}
               </div>
               {notifs.length === 0 ? (

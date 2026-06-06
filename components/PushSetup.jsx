@@ -161,11 +161,13 @@ export default function PushSetup() {
   }, []);
 
   if (!me || !supported) return null;
-  // User hat Permission abgelehnt → nie wieder zeigen (sonst nervt's)
+  // Push-Setup-Banner ist deprecated — Push wird jetzt über die Bell (NotificationsBell)
+  // mit 1-Klick gestartet/gestoppt. Banner zeigen wir gar nicht mehr.
+  return null;
+  // (alte Logik unten unangetastet für Rückwärts-Kompatibilität, falls reaktiviert)
+  // eslint-disable-next-line no-unreachable
   if (perm === "denied") return null;
-  // Schon aktiv abonniert → zeigt nur Status-Pille (siehe unten)
   if (dismissed && subscribed) return null;
-  // User hat manuell weggeklickt → nicht wieder anzeigen
   if (dismissed && !subscribed) return null;
   if (!enabledOnServer && !subscribed) return null;
 
