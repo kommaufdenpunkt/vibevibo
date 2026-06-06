@@ -152,22 +152,27 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
 
         {/* 📚 3-Spalten Forum-Layout */}
         <div className="vv-nost-grid">
-          {/* LINKS: Steckbrief + Über mich + Musik + Geschenke */}
+          {/* LINKS: Über mich + Musik + Geschenke */}
           <aside className="vv-nost-col-left">
-            <Card title="✦ STECKBRIEF ✦" tone="pink">
-              <SteckbriefRow label="Name" value={<ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} />} />
-              {profile.age != null && <SteckbriefRow label="Alter" value={`${profile.age} Jahre`} />}
-              {profile.gender && <SteckbriefRow label="Geschlecht" value={profile.gender === "m" ? "♂ männlich" : "♀ weiblich"} />}
-              {profile.city && <SteckbriefRow label="Stadt" value={`📍 ${profile.city}`} />}
-              {profile.school && <SteckbriefRow label="Schule" value={<Link href={`/schulen/${encodeURIComponent(profile.school)}`} style={{ color: "#831843", fontWeight: 700 }}>🏫 {profile.school}</Link>} />}
-              {profile.relationshipStatus && (
-                <SteckbriefRow label="Beziehung" value={REL_LABELS[profile.relationshipStatus] || profile.relationshipStatus} />
-              )}
-              <SteckbriefRow label="Profil-Besuche" value={`👀 ${visitCount}`} />
-              <SteckbriefRow label="Komplimente" value={`💖 ${profile.complimentsTotal || 0}`} />
-            </Card>
-
             <Card title="✿ ÜBER MICH ✿" tone="violet">
+              {/* Quick-Facts: Stadt, Schule, Beziehung als Mini-Chips */}
+              {(profile.city || profile.school || profile.relationshipStatus) && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                  {profile.city && (
+                    <span className="vv-nost-chip">📍 {profile.city}</span>
+                  )}
+                  {profile.school && (
+                    <Link href={`/schulen/${encodeURIComponent(profile.school)}`}
+                      style={{ textDecoration: "none" }}>
+                      <span className="vv-nost-chip">🏫 {profile.school}</span>
+                    </Link>
+                  )}
+                  {profile.relationshipStatus && (
+                    <span className="vv-nost-chip">{REL_LABELS[profile.relationshipStatus] || profile.relationshipStatus}</span>
+                  )}
+                </div>
+              )}
+
               <div style={{ whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.5 }}>
                 {profile.aboutMe || <em style={{ opacity: 0.6 }}>{profile.displayName} hat noch nichts geschrieben.</em>}
               </div>

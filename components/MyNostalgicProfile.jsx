@@ -117,20 +117,25 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
         <div className="vv-nost-grid">
           {/* LINKS: Steckbrief + Über mich + Musik */}
           <aside className="vv-nost-col-left">
-            <Card title="✦ STECKBRIEF ✦" tone="pink">
-              <SteckbriefRow label="Name" value={<ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} />} />
-              {profile.age != null && <SteckbriefRow label="Alter" value={`${profile.age} Jahre`} />}
-              {profile.gender && <SteckbriefRow label="Geschlecht" value={profile.gender === "m" ? "♂ männlich" : "♀ weiblich"} />}
-              {profile.city && <SteckbriefRow label="Stadt" value={`📍 ${profile.city}`} />}
-              {profile.school && <SteckbriefRow label="Schule" value={<Link href={`/schulen/${encodeURIComponent(profile.school)}`} style={{ color: "#831843", fontWeight: 700 }}>🏫 {profile.school}</Link>} />}
-              {profile.relationshipStatus && (
-                <SteckbriefRow label="Beziehung" value={<RelationshipDisplay profile={profile} />} />
-              )}
-              <SteckbriefRow label="Profil-Besuche" value={`👀 ${visitCount}`} />
-              <SteckbriefRow label="Komplimente" value={`💖 ${profile.complimentsTotal || 0}`} />
-            </Card>
-
             <Card title="✿ ÜBER MICH ✿" tone="violet">
+              {/* Quick-Facts: Stadt, Schule, Beziehung als Mini-Chips */}
+              {(profile.city || profile.school || profile.relationshipStatus) && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                  {profile.city && (
+                    <span className="vv-nost-chip">📍 {profile.city}</span>
+                  )}
+                  {profile.school && (
+                    <Link href={`/schulen/${encodeURIComponent(profile.school)}`}
+                      style={{ textDecoration: "none" }}>
+                      <span className="vv-nost-chip">🏫 {profile.school}</span>
+                    </Link>
+                  )}
+                  {profile.relationshipStatus && (
+                    <span className="vv-nost-chip"><RelationshipDisplay profile={profile} /></span>
+                  )}
+                </div>
+              )}
+
               <div style={{ whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.5 }}>
                 {profile.aboutMe || <em style={{ opacity: 0.6 }}>Noch nichts geschrieben — geh in „Profil bearbeiten" und füll deinen Steckbrief aus!</em>}
               </div>

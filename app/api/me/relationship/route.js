@@ -1,13 +1,13 @@
-// 💑 Familienstand + Partner setzen (Konsens-basiert).
-// POST { status, partnerUsername?, announceBuschfunk? }
+// 💑 Familienstand setzen.
+// POST { status, announceBuschfunk? }
 //   status: "" | single | taken | engaged | married | complicated | open
-//   partnerUsername: nur relevant bei taken/engaged/married
 //   announceBuschfunk: postet bei Wechsel automatisch in den Buschfunk
+// Partner-Verlinkung läuft separat über /api/me/relationship/request, /respond, /cancel, /unlink.
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
-  setRelationshipStatus, getPartnerInfo, getUserById, userRow,
+  setRelationshipStatus, getPartnerInfo,
   addStatusUpdate, bumpXP,
 } from "@/lib/db";
 
@@ -26,20 +26,17 @@ export async function POST(req) {
   const body = await req.json().catch(() => ({}));
 
   const status = String(body?.status || "").trim();
-  const partnerUsername = String(body?.partnerUsername || "").trim();
   const announce = !!body?.announceBuschfunk;
 
   try {
-    const res = setRelationshipStatus(me.id, status, partnerUsername);
+    const res = setRelationshipStatus(me.id, status);
     const info = getPartnerInfo(me.id);
 
-    // Buschfunk-Auto-Post wenn gewünscht
     if (announce) {
       const label = STATUS_LABEL[res.status] || res.status;
       let text = `${label} ✨`;
-      if (info.partner) {
-        if (info.mutual) text = `${label} mit @${info.partner.username} ✨💞`;
-        else text = `${label} mit @${info.partner.username} (einseitig 🥺 — warte auf gegenseitige Verlinkung)`;
+      if (info.partner && info.mutual) {
+        text = `${label} mit @${info.partner.username} ✨💞`;
       }
       try { addStatusUpdate(me.id, text, "", { boostedHours: 0 }); } catch {}
     }
