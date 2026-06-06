@@ -14,6 +14,7 @@ import LocationSettings from "@/components/LocationSettings";
 import PushPrefsSettings from "@/components/PushPrefsSettings";
 import LookSettings from "@/components/LookSettings";
 import RelationshipSettings from "@/components/RelationshipSettings";
+import MarqueeGreetingEditor from "@/components/MarqueeGreetingEditor";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -239,6 +240,9 @@ export default function EditProfilePage() {
       {/* 5) Look (self-saving) */}
       <div className="vv-edit-section-title">💑 Beziehung & Flirt</div>
       <RelationshipSettings />
+
+      <div className="vv-edit-section-title">🎀 Lauftext & Begrüßung</div>
+      <MarqueeGreetingEditor />
 
       <div className="vv-edit-section-title">🎨 Look & Style</div>
       <LookSettings />

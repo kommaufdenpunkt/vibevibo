@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors, getGuestbookEntries } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sanitizeCustomCss } from "@/lib/sanitizeCss";
+import { sanitizeHtml, sanitizeMarquee } from "@/lib/sanitizeHtml";
 
 export async function GET(_req, { params }) {
   const { username } = await params;
@@ -43,6 +44,9 @@ export async function PATCH(req, { params }) {
   // damit "  Lessing-Gymnasium  " == "Lessing-Gymnasium" und keine Doppel-Eintraege entstehen.
   if (typeof body.school === "string") patch.school = body.school.trim().slice(0, 80);
   if (typeof body.city === "string") patch.city = body.city.trim().slice(0, 60);
+  // 🎀 Eigener Lauftext (Plain-Text bis 200) + Begrüßungs-HTML (sanitisiert bis 5000)
+  if (typeof body.marqueeText === "string") patch.marqueeText = sanitizeMarquee(body.marqueeText);
+  if (typeof body.greetingHtml === "string") patch.greetingHtml = sanitizeHtml(body.greetingHtml);
   const updated = updateUser(me.id, patch);
   return NextResponse.json({ user: updated });
 }

@@ -35,10 +35,12 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
     <ProfileSkin css={profile.customCss}>
       <div className="vv-nost-page" data-gender={profile.gender || ""}>
 
-        {/* ⭐ Glitzer-Marquee oben */}
+        {/* ⭐ Glitzer-Marquee oben — User-eigener Text falls gesetzt */}
         <div className="vv-nost-marquee">
           <Marquee speed={48}>
-            {`★ ✿ ♡  Willkommen auf MEINEM Profil!  ♡ ✿ ★    ♬ ♪  ★  ♥ ✩ ☆ ✩ ♥  ★    ${profile.displayName} ist die Beste!  ★    ♬ ♪  ★  ♥`}
+            {profile.marqueeText && profile.marqueeText.trim()
+              ? profile.marqueeText
+              : `★ ✿ ♡  Willkommen auf MEINEM Profil!  ♡ ✿ ★    ♬ ♪  ★  ♥ ✩ ☆ ✩ ♥  ★    ${profile.displayName} ist die Beste!  ★    ♬ ♪  ★  ♥`}
           </Marquee>
         </div>
 
@@ -112,6 +114,15 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
 
         {/* Komplimente-Inbox prominent obendrueber */}
         <ComplimentInbox />
+
+        {/* 🌸 Begrüßungs-HTML, vom User selber gestaltet */}
+        {profile.greetingHtml && profile.greetingHtml.trim() && (
+          <div className="vv-nost-card vv-nost-card-violet">
+            <div className="vv-nost-card-title">🌸 HERZLICH WILLKOMMEN 🌸</div>
+            <div className="vv-nost-card-body vv-nost-greeting"
+              dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
+          </div>
+        )}
 
         {/* 📚 3-Spalten Forum-Layout */}
         <div className="vv-nost-grid">
