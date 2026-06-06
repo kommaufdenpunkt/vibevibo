@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import InstallTeaser from "./InstallTeaser";
+import LandingExtras from "./LandingExtras";
 
 const HOOKS = [
   "Tokio Hotel auf einem Klapphandy",
@@ -520,6 +521,9 @@ export default function Landing() {
           </div>
           <InstallTeaser />
         </div>
+
+        {/* Große Info-Sektionen: Stats · Features · Pricing · FAQ · Trust · Final-CTA + Werbung */}
+        <LandingExtras />
 
         <div className="vv-splash-mini-disclaimer">
           Erinnert an MySpace, SchülerVZ, Jappy, Lokalisten, wer-kennt-wen, Knuddels &amp; Co. – nicht angeschlossen, nur inspiriert. ★

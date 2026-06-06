@@ -133,9 +133,6 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
               className="vv-nost-action" style={{ background: "none", fontFamily: "inherit", cursor: "pointer" }}>
               💖<span>Kompliment</span>
             </button>
-            <Link href={`/geschenke?to=${encodeURIComponent(profile.username)}`} className="vv-nost-action">
-              🎁<span>Geschenk</span>
-            </Link>
             <Link href="/freunde" className="vv-nost-action">
               👯<span>Alle Freunde</span>
             </Link>

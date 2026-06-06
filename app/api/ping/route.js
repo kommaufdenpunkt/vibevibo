@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { autoApproveStalePics, purgeOldFailedLogins, listVibosNeedingBrief, markBriefSent } from "@/lib/db";
+import { autoApproveStalePics, purgeOldFailedLogins, listVibosNeedingBrief, markBriefSent, getPublicStats } from "@/lib/db";
 import { maybeScanForFarming } from "@/lib/vibesAi";
 import { sendPushToUser } from "@/lib/push";
+
+// GET = Landing-Stats (public). POST = Heartbeat + Sweep.
+export async function GET() {
+  try {
+    return NextResponse.json({ stats: getPublicStats() });
+  } catch {
+    return NextResponse.json({ stats: null });
+  }
+}
 
 // Leichter Heartbeat-Endpoint + Hintergrund-Sweep.
 let _lastSweepAt = 0;
