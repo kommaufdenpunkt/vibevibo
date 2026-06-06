@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { useMe } from "@/lib/useMe";
 import { relTime } from "@/lib/format";
 import { findGift } from "@/lib/gifts";
 import { ColoredName } from "./GenderAge";
@@ -10,8 +11,8 @@ import OnlineName from "./OnlineName";
 import PremiumBadges from "./PremiumBadges";
 import MentionText from "./MentionText";
 import EmbeddedMedia from "./EmbeddedMedia";
+import Avatar from "./Avatar";
 
-// Farbe des Zeitstrahl-Punkts je Ereignis-Typ
 const NODE_COLOR = {
   pinnwand: "#ff8fd0",
   gift: "#ffd23f",
@@ -32,6 +33,205 @@ function userChip(u) {
       </Link>
       <PremiumBadges badges={u.premiumBadges} size={13} />
     </span>
+  );
+}
+
+function truncate(s, n) {
+  if (!s) return "";
+  return s.length > n ? s.slice(0, n) + "…" : s;
+}
+
+// Kommentar-Reihe (mit optionalem Reply-Indent)
+function CommentRow({ c, me, isReply, allComments, onReply, onDelete, onReport }) {
+  const parent = c.replyToId
+    ? allComments.find((x) => x.id === c.replyToId)
+    : null;
+  const canDelete = me && (c.isMine || c.from.username === me.username);
+
+  return (
+    <div className="vv-bf-comment" data-reply={isReply ? "1" : "0"}>
+      <Link href={`/u/${c.from.username}`} className="vv-bf-comment-avatar-link">
+        <Avatar url={c.from.avatarUrl} name={c.from.displayName} className="vv-avatar vv-avatar-sm" />
+      </Link>
+      <div className="vv-bf-comment-body">
+        <div className="vv-bf-comment-head">
+          <Link href={`/u/${c.from.username}`} style={{ textDecoration: "none" }}>
+            <ColoredName gender={c.from.gender} age={c.from.age} name={c.from.displayName} nameColor={c.from.nameColor} size="13px" />
+          </Link>
+          {parent && !parent.deleted && (
+            <span className="vv-bf-comment-reply-ref">
+              ↪ <Link href={`/u/${parent.from.username}`} style={{ color: "#831843", textDecoration: "none" }}>@{parent.from.username}</Link>
+            </span>
+          )}
+          <span className="vv-bf-comment-time">{relTime(c.at)}</span>
+        </div>
+        {c.deleted ? (
+          <div className="vv-bf-comment-deleted">
+            🗑 Kommentar gelöscht
+            {c.deletedReason === "fidolin" && " (von Fidolin geprüft)"}
+          </div>
+        ) : (
+          <>
+            <div className="vv-bf-comment-text">
+              <MentionText text={c.text} />
+            </div>
+            {me && (
+              <div className="vv-bf-comment-actions">
+                <button type="button" onClick={() => onReply(c)} className="vv-bf-comment-action">
+                  ↩ Antworten
+                </button>
+                <button type="button" onClick={() => onReport(c)} className="vv-bf-comment-action vv-bf-comment-action-report">
+                  🚩 Melden
+                </button>
+                {canDelete && (
+                  <button type="button" onClick={() => onDelete(c)} className="vv-bf-comment-action vv-bf-comment-action-delete">
+                    🗑 Löschen
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Comments-Sektion unter einem Buschfunk-Post
+function CommentsSection({ postId }) {
+  const { me } = useMe();
+  const [open, setOpen] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [count, setCount] = useState(null);
+  const [draft, setDraft] = useState("");
+  const [replyTo, setReplyTo] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [flash, setFlash] = useState("");
+
+  async function load() {
+    try {
+      const r = await api.listBuschfunkComments(postId);
+      setComments(r.comments || []);
+      setCount((r.comments || []).filter((x) => !x.deleted).length);
+    } catch {}
+  }
+
+  useEffect(() => {
+    // Lazy-Count beim Mount
+    api.listBuschfunkComments(postId).then((r) => {
+      const list = r.comments || [];
+      setComments(list);
+      setCount(list.filter((x) => !x.deleted).length);
+    }).catch(() => setCount(0));
+  }, [postId]);
+
+  async function send() {
+    const t = draft.trim();
+    if (!t) return;
+    if (!me) { setFlash("⚠ Bitte einloggen"); return; }
+    setBusy(true);
+    try {
+      const replyToId = replyTo?.id || 0;
+      const effective = replyTo && !t.includes("@") ? `@${replyTo.from.username} ${t}` : t;
+      const r = await api.addBuschfunkComment(postId, effective, replyToId);
+      setComments(r.comments || []);
+      setCount((r.comments || []).filter((x) => !x.deleted).length);
+      setDraft("");
+      setReplyTo(null);
+    } catch (e) {
+      setFlash(`⚠ ${e.message}`);
+      setTimeout(() => setFlash(""), 5000);
+    } finally { setBusy(false); }
+  }
+
+  async function onDelete(c) {
+    if (!confirm("Kommentar wirklich löschen?")) return;
+    try {
+      const r = await api.deleteBuschfunkComment(postId, c.id);
+      setComments(r.comments || []);
+      setCount((r.comments || []).filter((x) => !x.deleted).length);
+    } catch (e) {
+      setFlash(`⚠ ${e.message}`);
+      setTimeout(() => setFlash(""), 4000);
+    }
+  }
+
+  async function onReport(c) {
+    const reason = prompt("Warum meldest du diesen Kommentar?", "");
+    if (reason === null) return;
+    try {
+      await api.reportBuschfunkComment(c.id, reason);
+      setFlash("✅ Kommentar gemeldet — Fidolin schaut drauf.");
+      setTimeout(() => setFlash(""), 3500);
+    } catch (e) {
+      setFlash(`⚠ ${e.message}`);
+      setTimeout(() => setFlash(""), 4000);
+    }
+  }
+
+  return (
+    <div className="vv-bf-comments">
+      {!open ? (
+        <button type="button" onClick={() => { setOpen(true); load(); }} className="vv-bf-comments-toggle">
+          💬 {count == null ? "Kommentare" : count === 0 ? "Kommentieren" : `${count} ${count === 1 ? "Kommentar" : "Kommentare"} anzeigen`}
+        </button>
+      ) : (
+        <>
+          <div className="vv-bf-comments-head">
+            <span>💬 Kommentare</span>
+            <button type="button" onClick={() => setOpen(false)} className="vv-bf-comments-close">×</button>
+          </div>
+          {comments.length === 0 ? (
+            <div className="vv-bf-comments-empty">Noch keine Kommentare — sei der/die Erste!</div>
+          ) : (
+            <div className="vv-bf-comments-list">
+              {comments.map((c) => (
+                <CommentRow key={c.id} c={c} me={me} isReply={!!c.replyToId}
+                  allComments={comments}
+                  onReply={(x) => { setReplyTo(x); setDraft(""); }}
+                  onDelete={onDelete}
+                  onReport={onReport} />
+              ))}
+            </div>
+          )}
+
+          {flash && (
+            <div className="vv-bf-comments-flash" data-tone={flash.startsWith("⚠") ? "warn" : "ok"}>
+              {flash}
+            </div>
+          )}
+
+          {me ? (
+            <div className="vv-bf-comments-composer">
+              {replyTo && (
+                <div className="vv-bf-comments-reply-hint">
+                  ↩ Antwort an <b>@{replyTo.from.username}</b>
+                  <button type="button" onClick={() => setReplyTo(null)}>×</button>
+                </div>
+              )}
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder={replyTo ? `Antwort an @${replyTo.from.username}…` : "Kommentar schreiben (mit @user kannst du markieren)…"}
+                rows={2}
+                maxLength={500}
+                className="vv-bf-comments-textarea"
+              />
+              <div className="vv-bf-comments-footer">
+                <span className="vv-bf-comments-counter">{draft.length} / 500</span>
+                <button type="button" onClick={send} disabled={busy || !draft.trim()} className="vv-bf-comments-send">
+                  {busy ? "…" : "💌 Posten"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="vv-bf-comments-loginhint">
+              🔑 <Link href="/login">Einloggen</Link> um zu kommentieren.
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
@@ -76,15 +276,12 @@ function renderEvent(ev, i, isLast) {
         boxShadow: "0 0 14px rgba(245,158,11,0.3)",
       } : {}),
     }}>
-      {/* Zeitstrahl-Linie */}
       {!isLast && !isBoosted && <div style={{ position: "absolute", left: 14, top: 30, bottom: 0, width: 2, background: "#ececf3" }} />}
-      {/* Knoten */}
       <div style={{
         zIndex: 1, width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
         background: "#fff", border: `2px solid ${NODE_COLOR[ev.type] || "#ddd"}`,
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
       }}>{icon}</div>
-      {/* Inhalt */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {isBoosted && (
           <div style={{ fontSize: 10, fontWeight: 800, color: "#b45309", marginBottom: 2 }}>
@@ -94,6 +291,10 @@ function renderEvent(ev, i, isLast) {
         <div style={{ fontSize: 13, lineHeight: 1.45 }}>{text}</div>
         <div style={{ fontSize: 11, color: "#9a9aa8", marginTop: 2 }}>{relTime(ev.at)}</div>
         <EmbeddedMedia audioUrl={ev.audioUrl} mediaJson={ev.media} compact />
+        {/* Kommentare nur für Status-Posts (Buschfunk-eigene Posts) */}
+        {ev.type === "status" && ev.postId > 0 && (
+          <CommentsSection postId={ev.postId} />
+        )}
       </div>
       {ev.picUrl && (
         <Link href={`/u/${ev.actor.username}`} style={{ flexShrink: 0 }}>
@@ -103,11 +304,6 @@ function renderEvent(ev, i, isLast) {
       )}
     </div>
   );
-}
-
-function truncate(s, n) {
-  if (!s) return "";
-  return s.length > n ? s.slice(0, n) + "…" : s;
 }
 
 export default function Buschfunk() {
