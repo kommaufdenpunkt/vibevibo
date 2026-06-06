@@ -189,15 +189,25 @@ export default function PremiumPanel() {
         return (
           <div key={group.id} style={{ marginTop: 18 }}>
             <h3 style={{
-              margin: "0 0 8px", fontSize: 14, fontWeight: 800,
-              color: "var(--vv-text,#1c1c1e)", letterSpacing: 0.2,
-              padding: "8px 12px", borderRadius: 10,
-              background: "linear-gradient(90deg, rgba(139,92,246,0.18), rgba(236,72,153,0.08), transparent)",
-              borderLeft: "4px solid #8b5cf6",
+              margin: "0 0 8px", fontSize: 15, fontWeight: 900,
+              color: "#fff", letterSpacing: 0.4,
+              padding: "10px 14px", borderRadius: 10,
+              background: "linear-gradient(90deg, #8b5cf6, #ec4899, #8b5cf6)",
+              backgroundSize: "200% 100%",
+              animation: "vv-nost-titlewave 6s ease-in-out infinite",
+              borderLeft: "4px solid #4c1d95",
+              borderRight: "4px solid #831843",
+              boxShadow: "0 3px 10px rgba(139,92,246,0.35)",
+              textShadow: "0 1px 0 rgba(0,0,0,0.35), 0 0 6px rgba(255,255,255,0.4)",
               display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
               <span>{group.label}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--vv-muted,#666)" }}>
+              <span style={{
+                fontSize: 11, fontWeight: 800,
+                color: "#fff", background: "rgba(0,0,0,0.25)",
+                padding: "3px 9px", borderRadius: 999,
+                textShadow: "0 1px 0 rgba(0,0,0,0.4)",
+              }}>
                 {ownedCount}/{items.length} {ownedCount === items.length ? "✓" : ""}
               </span>
             </h3>
