@@ -152,18 +152,29 @@ export default function RelationshipSettings() {
       <div className="vv-edit-card" data-tone="pink">
         <div className="vv-edit-card-title">💑 BEZIEHUNG & FAMILIENSTAND</div>
         <div className="vv-edit-card-body">
-          {/* Profilbild oben, Name darunter */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginBottom: 14 }}>
+          {/* Profilbild groß zentriert oben, Anzeigename darunter */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: "2px dashed #f9a8d4" }}>
             <div style={{
-              width: 84, height: 84, padding: 4, borderRadius: "50%",
+              width: 100, height: 100, padding: 5, borderRadius: "50%",
               background: "conic-gradient(from 0deg, #ec4899, #f472b6, #a855f7, #06b6d4, #fbbf24, #ec4899)",
               boxShadow: "0 6px 14px rgba(236,72,153,0.4)",
+              animation: "vv-nost-spin 8s linear infinite",
             }}>
               <Avatar url={me.avatarUrl} name={me.displayName}
-                style={{ width: "100%", height: "100%", borderRadius: "50%", border: "3px solid #fff", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }} />
+                style={{
+                  width: "100%", height: "100%", borderRadius: "50%",
+                  border: "3px solid #fff", background: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 42,
+                  animation: "vv-nost-counter-spin 8s linear infinite",
+                }} />
             </div>
-            <div style={{ fontWeight: 900, fontSize: 18, color: "#831843", textAlign: "center" }}>
-              <ColoredName gender={me.gender} age={me.age} name={me.displayName} size="18px" />
+            <div style={{ textAlign: "center", lineHeight: 1.3 }}>
+              <div style={{ fontWeight: 900, fontSize: 20 }}>
+                <ColoredName gender={me.gender} age={me.age} name={me.displayName} size="20px" />
+              </div>
+              <div style={{ fontSize: 12, color: "#831843", opacity: 0.7, fontWeight: 700, marginTop: 2 }}>
+                @{me.username}
+              </div>
             </div>
           </div>
 
@@ -263,21 +274,32 @@ export default function RelationshipSettings() {
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {incoming.map((r) => (
                   <div key={r.id} style={{
-                    padding: 11, borderRadius: 12,
+                    padding: 14, borderRadius: 12,
                     background: "linear-gradient(135deg, #fff, #fdf2f8)",
                     border: "2px dashed #ec4899", boxShadow: "0 3px 10px rgba(236,72,153,0.2)",
+                    textAlign: "center",
                   }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    {/* Profilbild zentriert oben */}
+                    <Link href={`/u/${r.from.username}`} style={{
+                      display: "inline-block", textDecoration: "none",
+                      width: 72, height: 72, padding: 3, borderRadius: "50%",
+                      background: "conic-gradient(from 0deg, #ec4899, #f472b6, #a855f7, #06b6d4, #fbbf24, #ec4899)",
+                      boxShadow: "0 4px 10px rgba(236,72,153,0.3)",
+                      marginBottom: 8,
+                    }}>
                       <Avatar url={r.from.avatarUrl} name={r.from.displayName}
-                        className="vv-avatar" style={{ width: 50, height: 50, flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Link href={`/u/${r.from.username}`} style={{ textDecoration: "none" }}>
-                          <ColoredName gender={r.from.gender} age={r.from.age} name={r.from.displayName} size="16px" />
-                        </Link>
-                        <div style={{ fontSize: 11.5, opacity: 0.8, color: "#831843", marginTop: 2 }}>
-                          möchte mit dir „{REL_LABELS[r.kind] || r.kind}" sein
-                        </div>
-                      </div>
+                        style={{
+                          width: "100%", height: "100%", borderRadius: "50%",
+                          border: "3px solid #fff", background: "#fff",
+                          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30,
+                        }} />
+                    </Link>
+                    {/* Anzeigename darunter */}
+                    <Link href={`/u/${r.from.username}`} style={{ textDecoration: "none", display: "block" }}>
+                      <ColoredName gender={r.from.gender} age={r.from.age} name={r.from.displayName} size="18px" />
+                    </Link>
+                    <div style={{ fontSize: 12.5, opacity: 0.85, color: "#831843", marginTop: 4, marginBottom: 12, fontStyle: "italic" }}>
+                      möchte mit dir {REL_LABELS[r.kind] || r.kind} sein
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                       <button type="button" onClick={() => respond(r.id, true)} disabled={busy || !meHasPartnerStatus}
