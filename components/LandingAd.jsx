@@ -34,9 +34,15 @@ export default function LandingAd({ slot = "landing", minHeight = 100, style, la
       setPushed(true);
     } else if (display.provider === "adsterra" && display.zoneId) {
       const w = window;
-      w.atOptions = w.atOptions || {};
-      w.atOptions[display.zoneId] = { key: display.zoneId, format: "iframe", height: 250, width: 300 };
-      loadOnce(`https://www.profitableratecpm.com/${display.zoneId}/invoke.js`, "vv-adsterra-l-" + display.zoneId);
+      w.atOptions = {
+        key: display.zoneId,
+        format: "iframe",
+        height: display.height || 50,
+        width: display.width || 320,
+        params: {},
+      };
+      const domain = (display.domain || "www.highperformanceformat.com").replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+      loadOnce(`https://${domain}/${display.zoneId}/invoke.js`, "vv-adsterra-l-" + display.zoneId);
       setPushed(true);
     }
   }, [display, pushed]);
@@ -68,8 +74,14 @@ export default function LandingAd({ slot = "landing", minHeight = 100, style, la
         <div ref={ref} id={`ezoic-pub-ad-placeholder-${slot}`} style={{ minHeight }} />
       )}
       {display.provider === "adsterra" && (
-        <div ref={ref} style={{ minHeight, display: "flex", justifyContent: "center" }}>
-          <div id={`adsterra-l-${display.zoneId}`} />
+        <div ref={ref} style={{
+          minHeight: Math.max(minHeight, (display.height || 50) + 10),
+          display: "flex", justifyContent: "center", alignItems: "center",
+        }}>
+          <div id={`adsterra-l-${display.zoneId}`} style={{
+            width: display.width || 320,
+            height: display.height || 50,
+          }} />
         </div>
       )}
     </div>

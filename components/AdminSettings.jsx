@@ -133,6 +133,10 @@ function AdsConfigCard({ state, save, busy }) {
   const [display, setDisplay] = useState(state.display_provider || "off");
   const [ezoicId, setEzoicId] = useState(state.ezoic_site_id || "");
   const [adsterraZone, setAdsterraZone] = useState(state.adsterra_zone_id || "");
+  const [adsterraDomain, setAdsterraDomain] = useState(state.adsterra_banner_domain || "www.highperformanceformat.com");
+  const [adsterraWidth, setAdsterraWidth] = useState(String(state.adsterra_banner_width || "320"));
+  const [adsterraHeight, setAdsterraHeight] = useState(String(state.adsterra_banner_height || "50"));
+  const [adsterraPaste, setAdsterraPaste] = useState("");
   const [popunderUrl, setPopunderUrl] = useState(state.popunder_script_url || "");
   const [earningActive, setEarningActive] = useState(
     (state.earning_providers_active || "simulator").split(",").map((s) => s.trim()).filter(Boolean)
@@ -165,6 +169,9 @@ function AdsConfigCard({ state, save, busy }) {
       DISPLAY_PROVIDER: display,
       EZOIC_SITE_ID: ezoicId.trim(),
       ADSTERRA_ZONE_ID: adsterraZone.trim(),
+      ADSTERRA_BANNER_DOMAIN: adsterraDomain.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, ""),
+      ADSTERRA_BANNER_WIDTH: String(parseInt(adsterraWidth, 10) || 320),
+      ADSTERRA_BANNER_HEIGHT: String(parseInt(adsterraHeight, 10) || 50),
       POPUNDER_SCRIPT_URL: popunderUrl.trim(),
       EARNING_PROVIDERS_ACTIVE: earningActive.join(","),
     };
@@ -185,7 +192,13 @@ function AdsConfigCard({ state, save, busy }) {
     } else if (display === "ezoic") {
       checks.push(ezoicId ? `✅ Ezoic Site-ID gesetzt: ${ezoicId}` : "❌ Ezoic Site-ID FEHLT — Banner inaktiv");
     } else if (display === "adsterra") {
-      checks.push(adsterraZone ? `✅ Adsterra Zone-ID gesetzt: ${adsterraZone}` : "❌ Adsterra Zone-ID FEHLT — Banner inaktiv");
+      if (!adsterraZone) {
+        checks.push("❌ Adsterra Zone-Key FEHLT — Banner inaktiv");
+      } else {
+        const looksHex = /^[a-f0-9]{16,}$/i.test(adsterraZone);
+        checks.push(`✅ Adsterra Zone-Key: ${adsterraZone.slice(0, 8)}…${adsterraZone.slice(-4)} ${looksHex ? "" : "(⚠ kein Hex-Format)"}`);
+        checks.push(`   Domain: ${adsterraDomain || "(leer)"} · Größe: ${adsterraWidth}×${adsterraHeight}px`);
+      }
     }
 
     // Earning
@@ -252,12 +265,86 @@ function AdsConfigCard({ state, save, busy }) {
       )}
 
       {display === "adsterra" && (
-        <div className="vv-mt-12">
+        <div className="vv-mt-12" style={{ background: "rgba(236,72,153,0.06)", padding: 12, borderRadius: 10, border: "1px solid rgba(236,72,153,0.25)" }}>
+          {/* Quick-Paste: kompletten Adsterra-Embed reinpasten */}
           <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
-            Adsterra Zone-ID (Banner) {srcChip("ADSTERRA_ZONE_ID")}
+            ⚡ Schnell-Einlesen — kompletten Adsterra-Banner-Embed hier reinpasten
+          </label>
+          <textarea
+            className="vv-input"
+            rows={4}
+            value={adsterraPaste}
+            onChange={(e) => {
+              const v = e.target.value;
+              setAdsterraPaste(v);
+              // Parse atOptions { key, width, height } + script src domain
+              const keyMatch = v.match(/['"]key['"]\s*:\s*['"]([a-f0-9]{16,})['"]/i);
+              const widthMatch = v.match(/['"]width['"]\s*:\s*(\d{2,4})/);
+              const heightMatch = v.match(/['"]height['"]\s*:\s*(\d{2,4})/);
+              const srcMatch = v.match(/src\s*=\s*['"]https?:\/\/([^/'"]+)\/[a-f0-9]{16,}\/invoke\.js['"]/i);
+              if (keyMatch) setAdsterraZone(keyMatch[1]);
+              if (widthMatch) setAdsterraWidth(widthMatch[1]);
+              if (heightMatch) setAdsterraHeight(heightMatch[1]);
+              if (srcMatch) setAdsterraDomain(srcMatch[1]);
+            }}
+            placeholder={`<script>\n  atOptions = { 'key' : '1f4c3ef...', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };\n</script>\n<script src="https://www.highperformanceformat.com/1f4c3ef.../invoke.js"></script>`}
+            style={{ width: "100%", fontFamily: "monospace", fontSize: 11, resize: "vertical" }}
+          />
+          <div style={{ fontSize: 11, color: "#9d174d", marginTop: 4, marginBottom: 12 }}>
+            Komplett aus dem Adsterra-Dashboard kopieren — Key, Domain & Größe werden automatisch gefüllt.
+          </div>
+
+          <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+            Adsterra Zone-Key (Hex) {srcChip("ADSTERRA_ZONE_ID")}
           </label>
           <input className="vv-input" value={adsterraZone} onChange={(e) => setAdsterraZone(e.target.value)}
-            placeholder="z.B. abcdef1234567890" style={{ fontFamily: "monospace" }} />
+            placeholder="z.B. 1f4c3efca88c752a5a897c8a618bde91" style={{ fontFamily: "monospace" }} />
+
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8, marginTop: 10 }}>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+                CDN-Domain {srcChip("ADSTERRA_BANNER_DOMAIN")}
+              </label>
+              <input className="vv-input" value={adsterraDomain} onChange={(e) => setAdsterraDomain(e.target.value)}
+                placeholder="www.highperformanceformat.com" style={{ fontFamily: "monospace", fontSize: 11 }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+                Breite (px) {srcChip("ADSTERRA_BANNER_WIDTH")}
+              </label>
+              <input className="vv-input" type="number" min={50} max={1200}
+                value={adsterraWidth} onChange={(e) => setAdsterraWidth(e.target.value)}
+                placeholder="320" />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+                Höhe (px) {srcChip("ADSTERRA_BANNER_HEIGHT")}
+              </label>
+              <input className="vv-input" type="number" min={30} max={900}
+                value={adsterraHeight} onChange={(e) => setAdsterraHeight(e.target.value)}
+                placeholder="50" />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#9d174d", alignSelf: "center" }}>Presets:</span>
+            <button type="button" className="vv-btn" style={{ fontSize: 11, padding: "4px 10px" }}
+              onClick={() => { setAdsterraWidth("320"); setAdsterraHeight("50"); }}>
+              📱 Mobile 320×50
+            </button>
+            <button type="button" className="vv-btn" style={{ fontSize: 11, padding: "4px 10px" }}
+              onClick={() => { setAdsterraWidth("300"); setAdsterraHeight("250"); }}>
+              🟫 Rectangle 300×250
+            </button>
+            <button type="button" className="vv-btn" style={{ fontSize: 11, padding: "4px 10px" }}
+              onClick={() => { setAdsterraWidth("728"); setAdsterraHeight("90"); }}>
+              🖥 Leaderboard 728×90
+            </button>
+            <button type="button" className="vv-btn" style={{ fontSize: 11, padding: "4px 10px" }}
+              onClick={() => { setAdsterraWidth("160"); setAdsterraHeight("600"); }}>
+              📐 Skyscraper 160×600
+            </button>
+          </div>
         </div>
       )}
 

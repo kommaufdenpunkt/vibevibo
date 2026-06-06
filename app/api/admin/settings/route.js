@@ -12,6 +12,9 @@ const ALLOWED_KEYS = new Set([
   "DISPLAY_PROVIDER",        // off|ezoic|adsterra
   "EZOIC_SITE_ID",
   "ADSTERRA_ZONE_ID",
+  "ADSTERRA_BANNER_DOMAIN",  // z.B. www.highperformanceformat.com
+  "ADSTERRA_BANNER_WIDTH",   // z.B. 320
+  "ADSTERRA_BANNER_HEIGHT",  // z.B. 50
 
   // Popunder (Click-Geld, vollständige Script-URL)
   "POPUNDER_SCRIPT_URL",
@@ -56,8 +59,9 @@ export async function GET(req) {
 
   // Sources fuer alle relevanten Keys
   const sourceKeys = [
-    "DISPLAY_PROVIDER", "EZOIC_SITE_ID", "ADSTERRA_ZONE_ID", "POPUNDER_SCRIPT_URL",
-    "EARNING_PROVIDERS_ACTIVE",
+    "DISPLAY_PROVIDER", "EZOIC_SITE_ID", "ADSTERRA_ZONE_ID",
+    "ADSTERRA_BANNER_DOMAIN", "ADSTERRA_BANNER_WIDTH", "ADSTERRA_BANNER_HEIGHT",
+    "POPUNDER_SCRIPT_URL", "EARNING_PROVIDERS_ACTIVE",
     ...PROVIDER_IDS.map((id) => `ADS_SECRET_${id.toUpperCase()}`),
   ];
 
@@ -70,6 +74,9 @@ export async function GET(req) {
     display_provider: eff("DISPLAY_PROVIDER") || "off",
     ezoic_site_id: eff("EZOIC_SITE_ID"),
     adsterra_zone_id: eff("ADSTERRA_ZONE_ID"),
+    adsterra_banner_domain: eff("ADSTERRA_BANNER_DOMAIN") || "www.highperformanceformat.com",
+    adsterra_banner_width: eff("ADSTERRA_BANNER_WIDTH") || "320",
+    adsterra_banner_height: eff("ADSTERRA_BANNER_HEIGHT") || "50",
     popunder_script_url: eff("POPUNDER_SCRIPT_URL"),
 
     // Earning
