@@ -203,25 +203,27 @@ export default function Navbar() {
         <div className="vv-spacer" />
 
         {me ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexShrink: 1 }}>
             <VibesNavBadge />
             <NotificationsBell />
-          <div style={{ position: "relative" }}>
+          <div style={{ position: "relative", minWidth: 0, flexShrink: 1 }}>
             <button
               type="button"
               onClick={() => (statusOpen ? closeStatus() : setStatusOpen(true))}
+              className="vv-nav2-status"
               style={{
-                display: "inline-flex", alignItems: "center", gap: 6, maxWidth: "55vw",
+                display: "inline-flex", alignItems: "center", gap: 6,
                 background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.35)",
                 color: "#fff", borderRadius: 20, padding: "6px 12px", cursor: "pointer",
                 fontFamily: "Arial, sans-serif", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden",
+                maxWidth: "100%",
               }}
               title="Status ändern"
             >
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", display: "inline-block", maxWidth: "100%" }}>
                 {me.mood ? me.mood : "Status setzen"}
               </span>
-              <span style={{ opacity: 0.8 }}>▾</span>
+              <span style={{ opacity: 0.8, flexShrink: 0 }}>▾</span>
             </button>
 
             {statusOpen && (
