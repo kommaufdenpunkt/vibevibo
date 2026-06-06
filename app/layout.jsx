@@ -5,6 +5,7 @@ import ScreenshotGuard from "@/components/ScreenshotGuard";
 import MessageNotifier from "@/components/MessageNotifier";
 import ChatOverlay from "@/components/ChatOverlay";
 import PushSetup from "@/components/PushSetup";
+import PopunderScript from "@/components/PopunderScript";
 import LiveCallShell from "@/components/LiveCallShell";
 import IdleGuard from "@/components/IdleGuard";
 import MaintenanceGate from "@/components/MaintenanceGate";
@@ -65,6 +66,7 @@ export default function RootLayout({ children }) {
           <MessageNotifier />
           <ChatOverlay />
           <PushSetup />
+          <PopunderScript />
           <LiveCallShell />
           <IdleGuard />
           <MaintenanceGate />

@@ -31,6 +31,7 @@ const PUBLIC_PREFIX = [
   "/api/ping",        // health/presence ping
   "/api/maintenance", // wartungsfenster lesen
   "/api/push/key",    // VAPID public key zum subscriben
+  "/api/ads/status",  // Werbe-Config (Landing braucht das public)
   "/api/admin/",      // admin-routes sichern sich selbst
 ];
 

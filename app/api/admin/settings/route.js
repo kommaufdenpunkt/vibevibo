@@ -13,6 +13,9 @@ const ALLOWED_KEYS = new Set([
   "EZOIC_SITE_ID",
   "ADSTERRA_ZONE_ID",
 
+  // Popunder (Click-Geld, vollständige Script-URL)
+  "POPUNDER_SCRIPT_URL",
+
   // Earning-Provider (Reward-Hub) — Komma-Liste der aktiven IDs
   "EARNING_PROVIDERS_ACTIVE", // "simulator,cpx,bitlabs"
 
@@ -53,7 +56,7 @@ export async function GET(req) {
 
   // Sources fuer alle relevanten Keys
   const sourceKeys = [
-    "DISPLAY_PROVIDER", "EZOIC_SITE_ID", "ADSTERRA_ZONE_ID",
+    "DISPLAY_PROVIDER", "EZOIC_SITE_ID", "ADSTERRA_ZONE_ID", "POPUNDER_SCRIPT_URL",
     "EARNING_PROVIDERS_ACTIVE",
     ...PROVIDER_IDS.map((id) => `ADS_SECRET_${id.toUpperCase()}`),
   ];
@@ -67,6 +70,7 @@ export async function GET(req) {
     display_provider: eff("DISPLAY_PROVIDER") || "off",
     ezoic_site_id: eff("EZOIC_SITE_ID"),
     adsterra_zone_id: eff("ADSTERRA_ZONE_ID"),
+    popunder_script_url: eff("POPUNDER_SCRIPT_URL"),
 
     // Earning
     earning_providers_active: eff("EARNING_PROVIDERS_ACTIVE") || "simulator",

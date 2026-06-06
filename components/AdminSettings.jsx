@@ -133,6 +133,7 @@ function AdsConfigCard({ state, save, busy }) {
   const [display, setDisplay] = useState(state.display_provider || "off");
   const [ezoicId, setEzoicId] = useState(state.ezoic_site_id || "");
   const [adsterraZone, setAdsterraZone] = useState(state.adsterra_zone_id || "");
+  const [popunderUrl, setPopunderUrl] = useState(state.popunder_script_url || "");
   const [earningActive, setEarningActive] = useState(
     (state.earning_providers_active || "simulator").split(",").map((s) => s.trim()).filter(Boolean)
   );
@@ -164,6 +165,7 @@ function AdsConfigCard({ state, save, busy }) {
       DISPLAY_PROVIDER: display,
       EZOIC_SITE_ID: ezoicId.trim(),
       ADSTERRA_ZONE_ID: adsterraZone.trim(),
+      POPUNDER_SCRIPT_URL: popunderUrl.trim(),
       EARNING_PROVIDERS_ACTIVE: earningActive.join(","),
     };
     for (const [k, v] of Object.entries(secrets)) {
@@ -252,12 +254,26 @@ function AdsConfigCard({ state, save, busy }) {
       {display === "adsterra" && (
         <div className="vv-mt-12">
           <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
-            Adsterra Zone-ID {srcChip("ADSTERRA_ZONE_ID")}
+            Adsterra Zone-ID (Banner) {srcChip("ADSTERRA_ZONE_ID")}
           </label>
           <input className="vv-input" value={adsterraZone} onChange={(e) => setAdsterraZone(e.target.value)}
             placeholder="z.B. abcdef1234567890" style={{ fontFamily: "monospace" }} />
         </div>
       )}
+
+      {/* 💰 Popunder — komplette Script-URL */}
+      <div className="vv-mt-12" style={{ background: "rgba(245,158,11,0.08)", padding: 10, borderRadius: 8, border: "1px dashed #f59e0b" }}>
+        <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+          💰 Popunder-Script-URL (optional, Auto-Click-Geld) {srcChip("POPUNDER_SCRIPT_URL")}
+        </label>
+        <input className="vv-input" value={popunderUrl} onChange={(e) => setPopunderUrl(e.target.value)}
+          placeholder="z.B. https://pl29663267.effectivecpmnetwork.com/54/74/85/.../...js"
+          style={{ fontFamily: "monospace", fontSize: 11 }} />
+        <div style={{ fontSize: 11, color: "#92400e", marginTop: 4 }}>
+          🟡 Komplette URL aus dem Adsterra-Popunder-Script eintragen (zwischen <code>src="</code> und <code>"</code>).
+          VIP-User & ads-opt-out User sehen das nicht.
+        </div>
+      </div>
 
       {/* ============================================================ */}
       {/* EARNING-PROVIDER (Vibes-Verdienen)                           */}
