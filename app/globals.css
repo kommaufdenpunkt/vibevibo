@@ -5130,6 +5130,9 @@ input[type="number"], input[type="tel"], textarea, select {
   overflow: hidden;
   border: 3px solid #ec4899;
   box-shadow: 0 6px 20px rgba(236,72,153,0.25);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
 }
 .vv-login-card-info { border-color: #a855f7; box-shadow: 0 6px 20px rgba(168,85,247,0.25); }
 .vv-login-card-title {
@@ -5152,6 +5155,9 @@ input[type="number"], input[type="tel"], textarea, select {
   padding: 16px;
   background: linear-gradient(180deg, #fff, #fdf2f8);
   color: #4a044e;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .vv-login-card-info .vv-login-card-body {
   background: linear-gradient(180deg, #fff, #faf5ff);
@@ -5286,6 +5292,129 @@ input[type="number"], input[type="tel"], textarea, select {
   cursor: pointer;
   font-family: inherit;
 }
+
+/* ── Forgot Password Link ── */
+.vv-login-forgot {
+  text-align: right;
+  font-size: 11.5px;
+  margin: -4px 0 2px;
+}
+.vv-login-forgot button {
+  background: none;
+  border: none;
+  color: #be185d;
+  font-weight: 700;
+  text-decoration: underline dotted;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: inherit;
+}
+.vv-login-forgot button:hover { color: #831843; }
+.vv-login-forgot-msg {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px dashed #d97706;
+  color: #78350f;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 6px 0;
+}
+
+/* ── Divider "── oder ──" ── */
+.vv-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 12px;
+  color: #be185d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.vv-login-divider::before,
+.vv-login-divider::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background-image: linear-gradient(90deg, transparent, #f9a8d4, transparent);
+  border-radius: 999px;
+}
+
+/* ── Social-Login Buttons (Placeholder bis OAuth da ist) ── */
+.vv-login-social-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.vv-login-social-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 6px;
+  background: linear-gradient(180deg, #fff, #fdf2f8);
+  border: 2px solid #f9a8d4;
+  border-radius: 12px;
+  color: #831843;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  cursor: not-allowed;
+  font-family: inherit;
+  opacity: 0.75;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.vv-login-social-btn:hover {
+  transform: translateY(-1px);
+  opacity: 1;
+  box-shadow: 0 4px 10px rgba(236,72,153,0.2);
+}
+.vv-login-social-btn .vv-login-social-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+.vv-login-social-btn .vv-login-social-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  background: linear-gradient(180deg, #fde047, #facc15);
+  color: #713f12;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1.5px solid #ca8a04;
+  text-transform: uppercase;
+}
+
+/* ── Mode-Switch ganz unten (Spacing fix) ── */
+.vv-login-spacer { flex: 1; min-height: 6px; }
+.vv-login-bottom-switch {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px ridge #fbcfe8;
+  text-align: center;
+  font-size: 12px;
+  color: #831843;
+}
+.vv-login-bottom-switch button {
+  background: none;
+  border: none;
+  color: #be185d;
+  font-weight: 900;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+}
+.vv-login-bottom-switch button:hover { color: #831843; }
 
 .vv-login-marquee-text {
   background: linear-gradient(90deg, #ec4899, #a855f7, #06b6d4, #a855f7, #ec4899);
