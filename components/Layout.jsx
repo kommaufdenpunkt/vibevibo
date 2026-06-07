@@ -62,7 +62,7 @@ export default function Layout({ children }) {
       <Banner />
         <StatusStrip />
       {children}
-      <EdgePanels />
+      {me && <EdgePanels />}
       <Footer />
     </div>
   );
