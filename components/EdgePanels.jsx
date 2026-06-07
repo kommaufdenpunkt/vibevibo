@@ -12,7 +12,6 @@ import { useMe } from "@/lib/useMe";
 const LEFT = [
   { href: "/",          emoji: "🏠", label: "Start" },
   { href: "/profile",   emoji: "👤", label: "Profil" },
-  { href: "/messenger", emoji: "✉️", label: "Messages" },
   { href: "/freunde",   emoji: "👯", label: "Freunde" },
   { href: "/karte",     emoji: "🗺️", label: "Karte" },
   { href: "/fotos",     emoji: "📸", label: "Fotos" },
