@@ -8157,3 +8157,7 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-edge-logout { margin-top: 16px; width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(248,113,113,0.45); background: rgba(220,38,38,0.2); color: #fecaca; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; }
 .vv-edge-logout:active { transform: scale(0.97); }
 @media (max-width: 700px) { .vv-banner-status { right: 10px; bottom: 8px; gap: 7px; } }
+
+/* === Begruessungs-Box nur so breit wie die mittlere Spalte === */
+.vv-nost-card-violet:has(> .vv-nost-greeting) { max-width: 44%; margin-left: auto; margin-right: auto; }
+@media (max-width: 1024px) { .vv-nost-card-violet:has(> .vv-nost-greeting) { max-width: 100%; } }
