@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Banner from "@/components/Banner";
 import Navbar from "@/components/Navbar";
+import EdgePanels from "@/components/EdgePanels";
 import StatusStrip from "@/components/StatusStrip";
 import Footer from "@/components/Footer";
 import { useMe } from "@/lib/useMe";
@@ -64,6 +65,7 @@ export default function Layout({ children }) {
       <Navbar />
         <StatusStrip />
       {children}
+      <EdgePanels />
       <Footer />
     </div>
   );
