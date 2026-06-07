@@ -87,6 +87,11 @@ export default function HomePage() {
         <Link href="/schulen" className="vv-home-tile" data-tone="cyan"><span className="vv-home-tile-emoji">🏫</span><span>Schulen</span><span className="vv-home-tile-sub">Verzeichnis</span></Link>
         <Link href="/profile/transactions" className="vv-home-tile" data-tone="green"><span className="vv-home-tile-emoji">💰</span><span>Vibes</span><span className="vv-home-tile-sub">Verlauf</span></Link>
         <Link href="/rang" className="vv-home-tile" data-tone="gold"><span className="vv-home-tile-emoji">🏅</span><span>Rang</span><span className="vv-home-tile-sub">XP & Levels</span></Link>
+        <Link href="/tipspiel" className="vv-home-tile" data-tone="gold">
+          <span className="vv-home-tile-emoji">🏆</span>
+          <span>Tippspiel</span>
+          <span className="vv-home-tile-sub">Bundesliga</span>
+        </Link>
       </div>
 
       {/* 📲 PWA-Apps als Icons installieren */}
