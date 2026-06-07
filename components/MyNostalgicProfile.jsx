@@ -131,7 +131,7 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
         {/* 🌸 Begrüßungs-HTML — eigenes Profil → direkt inline editierbar */}
         <div className="vv-nost-card vv-nost-card-violet vv-greet-card">
           <div className="vv-nost-card-title vv-greet-card-title">
-            <span>🌸 HERZLICH WILLKOMMEN 🌸</span>
+            <span>🌸 BEGRÜSSUNGSTEXT 🌸</span>
             {!editingGreeting && (
               <button type="button" className="vv-greet-edit-btn" title="Begrüßung bearbeiten"
                 onClick={() => setEditingGreeting(true)}>
