@@ -8279,3 +8279,16 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-tipspiel-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; text-decoration: none; color: inherit; }
 .vv-tipspiel-row:hover { background: rgba(0,0,0,0.04); }
 .vv-tipspiel-rank { width: 26px; font-weight: 800; color: #ec4899; }
+
+/* === Tippspiel: Header lila/violet (statt gold) + Sommerpause-Card === */
+.vv-tipspiel-header {
+  background: linear-gradient(135deg, #1b0f30, #2a1245) !important;
+  border: 2px solid #a855f7 !important;
+  color: #f5e8ff !important;
+}
+.vv-tipspiel-title { color: #fff; }
+.vv-tipspiel-pause {
+  background: linear-gradient(180deg, #1b0f30, #130822);
+  border: 2px dashed #a855f7;
+  color: #f5e8ff;
+}

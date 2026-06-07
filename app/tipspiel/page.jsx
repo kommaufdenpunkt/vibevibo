@@ -15,20 +15,37 @@ export default function TipspielPage() {
   const router = useRouter();
   const { me, loading, refresh } = useMe();
   const [data, setData] = useState(null);
+  const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
   const [drafts, setDrafts] = useState({});
 
   useEffect(() => { if (!loading && !me) router.push("/login"); }, [loading, me, router]);
 
-  const load = () => fetch("/api/tipspiel", { cache: "no-store" }).then((r) => r.json()).then((d) => {
-    setData(d);
-    const next = {};
-    (d.matches || []).forEach((m) => { if (m.myTip) next[m.matchId] = { tip1: m.myTip.tip1, tip2: m.myTip.tip2 }; });
-    setDrafts(next);
-  }).catch(() => {});
+  const load = () => fetch("/api/tipspiel", { cache: "no-store" })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      // Defensive: alle Arrays defaulten zu []
+      const safe = {
+        ok: d && d.ok !== false,
+        season: (d && d.season) || null,
+        matchday: (d && d.matchday) || null,
+        matches: (d && Array.isArray(d.matches)) ? d.matches : [],
+        myEntry: !!(d && d.myEntry),
+        pot: (d && d.pot) || { pot: 0, paidOutAt: null },
+        leaderboardSeason: (d && Array.isArray(d.leaderboardSeason)) ? d.leaderboardSeason : [],
+        leaderboardMd: (d && Array.isArray(d.leaderboardMd)) ? d.leaderboardMd : [],
+        entryCost: (d && d.entryCost) || 50,
+      };
+      setData(safe);
+      const next = {};
+      safe.matches.forEach(function (m) { if (m && m.myTip) next[m.matchId] = { tip1: m.myTip.tip1, tip2: m.myTip.tip2 }; });
+      setDrafts(next);
+      setErr("");
+    })
+    .catch(function (e) { setErr("Konnte Tippspiel nicht laden: " + (e && e.message || "Fehler")); });
 
-  useEffect(() => { if (me) load(); }, [me]);
+  useEffect(function () { if (me) load(); }, [me]);
 
   async function buyEntry() {
     setBusy(true);
@@ -40,7 +57,7 @@ export default function TipspielPage() {
       if (refresh) await refresh();
       await load();
     } catch (e) { setFlash("WARN " + e.message); }
-    finally { setBusy(false); setTimeout(() => setFlash(""), 4000); }
+    finally { setBusy(false); setTimeout(function () { setFlash(""); }, 4000); }
   }
 
   async function saveAllTips() {
@@ -56,22 +73,22 @@ export default function TipspielPage() {
       else setFlash("OK " + tips.length + " Tipps gespeichert");
       await load();
     } catch (e) { setFlash("WARN " + e.message); }
-    finally { setBusy(false); setTimeout(() => setFlash(""), 4000); }
+    finally { setBusy(false); setTimeout(function () { setFlash(""); }, 4000); }
   }
 
   function setDraft(matchId, side, val) {
     const n = Math.max(0, Math.min(20, Number(val) || 0));
     setDrafts(function (d) {
       const cur = d[matchId] || { tip1: 0, tip2: 0 };
-      const next = Object.assign({}, cur);
-      next[side] = n;
-      const out = Object.assign({}, d);
-      out[matchId] = next;
+      const nx = Object.assign({}, cur); nx[side] = n;
+      const out = Object.assign({}, d); out[matchId] = nx;
       return out;
     });
   }
 
-  if (!me || !data) return <div className="vv-card">Laedt...</div>;
+  if (!me) return null;
+  if (err) return <div className="vv-card" style={{ color: "#c2185b", textAlign: "center", padding: 20 }}>{err}</div>;
+  if (!data) return <div className="vv-card" style={{ textAlign: "center", padding: 20 }}>Laedt...</div>;
 
   const noMatchday = !data.matchday;
   const potOpen = !data.pot.paidOutAt;
@@ -80,11 +97,11 @@ export default function TipspielPage() {
     <div className="vv-tipspiel">
       <div className="vv-card vv-tipspiel-header">
         <div className="vv-tipspiel-title">🏆 BUNDESLIGA-TIPPSPIEL 🏆</div>
-        <div className="vv-tipspiel-sub">3 Punkte exakt - 2 Punkte Tordifferenz - 1 Punkt Sieger</div>
+        <div className="vv-tipspiel-sub">3 Punkte exakt · 2 Punkte Tordifferenz · 1 Punkt Sieger</div>
         {!noMatchday && (
           <div className="vv-tipspiel-meta">
-            <span>Spieltag <b>{data.matchday}</b> - Saison {data.season}/{Number(data.season) + 1}</span>
-            <span>Pott: <b>{data.pot.pot} Vibes</b> {data.pot.paidOutAt ? "(ausgezahlt)" : "(offen)"}</span>
+            <span>📅 Spieltag <b>{data.matchday}</b> · Saison {data.season}/{Number(data.season) + 1}</span>
+            <span>💰 Pott: <b>{data.pot.pot} ✨</b> {data.pot.paidOutAt ? "(ausgezahlt)" : "(offen)"}</span>
           </div>
         )}
       </div>
@@ -94,17 +111,23 @@ export default function TipspielPage() {
       )}
 
       {noMatchday && (
-        <div className="vv-card" style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 30, marginBottom: 8 }}>⚽</div>
-          <div>Gerade laeuft kein Spieltag. Sobald die Liga wieder startet, gehts hier los!</div>
+        <div className="vv-card vv-tipspiel-pause">
+          <div style={{ fontSize: 40, marginBottom: 8, textAlign: "center" }}>⚽💤</div>
+          <h3 style={{ margin: "0 0 8px", textAlign: "center", color: "#f5e8ff" }}>Sommerpause</h3>
+          <div style={{ textAlign: "center", fontSize: 13, opacity: 0.9, marginBottom: 14 }}>
+            Die Bundesliga macht gerade Pause. Sobald die neue Saison startet (üblicherweise Mitte August), kannst du hier wieder tippen.
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.7, textAlign: "center" }}>
+            Sobald der erste Spieltag in der OpenLigaDB auftaucht, geht's hier automatisch los — kein Update nötig.
+          </div>
         </div>
       )}
 
       {!noMatchday && !data.myEntry && potOpen && (
         <div className="vv-card vv-tipspiel-entry">
-          <div style={{ fontSize: 14, marginBottom: 8 }}>Eintritt zahlen, um an diesem Spieltag teilzunehmen</div>
+          <div style={{ fontSize: 14, marginBottom: 8 }}>🎟 Eintritt zahlen, um an diesem Spieltag teilzunehmen</div>
           <button type="button" disabled={busy} onClick={buyEntry} className="vv-btn-big vv-btn-big-pink">
-            Eintritt fuer {data.entryCost} Vibes kaufen
+            🛒 Eintritt für {data.entryCost} ✨ kaufen
           </button>
           <div style={{ fontSize: 11, opacity: 0.7, marginTop: 6 }}>
             Dein Eintritt wandert in den Pott. Wer am Spieltagsende die meisten Punkte hat, kassiert.
@@ -120,7 +143,7 @@ export default function TipspielPage() {
               const d = drafts[m.matchId] || { tip1: 0, tip2: 0 };
               return (
                 <div key={m.matchId} className={"vv-tipspiel-match" + (m.finished ? " finished" : "")}>
-                  <div className="vv-tipspiel-match-time">{fmtKickoff(m.kickoffAt)} {m.finished ? "- beendet" : ""}</div>
+                  <div className="vv-tipspiel-match-time">{fmtKickoff(m.kickoffAt)} {m.finished ? "· beendet" : ""}</div>
                   <div className="vv-tipspiel-match-row">
                     <span className="vv-tipspiel-team">
                       {m.team1Icon ? <img src={m.team1Icon} alt="" /> : null} {m.team1}
@@ -132,7 +155,7 @@ export default function TipspielPage() {
                           <span>:</span>
                           <input type="number" min="0" max="20" value={d.tip2} onChange={function (e) { setDraft(m.matchId, "tip2", e.target.value); }} />
                         </>
-                      ) : <span style={{ opacity: 0.6 }}>-</span>)}
+                      ) : <span style={{ opacity: 0.6 }}>—</span>)}
                     </span>
                     <span className="vv-tipspiel-team vv-tipspiel-team-right">
                       {m.team2} {m.team2Icon ? <img src={m.team2Icon} alt="" /> : null}
@@ -141,7 +164,7 @@ export default function TipspielPage() {
                   {m.myTip && (
                     <div className="vv-tipspiel-mytip">
                       Mein Tipp: <b>{m.myTip.tip1} : {m.myTip.tip2}</b>
-                      {m.finished ? <span className="vv-tipspiel-points"> - {m.myTip.points} Punkt{m.myTip.points === 1 ? "" : "e"}</span> : null}
+                      {m.finished ? <span className="vv-tipspiel-points"> · {m.myTip.points} Punkt{m.myTip.points === 1 ? "" : "e"}</span> : null}
                     </div>
                   )}
                 </div>
@@ -149,30 +172,14 @@ export default function TipspielPage() {
             })}
           </div>
           <button type="button" disabled={busy} onClick={saveAllTips} className="vv-btn-big vv-btn-big-pink" style={{ marginTop: 12, width: "100%" }}>
-            Tipps speichern
+            💾 Tipps speichern
           </button>
-        </div>
-      )}
-
-      {!noMatchday && data.leaderboardMd.length > 0 && (
-        <div className="vv-card">
-          <h3 style={{ margin: "0 0 10px" }}>Spieltag-Rangliste</h3>
-          {data.leaderboardMd.map(function (u, i) {
-            return (
-              <Link key={u.userId} href={"/u/" + u.username} className="vv-tipspiel-row">
-                <span className="vv-tipspiel-rank">{i + 1}.</span>
-                <Avatar url={u.avatarUrl} name={u.displayName} className="vv-avatar vv-avatar-sm" />
-                <span style={{ flex: 1 }}>{u.displayName}</span>
-                <b>{u.points} Pkt</b>
-              </Link>
-            );
-          })}
         </div>
       )}
 
       {data.leaderboardSeason.length > 0 && (
         <div className="vv-card">
-          <h3 style={{ margin: "0 0 10px" }}>Saison-Rangliste {data.season}/{Number(data.season) + 1}</h3>
+          <h3 style={{ margin: "0 0 10px" }}>🏆 Saison-Rangliste {data.season ? data.season + "/" + (Number(data.season) + 1) : ""}</h3>
           {data.leaderboardSeason.map(function (u, i) {
             return (
               <Link key={u.userId} href={"/u/" + u.username} className="vv-tipspiel-row">
