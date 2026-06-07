@@ -8321,3 +8321,28 @@ input[type="number"], input[type="tel"], textarea, select {
   color: #6b21a8 !important;
   border: 1px solid #d8b4fe !important;
 }
+
+/* === Greeting-Box komplett weiss: Header, Seiten, alles === */
+.vv-greet-card {
+  background: #ffffff !important;
+  border: 2px solid #ec4899 !important;
+  box-shadow: 0 6px 22px rgba(236,72,153,0.15) !important;
+}
+.vv-greet-card::before { display: none !important; }
+.vv-greet-card .vv-nost-card-title,
+.vv-greet-card .vv-greet-card-title {
+  background: #ffffff !important;
+  color: #831843 !important;
+  border-bottom: 1px solid #f3e8ff !important;
+  text-shadow: none !important;
+}
+.vv-greet-card .vv-nost-card-body {
+  background: #ffffff !important;
+  color: #1c1c1e !important;
+}
+.vv-greet-edit-btn {
+  background: #fce7f3 !important;
+  border: 1px solid #ec4899 !important;
+  color: #831843 !important;
+}
+.vv-greet-edit-btn:hover { background: #fbcfe8 !important; }
