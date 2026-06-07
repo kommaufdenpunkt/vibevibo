@@ -8079,3 +8079,6 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-status-picker-item:disabled{opacity:.5;cursor:wait;}
 .vv-status-picker-item-emoji{font-size:22px;}
 .vv-status-picker-item-text{font-size:13px;font-weight:700;color:#831843;}
+
+/* mehr Abstand Status-Streifen */
+.vv-status-strip{margin-bottom:16px;}
