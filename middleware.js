@@ -14,6 +14,7 @@ const COOKIE = "vv_session";
 // Alles was OHNE Session erreichbar bleiben muss
 const PUBLIC_EXACT = new Set([
   "/login",
+  "/admin",           // Admin-Seite sichert sich selbst per VV_ADMIN_PASSWORD
   "/datenschutz",
   "/impressum",
   "/favicon.ico",
