@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { relTime } from "@/lib/format";
-import { playPing } from "@/lib/sound";
+import { playIncomingSound } from "@/lib/sound";
 import Avatar from "./Avatar";
 
 const TYPE_LABEL = {
@@ -57,7 +57,7 @@ export default function NotificationsBell() {
       const list = d.notifications || [];
       setNotifs(list);
       if (prevUnreadRef.current != null && next > prevUnreadRef.current) {
-        playPing();
+        playIncomingSound(me?.soundPack || "icq");
         const fresh = list.find((n) => !n.read);
         if (fresh) {
           setToast(fresh);
