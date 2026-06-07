@@ -249,6 +249,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   const poiLayerRef = useRef(null);
   const watersLayerRef = useRef(null);
   const companionMarkerRef = useRef(null);
+  const nearbyVibosLayerRef = useRef(null);
 
   const [perm, setPerm] = useState("idle"); // idle | requesting | granted | denied
   const [consent, setConsent] = useState(null); // null=lädt, 1=ja, -1=nein, 0=unbestimmt
@@ -662,6 +663,46 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       companionMarkerRef.current.setIcon(companionIcon(L, speciesEmoji, vibo));
     }
   }, [pos, vibo]);
+
+  // Andere VIBOs in der Naehe — laedt alle 30s die Nachbar-Pets
+  useEffect(() => {
+    if (!mapRef.current || !pos) return;
+    const L = window.L;
+    if (!L) return;
+    let cancelled = false;
+    function clearMarkers() {
+      if (nearbyVibosLayerRef.current) {
+        try { nearbyVibosLayerRef.current.forEach((m) => m.remove()); } catch (e) {}
+      }
+      nearbyVibosLayerRef.current = [];
+    }
+    function render(vibos) {
+      if (cancelled || !mapRef.current) return;
+      clearMarkers();
+      const speciesEmoji = (sp) => ({ sprout: "\ud83c\udf31", kitsune: "\ud83e\udd8a", drago: "\ud83d\udc09", knuddi: "\ud83e\udee7", stella: "\u2b50", maunzi: "\ud83d\udc31", boo: "\ud83d\udc7b", robi: "\ud83e\udd16" }[sp] || "\ud83d\udc3e");
+      for (const v of vibos) {
+        const html = '<div style="position:relative;width:44px;height:54px;display:flex;flex-direction:column;align-items:center;cursor:pointer;">'
+          + '<div style="width:38px;height:38px;border-radius:50%;background:#fff;border:2px solid #a855f7;box-shadow:0 4px 10px rgba(168,85,247,0.4);display:flex;align-items:center;justify-content:center;font-size:22px;">'
+          + speciesEmoji(v.species)
+          + '</div>'
+          + '<div style="margin-top:-4px;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:8px;white-space:nowrap;border:1px solid #fff;">@'
+          + v.username
+          + '</div></div>';
+        const icon = L.divIcon({ className: "vv-nearby-vibo-icon", html: html, iconSize: [44, 54], iconAnchor: [22, 27] });
+        const m = L.marker([v.lat, v.lng], { icon: icon, zIndexOffset: 200 }).addTo(mapRef.current);
+        m.on("click", () => { window.location.href = "/u/" + v.username; });
+        nearbyVibosLayerRef.current.push(m);
+      }
+    }
+    function load() {
+      api.nearbyVibos(pos.lat, pos.lng, 300)
+        .then((r) => { if (!cancelled) render((r && r.vibos) || []); })
+        .catch(() => {});
+    }
+    load();
+    const t = setInterval(load, 30000);
+    return () => { cancelled = true; clearInterval(t); clearMarkers(); };
+  }, [pos && pos.lat, pos && pos.lng]);
 
   // In-App-Einverständnis laden
   useEffect(() => {
