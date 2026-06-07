@@ -8208,3 +8208,51 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-notif-allread-btn:hover:not(:disabled) { background: #ede9fe; }
 .vv-notif-allread-btn:disabled { opacity: 0.6; cursor: default; }
 .vv-notif-allread-flash { padding: 6px 10px; background: #dcfce7; color: #166534; font-size: 11px; font-weight: 700; text-align: center; }
+
+/* === Bell-Dropdown: dunkles Theme statt sterilem Weiss === */
+.vv-notif-pop {
+  background: linear-gradient(180deg, #1a0a2e, #130822) !important;
+  border-color: #a855f7 !important;
+  color: #f5e8ff !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(168,85,247,0.4) !important;
+  padding: 0 !important;
+}
+.vv-notif-pop-header {
+  padding: 12px 14px !important;
+  background: linear-gradient(135deg, rgba(236,72,153,0.18), rgba(168,85,247,0.18)) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 12px 12px 0 0;
+  font-weight: 800; font-size: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+  color: #fff;
+}
+.vv-notif-pop-push, .vv-notif-pop-push-on {
+  font-size: 11px !important; padding: 5px 10px !important;
+}
+.vv-notif-pop-empty {
+  padding: 24px 14px !important; color: rgba(255,255,255,0.6) !important;
+  text-align: center; font-size: 13px;
+}
+.vv-notif-pop-row {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  color: #f5e8ff !important;
+}
+.vv-notif-pop-row:hover { background: rgba(255,255,255,0.06) !important; }
+.vv-notif-pop-row.unread { background: rgba(168,85,247,0.18) !important; }
+.vv-notif-pop-row:last-child { border-bottom: none !important; }
+.vv-notif-allread-bar {
+  background: rgba(0,0,0,0.25) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+}
+.vv-notif-allread-btn {
+  background: linear-gradient(135deg, #a855f7, #ec4899) !important;
+  color: #fff !important; border: none !important;
+}
+.vv-notif-allread-btn:hover:not(:disabled) { filter: brightness(1.15); }
+.vv-notif-allread-flash {
+  background: rgba(34,197,94,0.25) !important;
+  color: #bbf7d0 !important;
+  border-bottom: 1px solid rgba(34,197,94,0.35);
+}
