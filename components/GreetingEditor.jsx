@@ -19,7 +19,9 @@ const HIGHLIGHT_COLORS = [
   ["#bbf7d0", "Gruen-Marker"], ["#fed7aa", "Orange-Marker"], ["#e9d5ff", "Lila-Marker"],
 ];
 
-const FONT_SIZES = [["12px", "S"], ["16px", "M"], ["20px", "L"], ["28px", "XL"]];
+const FONT_SIZES = [
+  ["6px","6"],["8px","8"],["10px","10"],["11px","11"],["12px","12"],["14px","14"],["16px","16"],["18px","18"],["20px","20"],["22px","22"],["24px","24"],["26px","26"],["28px","28"],["32px","32"],["36px","36"],["40px","40"],["48px","48"],["56px","56"],["64px","64"],["72px","72"],
+];
 
 const EMOJIS = [
   "😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃","😉","😊","😇",
@@ -148,11 +150,13 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
       </div>
 
       <div className="vv-greet-editor-section-label">Schriftgroesse</div>
-      <div className="vv-greet-editor-sizes">
+      <select className="vv-greet-editor-size-select" defaultValue=""
+        onChange={function (e) { if (e.target.value) { applySize(e.target.value); e.target.value = ""; } }}>
+        <option value="" disabled>Groesse waehlen...</option>
         {FONT_SIZES.map(function (sz) {
-          return (<button key={sz[0]} type="button" title={sz[1]} onClick={function () { applySize(sz[0]); }}>{sz[1]}</button>);
+          return (<option key={sz[0]} value={sz[0]}>{sz[1]} pt</option>);
         })}
-      </div>
+      </select>
 
       <div className="vv-greet-editor-section-label">Textfarbe</div>
       <div className="vv-greet-editor-colors">

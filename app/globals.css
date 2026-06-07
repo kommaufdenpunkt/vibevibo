@@ -8583,3 +8583,18 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
   font-size: 14px !important;
   line-height: 1.5 !important;
 }
+
+/* === Greeting-Editor: Schriftgroessen-Dropdown wie Word === */
+.vv-greet-editor-size-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d8b4fe;
+  border-radius: 8px;
+  background: #fff;
+  color: #6b21a8;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.vv-greet-editor-size-select:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,0.2); }
