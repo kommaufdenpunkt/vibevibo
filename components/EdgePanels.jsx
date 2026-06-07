@@ -1,10 +1,10 @@
 "use client";
 
 // 📱 Samsung-Galaxy-S8-Style Edge-Panels: schmale Griffe links & rechts am
-// Bildschirmrand. Antippen → Panel fährt rein mit Schnell-Shortcuts.
+// Bildschirmrand. Antippen ODER vom Rand wischen → Panel fährt rein.
 // Ersetzt die alte Navbar — darum hier auch Logout.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMe } from "@/lib/useMe";
@@ -36,8 +36,43 @@ export default function EdgePanels() {
   const pathname = usePathname();
   const router = useRouter();
   const { me, logout } = useMe();
+  const touch = useRef(null);
 
   useEffect(() => { setOpen(null); }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") setOpen(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  // Swipe-Gesten vom Bildschirmrand (Galaxy-S8-Feeling)
+  useEffect(() => {
+    if (!me) return;
+    const EDGE = 30, DIST = 55;
+    const onStart = (e) => {
+      const t = e.touches[0];
+      touch.current = { x: t.clientX, y: t.clientY, w: window.innerWidth };
+    };
+    const onEnd = (e) => {
+      const s = touch.current; touch.current = null;
+      if (!s) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - s.x, dy = t.clientY - s.y;
+      if (Math.abs(dx) < DIST || Math.abs(dy) > Math.abs(dx)) return;
+      if (open === "left")  { if (dx < 0) setOpen(null); return; }
+      if (open === "right") { if (dx > 0) setOpen(null); return; }
+      if (dx > 0 && s.x < EDGE) setOpen("left");
+      else if (dx < 0 && s.x > s.w - EDGE) setOpen("right");
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchend", onEnd);
+    };
+  }, [me, open]);
 
   if (pathname === "/login" || (pathname && pathname.startsWith("/messenger"))) return null;
   if (!me) return null;
@@ -66,7 +101,12 @@ export default function EdgePanels() {
         </div>
         <div className="vv-edge-grid">
           {items.map((it) => (
-            <Link key={it.href} href={it.href} className="vv-edge-item" onClick={() => setOpen(null)}>
+            <Link
+              key={it.href}
+              href={it.href}
+              className={`vv-edge-item${pathname === it.href ? " active" : ""}`}
+              onClick={() => setOpen(null)}
+            >
               <span className="vv-edge-item-emoji">{it.emoji}</span>
               <span className="vv-edge-item-label">{it.label}</span>
             </Link>
