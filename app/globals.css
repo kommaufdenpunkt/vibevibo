@@ -3948,7 +3948,7 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 .vv-nost-card-big .vv-nost-card-body { padding: 14px; }
 .vv-nost-card-tiny .vv-nost-card-body { padding: 8px; }
-.vv-nost-greeting { background: #1a0a2e !important; padding: 14px !important; }
+.vv-nost-greeting { background: #ffffff !important; padding: 14px !important; }
 
 /* --- Steckbrief --- */
 .vv-nost-steckbrief-row {
