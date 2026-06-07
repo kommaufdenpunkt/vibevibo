@@ -75,12 +75,21 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
             </div>
           )}
 
-          {profile.mood && (
-            <div className="vv-nost-mood">
-              <span>💭</span>
-              <span>{profile.mood}</span>
-            </div>
-          )}
+          <div className="vv-nost-mood-row">
+            {profile.mood && (
+              <div className="vv-nost-mood">
+                <span>💭</span>
+                <span>{profile.mood}</span>
+              </div>
+            )}
+            <Link href="/profile/transactions" className="vv-nost-pill vv-nost-pill-vibes">
+              <span>✨</span>
+              <span>{(me && (me.vibesBalance ?? me.balance ?? me.credits ?? 0)) || 0}</span>
+            </Link>
+            <Link href="/notifications" className="vv-nost-pill vv-nost-pill-bell" aria-label="Benachrichtigungen">
+              <span>🔔</span>
+            </Link>
+          </div>
 
           <div className="vv-nost-badges">
             <PremiumBadges premiumBadges={profile.premiumBadges} />

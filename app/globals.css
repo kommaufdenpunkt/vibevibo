@@ -8615,3 +8615,24 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
 .vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Schwarz"] { background-color: #1c1c1e !important; background-image: none !important; }
 .vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Grau"] { background-color: #6b7280 !important; background-image: none !important; }
 .vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Weiss"] { background-color: #ffffff !important; background-image: none !important; border: 1px solid #aaa !important; }
+
+/* === Profil: Vibes + Bell neben mood-Badge === */
+.vv-nost-mood-row {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center; align-items: center;
+  margin: 8px 0;
+}
+.vv-nost-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border-radius: 999px;
+  text-decoration: none; font-weight: 800; font-size: 14px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.1);
+  color: #1c1c1e;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.vv-nost-pill:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+.vv-nost-pill-vibes { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #78350f; border-color: #f59e0b; }
+.vv-nost-pill-bell { background: linear-gradient(135deg, #fce7f3, #fbcfe8); color: #831843; border-color: #ec4899; font-size: 16px; padding: 6px 12px; }
+/* Original Banner-Status auf Profil-Seite verstecken */
+body:has(.vv-nost-page) .vv-banner-status { display: none !important; }
