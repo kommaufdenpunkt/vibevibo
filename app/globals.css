@@ -8576,3 +8576,10 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
 .vv-greet-editor-colors { gap: 5px !important; padding: 6px !important; }
 .vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color { width: 24px !important; height: 24px !important; }
 .vv-greet-editor-emojis > button { width: 30px !important; height: 30px !important; font-size: 18px; }
+
+/* === Greeting-Editor: groessere Textarea + bessere Anordnung === */
+.vv-greet-editor-textarea {
+  min-height: 180px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}

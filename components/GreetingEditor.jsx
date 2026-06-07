@@ -127,9 +127,6 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
         <button type="button" title="Ueberschrift" onClick={function () { wrap('<h3 style="color:#ec4899;margin:8px 0;">', "</h3>"); }}>H</button>
         <button type="button" title="Liste" onClick={function () { wrap("<ul><li>", "</li></ul>"); }}>•</button>
         <button type="button" title="Zeilenumbruch" onClick={function () { insertAtCaret("<br />"); }}>↵</button>
-      </div>
-
-      <div className="vv-greet-editor-toolbar">
         <button type="button" title="Linksbuendig" onClick={function () { applyAlign("left"); }}>⬅</button>
         <button type="button" title="Mittig" onClick={function () { applyAlign("center"); }}>≡</button>
         <button type="button" title="Rechtsbuendig" onClick={function () { applyAlign("right"); }}>➡</button>
@@ -137,6 +134,17 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
         <button type="button" title="Bild einfuegen" onClick={insertImage}>📷</button>
         <button type="button" title="YouTube-Video einfuegen" onClick={insertVideo}>▶</button>
         <button type="button" title="Emojis" onClick={function () { setShowEmojis(function (v) { return !v; }); }}>😀</button>
+      </div>
+
+      <textarea ref={taRef} maxLength={MAX_LEN}
+        className="vv-greet-editor-textarea"
+        value={html}
+        onChange={function (e) { setHtml(e.target.value); }}
+        placeholder="Schreib hier deinen Begruessungstext - oder klick die Buttons!"
+        rows={9} />
+
+      <div className="vv-greet-editor-counter" style={{ color: counterColor }}>
+        {html.length} / {MAX_LEN} Zeichen ({left} uebrig)
       </div>
 
       <div className="vv-greet-editor-section-label">Schriftgroesse</div>
@@ -180,17 +188,6 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
           </div>
         </>
       )}
-
-      <textarea ref={taRef} maxLength={MAX_LEN}
-        className="vv-greet-editor-textarea"
-        value={html}
-        onChange={function (e) { setHtml(e.target.value); }}
-        placeholder="Schreib hier deinen Begruessungstext - oder klick die Buttons oben!"
-        rows={7} />
-
-      <div className="vv-greet-editor-counter" style={{ color: counterColor }}>
-        {html.length} / {MAX_LEN} Zeichen ({left} uebrig)
-      </div>
 
       <div className="vv-greet-editor-preview-label">Live-Vorschau:</div>
       <div className="vv-greet-editor-preview"
