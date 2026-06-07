@@ -8512,3 +8512,28 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
 }
 .vv-greet-editor-emojis > button:hover { background: #fce7f3 !important; transform: scale(1.1); }
 .vv-greet-editor-counter { font-size: 11px; font-weight: 700; text-align: right; margin: 4px 2px 0; letter-spacing: 0.3px; }
+
+/* === Greeting-Editor erweitert: Sections, Emojis === */
+.vv-greet-editor-section-label { font-size: 11px; font-weight: 700; color: #6b21a8; margin: 10px 2px 4px; letter-spacing: 0.5px; }
+.vv-greet-editor-sizes { display: flex; gap: 4px; padding: 6px; background: #faf5ff; border-radius: 8px; }
+.vv-greet-editor-sizes > button { flex: 1; padding: 6px 8px; border-radius: 6px; border: 1px solid #d8b4fe !important; background: #fff !important; color: #6b21a8 !important; cursor: pointer; font-family: inherit; font-weight: 700; }
+.vv-greet-editor-sizes > button:hover { background: #fce7f3 !important; }
+.vv-greet-editor-colors { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; background: #faf5ff; border-radius: 8px; }
+.vv-greet-editor-color-custom {
+  background: conic-gradient(from 0deg, #ec4899, #a855f7, #06b6d4, #22c55e, #f59e0b, #ef4444, #ec4899) !important;
+  background-image: conic-gradient(from 0deg, #ec4899, #a855f7, #06b6d4, #22c55e, #f59e0b, #ef4444, #ec4899) !important;
+  display: flex !important; align-items: center; justify-content: center; font-size: 14px !important;
+}
+.vv-greet-editor-emojis {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 4px; padding: 8px; background: #faf5ff; border-radius: 8px;
+  max-height: 200px; overflow-y: auto;
+}
+.vv-greet-editor-emojis > button {
+  width: 34px; height: 34px; padding: 0;
+  border: 1px solid #e9d5ff !important; background: #fff !important;
+  border-radius: 6px; cursor: pointer; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+}
+.vv-greet-editor-emojis > button:hover { background: #fce7f3 !important; transform: scale(1.1); }
+.vv-greet-editor-counter { font-size: 11px; font-weight: 700; text-align: right; margin: 4px 2px 0; letter-spacing: 0.3px; }
