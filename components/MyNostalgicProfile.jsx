@@ -58,9 +58,20 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
           </div>
 
           <h1 className="vv-nost-wordart">
-            <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} size="32px" />
+            <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} size="24px" />
           </h1>
           <div className="vv-nost-username">@{profile.username}</div>
+
+          {(profile.city || profile.school) && (
+            <div className="vv-nost-hero-meta">
+              {profile.city && <span className="vv-nost-hero-chip">📍 {profile.city}</span>}
+              {profile.school && (
+                <Link href={`/schulen/${encodeURIComponent(profile.school)}`} className="vv-nost-hero-chip">
+                  🏫 {profile.school}
+                </Link>
+              )}
+            </div>
+          )}
 
           {profile.mood && (
             <div className="vv-nost-mood">

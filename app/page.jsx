@@ -147,7 +147,24 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {/* 3-Spalten-Layout */}
+            {/* ★ BUSCHFUNK gross oben ★ */}
+      <div className="vv-home-feature">
+        <div className="vv-home-feature-head">
+          <span className="vv-home-feature-emoji">📣</span>
+          <div className="vv-home-feature-headtext">
+            <h2 className="vv-home-feature-title">WAS GIBT'S NEUES?</h2>
+            <div className="vv-home-feature-sub">Der Buschfunk der Community — frisch &amp; live 💬</div>
+          </div>
+        </div>
+        <div className="vv-home-feature-composer">
+          <WallComposer targetUsername={me.username} onPosted={() => setFeedTick((t) => t + 1)} placeholder="Erzähl was — mit @user markierst du Freunde 💖" />
+        </div>
+        <div className="vv-home-feature-feed">
+          <Buschfunk key={feedTick} />
+        </div>
+      </div>
+
+      {/* 2-Spalten-Layout */}
       <div className="vv-home-grid">
         {/* LINKS: Mitglieder + Neuzugänge */}
         <div className="vv-home-col">
@@ -204,25 +221,7 @@ export default function HomePage() {
           <FortuneCookie />
         </div>
 
-        {/* MITTE: Was machst du gerade? → direkt Buschfunk */}
-        <div className="vv-home-col">
-          <div className="vv-home-card" data-tone="pink">
-            <div className="vv-home-card-title">📝 WAS MACHST DU GERADE?</div>
-            <div className="vv-home-card-body">
-              <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 8 }}>
-                Erscheint auf deiner eigenen Wall und im Buschfunk
-              </div>
-              <WallComposer targetUsername={me.username} onPosted={() => setFeedTick((t) => t + 1)} placeholder="Erzähl was — mit @user markierst du Freunde 💖" />
-            </div>
-          </div>
-
-          <div className="vv-home-card" data-tone="violet">
-            <div className="vv-home-card-title">📣 BUSCHFUNK</div>
-            <div className="vv-home-card-body">
-              <Buschfunk key={feedTick} />
-            </div>
-          </div>
-        </div>
+        
 
         {/* RECHTS: Online + Tipps + Geburtstage + Werbung + Install */}
         <div className="vv-home-col">
