@@ -68,7 +68,7 @@ export default function NotificationsBell() {
       setUnread(next);
     }).catch(() => {});
     load();
-    const t = setInterval(load, 25000);
+    const t = setInterval(load, 60000);
     return () => clearInterval(t);
   }, [me]);
 

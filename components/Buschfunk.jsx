@@ -375,16 +375,15 @@ export default function Buschfunk() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const load = () => api.buschfunk().then((d) => setEvents(d.events)).catch(() => {});
+    const load = () => api.buschfunk().then((d) => { const next = d.events || []; setEvents((prev) => { if (prev.length === next.length && prev[0]?.id === next[0]?.id && prev[0]?.at === next[0]?.at) return prev; return next; }); }).catch(() => {});
     load();
-    const t = setInterval(load, 25000);
+    const t = setInterval(load, 120000);
     return () => clearInterval(t);
   }, []);
 
   return (
     <div className="vv-card">
-      <h2 style={{ marginTop: 0 }}>📰 Neuigkeiten</h2>
-      <div className="vv-muted" style={{ fontSize: 12, marginBottom: 12 }}>Wer hat was, wann &amp; wo gemacht – deine Timeline</div>
+      
       {events.length === 0 ? (
         <div className="vv-muted vv-center" style={{ padding: "16px 0" }}>
           Noch nichts los. Schreib jemandem auf die Pinnwand!
