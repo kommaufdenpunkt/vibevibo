@@ -49,6 +49,8 @@ export default function NotificationsBell() {
   const [toast, setToast] = useState(null);
   const [pushOn, setPushOn] = useState(null); // null=checking, true/false
   const prevUnreadRef = useRef(null);
+  const [allReadBusy, setAllReadBusy] = useState(false);
+  const [allReadFlash, setAllReadFlash] = useState("");
 
   useEffect(() => {
     if (!me) return;
@@ -103,6 +105,20 @@ export default function NotificationsBell() {
     return () => navigator.serviceWorker?.removeEventListener?.("message", onMsg);
   }, [me]);
 
+  async function handleAllRead() {
+    if (allReadBusy) return;
+    setAllReadBusy(true);
+    try {
+      const r = await api.markAllRead();
+      setUnread(0);
+      setNotifs((ns) => ns.map((n) => ({ ...n, read: true })));
+      setAllReadFlash("\u2713 " + (r.chats || 0) + " Chats + " + (r.rooms || 0) + " Raeume + Benachrichtigungen abgeraeumt");
+      setTimeout(() => setAllReadFlash(""), 3500);
+    } catch (e) {
+      setAllReadFlash("\u26A0 Konnte nicht alles als gelesen markieren");
+      setTimeout(() => setAllReadFlash(""), 3500);
+    } finally { setAllReadBusy(false); }
+  }
   async function onOpen() {
     setOpen(true);
     setToast(null);
@@ -229,6 +245,12 @@ export default function NotificationsBell() {
                   </button>
                 )}
               </div>
+              <div className="vv-notif-allread-bar">
+                <button type="button" className="vv-notif-allread-btn" disabled={allReadBusy} onClick={handleAllRead}>
+                  {allReadBusy ? "raeumt auf..." : "\u2713 Alles als gelesen markieren"}
+                </button>
+              </div>
+              {allReadFlash && <div className="vv-notif-allread-flash">{allReadFlash}</div>}
               {notifs.length === 0 ? (
                 <div className="vv-notif-pop-empty">Noch nichts. ✨</div>
               ) : (

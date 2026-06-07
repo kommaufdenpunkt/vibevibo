@@ -8201,3 +8201,10 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-greet-editor-cancel { padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #f5e8ff; cursor: pointer; font-weight: 700; font-size: 13px; font-family: inherit; }
 .vv-greet-editor-save { padding: 8px 18px; border-radius: 999px; border: none; background: linear-gradient(135deg, #ec4899, #be185d); color: #fff; cursor: pointer; font-weight: 800; font-size: 13px; font-family: inherit; box-shadow: 0 4px 12px rgba(236,72,153,0.4); }
 .vv-greet-editor-save:disabled, .vv-greet-editor-cancel:disabled { opacity: 0.5; cursor: default; }
+
+/* === Glocke: "Alles als gelesen"-Button === */
+.vv-notif-allread-bar { padding: 6px 10px; border-bottom: 1px solid var(--vv-border, #eee); display: flex; }
+.vv-notif-allread-btn { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1px solid #c084fc; background: linear-gradient(135deg, #faf5ff, #f3e8ff); color: #6b21a8; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700; }
+.vv-notif-allread-btn:hover:not(:disabled) { background: #ede9fe; }
+.vv-notif-allread-btn:disabled { opacity: 0.6; cursor: default; }
+.vv-notif-allread-flash { padding: 6px 10px; background: #dcfce7; color: #166534; font-size: 11px; font-weight: 700; text-align: center; }
