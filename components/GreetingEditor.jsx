@@ -123,19 +123,19 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
   return (
     <div className="vv-greet-editor">
       <div className="vv-greet-editor-toolbar">
-        <button type="button" title="Fett" onClick={function () { wrap("<b>", "</b>"); }} style={{ fontWeight: 900 }}>B</button>
-        <button type="button" title="Kursiv" onClick={function () { wrap("<i>", "</i>"); }} style={{ fontStyle: "italic" }}>I</button>
-        <button type="button" title="Unterstrichen" onClick={function () { wrap("<u>", "</u>"); }} style={{ textDecoration: "underline" }}>U</button>
-        <button type="button" title="Ueberschrift" onClick={function () { wrap('<h3 style="color:#ec4899;margin:8px 0;">', "</h3>"); }}>H</button>
-        <button type="button" title="Liste" onClick={function () { wrap("<ul><li>", "</li></ul>"); }}>•</button>
-        <button type="button" title="Zeilenumbruch" onClick={function () { insertAtCaret("<br />"); }}>↵</button>
-        <button type="button" title="Linksbuendig" onClick={function () { applyAlign("left"); }}>⬅</button>
-        <button type="button" title="Mittig" onClick={function () { applyAlign("center"); }}>≡</button>
-        <button type="button" title="Rechtsbuendig" onClick={function () { applyAlign("right"); }}>➡</button>
-        <button type="button" title="Link" onClick={insertLink}>🔗</button>
-        <button type="button" title="Bild einfuegen" onClick={insertImage}>📷</button>
-        <button type="button" title="YouTube-Video einfuegen" onClick={insertVideo}>▶</button>
-        <button type="button" title="Emojis" onClick={function () { setShowEmojis(function (v) { return !v; }); }}>😀</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Fett" onClick={function () { wrap("<b>", "</b>"); }} style={{ fontWeight: 900 }}>B</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Kursiv" onClick={function () { wrap("<i>", "</i>"); }} style={{ fontStyle: "italic" }}>I</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Unterstrichen" onClick={function () { wrap("<u>", "</u>"); }} style={{ textDecoration: "underline" }}>U</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Ueberschrift" onClick={function () { wrap('<h3 style="color:#ec4899;margin:8px 0;">', "</h3>"); }}>H</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Liste" onClick={function () { wrap("<ul><li>", "</li></ul>"); }}>•</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Zeilenumbruch" onClick={function () { insertAtCaret("<br />"); }}>↵</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Linksbuendig" onClick={function () { applyAlign("left"); }}>⬅</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Mittig" onClick={function () { applyAlign("center"); }}>≡</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Rechtsbuendig" onClick={function () { applyAlign("right"); }}>➡</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Link" onClick={insertLink}>🔗</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Bild einfuegen" onClick={insertImage}>📷</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="YouTube-Video einfuegen" onClick={insertVideo}>▶</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" title="Emojis" onClick={function () { setShowEmojis(function (v) { return !v; }); }}>😀</button>
       </div>
 
       <textarea ref={taRef} maxLength={MAX_LEN}
@@ -161,12 +161,12 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
       <div className="vv-greet-editor-section-label">Textfarbe</div>
       <div className="vv-greet-editor-colors">
         {TEXT_COLORS.map(function (c) {
-          return (<button key={c[0]} type="button" title={c[1]}
+          return (<button onMouseDown={function(e){e.preventDefault();}} key={c[0]} type="button" title={c[1]}
             onClick={function () { applyColor(c[0]); }}
             className="vv-greet-editor-color"
             style={{ background: c[0], border: c[0] === "#ffffff" ? "1px solid #aaa" : "1px solid rgba(0,0,0,0.15)" }} />);
         })}
-        <button type="button" className="vv-greet-editor-color vv-greet-editor-color-custom" title="Eigene Farbe"
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" className="vv-greet-editor-color vv-greet-editor-color-custom" title="Eigene Farbe"
           onClick={function () { if (customColorRef.current) customColorRef.current.click(); }}>🎨</button>
         <input ref={customColorRef} type="color" style={{ display: "none" }}
           onChange={function (e) { applyColor(e.target.value); }} />
@@ -175,7 +175,7 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
       <div className="vv-greet-editor-section-label">Textmarker</div>
       <div className="vv-greet-editor-colors">
         {HIGHLIGHT_COLORS.map(function (c) {
-          return (<button key={c[0]} type="button" title={c[1]}
+          return (<button onMouseDown={function(e){e.preventDefault();}} key={c[0]} type="button" title={c[1]}
             onClick={function () { applyHL(c[0]); }}
             className="vv-greet-editor-color"
             style={{ background: c[0], border: "1px solid rgba(0,0,0,0.15)" }} />);
@@ -187,7 +187,7 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
           <div className="vv-greet-editor-section-label">Emojis</div>
           <div className="vv-greet-editor-emojis">
             {EMOJIS.map(function (emo, i) {
-              return (<button key={emo + "-" + i} type="button" onClick={function () { insertAtCaret(emo); }}>{emo}</button>);
+              return (<button onMouseDown={function(e){e.preventDefault();}} key={emo + "-" + i} type="button" onClick={function () { insertAtCaret(emo); }}>{emo}</button>);
             })}
           </div>
         </>
@@ -200,8 +200,8 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
       {err && <div className="vv-greet-editor-error">⚠ {err}</div>}
 
       <div className="vv-greet-editor-actions">
-        <button type="button" onClick={onCancel} disabled={busy} className="vv-greet-editor-cancel">Abbrechen</button>
-        <button type="button" onClick={save} disabled={busy} className="vv-greet-editor-save">
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" onClick={onCancel} disabled={busy} className="vv-greet-editor-cancel">Abbrechen</button>
+        <button onMouseDown={function(e){e.preventDefault();}} type="button" onClick={save} disabled={busy} className="vv-greet-editor-save">
           {busy ? "Speichert..." : "💾 Speichern"}
         </button>
       </div>
