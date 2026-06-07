@@ -8671,3 +8671,25 @@ body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
 }
 .vv-nost-pill-wrap > *:hover { transform: translateY(-1px); }
 .vv-nost-pill-wrap .vv-notif-bell-count { background: #ec4899; color: #fff; }
+
+/* === Home-Tiles: horizontal scrollbare Reihe (statt Grid mit Umbruch) === */
+.vv-home-tiles {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  grid-template-columns: none !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 10px !important;
+  padding: 4px 4px 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #ec4899 transparent;
+}
+.vv-home-tiles::-webkit-scrollbar { height: 8px; }
+.vv-home-tiles::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+.vv-home-tiles::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #ec4899, #a855f7); border-radius: 4px; }
+.vv-home-tile {
+  flex: 0 0 110px !important;
+  scroll-snap-align: start;
+}
