@@ -8693,3 +8693,6 @@ body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
   flex: 0 0 110px !important;
   scroll-snap-align: start;
 }
+
+/* === Home: Banner-Glas-Kapsel verstecken (Vibes/Bell sind jetzt unten beim Hero) === */
+body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
