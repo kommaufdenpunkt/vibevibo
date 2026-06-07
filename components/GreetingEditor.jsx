@@ -8,9 +8,12 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 
 const QUICK_COLORS = [
-  ["#ec4899", "Pink"], ["#a855f7", "Violett"], ["#06b6d4", "Cyan"],
-  ["#22c55e", "Grün"], ["#f59e0b", "Gold"], ["#ef4444", "Rot"],
-  ["#f5e8ff", "Hell"], ["#1c1c1e", "Dunkel"],
+  ["#ec4899", "Pink"], ["#db2777", "Hot-Pink"], ["#be185d", "Rose"], ["#9d174d", "Magenta"],
+  ["#a855f7", "Violett"], ["#7c3aed", "Lila"], ["#c084fc", "Lavendel"],
+  ["#06b6d4", "Cyan"], ["#0891b2", "Tuerkis"], ["#2563eb", "Blau"],
+  ["#22c55e", "Gruen"], ["#10b981", "Mint"], ["#84cc16", "Limette"],
+  ["#f59e0b", "Gold"], ["#f97316", "Orange"], ["#ef4444", "Rot"], ["#991b1b", "Bordeaux"],
+  ["#1c1c1e", "Schwarz"], ["#6b7280", "Grau"], ["#ffffff", "Weiss"],
 ];
 
 export default function GreetingEditor({ username, initialHtml, onSaved, onCancel }) {
