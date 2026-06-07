@@ -2,10 +2,12 @@
 
 // 📱 Samsung-Galaxy-S8-Style Edge-Panels: schmale Griffe links & rechts am
 // Bildschirmrand. Antippen → Panel fährt rein mit Schnell-Shortcuts.
+// Ersetzt die alte Navbar — darum hier auch Logout.
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useMe } from "@/lib/useMe";
 
 const LEFT = [
   { href: "/",          emoji: "🏠", label: "Start" },
@@ -30,19 +32,30 @@ const RIGHT = [
 ];
 
 export default function EdgePanels() {
-  const [open, setOpen] = useState(null);
+  const [open, setOpen] = useState(null); // null | "left" | "right"
   const pathname = usePathname();
+  const router = useRouter();
+  const { me, logout } = useMe();
 
   useEffect(() => { setOpen(null); }, [pathname]);
 
   if (pathname === "/login" || (pathname && pathname.startsWith("/messenger"))) return null;
+  if (!me) return null;
+
+  async function handleLogout() {
+    setOpen(null);
+    try { await logout(); } catch {}
+    router.push("/login");
+  }
 
   const renderPanel = (side, items) => (
     <>
-      <button type="button"
+      <button
+        type="button"
         aria-label={side === "left" ? "Menü öffnen" : "Schnellzugriff öffnen"}
         className={`vv-edge-handle vv-edge-handle-${side}`}
-        onClick={() => setOpen(open === side ? null : side)}>
+        onClick={() => setOpen(open === side ? null : side)}
+      >
         <span className="vv-edge-handle-grip" />
       </button>
 
@@ -59,6 +72,11 @@ export default function EdgePanels() {
             </Link>
           ))}
         </div>
+        {side === "right" && (
+          <button type="button" className="vv-edge-logout" onClick={handleLogout}>
+            🚪 Logout
+          </button>
+        )}
       </div>
     </>
   );
