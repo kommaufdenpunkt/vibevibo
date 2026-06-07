@@ -8517,25 +8517,3 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
   color: #ffffff !important;
 }
 .vv-greet-edit-btn:hover { background: rgba(255,255,255,0.5) !important; }
-
-/* === Greeting-Box Titel: bunter Background-Gradient === */
-.vv-greet-card .vv-greet-card-title,
-.vv-greet-card .vv-nost-card-title {
-  background: linear-gradient(135deg, #ec4899, #a855f7) !important;
-  background-color: #ec4899 !important;
-  background-image: linear-gradient(135deg, #ec4899, #a855f7) !important;
-  color: #ffffff !important;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
-  border-bottom: 2px solid #ec4899 !important;
-}
-.vv-greet-card .vv-greet-card-title > span,
-.vv-greet-card .vv-nost-card-title > span {
-  color: #ffffff !important;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
-}
-.vv-greet-edit-btn {
-  background: rgba(255,255,255,0.3) !important;
-  border: 1px solid rgba(255,255,255,0.6) !important;
-  color: #ffffff !important;
-}
-.vv-greet-edit-btn:hover { background: rgba(255,255,255,0.5) !important; }
