@@ -1,13 +1,11 @@
 "use client";
 
-// 🌸 Inline-Editor für die Begrüßungs-Box direkt auf der eigenen Profilseite.
-// Statt "Profil bearbeiten" → "Begrüßung" zu klicken kann man direkt
-// per ✏️-Icon an der Box bearbeiten, mit Live-Vorschau & Quick-Format-Toolbar.
-
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 
-const QUICK_COLORS = [
+const MAX_LEN = 1200;
+
+const TEXT_COLORS = [
   ["#ec4899", "Pink"], ["#db2777", "Hot-Pink"], ["#be185d", "Rose"], ["#9d174d", "Magenta"],
   ["#a855f7", "Violett"], ["#7c3aed", "Lila"], ["#c084fc", "Lavendel"],
   ["#06b6d4", "Cyan"], ["#0891b2", "Tuerkis"], ["#2563eb", "Blau"],
@@ -16,88 +14,194 @@ const QUICK_COLORS = [
   ["#1c1c1e", "Schwarz"], ["#6b7280", "Grau"], ["#ffffff", "Weiss"],
 ];
 
+const HIGHLIGHT_COLORS = [
+  ["#fef08a", "Gelb-Marker"], ["#fbcfe8", "Rosa-Marker"], ["#bfdbfe", "Blau-Marker"],
+  ["#bbf7d0", "Gruen-Marker"], ["#fed7aa", "Orange-Marker"], ["#e9d5ff", "Lila-Marker"],
+];
+
+const FONT_SIZES = [["12px", "S"], ["16px", "M"], ["20px", "L"], ["28px", "XL"]];
+
+const EMOJIS = [
+  "😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃","😉","😊","😇",
+  "🥰","😍","🤩","😘","😗","😙","😚","😋","😛","😜","🤪","😝","🤑",
+  "🤗","🤭","🤫","🤔","🤐","🤨","😐","😑","😶","😏","😒","🙄","😬",
+  "😌","😔","😪","🤤","😴","😷","🤒","🤕","🥺","😢","😭","😤","😠",
+  "🥳","😎","🤓","🧐","🤠","🤡","👻","💀","👽","👾","🤖","💩",
+  "❤️","🧡","💛","💚","💙","💜","🖤","🤍","💔","💕","💞","💖",
+  "✨","⭐","🌟","💫","🌈","🔥","💯","💢","💥","💦","💨",
+  "🎉","🎊","🎁","🎂","🍰","🍕","🍔","🍟","🌮","🍩","🍪",
+  "☕","🍺","🍷","🥂","🍾","🍹","🍸",
+  "🌸","🌺","🌻","🌷","🌹","🥀","🍀","🌿","🌱","🌳","🌲",
+  "🐶","🐱","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵",
+];
+
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const m = String(url).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
 export default function GreetingEditor({ username, initialHtml, onSaved, onCancel }) {
   const taRef = useRef(null);
+  const customColorRef = useRef(null);
   const [html, setHtml] = useState(initialHtml || "");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [showEmojis, setShowEmojis] = useState(false);
 
-  useEffect(() => { taRef.current?.focus(); }, []);
+  useEffect(function () { if (taRef.current) taRef.current.focus(); }, []);
 
   function wrap(open, close) {
     const ta = taRef.current; if (!ta) return;
     const s = ta.selectionStart, e = ta.selectionEnd;
     const before = html.slice(0, s), sel = html.slice(s, e), after = html.slice(e);
-    const next = before + open + (sel || "Text") + close + after;
+    const inner = sel || "";
+    const next = before + open + inner + close + after;
+    if (next.length > MAX_LEN) return;
     setHtml(next);
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       ta.focus();
-      const caretEnd = s + open.length + (sel || "Text").length;
+      const caretEnd = s + open.length + inner.length;
       ta.setSelectionRange(caretEnd, caretEnd);
     });
   }
 
-  const tools = [
-    { label: "B", title: "Fett",   fn: () => wrap("<b>", "</b>"),   bold: true },
-    { label: "I", title: "Kursiv", fn: () => wrap("<i>", "</i>"),   italic: true },
-    { label: "U", title: "Unterstrichen", fn: () => wrap("<u>", "</u>"), underline: true },
-    { label: "H", title: "Überschrift", fn: () => wrap('<h3 style="color:#ec4899;margin:8px 0;">', "</h3>") },
-    { label: "•", title: "Liste", fn: () => wrap("<ul><li>", "</li></ul>") },
-    { label: "↵", title: "Zeilenumbruch", fn: () => wrap("<br>", "") },
-  ];
+  function insertAtCaret(text) {
+    const ta = taRef.current; if (!ta) return;
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    const next = html.slice(0, s) + text + html.slice(e);
+    if (next.length > MAX_LEN) return;
+    setHtml(next);
+    requestAnimationFrame(function () {
+      ta.focus();
+      const caretEnd = s + text.length;
+      ta.setSelectionRange(caretEnd, caretEnd);
+    });
+  }
+
+  function applyColor(c) { wrap('<span style="color:' + c + ';">', '</span>'); }
+  function applyHL(c) { wrap('<span style="background:' + c + ';padding:1px 4px;border-radius:3px;">', '</span>'); }
+  function applySize(sz) { wrap('<span style="font-size:' + sz + ';">', '</span>'); }
+  function applyAlign(side) { wrap('<div style="text-align:' + side + ';">', '</div>'); }
+
+  function insertImage() {
+    const url = window.prompt("Bild-URL einfuegen (z.B. von einem Foto-Hoster):");
+    if (!url) return;
+    const safe = String(url).replace(/"/g, "");
+    insertAtCaret('<img src="' + safe + '" style="max-width:100%;border-radius:8px;margin:6px 0;" alt="" />');
+  }
+
+  function insertVideo() {
+    const url = window.prompt("YouTube-Link einfuegen (z.B. https://youtu.be/...):");
+    if (!url) return;
+    const id = extractYouTubeId(url);
+    if (!id) { alert("Konnte keine YouTube-ID erkennen."); return; }
+    insertAtCaret('<iframe width="100%" height="240" src="https://www.youtube.com/embed/' + id + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:8px;margin:6px 0;"></iframe>');
+  }
+
+  function insertLink() {
+    const url = window.prompt("Link-URL (z.B. https://...):");
+    if (!url) return;
+    const safe = String(url).replace(/"/g, "");
+    wrap('<a href="' + safe + '" target="_blank" style="color:#ec4899;">', "</a>");
+  }
 
   async function save() {
     setBusy(true); setErr("");
     try {
       await api.updateMe(username, { greetingHtml: html });
-      onSaved?.();
-    } catch (e) { setErr(e.message || "Speichern fehlgeschlagen"); }
+      if (onSaved) onSaved();
+    } catch (e) { setErr((e && e.message) || "Speichern fehlgeschlagen"); }
     finally { setBusy(false); }
   }
+
+  const left = MAX_LEN - html.length;
+  const counterColor = left < 100 ? "#ef4444" : "#6b21a8";
 
   return (
     <div className="vv-greet-editor">
       <div className="vv-greet-editor-toolbar">
-        {tools.map((t) => (
-          <button key={t.label} type="button" title={t.title} onClick={t.fn}
-            style={{
-              fontWeight: t.bold ? 900 : 700,
-              fontStyle: t.italic ? "italic" : "normal",
-              textDecoration: t.underline ? "underline" : "none",
-            }}>
-            {t.label}
-          </button>
-        ))}
-        <span className="vv-greet-editor-sep" />
-        {QUICK_COLORS.map(([c, name]) => (
-          <button key={c} type="button" title={name}
-            onClick={() => wrap(`<span style="color:${c};">`, "</span>")}
-            className="vv-greet-editor-color"
-            style={{ background: c, border: c === "#f5e8ff" ? "1px solid #aaa" : "none" }} />
-        ))}
+        <button type="button" title="Fett" onClick={function () { wrap("<b>", "</b>"); }} style={{ fontWeight: 900 }}>B</button>
+        <button type="button" title="Kursiv" onClick={function () { wrap("<i>", "</i>"); }} style={{ fontStyle: "italic" }}>I</button>
+        <button type="button" title="Unterstrichen" onClick={function () { wrap("<u>", "</u>"); }} style={{ textDecoration: "underline" }}>U</button>
+        <button type="button" title="Ueberschrift" onClick={function () { wrap('<h3 style="color:#ec4899;margin:8px 0;">', "</h3>"); }}>H</button>
+        <button type="button" title="Liste" onClick={function () { wrap("<ul><li>", "</li></ul>"); }}>•</button>
+        <button type="button" title="Zeilenumbruch" onClick={function () { insertAtCaret("<br />"); }}>↵</button>
       </div>
 
-      <textarea
-        ref={taRef}
+      <div className="vv-greet-editor-toolbar">
+        <button type="button" title="Linksbuendig" onClick={function () { applyAlign("left"); }}>⬅</button>
+        <button type="button" title="Mittig" onClick={function () { applyAlign("center"); }}>≡</button>
+        <button type="button" title="Rechtsbuendig" onClick={function () { applyAlign("right"); }}>➡</button>
+        <button type="button" title="Link" onClick={insertLink}>🔗</button>
+        <button type="button" title="Bild einfuegen" onClick={insertImage}>📷</button>
+        <button type="button" title="YouTube-Video einfuegen" onClick={insertVideo}>▶</button>
+        <button type="button" title="Emojis" onClick={function () { setShowEmojis(function (v) { return !v; }); }}>😀</button>
+      </div>
+
+      <div className="vv-greet-editor-section-label">Schriftgroesse</div>
+      <div className="vv-greet-editor-sizes">
+        {FONT_SIZES.map(function (sz) {
+          return (<button key={sz[0]} type="button" title={sz[1]} onClick={function () { applySize(sz[0]); }}>{sz[1]}</button>);
+        })}
+      </div>
+
+      <div className="vv-greet-editor-section-label">Textfarbe</div>
+      <div className="vv-greet-editor-colors">
+        {TEXT_COLORS.map(function (c) {
+          return (<button key={c[0]} type="button" title={c[1]}
+            onClick={function () { applyColor(c[0]); }}
+            className="vv-greet-editor-color"
+            style={{ background: c[0], border: c[0] === "#ffffff" ? "1px solid #aaa" : "1px solid rgba(0,0,0,0.15)" }} />);
+        })}
+        <button type="button" className="vv-greet-editor-color vv-greet-editor-color-custom" title="Eigene Farbe"
+          onClick={function () { if (customColorRef.current) customColorRef.current.click(); }}>🎨</button>
+        <input ref={customColorRef} type="color" style={{ display: "none" }}
+          onChange={function (e) { applyColor(e.target.value); }} />
+      </div>
+
+      <div className="vv-greet-editor-section-label">Textmarker</div>
+      <div className="vv-greet-editor-colors">
+        {HIGHLIGHT_COLORS.map(function (c) {
+          return (<button key={c[0]} type="button" title={c[1]}
+            onClick={function () { applyHL(c[0]); }}
+            className="vv-greet-editor-color"
+            style={{ background: c[0], border: "1px solid rgba(0,0,0,0.15)" }} />);
+        })}
+      </div>
+
+      {showEmojis && (
+        <>
+          <div className="vv-greet-editor-section-label">Emojis</div>
+          <div className="vv-greet-editor-emojis">
+            {EMOJIS.map(function (emo, i) {
+              return (<button key={emo + "-" + i} type="button" onClick={function () { insertAtCaret(emo); }}>{emo}</button>);
+            })}
+          </div>
+        </>
+      )}
+
+      <textarea ref={taRef} maxLength={MAX_LEN}
         className="vv-greet-editor-textarea"
         value={html}
-        onChange={(e) => setHtml(e.target.value)}
-        placeholder="Schreib hier deinen Begrüßungstext — HTML erlaubt! Beispiel:&#10;<b>Willkommen!</b> 💖&#10;<span style='color:#ec4899'>Schön dass du da bist!</span>"
-        rows={6}
-      />
+        onChange={function (e) { setHtml(e.target.value); }}
+        placeholder="Schreib hier deinen Begruessungstext - oder klick die Buttons oben!"
+        rows={7} />
+
+      <div className="vv-greet-editor-counter" style={{ color: counterColor }}>
+        {html.length} / {MAX_LEN} Zeichen ({left} uebrig)
+      </div>
 
       <div className="vv-greet-editor-preview-label">Live-Vorschau:</div>
-      <div className="vv-greet-editor-preview vv-nost-greeting"
-        dangerouslySetInnerHTML={{ __html: html || "<em style='opacity:0.5'>Noch nichts geschrieben…</em>" }} />
+      <div className="vv-greet-editor-preview"
+        dangerouslySetInnerHTML={{ __html: html || "<em style='opacity:0.5'>Noch nichts geschrieben...</em>" }} />
 
       {err && <div className="vv-greet-editor-error">⚠ {err}</div>}
 
       <div className="vv-greet-editor-actions">
-        <button type="button" onClick={onCancel} disabled={busy} className="vv-greet-editor-cancel">
-          Abbrechen
-        </button>
+        <button type="button" onClick={onCancel} disabled={busy} className="vv-greet-editor-cancel">Abbrechen</button>
         <button type="button" onClick={save} disabled={busy} className="vv-greet-editor-save">
-          {busy ? "Speichert…" : "💾 Speichern"}
+          {busy ? "Speichert..." : "💾 Speichern"}
         </button>
       </div>
     </div>
