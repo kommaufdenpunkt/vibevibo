@@ -8367,3 +8367,24 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 .vv-greet-card > div:first-child { margin-top: 0 !important; }
 .vv-greet-card > div:last-child { margin-bottom: 0 !important; }
+
+/* === Greeting-Box: aggressives Weiss-Override fuer alle Wrapper === */
+.vv-greet-card.vv-nost-card,
+.vv-greet-card.vv-nost-card-violet,
+.vv-greet-card,
+.vv-greet-card > div {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+.vv-greet-card { padding: 0 !important; }
+.vv-greet-card .vv-nost-card-body {
+  padding: 14px 16px !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+}
+.vv-greet-card .vv-greet-card-title {
+  padding: 12px 16px !important;
+  margin: 0 !important;
+}
+.vv-greet-card > div:first-child { margin-top: 0 !important; }
+.vv-greet-card > div:last-child { margin-bottom: 0 !important; }
