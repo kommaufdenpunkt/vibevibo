@@ -8598,3 +8598,20 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
   cursor: pointer;
 }
 .vv-greet-editor-size-select:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,0.2); }
+
+/* === Greeting-Editor: zusaetzliche Farben (neue Title-Selektoren) === */
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Hot-Pink"] { background-color: #db2777 !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Rose"] { background-color: #be185d !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Magenta"] { background-color: #9d174d !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Lila"] { background-color: #7c3aed !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Lavendel"] { background-color: #c084fc !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Tuerkis"] { background-color: #0891b2 !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Blau"] { background-color: #2563eb !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Gruen"] { background-color: #22c55e !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Mint"] { background-color: #10b981 !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Limette"] { background-color: #84cc16 !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Orange"] { background-color: #f97316 !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Bordeaux"] { background-color: #991b1b !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Schwarz"] { background-color: #1c1c1e !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Grau"] { background-color: #6b7280 !important; background-image: none !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Weiss"] { background-color: #ffffff !important; background-image: none !important; border: 1px solid #aaa !important; }
