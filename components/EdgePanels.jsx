@@ -27,6 +27,7 @@ const RIGHT = [
   { href: "/geschenke",            emoji: "🎁", label: "Geschenke" },
   { href: "/rang",                 emoji: "🏅", label: "Rang" },
   { href: "/profile/transactions", emoji: "💰", label: "Vibes" },
+  { href: "/profile/transactions", emoji: "📜", label: "Transaktionen" },
   { href: "/profile/skin",         emoji: "🎨", label: "Skin" },
   { href: "/profile/edit",         emoji: "⚙️", label: "Profil bearb." },
 ];
