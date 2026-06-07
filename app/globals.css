@@ -3948,7 +3948,7 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 .vv-nost-card-big .vv-nost-card-body { padding: 14px; }
 .vv-nost-card-tiny .vv-nost-card-body { padding: 8px; }
-.vv-nost-greeting { background: linear-gradient(180deg, #211036, #130a22) !important; padding: 14px !important; }
+.vv-nost-greeting { background: linear-gradient(180deg, #211036, #130a22) !important; padding: 14px !important; color: #f5e8ff !important; }
 
 /* --- Steckbrief --- */
 .vv-nost-steckbrief-row {
@@ -8157,13 +8157,3 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-edge-logout { margin-top: 16px; width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(248,113,113,0.45); background: rgba(220,38,38,0.2); color: #fecaca; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; }
 .vv-edge-logout:active { transform: scale(0.97); }
 @media (max-width: 700px) { .vv-banner-status { right: 10px; bottom: 8px; gap: 7px; } }
-
-/* Begruessung: keine erzwungenen Farben mehr — dein HTML bestimmt die Farben. Heller Default nur fuer Text ohne eigene Farbe. */
-.vv-nost-greeting { color: #f5e8ff; }
-.vv-nost-greeting h1, .vv-nost-greeting h2, .vv-nost-greeting h3 { color: #f5e8ff; }
-.vv-nost-greeting a { color: #f9a8d4; }
-.vv-nost-page[data-gender="m"] .vv-nost-greeting,
-.vv-nost-page[data-gender="m"] .vv-nost-greeting h1,
-.vv-nost-page[data-gender="m"] .vv-nost-greeting h2,
-.vv-nost-page[data-gender="m"] .vv-nost-greeting h3 { color: #f5e8ff; }
-.vv-nost-page[data-gender="m"] .vv-nost-greeting a { color: #93c5fd; }
