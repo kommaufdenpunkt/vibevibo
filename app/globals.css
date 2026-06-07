@@ -8440,3 +8440,33 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
 .vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Dunkel"] { background-color: #1c1c1e !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
 .vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color { width: 26px !important; height: 26px !important; border-radius: 50% !important; padding: 0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.2); cursor: pointer; }
 .vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color:hover { transform: scale(1.15); }
+
+/* === Greeting-Box: Titel hellblau, Editor-Farb-Buttons sichtbar === */
+.vv-greet-card .vv-greet-card-title,
+.vv-greet-card .vv-nost-card-title {
+  background: linear-gradient(135deg, #93c5fd, #bfdbfe) !important;
+  background-image: linear-gradient(135deg, #93c5fd, #bfdbfe) !important;
+  color: #1e3a8a !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6) !important;
+  border-bottom: 2px solid #60a5fa !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.5px;
+}
+.vv-greet-card .vv-greet-card-title > span,
+.vv-greet-card .vv-nost-card-title > span { color: #1e3a8a !important; }
+.vv-greet-edit-btn {
+  background: rgba(255,255,255,0.85) !important;
+  border: 1px solid #60a5fa !important;
+  color: #1e3a8a !important;
+}
+/* Farb-Buttons: per Titel-Attribut sichtbar (winnt gegen Toolbar-Override) */
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Pink"] { background-color: #ec4899 !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Violett"] { background-color: #a855f7 !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Cyan"] { background-color: #06b6d4 !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Grün"] { background-color: #22c55e !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Gold"] { background-color: #f59e0b !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Rot"] { background-color: #ef4444 !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Hell"] { background-color: #f5e8ff !important; background-image: none !important; border: 1px solid #aaa !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color[title="Dunkel"] { background-color: #1c1c1e !important; background-image: none !important; border: 1px solid rgba(0,0,0,0.15) !important; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color { width: 26px !important; height: 26px !important; border-radius: 50% !important; padding: 0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.2); cursor: pointer; }
+.vv-greet-card .vv-greet-editor-toolbar > button.vv-greet-editor-color:hover { transform: scale(1.15); }
