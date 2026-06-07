@@ -3948,7 +3948,7 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 .vv-nost-card-big .vv-nost-card-body { padding: 14px; }
 .vv-nost-card-tiny .vv-nost-card-body { padding: 8px; }
-.vv-nost-greeting { background: transparent !important; padding: 0 !important; color: inherit; }
+.vv-nost-greeting { background: linear-gradient(180deg, #211036, #130a22) !important; padding: 14px !important; color: #f5e8ff !important; }
 
 /* --- Steckbrief --- */
 .vv-nost-steckbrief-row {
@@ -4856,14 +4856,19 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-home-feature-sub { font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 2px; }
 .vv-home-feature-composer { padding: 14px 16px 6px; }
 .vv-home-feature-feed { padding: 4px 16px 16px; }
-.vv-home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.vv-home-grid { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 14px; }
+@media (max-width: 1024px) {
+  .vv-home-grid { grid-template-columns: 1fr 1fr; }
+  .vv-home-col:nth-child(2) { grid-column: 1 / -1; order: -1; }
+}
 .vv-home-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 @media (max-width: 700px) {
   .vv-home-grid { grid-template-columns: 1fr; }
   /* Mobil: Was machst du gerade? + Buschfunk (Mitte) ganz oben unter dem Menü,
      dann Mitglieder/Zertifikat (Links), dann Online/Vibes (Rechts) */
+  .vv-home-col:nth-child(2) { order: -2; }
   .vv-home-col:nth-child(1) { order: -1; }
-  .vv-home-col:nth-child(2) { order: 0; }
+  .vv-home-col:nth-child(3) { order: 0; }
   .vv-home-hero-title { font-size: 22px; }
 }
 
@@ -8107,3 +8112,21 @@ input[type="number"], input[type="tel"], textarea, select {
 
 /* mehr Abstand Status-Streifen */
 .vv-status-strip{margin-bottom:16px;}
+
+/* === PWA-Apps-Hub (Startseite) === */
+.vv-pwaapps { border-radius: 16px; border: 3px solid #a855f7; background: linear-gradient(135deg, #1b0f30, #2a1245); box-shadow: 0 6px 20px rgba(168,85,247,0.25); padding: 14px 16px; margin-bottom: 16px; }
+.vv-pwaapps-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; color: #fff; }
+.vv-pwaapps-head-emoji { font-size: 30px; }
+.vv-pwaapps-title { font-weight: 900; font-size: 16px; letter-spacing: 1.5px; }
+.vv-pwaapps-sub { font-size: 11px; opacity: 0.82; }
+.vv-pwaapps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 700px) { .vv-pwaapps-grid { grid-template-columns: repeat(2, 1fr); } }
+.vv-pwaapps-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 14px 8px; border-radius: 14px; cursor: pointer; background: rgba(255,255,255,0.06); border: 2px solid var(--vv-app-color, #ec4899); color: #fff; font-family: inherit; box-shadow: 0 4px 0 rgba(0,0,0,0.35); transition: transform .1s; }
+.vv-pwaapps-tile:active { transform: translateY(2px); }
+.vv-pwaapps-tile-emoji { font-size: 30px; }
+.vv-pwaapps-tile-name { font-size: 13px; font-weight: 800; }
+.vv-pwaapps-tile-sub { font-size: 10px; opacity: 0.75; text-align: center; line-height: 1.2; }
+.vv-pwaapps-tile-cta { margin-top: 5px; font-size: 10px; font-weight: 800; background: var(--vv-app-color, #ec4899); color: #fff; padding: 3px 9px; border-radius: 999px; }
+.vv-pwaapps-modal { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.vv-pwaapps-modal-box { max-width: 360px; width: 100%; background: var(--vv-card,#fff); color: var(--vv-text,#1c1c1e); border-radius: 16px; padding: 18px; box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+.vv-pwaapps-modal-ok { margin-top: 16px; width: 100%; padding: 10px; background: #a855f7; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
