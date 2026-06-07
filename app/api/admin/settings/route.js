@@ -19,6 +19,10 @@ const ALLOWED_KEYS = new Set([
   // Popunder (Click-Geld, vollständige Script-URL)
   "POPUNDER_SCRIPT_URL",
 
+  // Social Bar (Adsterra Sticky-Bar) + In-Page Push (Pseudo-Push)
+  "ADSTERRA_SOCIALBAR_SCRIPT_URL",
+  "ADSTERRA_INPAGEPUSH_SCRIPT_URL",
+
   // Earning-Provider (Reward-Hub) — Komma-Liste der aktiven IDs
   "EARNING_PROVIDERS_ACTIVE", // "simulator,cpx,bitlabs"
 
@@ -61,7 +65,9 @@ export async function GET(req) {
   const sourceKeys = [
     "DISPLAY_PROVIDER", "EZOIC_SITE_ID", "ADSTERRA_ZONE_ID",
     "ADSTERRA_BANNER_DOMAIN", "ADSTERRA_BANNER_WIDTH", "ADSTERRA_BANNER_HEIGHT",
-    "POPUNDER_SCRIPT_URL", "EARNING_PROVIDERS_ACTIVE",
+    "POPUNDER_SCRIPT_URL",
+    "ADSTERRA_SOCIALBAR_SCRIPT_URL", "ADSTERRA_INPAGEPUSH_SCRIPT_URL",
+    "EARNING_PROVIDERS_ACTIVE",
     ...PROVIDER_IDS.map((id) => `ADS_SECRET_${id.toUpperCase()}`),
   ];
 
@@ -78,6 +84,8 @@ export async function GET(req) {
     adsterra_banner_width: eff("ADSTERRA_BANNER_WIDTH") || "320",
     adsterra_banner_height: eff("ADSTERRA_BANNER_HEIGHT") || "50",
     popunder_script_url: eff("POPUNDER_SCRIPT_URL"),
+    adsterra_socialbar_url: eff("ADSTERRA_SOCIALBAR_SCRIPT_URL"),
+    adsterra_inpagepush_url: eff("ADSTERRA_INPAGEPUSH_SCRIPT_URL"),
 
     // Earning
     earning_providers_active: eff("EARNING_PROVIDERS_ACTIVE") || "simulator",

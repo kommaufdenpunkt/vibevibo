@@ -138,6 +138,8 @@ function AdsConfigCard({ state, save, busy }) {
   const [adsterraHeight, setAdsterraHeight] = useState(String(state.adsterra_banner_height || "50"));
   const [adsterraPaste, setAdsterraPaste] = useState("");
   const [popunderUrl, setPopunderUrl] = useState(state.popunder_script_url || "");
+  const [socialBarUrl, setSocialBarUrl] = useState(state.adsterra_socialbar_url || "");
+  const [inPagePushUrl, setInPagePushUrl] = useState(state.adsterra_inpagepush_url || "");
   const [earningActive, setEarningActive] = useState(
     (state.earning_providers_active || "simulator").split(",").map((s) => s.trim()).filter(Boolean)
   );
@@ -173,6 +175,8 @@ function AdsConfigCard({ state, save, busy }) {
       ADSTERRA_BANNER_WIDTH: String(parseInt(adsterraWidth, 10) || 320),
       ADSTERRA_BANNER_HEIGHT: String(parseInt(adsterraHeight, 10) || 50),
       POPUNDER_SCRIPT_URL: popunderUrl.trim(),
+      ADSTERRA_SOCIALBAR_SCRIPT_URL: socialBarUrl.trim(),
+      ADSTERRA_INPAGEPUSH_SCRIPT_URL: inPagePushUrl.trim(),
       EARNING_PROVIDERS_ACTIVE: earningActive.join(","),
     };
     for (const [k, v] of Object.entries(secrets)) {
@@ -359,6 +363,32 @@ function AdsConfigCard({ state, save, busy }) {
         <div style={{ fontSize: 11, color: "#92400e", marginTop: 4 }}>
           🟡 Komplette URL aus dem Adsterra-Popunder-Script eintragen (zwischen <code>src="</code> und <code>"</code>).
           VIP-User & ads-opt-out User sehen das nicht.
+        </div>
+      </div>
+
+      {/* 💎 Social Bar (Adsterra) — Sticky-Bar mit höchster CTR */}
+      <div className="vv-mt-12" style={{ background: "rgba(99,102,241,0.08)", padding: 10, borderRadius: 8, border: "1px dashed #6366f1" }}>
+        <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+          💎 Social Bar Script-URL (Adsterra sticky bar) {srcChip("ADSTERRA_SOCIALBAR_SCRIPT_URL")}
+        </label>
+        <input className="vv-input" value={socialBarUrl} onChange={(e) => setSocialBarUrl(e.target.value)}
+          placeholder="z.B. https://...effectivecpmnetwork.com/.../...js"
+          style={{ fontFamily: "monospace", fontSize: 11 }} />
+        <div style={{ fontSize: 11, color: "#3730a3", marginTop: 4 }}>
+          💎 Adsterra → neue Ad-Unit „Social Bar" anlegen → Script-URL hier rein. Höchste CTR aller Formate.
+        </div>
+      </div>
+
+      {/* 🔔 In-Page Push (Adsterra) — Pseudo-Notifications */}
+      <div className="vv-mt-12" style={{ background: "rgba(34,197,94,0.08)", padding: 10, borderRadius: 8, border: "1px dashed #22c55e" }}>
+        <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 4 }}>
+          🔔 In-Page Push Script-URL (Adsterra Pseudo-Notifications) {srcChip("ADSTERRA_INPAGEPUSH_SCRIPT_URL")}
+        </label>
+        <input className="vv-input" value={inPagePushUrl} onChange={(e) => setInPagePushUrl(e.target.value)}
+          placeholder="z.B. https://...effectivecpmnetwork.com/.../...js"
+          style={{ fontFamily: "monospace", fontSize: 11 }} />
+        <div style={{ fontSize: 11, color: "#166534", marginTop: 4 }}>
+          🔔 Adsterra → neue Ad-Unit „In-Page Push" anlegen → Script-URL hier rein. Funktioniert auch ohne Browser-Push-Erlaubnis.
         </div>
       </div>
 

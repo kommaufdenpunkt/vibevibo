@@ -321,6 +321,32 @@ export default function Landing() {
           <span key={hookIdx} className="vv-splash-hook">{HOOKS[hookIdx]}?</span>
         </div>
 
+        {/* 🛡 Trust-Badges - bauen sofort Vertrauen auf */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6,
+          margin: "8px auto 18px", maxWidth: 560,
+        }}>
+          {[
+            { e: "🇩🇪", t: "Gehostet in DE" },
+            { e: "🛡", t: "DSGVO konform" },
+            { e: "💸", t: "Kostenlos" },
+            { e: "🤖", t: "KI-Moderation" },
+            { e: "❤️", t: "Kein Algorithmus" },
+          ].map(({ e, t }) => (
+            <span key={t} style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "5px 10px", borderRadius: 999,
+              background: "rgba(255,255,255,0.92)",
+              border: "1.5px solid rgba(255,62,157,0.35)",
+              color: "#831843", fontWeight: 800, fontSize: 11.5,
+              letterSpacing: 0.3, fontFamily: "Arial, sans-serif",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+            }}>
+              <span style={{ fontSize: 14 }}>{e}</span>{t}
+            </span>
+          ))}
+        </div>
+
         {waitlisted ? (
           <div className="vv-waitlist-box">
             <div className="vv-waitlist-emoji">💌</div>
