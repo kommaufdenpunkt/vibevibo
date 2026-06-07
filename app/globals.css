@@ -8696,3 +8696,10 @@ body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
 
 /* === Home: Banner-Glas-Kapsel verstecken (Vibes/Bell sind jetzt unten beim Hero) === */
 body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
+
+/* === Home-Tiles: Scrollbar komplett verstecken (scrollen geht weiter per Touch/Drag) === */
+.vv-home-tiles {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.vv-home-tiles::-webkit-scrollbar { display: none !important; height: 0 !important; width: 0 !important; }
