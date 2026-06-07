@@ -79,7 +79,7 @@ export default function TipspielPage() {
   return (
     <div className="vv-tipspiel">
       <div className="vv-card vv-tipspiel-header">
-        <div className="vv-tipspiel-title">BUNDESLIGA-TIPPSPIEL</div>
+        <div className="vv-tipspiel-title">🏆 BUNDESLIGA-TIPPSPIEL 🏆</div>
         <div className="vv-tipspiel-sub">3 Punkte exakt - 2 Punkte Tordifferenz - 1 Punkt Sieger</div>
         {!noMatchday && (
           <div className="vv-tipspiel-meta">
@@ -95,7 +95,7 @@ export default function TipspielPage() {
 
       {noMatchday && (
         <div className="vv-card" style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 30, marginBottom: 8 }}>Ball</div>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>⚽</div>
           <div>Gerade laeuft kein Spieltag. Sobald die Liga wieder startet, gehts hier los!</div>
         </div>
       )}
