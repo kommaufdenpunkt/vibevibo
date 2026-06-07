@@ -7,6 +7,7 @@
 // (/u/[username]) behalten das ProfileView.
 
 import { useCallback, useEffect, useState } from "react";
+import GreetingEditor from "@/components/GreetingEditor";
 import Link from "next/link";
 import Avatar from "@/components/Avatar";
 import { ColoredName } from "@/components/GenderAge";
@@ -27,6 +28,7 @@ import { relTime } from "@/lib/format";
 export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts, visitCount, visitors, onChange }) {
   const { me, refresh } = useMe();
   const [wallTab, setWallTab] = useState("pinnwand");
+  const [editingGreeting, setEditingGreeting] = useState(false);
   const num = String(profile.id).padStart(5, "0");
   const createdAt = profile.createdAt ? new Date(profile.createdAt) : null;
   const daysOnBoard = createdAt ? Math.max(1, Math.floor((Date.now() - createdAt.getTime()) / 86400000)) : 0;
@@ -126,14 +128,44 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
         {/* Komplimente-Inbox prominent obendrueber */}
         <ComplimentInbox />
 
-        {/* 🌸 Begrüßungs-HTML, vom User selber gestaltet */}
-        {profile.greetingHtml && profile.greetingHtml.trim() && (
-          <div className="vv-nost-card vv-nost-card-violet">
-            <div className="vv-nost-card-title">🌸 HERZLICH WILLKOMMEN 🌸</div>
-            <div className="vv-nost-card-body vv-nost-greeting"
-              dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
+        {/* 🌸 Begrüßungs-HTML — eigenes Profil → direkt inline editierbar */}
+        <div className="vv-nost-card vv-nost-card-violet vv-greet-card">
+          <div className="vv-nost-card-title vv-greet-card-title">
+            <span>🌸 HERZLICH WILLKOMMEN 🌸</span>
+            {!editingGreeting && (
+              <button type="button" className="vv-greet-edit-btn" title="Begrüßung bearbeiten"
+                onClick={() => setEditingGreeting(true)}>
+                ✏️
+              </button>
+            )}
           </div>
-        )}
+          <div className="vv-nost-card-body">
+            {editingGreeting ? (
+              <GreetingEditor
+                username={profile.username}
+                initialHtml={profile.greetingHtml || ""}
+                onSaved={() => { setEditingGreeting(false); onChange?.(); }}
+                onCancel={() => setEditingGreeting(false)}
+              />
+            ) : profile.greetingHtml && profile.greetingHtml.trim() ? (
+              <div className="vv-nost-greeting"
+                dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
+            ) : (
+              <div className="vv-nost-greeting" style={{textAlign:"center",padding:"20px 10px"}}>
+                <div style={{fontSize:30,marginBottom:8}}>🌸✨🌸</div>
+                <div style={{color:"#f5e8ff",fontSize:14,marginBottom:12}}>
+                  Noch keine Begrüßung — verleih deinem Profil eine persönliche Note!
+                </div>
+                <button type="button" onClick={() => setEditingGreeting(true)}
+                  style={{padding:"8px 16px",borderRadius:999,border:"2px solid #ec4899",
+                    background:"linear-gradient(135deg, #ec4899, #be185d)",color:"#fff",
+                    fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>
+                  ✏️ Jetzt Begrüßung schreiben
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* 📚 3-Spalten Forum-Layout */}
         <div className="vv-nost-grid">

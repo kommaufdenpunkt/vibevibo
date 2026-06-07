@@ -8179,3 +8179,25 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-banner-status { top: 6px; right: 8px; gap: 0; padding: 3px 4px; }
   .vv-banner-status > a, .vv-banner-status .vv-notif-bell { padding: 3px 7px !important; font-size: 12px !important; }
 }
+
+/* === Begrüßungs-Box: Aufpolierter Look + Inline-Editor === */
+.vv-greet-card { position: relative; box-shadow: 0 6px 22px rgba(236, 72, 153, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset; }
+.vv-greet-card::before { content: ""; position: absolute; inset: -2px; border-radius: 16px; pointer-events: none; background: linear-gradient(135deg, #ec4899, #a855f7, #06b6d4); z-index: -1; opacity: 0.7; filter: blur(8px); }
+.vv-greet-card-title { display: flex; align-items: center; justify-content: space-between; }
+.vv-greet-edit-btn { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.45); color: #fff; width: 30px; height: 30px; border-radius: 999px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 0; transition: transform .12s; }
+.vv-greet-edit-btn:hover { transform: scale(1.1); background: rgba(255,255,255,0.28); }
+.vv-greet-editor { display: flex; flex-direction: column; gap: 10px; }
+.vv-greet-editor-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; background: rgba(0,0,0,0.25); border-radius: 10px; align-items: center; }
+.vv-greet-editor-toolbar > button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; font-family: inherit; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; }
+.vv-greet-editor-toolbar > button:hover { background: rgba(255,255,255,0.22); }
+.vv-greet-editor-sep { width: 1px; height: 22px; background: rgba(255,255,255,0.28); margin: 0 4px; }
+.vv-greet-editor-color { width: 22px !important; height: 22px !important; border-radius: 50% !important; padding: 0 !important; }
+.vv-greet-editor-textarea { width: 100%; min-height: 130px; padding: 10px 12px; border: 2px solid rgba(236,72,153,0.5); border-radius: 10px; background: #130822; color: #f5e8ff; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; line-height: 1.5; resize: vertical; box-sizing: border-box; }
+.vv-greet-editor-textarea:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,0.25); }
+.vv-greet-editor-preview-label { font-size: 11px; opacity: 0.7; color: #f5e8ff; }
+.vv-greet-editor-preview { padding: 12px; border-radius: 10px; min-height: 50px; background: rgba(0,0,0,0.35); border: 1px dashed rgba(255,255,255,0.2); }
+.vv-greet-editor-error { color: #fecaca; background: rgba(220,38,38,0.25); padding: 8px 10px; border-radius: 8px; font-size: 12px; }
+.vv-greet-editor-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.vv-greet-editor-cancel { padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #f5e8ff; cursor: pointer; font-weight: 700; font-size: 13px; font-family: inherit; }
+.vv-greet-editor-save { padding: 8px 18px; border-radius: 999px; border: none; background: linear-gradient(135deg, #ec4899, #be185d); color: #fff; cursor: pointer; font-weight: 800; font-size: 13px; font-family: inherit; box-shadow: 0 4px 12px rgba(236,72,153,0.4); }
+.vv-greet-editor-save:disabled, .vv-greet-editor-cancel:disabled { opacity: 0.5; cursor: default; }
