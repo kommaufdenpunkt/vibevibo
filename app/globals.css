@@ -8428,3 +8428,28 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
   color: #ffffff !important;
 }
 .vv-greet-edit-btn:hover { background: rgba(255,255,255,0.4) !important; }
+
+/* === Greeting-Editor: erweiterte Toolbar + mehr Farben === */
+.vv-greet-editor-section-label {
+  font-size: 11px; font-weight: 700; color: #6b21a8;
+  margin: 8px 0 4px; letter-spacing: 0.5px;
+}
+.vv-greet-editor-sizes {
+  display: flex; gap: 4px; padding: 6px; background: #faf5ff; border-radius: 8px;
+}
+.vv-greet-editor-sizes > button {
+  flex: 1; padding: 4px 8px; border-radius: 6px;
+  border: 1px solid #d8b4fe; background: #fff; color: #6b21a8;
+  cursor: pointer; font-family: inherit; font-weight: 700;
+}
+.vv-greet-editor-sizes > button:hover { background: #fce7f3; }
+.vv-greet-editor-colors {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 6px;
+  background: #faf5ff; border-radius: 8px;
+}
+.vv-greet-editor-color-custom {
+  background: linear-gradient(135deg, #ec4899, #a855f7, #06b6d4, #22c55e) !important;
+  border: 1px solid rgba(0,0,0,0.15) !important;
+  display: flex !important; align-items: center; justify-content: center;
+  font-size: 12px !important;
+}
