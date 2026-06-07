@@ -69,8 +69,6 @@ export default function HomePage() {
         <h1 className="vv-home-hero-title">★ Hi {me.displayName}! ★</h1>
         <div className="vv-home-hero-sub">@{me.username} · Erinnerst du dich noch an Glitzer-Smileys & ICQ-Oh-Oh?</div>
         <div className="vv-home-hero-stats">
-          <span className="vv-home-hero-stat">🟢 {onlineUsers.length} online</span>
-          <span className="vv-home-hero-stat">👥 {users.length} Mitglieder</span>
           {me.mood && <span className="vv-home-hero-stat">💭 {me.mood}</span>}
           <span className="vv-nost-pill-wrap"><VibesNavBadge /></span>
           <span className="vv-nost-pill-wrap"><NotificationsBell /></span>
