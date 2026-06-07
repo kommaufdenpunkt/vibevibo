@@ -8636,3 +8636,19 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
 .vv-nost-pill-bell { background: linear-gradient(135deg, #fce7f3, #fbcfe8); color: #831843; border-color: #ec4899; font-size: 16px; padding: 6px 12px; }
 /* Original Banner-Status auf Profil-Seite verstecken */
 body:has(.vv-nost-page) .vv-banner-status { display: none !important; }
+
+/* === Profil mood-row: echte Vibes-Badge + Bell konsistent stylen === */
+.vv-nost-pill-wrap > * {
+  display: inline-flex !important;
+  align-items: center; gap: 5px;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.85) !important;
+  border: 1px solid rgba(236,72,153,0.4) !important;
+  color: #831843 !important;
+  text-decoration: none !important;
+  font-weight: 800; font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.vv-nost-pill-wrap > *:hover { transform: translateY(-1px); }
+.vv-nost-pill-wrap .vv-notif-bell-count { background: #ec4899; color: #fff; }

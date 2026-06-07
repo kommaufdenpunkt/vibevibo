@@ -10,6 +10,8 @@ import { useCallback, useEffect, useState } from "react";
 import GreetingEditor from "@/components/GreetingEditor";
 import Link from "next/link";
 import Avatar from "@/components/Avatar";
+import VibesNavBadge from "@/components/VibesNavBadge";
+import NotificationsBell from "@/components/NotificationsBell";
 import { ColoredName } from "@/components/GenderAge";
 import Pinnwand from "@/components/Pinnwand";
 import GiftShelf from "@/components/GiftShelf";
@@ -82,13 +84,8 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
                 <span>{profile.mood}</span>
               </div>
             )}
-            <Link href="/profile/transactions" className="vv-nost-pill vv-nost-pill-vibes">
-              <span>✨</span>
-              <span>{(me && (me.vibesBalance ?? me.balance ?? me.credits ?? 0)) || 0}</span>
-            </Link>
-            <Link href="/notifications" className="vv-nost-pill vv-nost-pill-bell" aria-label="Benachrichtigungen">
-              <span>🔔</span>
-            </Link>
+            <div className="vv-nost-pill-wrap"><VibesNavBadge /></div>
+            <div className="vv-nost-pill-wrap"><NotificationsBell /></div>
           </div>
 
           <div className="vv-nost-badges">
