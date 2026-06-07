@@ -8539,33 +8539,3 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
   color: #ffffff !important;
 }
 .vv-greet-edit-btn:hover { background: rgba(255,255,255,0.5) !important; }
-
-/* === Greeting-Editor: Farben via CSS-Variable garantiert sichtbar === */
-.vv-greet-editor-section-label { font-size: 11px; font-weight: 700; color: #6b21a8; margin: 8px 0 4px; letter-spacing: 0.5px; }
-.vv-greet-editor-sizes { display: flex; gap: 4px; padding: 6px; background: #faf5ff; border-radius: 8px; }
-.vv-greet-editor-sizes > button { flex: 1; padding: 6px 8px; border-radius: 6px; border: 1px solid #d8b4fe !important; background: #fff !important; color: #6b21a8 !important; cursor: pointer; font-family: inherit; font-weight: 700; }
-.vv-greet-editor-sizes > button:hover { background: #fce7f3 !important; }
-.vv-greet-editor-colors { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; background: #faf5ff; border-radius: 8px; }
-.vv-greet-card .vv-greet-editor-colors > button.vv-greet-editor-color {
-  background-color: var(--vv-c, #ec4899) !important;
-  background-image: none !important;
-  border: 1px solid rgba(0,0,0,0.2) !important;
-  width: 26px !important;
-  height: 26px !important;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.vv-greet-card .vv-greet-editor-colors > button.vv-greet-editor-color:hover {
-  transform: scale(1.15);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-.vv-greet-card .vv-greet-editor-colors > button.vv-greet-editor-color-custom {
-  background: conic-gradient(from 0deg, #ec4899, #a855f7, #06b6d4, #22c55e, #f59e0b, #ef4444, #ec4899) !important;
-  background-image: conic-gradient(from 0deg, #ec4899, #a855f7, #06b6d4, #22c55e, #f59e0b, #ef4444, #ec4899) !important;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}

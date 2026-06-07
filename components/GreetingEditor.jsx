@@ -1,5 +1,8 @@
 "use client";
 
+// Inline-Editor fuer die Begruessungs-Box: Format-Tools, viele Farben,
+// Custom-Color-Picker, Highlight, Schriftgroesse, Live-Vorschau.
+
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 
@@ -17,7 +20,9 @@ const HIGHLIGHT_COLORS = [
   ["#bbf7d0", "Gruen"], ["#fed7aa", "Orange"], ["#e9d5ff", "Lila"],
 ];
 
-const FONT_SIZES = [["12px", "S"], ["16px", "M"], ["20px", "L"], ["26px", "XL"]];
+const FONT_SIZES = [
+  ["12px", "S"], ["16px", "M"], ["20px", "L"], ["26px", "XL"],
+];
 
 export default function GreetingEditor({ username, initialHtml, onSaved, onCancel }) {
   const taRef = useRef(null);
@@ -41,14 +46,16 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
     });
   }
 
-  function applyColor(c) { wrap('<span style="color:' + c + ';">', '</span>'); }
-  function applyHL(c) { wrap('<span style="background:' + c + ';padding:1px 4px;border-radius:3px;">', '</span>'); }
-  function applySize(sz) { wrap('<span style="font-size:' + sz + ';">', '</span>'); }
+  function applyColor(color) { wrap('<span style="color:' + color + ';">', '</span>'); }
+  function applyHighlight(color) { wrap('<span style="background:' + color + ';padding:1px 4px;border-radius:3px;">', '</span>'); }
+  function applySize(size) { wrap('<span style="font-size:' + size + ';">', '</span>'); }
 
   async function save() {
     setBusy(true); setErr("");
-    try { await api.updateMe(username, { greetingHtml: html }); if (onSaved) onSaved(); }
-    catch (e) { setErr((e && e.message) || "Speichern fehlgeschlagen"); }
+    try {
+      await api.updateMe(username, { greetingHtml: html });
+      if (onSaved) onSaved();
+    } catch (e) { setErr((e && e.message) || "Speichern fehlgeschlagen"); }
     finally { setBusy(false); }
   }
 
@@ -68,7 +75,11 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
       <div className="vv-greet-editor-section-label">Schriftgroesse</div>
       <div className="vv-greet-editor-sizes">
         {FONT_SIZES.map(function (sz) {
-          return (<button key={sz[0]} type="button" title={sz[1]} onClick={function () { applySize(sz[0]); }}>{sz[1]}</button>);
+          return (<button key={sz[0]} type="button" title={sz[1]}
+            onClick={function () { applySize(sz[0]); }}
+            style={{ fontSize: sz[0] === "26px" ? "16px" : sz[0] === "20px" ? "14px" : "12px" }}>
+            {sz[1]}
+          </button>);
         })}
       </div>
 
@@ -78,11 +89,12 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
           return (<button key={c[0]} type="button" title={c[1]}
             onClick={function () { applyColor(c[0]); }}
             className="vv-greet-editor-color"
-            data-color={c[0]}
-            style={{ "--vv-c": c[0] }} />);
+            style={{ background: c[0], border: c[0] === "#ffffff" ? "1px solid #aaa" : "1px solid rgba(0,0,0,0.15)" }} />);
         })}
         <button type="button" className="vv-greet-editor-color vv-greet-editor-color-custom" title="Eigene Farbe"
-          onClick={function () { if (customColorRef.current) customColorRef.current.click(); }}>🎨</button>
+          onClick={function () { if (customColorRef.current) customColorRef.current.click(); }}>
+          🎨
+        </button>
         <input ref={customColorRef} type="color" style={{ display: "none" }}
           onChange={function (e) { applyColor(e.target.value); }} />
       </div>
@@ -91,16 +103,20 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
       <div className="vv-greet-editor-colors">
         {HIGHLIGHT_COLORS.map(function (c) {
           return (<button key={c[0]} type="button" title={c[1]}
-            onClick={function () { applyHL(c[0]); }}
+            onClick={function () { applyHighlight(c[0]); }}
             className="vv-greet-editor-color"
-            data-color={c[0]}
-            style={{ "--vv-c": c[0] }} />);
+            style={{ background: c[0], border: "1px solid rgba(0,0,0,0.15)" }} />);
         })}
       </div>
 
-      <textarea ref={taRef} className="vv-greet-editor-textarea" value={html}
+      <textarea
+        ref={taRef}
+        className="vv-greet-editor-textarea"
+        value={html}
         onChange={function (e) { setHtml(e.target.value); }}
-        placeholder="Schreib hier deinen Begruessungstext - HTML erlaubt!" rows={7} />
+        placeholder="Schreib hier deinen Begruessungstext - HTML erlaubt!"
+        rows={7}
+      />
 
       <div className="vv-greet-editor-preview-label">Live-Vorschau:</div>
       <div className="vv-greet-editor-preview"
@@ -109,7 +125,9 @@ export default function GreetingEditor({ username, initialHtml, onSaved, onCance
       {err && <div className="vv-greet-editor-error">⚠ {err}</div>}
 
       <div className="vv-greet-editor-actions">
-        <button type="button" onClick={onCancel} disabled={busy} className="vv-greet-editor-cancel">Abbrechen</button>
+        <button type="button" onClick={onCancel} disabled={busy} className="vv-greet-editor-cancel">
+          Abbrechen
+        </button>
         <button type="button" onClick={save} disabled={busy} className="vv-greet-editor-save">
           {busy ? "Speichert..." : "💾 Speichern"}
         </button>
