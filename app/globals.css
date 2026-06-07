@@ -8751,3 +8751,26 @@ body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
   border-color: #5fb0ff !important;
   color: #1e3a8a !important;
 }
+
+/* === Profil mood-row: Pillen einheitlich wie die mood-Badge (passt zum Stil) === */
+.vv-nost-mood-row .vv-nost-pill-wrap > * {
+  background: rgba(255,255,255,0.85) !important;
+  border: 2px solid #f472b6 !important;
+  border-radius: 18px !important;
+  padding: 5px 14px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #831843 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  line-height: 1.2 !important;
+  box-shadow: none !important;
+  min-height: unset !important;
+  height: auto !important;
+}
+.vv-nost-page[data-gender="m"] .vv-nost-mood-row .vv-nost-pill-wrap > * {
+  border-color: #5fb0ff !important;
+  color: #1e3a8a !important;
+}
