@@ -8478,20 +8478,3 @@ div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
   display: flex !important; align-items: center; justify-content: center;
   font-size: 12px !important;
 }
-
-/* === Greeting-Box Titel: pinke Schrift (Background bleibt weiss) === */
-.vv-greet-card .vv-greet-card-title,
-.vv-greet-card .vv-nost-card-title,
-.vv-greet-card .vv-greet-card-title > span,
-.vv-greet-card .vv-nost-card-title > span {
-  color: #ec4899 !important;
-  text-shadow: none !important;
-  font-weight: 900 !important;
-  letter-spacing: 2px;
-  font-size: 16px;
-}
-.vv-greet-edit-btn {
-  background: #fce7f3 !important;
-  border: 1px solid #ec4899 !important;
-  color: #831843 !important;
-}
