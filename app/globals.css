@@ -8058,3 +8058,24 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-landing-pricing { grid-template-columns: 1fr; }
   .vv-landing-final-cta h2 { font-size: 22px; }
 }
+
+.vv-status-strip{display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(90deg,#ec4899,#a855f7,#06b6d4,#a855f7,#ec4899);background-size:300% 100%;animation:vv-status-rainbow 14s linear infinite;color:#fff;font-family:Arial,sans-serif;font-weight:700;cursor:pointer;border-bottom:2px ridge rgba(255,255,255,.4);text-shadow:0 1px 0 rgba(0,0,0,.4);user-select:none;position:sticky;top:0;z-index:90;}
+.vv-status-strip:hover{filter:brightness(1.1);}
+@keyframes vv-status-rainbow{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+.vv-status-strip-emoji{font-size:22px;animation:vv-status-wobble 2.5s ease-in-out infinite;text-shadow:none;}
+@keyframes vv-status-wobble{0%,100%{transform:rotate(-5deg) scale(1);}50%{transform:rotate(5deg) scale(1.08);}}
+.vv-status-strip-label{display:flex;align-items:baseline;gap:6px;flex:1;min-width:0;}
+.vv-status-strip-prefix{font-size:11px;opacity:.85;letter-spacing:.5px;text-transform:uppercase;font-weight:800;}
+.vv-status-strip-text{font-size:14px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vv-status-strip-edit{font-size:16px;opacity:.85;padding:2px 8px;background:rgba(255,255,255,.15);border-radius:999px;flex-shrink:0;}
+.vv-status-picker-backdrop{position:fixed;inset:0;z-index:9700;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;}
+.vv-status-picker-card{position:relative;max-width:480px;width:100%;background:linear-gradient(180deg,#fff,#fdf2f8);border:3px solid #ec4899;border-radius:18px;padding:22px;font-family:Arial,sans-serif;color:#4a044e;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(236,72,153,.4);}
+.vv-status-picker-close{position:absolute;top:8px;right:12px;background:none;border:none;cursor:pointer;font-size:24px;color:#831843;width:32px;height:32px;border-radius:50%;}
+.vv-status-picker-card h3{margin:0 0 14px;text-align:center;font-size:18px;color:#be185d;}
+.vv-status-picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+@media(min-width:480px){.vv-status-picker-grid{grid-template-columns:repeat(3,1fr);}}
+.vv-status-picker-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:2px solid #fbcfe8;border-radius:12px;cursor:pointer;font-family:inherit;color:inherit;text-align:left;}
+.vv-status-picker-item:hover{border-color:#ec4899;background:#fdf2f8;}
+.vv-status-picker-item:disabled{opacity:.5;cursor:wait;}
+.vv-status-picker-item-emoji{font-size:22px;}
+.vv-status-picker-item-text{font-size:13px;font-weight:700;color:#831843;}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Banner from "@/components/Banner";
 import Navbar from "@/components/Navbar";
+import StatusStrip from "@/components/StatusStrip";
 import Footer from "@/components/Footer";
 import { useMe } from "@/lib/useMe";
 
@@ -50,6 +51,7 @@ export default function Layout({ children }) {
       <div className="vv-page">
         <Banner />
         <Navbar />
+        <StatusStrip />
         <div className="vv-messenger-desktop-frame">{children}</div>
         <Footer />
       </div>
@@ -60,6 +62,7 @@ export default function Layout({ children }) {
     <div className="vv-page">
       <Banner />
       <Navbar />
+        <StatusStrip />
       {children}
       <Footer />
     </div>
