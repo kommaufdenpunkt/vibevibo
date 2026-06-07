@@ -5470,6 +5470,221 @@ input[type="number"], input[type="tel"], textarea, select {
   color: #831843;
 }
 
+/* ============================================================ */
+/* ✨ Onboarding-Modal (Fidolin führt neue User durch)           */
+/* ============================================================ */
+.vv-onb-backdrop {
+  position: fixed; inset: 0; z-index: 9000;
+  background: radial-gradient(circle at 50% 30%, rgba(168,85,247,0.35), rgba(0,0,0,0.7));
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: vv-onb-fade 0.3s ease-out;
+}
+@keyframes vv-onb-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.vv-onb-card {
+  position: relative;
+  max-width: 460px; width: 100%;
+  background: linear-gradient(180deg, #fff, #fdf2f8);
+  border-radius: 20px;
+  border: 3px solid #ec4899;
+  box-shadow: 0 20px 60px rgba(236,72,153,0.4), 0 0 0 6px rgba(255,255,255,0.1);
+  padding: 24px 22px 22px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #4a044e;
+  animation: vv-onb-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 90vh; overflow-y: auto;
+}
+@keyframes vv-onb-pop {
+  from { transform: scale(0.85) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.vv-onb-close {
+  position: absolute; top: 10px; right: 12px;
+  background: none; border: none; cursor: pointer;
+  font-size: 24px; line-height: 1; color: #831843;
+  width: 32px; height: 32px; border-radius: 50%;
+  transition: background 0.15s ease;
+}
+.vv-onb-close:hover { background: rgba(236,72,153,0.15); }
+
+.vv-onb-progress {
+  display: flex; justify-content: center; gap: 6px;
+  margin-bottom: 16px;
+}
+.vv-onb-progress span {
+  width: 28px; height: 4px; border-radius: 2px;
+  background: #fbcfe8;
+  transition: background 0.3s ease;
+}
+.vv-onb-progress span.active {
+  background: linear-gradient(90deg, #ec4899, #a855f7);
+}
+
+.vv-onb-fidolin {
+  font-size: 64px; line-height: 1;
+  margin: 6px 0 14px;
+  animation: vv-onb-bounce 2.5s ease-in-out infinite;
+}
+.vv-onb-celebrate {
+  font-size: 64px; line-height: 1;
+  margin: 6px 0 14px;
+  animation: vv-onb-shake 0.8s ease-in-out infinite;
+}
+@keyframes vv-onb-bounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+@keyframes vv-onb-shake {
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  25% { transform: rotate(10deg) scale(1.1); }
+  50% { transform: rotate(-5deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.1); }
+}
+
+.vv-onb-title {
+  font-size: 22px; font-weight: 900;
+  margin: 0 0 8px;
+  background-image: linear-gradient(90deg, #ec4899, #a855f7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.vv-onb-text {
+  font-size: 14px; line-height: 1.55;
+  margin: 0 0 18px; color: #6b21a8;
+}
+.vv-onb-text-s {
+  font-size: 12.5px; line-height: 1.5;
+  margin: 0 0 14px; color: #6b21a8;
+}
+
+.vv-onb-label {
+  display: block; text-align: left;
+  font-size: 11.5px; font-weight: 900; letter-spacing: 0.5px;
+  color: #831843; text-transform: uppercase;
+  margin: 12px 0 6px;
+}
+.vv-onb-emoji-row {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+}
+@media (max-width: 480px) {
+  .vv-onb-emoji-row { grid-template-columns: repeat(6, 1fr); }
+}
+.vv-onb-emoji {
+  background: #fff;
+  border: 2px solid #fbcfe8;
+  border-radius: 10px;
+  padding: 6px 0; font-size: 18px;
+  cursor: pointer; line-height: 1;
+  transition: transform 0.12s ease;
+  font-family: inherit;
+}
+.vv-onb-emoji:hover { transform: scale(1.15); background: #fce7f3; }
+.vv-onb-emoji.active {
+  background: linear-gradient(180deg, #fce7f3, #f9a8d4);
+  border-color: #ec4899;
+  box-shadow: 0 0 0 2px rgba(236,72,153,0.3);
+}
+
+.vv-onb-input {
+  width: 100%;
+  border: 2px solid #fbcfe8;
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+  color: #4a044e;
+  resize: vertical;
+}
+.vv-onb-input:focus {
+  outline: none;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 3px rgba(236,72,153,0.18);
+}
+.vv-onb-counter {
+  text-align: right; font-size: 10px;
+  color: #be185d; margin-top: 4px; font-weight: 700;
+}
+
+.vv-onb-tour {
+  display: flex; flex-direction: column; gap: 8px;
+  margin: 14px 0;
+}
+.vv-onb-tour-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #fff, #fdf2f8);
+  border: 2px solid #f9a8d4;
+  border-radius: 12px;
+  cursor: pointer; text-align: left;
+  transition: all 0.15s ease;
+  font-family: inherit; color: inherit;
+}
+.vv-onb-tour-card:hover {
+  border-color: #ec4899;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(236,72,153,0.2);
+  background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+}
+.vv-onb-tour-emoji {
+  font-size: 28px; line-height: 1; flex-shrink: 0;
+}
+.vv-onb-tour-text {
+  display: flex; flex-direction: column; flex: 1;
+  gap: 2px;
+}
+.vv-onb-tour-text strong {
+  font-size: 13.5px; font-weight: 900; color: #831843;
+}
+.vv-onb-tour-text span {
+  font-size: 11.5px; color: #6b21a8;
+}
+.vv-onb-tour-arrow {
+  font-size: 18px; color: #ec4899;
+  font-weight: 900;
+}
+
+.vv-onb-actions {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: 18px;
+}
+.vv-onb-btn {
+  padding: 11px 18px;
+  border-radius: 11px;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  border: 2px solid;
+  transition: transform 0.12s ease;
+}
+.vv-onb-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.vv-onb-btn:active:not(:disabled) { transform: translateY(2px); }
+.vv-onb-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.vv-onb-btn-primary {
+  background: linear-gradient(180deg, #f472b6, #ec4899);
+  color: #fff;
+  border-color: #be185d;
+  box-shadow: 0 3px 0 #831843;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+.vv-onb-btn-ghost {
+  background: rgba(255,255,255,0.7);
+  color: #831843;
+  border-color: #fbcfe8;
+}
+.vv-onb-btn-ghost:hover { background: #fff; border-color: #ec4899; }
+
 .vv-login-footer {
   text-align: center;
   padding: 10px;
