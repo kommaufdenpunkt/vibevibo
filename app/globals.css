@@ -8703,3 +8703,28 @@ body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
   -ms-overflow-style: none !important;
 }
 .vv-home-tiles::-webkit-scrollbar { display: none !important; height: 0 !important; width: 0 !important; }
+
+/* === Hero-Stats: Vibes/Bell-Pillen GENAU wie die anderen Stat-Pillen stylen === */
+.vv-home-hero-stats .vv-nost-pill-wrap { display: inline-flex; align-items: center; }
+.vv-home-hero-stats .vv-nost-pill-wrap > * {
+  background: rgba(255,255,255,0.85) !important;
+  border: 2px solid #ec4899 !important;
+  border-radius: 999px !important;
+  padding: 4px 12px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #831843 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  line-height: 1.2 !important;
+  box-shadow: none !important;
+  min-height: unset !important;
+  height: auto !important;
+}
+.vv-home-page[data-gender="m"] .vv-home-hero-stats .vv-nost-pill-wrap > * {
+  border-color: #2d7dd2 !important;
+  color: #1e3a8a !important;
+}
+.vv-home-hero-stats .vv-nost-pill-wrap .vv-notif-bell-icon { font-size: 14px; }
