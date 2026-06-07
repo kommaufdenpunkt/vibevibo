@@ -8292,3 +8292,32 @@ input[type="number"], input[type="tel"], textarea, select {
   border: 2px dashed #a855f7;
   color: #f5e8ff;
 }
+
+/* === Greeting-Editor: weiss passend zur weissen Box === */
+.vv-greet-editor-toolbar {
+  background: #f8f5fc !important;
+  border: 1px solid #e9d5ff;
+}
+.vv-greet-editor-toolbar > button {
+  background: #fff !important;
+  border: 1px solid #d8b4fe !important;
+  color: #6b21a8 !important;
+}
+.vv-greet-editor-toolbar > button:hover {
+  background: #fce7f3 !important;
+}
+.vv-greet-editor-sep { background: #d8b4fe !important; }
+.vv-greet-editor-textarea {
+  background: #ffffff !important;
+  color: #1c1c1e !important;
+  border: 2px solid #ec4899 !important;
+}
+.vv-greet-editor-preview-label { color: #6b21a8 !important; opacity: 0.8; }
+.vv-greet-editor-preview {
+  background: #fdf4ff !important;
+  border: 1px dashed #d8b4fe !important;
+}
+.vv-greet-editor-cancel {
+  color: #6b21a8 !important;
+  border: 1px solid #d8b4fe !important;
+}
