@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import MyNostalgicProfile from "@/components/MyNostalgicProfile";
@@ -10,7 +10,6 @@ import OnboardingModal from "@/components/OnboardingModal";
 export default function MyProfilePage() {
   const { me, loading } = useMe();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [data, setData] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -30,10 +29,12 @@ export default function MyProfilePage() {
   }, [me, loading, router, load]);
 
   // Onboarding-Modal: bei erstem Profil-Besuch (localStorage-Flag pro User),
-  // ODER wenn URL ?onboarding=1 / ?tour=1 (Tutorial nochmal anzeigen)
+  // ODER wenn URL ?onboarding=1 / ?tour=1 (Tutorial nochmal anzeigen).
+  // window.location.search statt useSearchParams() — sonst Suspense-Pflicht beim Build.
   useEffect(() => {
-    if (!me) return;
-    const forceShow = searchParams?.get("onboarding") === "1" || searchParams?.get("tour") === "1";
+    if (!me || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const forceShow = params.get("onboarding") === "1" || params.get("tour") === "1";
     if (forceShow) {
       try { localStorage.removeItem(`vv-onboarded-${me.id}`); } catch {}
       setShowOnboarding(true);
@@ -43,7 +44,7 @@ export default function MyProfilePage() {
       const k = `vv-onboarded-${me.id}`;
       if (!localStorage.getItem(k)) setShowOnboarding(true);
     } catch {}
-  }, [me, searchParams]);
+  }, [me]);
 
   if (loading || !me) return null;
   if (!data) return <div className="vv-card">Lädt...</div>;
