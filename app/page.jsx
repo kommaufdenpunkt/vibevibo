@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import VibesNavBadge from "@/components/VibesNavBadge";
+import NotificationsBell from "@/components/NotificationsBell";
 import Marquee from "@/components/Marquee";
 import Landing from "@/components/Landing";
 import Buschfunk from "@/components/Buschfunk";
@@ -70,6 +72,8 @@ export default function HomePage() {
           <span className="vv-home-hero-stat">🟢 {onlineUsers.length} online</span>
           <span className="vv-home-hero-stat">👥 {users.length} Mitglieder</span>
           {me.mood && <span className="vv-home-hero-stat">💭 {me.mood}</span>}
+          <span className="vv-nost-pill-wrap"><VibesNavBadge /></span>
+          <span className="vv-nost-pill-wrap"><NotificationsBell /></span>
         </div>
       </div>
 

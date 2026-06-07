@@ -8652,3 +8652,6 @@ body:has(.vv-nost-page) .vv-banner-status { display: none !important; }
 }
 .vv-nost-pill-wrap > *:hover { transform: translateY(-1px); }
 .vv-nost-pill-wrap .vv-notif-bell-count { background: #ec4899; color: #fff; }
+
+/* === Home: Banner-Glas-Kapsel verstecken (Vibes/Bell sind jetzt unten beim Hero) === */
+body:has(.vv-home-hero) .vv-banner-status { display: none !important; }
