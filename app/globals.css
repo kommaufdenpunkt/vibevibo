@@ -8388,3 +8388,16 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 .vv-greet-card > div:first-child { margin-top: 0 !important; }
 .vv-greet-card > div:last-child { margin-bottom: 0 !important; }
+
+/* === Greeting-Box: Nuclear-Option, ueberschreibt alles === */
+.vv-greet-card,
+.vv-greet-card *:not(.vv-greet-edit-btn):not(button):not(input):not(.vv-greet-editor-color):not(.vv-greet-editor-toolbar):not(.vv-greet-editor-toolbar > *):not(.vv-greet-editor-save):not(.vv-greet-editor-cancel) {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+div.vv-greet-card.vv-nost-card.vv-nost-card-violet {
+  background: #ffffff !important;
+  border-color: #ec4899 !important;
+}
+.vv-greet-card { padding: 0 !important; }
+.vv-greet-card > div:first-child { border-bottom: 1px solid #f3e8ff; }
