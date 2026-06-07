@@ -8153,11 +8153,29 @@ input[type="number"], input[type="tel"], textarea, select {
 
 /* === Banner-Statusecke (Vibes + Glocke) + S8-Logout === */
 .vv-banner { position: relative; }
-.vv-banner-status { position: absolute; right: 14px; bottom: 10px; display: flex; align-items: center; gap: 10px; z-index: 5; }
 .vv-edge-logout { margin-top: 16px; width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(248,113,113,0.45); background: rgba(220,38,38,0.2); color: #fecaca; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; }
 .vv-edge-logout:active { transform: scale(0.97); }
-@media (max-width: 700px) { .vv-banner-status { right: 10px; bottom: 8px; gap: 7px; } }
 
 /* === Begruessungs-Box nur so breit wie die mittlere Spalte === */
 .vv-nost-card-violet:has(> .vv-nost-greeting) { max-width: 44%; margin-left: auto; margin-right: auto; }
 @media (max-width: 1024px) { .vv-nost-card-violet:has(> .vv-nost-greeting) { max-width: 100%; } }
+
+/* vv-banner-status redesign v2 — eine schicke Glas-Kapsel oben rechts */
+.vv-banner-status {
+  position: absolute; top: 10px; right: 12px;
+  display: flex; align-items: center; gap: 4px; z-index: 5;
+  padding: 4px 6px; border-radius: 999px;
+  background: rgba(0,0,0,0.28);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.12);
+}
+.vv-banner-status > a,
+.vv-banner-status .vv-notif-bell {
+  background: transparent !important; border: none !important; margin: 0 !important;
+  padding: 4px 9px !important;
+}
+@media (max-width: 700px) {
+  .vv-banner-status { top: 6px; right: 8px; gap: 0; padding: 3px 4px; }
+  .vv-banner-status > a, .vv-banner-status .vv-notif-bell { padding: 3px 7px !important; font-size: 12px !important; }
+}
