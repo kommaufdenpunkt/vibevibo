@@ -123,16 +123,6 @@ function MessengerInner() {
         </div>
       </header>
 
-      {(tab === "chats" || tab === "freunde") && (
-        <div className="vv-msgapp-search">
-          <input
-            type="search" value={query} onChange={(e) => setQuery(e.target.value)}
-            placeholder={tab === "chats" ? "🔍 In Chats suchen…" : "🔍 Person suchen…"}
-            className="vv-msgapp-search-input"
-          />
-        </div>
-      )}
-
       <main className="vv-msgapp-main">
         {tab === "chats" && (
           <>
