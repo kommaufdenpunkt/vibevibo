@@ -46,18 +46,11 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
       loadOnce(`https://www.ezojs.com/ezoic/sa.min.js?id=${display.siteId}`, "vv-ezoic-script");
       setPushed(true);
     } else if (display.provider === "adsterra" && display.zoneId) {
-      // Adsterra-Banner-Embed: atOptions VOR dem Script setzen, dann invoke.js laden.
-      // Domain + Größe sind im Admin konfigurierbar (highperformanceformat.com / profitableratecpm.com etc.).
+      // Adsterra-Banner-Embed: kapseln in eigenes Container-Div mit Zone-ID
       const w = window;
-      w.atOptions = {
-        key: display.zoneId,
-        format: "iframe",
-        height: display.height || 50,
-        width: display.width || 320,
-        params: {},
-      };
-      const domain = (display.domain || "www.highperformanceformat.com").replace(/^https?:\/\//i, "").replace(/\/+$/, "");
-      loadOnce(`https://${domain}/${display.zoneId}/invoke.js`, "vv-adsterra-" + display.zoneId);
+      w.atOptions = w.atOptions || {};
+      w.atOptions[display.zoneId] = { key: display.zoneId, format: "iframe", height: 250, width: 300 };
+      loadOnce(`https://www.profitableratecpm.com/${display.zoneId}/invoke.js`, "vv-adsterra-" + display.zoneId);
       setPushed(true);
     }
   }, [display, pushed]);
@@ -88,14 +81,8 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
         <div ref={ref} id={`ezoic-pub-ad-placeholder-${slot}`} style={{ minHeight: 90 }} />
       )}
       {display.provider === "adsterra" && (
-        <div ref={ref} style={{
-          minHeight: (display.height || 50) + 10,
-          display: "flex", justifyContent: "center", alignItems: "center",
-        }}>
-          <div id={`adsterra-${display.zoneId}`} style={{
-            width: display.width || 320,
-            height: display.height || 50,
-          }} />
+        <div ref={ref} style={{ minHeight: 90, display: "flex", justifyContent: "center" }}>
+          <div id={`adsterra-${display.zoneId}`} />
         </div>
       )}
     </div>

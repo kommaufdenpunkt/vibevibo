@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
   getUserByUsername, sendCompliment, complimentsSentToday, spendCredits, bumpXP,
-  COMPLIMENT_DAILY_CAP, COMPLIMENT_COST, COMPLIMENT_COST_CUSTOM,
+  COMPLIMENT_DAILY_CAP, COMPLIMENT_COST, COMPLIMENT_COST_CUSTOM, isBlockedBetween,
 } from "@/lib/db";
 
 // Vordefinierte Komplimente — kuratiert, freundlich, keine sexuellen Anspielungen.
@@ -33,6 +33,9 @@ export async function POST(req) {
   const target = getUserByUsername(toUsername);
   if (!target) return NextResponse.json({ error: "Nutzer nicht gefunden" }, { status: 404 });
   if (target.id === me.id) return NextResponse.json({ error: "Komplimente an dich selbst gehen nicht 😉" }, { status: 400 });
+  if (isBlockedBetween(me.id, target.id)) {
+    return NextResponse.json({ error: "Du kannst dieser Person kein Kompliment senden (Sperre)." }, { status: 403 });
+  }
 
   // Daily-Cap (Anti-Spam)
   const sentToday = complimentsSentToday(me.id);

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addGuestbookEntry, getGuestbookEntries, deleteGuestbookEntry, addNotification, notifyMentions, bumpQuestProgress, bumpXP } from "@/lib/db";
+import { getUserByUsername, addGuestbookEntry, getGuestbookEntries, deleteGuestbookEntry, addNotification, notifyMentions, bumpQuestProgress, bumpXP, isBlockedBetween } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
+import { sanitizeWallText } from "@/lib/sanitizeHtml";
 import { sendPushToUser } from "@/lib/push";
 
 const MAX_IMG_BYTES = 700_000;
@@ -22,8 +23,12 @@ export async function POST(req, { params }) {
   const { username } = await params;
   const target = getUserByUsername(username);
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (target.id !== me.id && isBlockedBetween(me.id, target.id)) {
+    return NextResponse.json({ error: "Du kannst hier nichts eintragen (Sperre)." }, { status: 403 });
+  }
   const body = await req.json();
-  const cleaned = String(body?.text || "").trim().slice(0, 600);
+  const rawText = String(body?.text || "").trim().slice(0, 600);
+  const cleaned = rawText ? sanitizeWallText(rawText, { maxLen: 900 }) : "";
   const rawImage = body?.image ? String(body.image) : "";
   if (!cleaned && !rawImage) return NextResponse.json({ error: "empty" }, { status: 400 });
 

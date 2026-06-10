@@ -36,6 +36,8 @@ function MessengerInner() {
   const [users, setUsers] = useState([]);
   const [tab, setTab] = useState("chats"); // chats | freunde | vibo | profil
   const [query, setQuery] = useState("");
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [onlineFriendsOnly, setOnlineFriendsOnly] = useState(false);
   const [creating, setCreating] = useState(false);
   const [theme, setTheme] = useTheme();
   const [autoLogout, setAutoLogout] = useState(0);
@@ -76,20 +78,25 @@ function MessengerInner() {
   useMessageStream(!!me, { onMessage: reload, onRoomMessage: reload });
 
   const q = query.trim().toLowerCase();
-  const filteredConvs = useMemo(() =>
-    !q ? conversations : conversations.filter((c) =>
+  const filteredConvs = useMemo(() => {
+    let arr = !q ? conversations : conversations.filter((c) =>
       (c.partnerDisplayName || "").toLowerCase().includes(q) ||
       (c.partnerUsername || "").toLowerCase().includes(q) ||
-      (c.lastText || "").toLowerCase().includes(q)),
-    [conversations, q]);
-  const filteredRooms = useMemo(() =>
-    !q ? rooms : rooms.filter((r) => (r.name || "").toLowerCase().includes(q)),
-    [rooms, q]);
+      (c.lastText || "").toLowerCase().includes(q));
+    if (unreadOnly) arr = arr.filter((c) => (c.unread || 0) > 0);
+    return arr;
+  }, [conversations, q, unreadOnly]);
+  const filteredRooms = useMemo(() => {
+    let arr = !q ? rooms : rooms.filter((r) => (r.name || "").toLowerCase().includes(q));
+    if (unreadOnly) arr = arr.filter((r) => (r.unread || 0) > 0);
+    return arr;
+  }, [rooms, q, unreadOnly]);
   const filteredUsers = useMemo(() => {
-    const f = !q ? users : users.filter((u) =>
+    let f = !q ? users : users.filter((u) =>
       (u.displayName || "").toLowerCase().includes(q) ||
       (u.username || "").toLowerCase().includes(q) ||
       (u.mood || "").toLowerCase().includes(q));
+    if (onlineFriendsOnly) f = f.filter((u) => isOnlineActivity(u.lastSeen));
     return [...f].sort((a, b) => {
       // Aktivste oben: Stufe 5 → 0
       const la = activityLevel(a.lastSeen);
@@ -97,7 +104,7 @@ function MessengerInner() {
       if (la !== lb) return lb - la;
       return (b.lastSeen || 0) - (a.lastSeen || 0);
     });
-  }, [users, q]);
+  }, [users, q, onlineFriendsOnly]);
 
   if (!me) return null;
 
@@ -122,6 +129,34 @@ function MessengerInner() {
           )}
         </div>
       </header>
+
+      {(tab === "chats" || tab === "freunde") && (
+        <div className="vv-msgapp-search">
+          <input
+            type="search" value={query} onChange={(e) => setQuery(e.target.value)}
+            placeholder={tab === "chats" ? "🔍 In Chats suchen…" : "🔍 Person suchen…"}
+            className="vv-msgapp-search-input"
+          />
+          {tab === "chats" && (
+            <div className="vv-msgapp-filter-row">
+              <button type="button"
+                className={`vv-msgapp-filterchip${unreadOnly ? " is-active" : ""}`}
+                onClick={() => setUnreadOnly((v) => !v)}>
+                📬 Nur Ungelesene{totalUnread > 0 && ` (${totalUnread})`}
+              </button>
+            </div>
+          )}
+          {tab === "freunde" && (
+            <div className="vv-msgapp-filter-row">
+              <button type="button"
+                className={`vv-msgapp-filterchip${onlineFriendsOnly ? " is-active" : ""}`}
+                onClick={() => setOnlineFriendsOnly((v) => !v)}>
+                🟢 Nur Online{onlineCount > 0 && ` (${onlineCount})`}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <main className="vv-msgapp-main">
         {tab === "chats" && (

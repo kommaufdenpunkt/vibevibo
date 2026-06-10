@@ -760,6 +760,15 @@ export default function ChatOverlay() {
                           <OnlineName lastSeen={u.lastSeen}>
                             <ColoredName gender={u.gender} age={u.age} name={u.displayName} nameColor={u.nameColor} />
                           </OnlineName>
+                          {u.mood && (() => {
+                            // Erstes Emoji aus dem Mood-Text rausziehen + als Status-Icon anzeigen
+                            const m = u.mood.match(/^([\p{Extended_Pictographic}☀-➿]+)/u);
+                            const icon = m ? m[1] : "";
+                            return icon ? (
+                              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}
+                                title={u.mood}>{icon}</span>
+                            ) : null;
+                          })()}
                           <ActivityBars lastSeen={u.lastSeen} size="xs" />
                         </span>
                         {convo ? (

@@ -22,8 +22,8 @@ export default function VibesNavBadge() {
 
   return (
     <Link
-      href="/messenger?tab=vibo"
-      title={`Du hast ${bal} Vibes – tippen für Details`}
+      href="/profile/transactions"
+      title={`Du hast ${bal} Vibes – tippen für Konto + Shop`}
       style={{
         display: "inline-flex", alignItems: "center", gap: 4,
         padding: "5px 10px", borderRadius: 999,

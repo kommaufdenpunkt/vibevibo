@@ -60,7 +60,15 @@ export default function Pinnwand({ profile, entries, onChange }) {
                   </a>
                 )}
               </div>
-              {entry.text && <div style={{ whiteSpace: "pre-wrap" }}><MentionText text={entry.text} /></div>}
+              {entry.text && (() => {
+                // Inline-Editor erzeugt sanitisiertes HTML. Wenn der Text wie HTML
+                // aussieht (enthaelt < ...> Tags), per dangerouslySetInnerHTML rendern,
+                // sonst Plaintext mit MentionText fuer Alt-Posts.
+                const looksHtml = /<\/?[a-z][^>]*>/i.test(entry.text);
+                return looksHtml
+                  ? <div className="vv-wall-text" dangerouslySetInnerHTML={{ __html: entry.text }} />
+                  : <div style={{ whiteSpace: "pre-wrap" }}><MentionText text={entry.text} /></div>;
+              })()}
               {entry.imageUrl && (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={entry.imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 320, borderRadius: 10, marginTop: 6 }} />

@@ -7,11 +7,8 @@
 // (/u/[username]) behalten das ProfileView.
 
 import { useCallback, useEffect, useState } from "react";
-import GreetingEditor from "@/components/GreetingEditor";
 import Link from "next/link";
 import Avatar from "@/components/Avatar";
-import VibesNavBadge from "@/components/VibesNavBadge";
-import NotificationsBell from "@/components/NotificationsBell";
 import { ColoredName } from "@/components/GenderAge";
 import Pinnwand from "@/components/Pinnwand";
 import GiftShelf from "@/components/GiftShelf";
@@ -30,7 +27,6 @@ import { relTime } from "@/lib/format";
 export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts, visitCount, visitors, onChange }) {
   const { me, refresh } = useMe();
   const [wallTab, setWallTab] = useState("pinnwand");
-  const [editingGreeting, setEditingGreeting] = useState(false);
   const num = String(profile.id).padStart(5, "0");
   const createdAt = profile.createdAt ? new Date(profile.createdAt) : null;
   const daysOnBoard = createdAt ? Math.max(1, Math.floor((Date.now() - createdAt.getTime()) / 86400000)) : 0;
@@ -62,31 +58,16 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
           </div>
 
           <h1 className="vv-nost-wordart">
-            <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} size="24px" />
+            <ColoredName gender={profile.gender} age={profile.age} name={profile.displayName} nameColor={profile.nameColor} size="32px" />
           </h1>
           <div className="vv-nost-username">@{profile.username}</div>
 
-          {(profile.city || profile.school) && (
-            <div className="vv-nost-hero-meta">
-              {profile.city && <span className="vv-nost-hero-chip">📍 {profile.city}</span>}
-              {profile.school && (
-                <Link href={`/schulen/${encodeURIComponent(profile.school)}`} className="vv-nost-hero-chip">
-                  🏫 {profile.school}
-                </Link>
-              )}
+          {profile.mood && (
+            <div className="vv-nost-mood">
+              <span>💭</span>
+              <span>{profile.mood}</span>
             </div>
           )}
-
-          <div className="vv-nost-mood-row">
-            {profile.mood && (
-              <div className="vv-nost-mood">
-                <span>💭</span>
-                <span>{profile.mood}</span>
-              </div>
-            )}
-            <div className="vv-nost-pill-wrap"><VibesNavBadge /></div>
-            <div className="vv-nost-pill-wrap"><NotificationsBell /></div>
-          </div>
 
           <div className="vv-nost-badges">
             <PremiumBadges premiumBadges={profile.premiumBadges} />
@@ -134,44 +115,11 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
         {/* Komplimente-Inbox prominent obendrueber */}
         <ComplimentInbox />
 
-        {/* 🌸 Begrüßungs-HTML — eigenes Profil → direkt inline editierbar */}
-        <div className="vv-nost-card vv-nost-card-violet vv-greet-card">
-          <div className="vv-nost-card-title vv-greet-card-title">
-            <span>🌸 BEGRÜSSUNGSTEXT 🌸</span>
-            {!editingGreeting && (
-              <button type="button" className="vv-greet-edit-btn" title="Begrüßung bearbeiten"
-                onClick={() => setEditingGreeting(true)}>
-                ✏️
-              </button>
-            )}
-          </div>
-          <div className="vv-nost-card-body">
-            {editingGreeting ? (
-              <GreetingEditor
-                username={profile.username}
-                initialHtml={profile.greetingHtml || ""}
-                onSaved={() => { setEditingGreeting(false); onChange?.(); }}
-                onCancel={() => setEditingGreeting(false)}
-              />
-            ) : profile.greetingHtml && profile.greetingHtml.trim() ? (
-              <div className="vv-nost-greeting"
-                dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
-            ) : (
-              <div className="vv-nost-greeting" style={{textAlign:"center",padding:"20px 10px"}}>
-                <div style={{fontSize:30,marginBottom:8}}>🌸✨🌸</div>
-                <div style={{color:"#f5e8ff",fontSize:14,marginBottom:12}}>
-                  Noch keine Begrüßung — verleih deinem Profil eine persönliche Note!
-                </div>
-                <button type="button" onClick={() => setEditingGreeting(true)}
-                  style={{padding:"8px 16px",borderRadius:999,border:"2px solid #ec4899",
-                    background:"linear-gradient(135deg, #ec4899, #be185d)",color:"#fff",
-                    fontWeight:800,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>
-                  ✏️ Jetzt Begrüßung schreiben
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* 🌸 Begrüßungs-HTML, vom User selber gestaltet — Title weg, freier Style */}
+        {profile.greetingHtml && profile.greetingHtml.trim() && (
+          <div className="vv-nost-greeting-wrap"
+            dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
+        )}
 
         {/* 📚 3-Spalten Forum-Layout */}
         <div className="vv-nost-grid">
@@ -273,24 +221,7 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
               )}
             </Card>
 
-            <Card title="🛍 MEIN VIBES-KONTO 🛍" tone="violet" tiny>
-              <Link href="/profile/transactions" style={{
-                display: "block", padding: "10px 12px", borderRadius: 10,
-                background: "linear-gradient(135deg,#fef3c7,#fde68a)",
-                color: "#7c2d12", textDecoration: "none", fontSize: 13, fontWeight: 700,
-                border: "1px dashed #f59e0b",
-              }}>
-                💰 Transaktionen ansehen
-              </Link>
-              <Link href="/shop" style={{
-                marginTop: 6, display: "block", padding: "10px 12px", borderRadius: 10,
-                background: "linear-gradient(135deg,#fce7f3,#f9a8d4)",
-                color: "#831843", textDecoration: "none", fontSize: 13, fontWeight: 700,
-                textAlign: "center",
-              }}>
-                🛒 Zum Shop
-              </Link>
-            </Card>
+            {/* Vibes-Konto-Card entfernt — Klick auf ✨-Pille im Hero fuehrt zu Transaktionen */}
           </aside>
         </div>
 

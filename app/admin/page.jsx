@@ -20,7 +20,6 @@ import GenderAge from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
 import AdminBroadcast from "@/components/AdminBroadcast";
 import AdminSettings from "@/components/AdminSettings";
-import AdminResetPasswordBtn from "@/components/AdminResetPasswordBtn";
 import { relTime } from "@/lib/format";
 import { deviceLabel } from "@/lib/device";
 
@@ -306,7 +305,7 @@ export default async function AdminPage({ searchParams }) {
 
       {tab === "uebersicht" && <Uebersicht stats={stats} q={q} />}
       {tab === "warteliste" && <Warteliste q={q} />}
-      {tab === "mitglieder" && <Mitglieder q={q} pw={pw} />}
+      {tab === "mitglieder" && <Mitglieder q={q} />}
       {tab === "profilbilder" && <Profilbilder q={q} />}
       {tab === "fotos" && <Fotos q={q} />}
       {tab === "meldungen" && <Meldungen q={q} />}
@@ -504,7 +503,7 @@ function Warteliste({ q }) {
   );
 }
 
-function Mitglieder({ q, pw }) {
+function Mitglieder({ q }) {
   const approved = listUsersByStatus("approved");
   const blocked = listUsersByStatus("blocked");
   return (
@@ -519,7 +518,6 @@ function Mitglieder({ q, pw }) {
               <strong>{u.displayName}</strong> <span className="vv-muted">@{u.username}</span>
             </div>
             <a className="vv-btn" href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(u.username)}`}>📁 Akte</a>
-            <AdminResetPasswordBtn pw={pw} username={u.username} regIp={u.regIp || ""} />
             <a className="vv-btn" href={`/admin?${q}&tab=banns&do=ban&u=${encodeURIComponent(u.username)}&btype=comm&dur=1d`}>🔇 1T Mute</a>
             <a className="vv-btn" href={`/admin?${q}&tab=mitglieder&do=block&u=${encodeURIComponent(u.username)}&ip=${encodeURIComponent(u.regIp || "")}`}>🚫 Sperren</a>
             <a className="vv-btn" style={{ color: "#a00", fontWeight: "bold" }} href={`/admin?${q}&tab=mitglieder&do=delete&u=${encodeURIComponent(u.username)}`}>🗑 Löschen</a>

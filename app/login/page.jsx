@@ -25,15 +25,8 @@ export default function LoginPage() {
     password: "",
     emoji: "🙂",
   });
-  const [showForgot, setShowForgot] = useState(false);
 
   function up(k, v) { setForm((f) => ({ ...f, [k]: v })); }
-
-  const SOCIAL_PROVIDERS = [
-    { id: "facebook",  label: "Facebook",  icon: "ƒ",  color: "#1877f2" },
-    { id: "google",    label: "Google",    icon: "G",  color: "#ea4335" },
-    { id: "apple",     label: "Apple",     icon: "🍎", color: "#111" },
-  ];
 
   async function submit(e) {
     e.preventDefault();
@@ -150,22 +143,6 @@ export default function LoginPage() {
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
               />
 
-              {mode === "login" && !needsTotp && (
-                <div className="vv-login-forgot">
-                  <button type="button" onClick={() => setShowForgot((v) => !v)}>
-                    Passwort vergessen?
-                  </button>
-                </div>
-              )}
-
-              {showForgot && mode === "login" && (
-                <div className="vv-login-forgot-msg">
-                  📮 Schreib uns kurz an <strong>support@vibevibo.de</strong> mit deinem Benutzernamen — wir setzen dein Passwort manuell zurück und schicken dir einen Einmal-Link.
-                  {" "}<br />
-                  (Auto-Reset über E-Mail kommt sobald wir SMTP eingerichtet haben.)
-                </div>
-              )}
-
               {mode === "register" && (
                 <div className="vv-login-hint">
                   💡 Mind. 10 Zeichen. Wir prüfen gegen bekannte Datenlecks (haveibeenpwned).
@@ -207,51 +184,32 @@ export default function LoginPage() {
                   </button>
                 )}
               </div>
-            </form>
 
-            {!needsTotp && (
-              <>
-                <div className="vv-login-divider">oder</div>
-                <div className="vv-login-social-row">
-                  {SOCIAL_PROVIDERS.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className="vv-login-social-btn"
-                      disabled
-                      aria-label={`Mit ${p.label} fortfahren (bald verfügbar)`}
-                      title="Demnächst verfügbar"
-                    >
-                      <span className="vv-login-social-icon" style={{ color: p.color }}>{p.icon}</span>
-                      <span>{p.label}</span>
-                      <span className="vv-login-social-badge">bald</span>
-                    </button>
-                  ))}
+              {/* 🔗 Social-Login (Facebook / Instagram / Snapchat) */}
+              {!needsTotp && (
+                <div className="vv-login-social">
+                  <div className="vv-login-social-sep">
+                    <span>oder</span>
+                  </div>
+                  <a href="/api/auth/social/facebook/start" className="vv-login-social-btn vv-login-social-fb">
+                    <span style={{ fontSize: 20 }}>📘</span>
+                    <span>{mode === "login" ? "Mit Facebook einloggen" : "Mit Facebook beitreten"}</span>
+                  </a>
+                  <a href="/api/auth/social/instagram/start" className="vv-login-social-btn vv-login-social-ig">
+                    <span style={{ fontSize: 20 }}>📸</span>
+                    <span>{mode === "login" ? "Mit Instagram einloggen" : "Mit Instagram beitreten"}</span>
+                  </a>
+                  <a href="/api/auth/social/snapchat/start" className="vv-login-social-btn vv-login-social-snap">
+                    <span style={{ fontSize: 20 }}>👻</span>
+                    <span>{mode === "login" ? "Mit Snapchat einloggen" : "Mit Snapchat beitreten"}</span>
+                  </a>
+                  <p className="vv-login-social-note">
+                    Wir übernehmen nur Name + E-Mail + Profilbild. Du kannst alles später anpassen.
+                  </p>
                 </div>
-              </>
-            )}
-
-            <div className="vv-login-spacer" />
-
-            <div className="vv-login-bottom-switch">
-              {mode === "login" ? (
-                <>
-                  Noch keinen Account?{" "}
-                  <button type="button"
-                    onClick={() => { setMode("register"); setNeedsTotp(false); setTotp(""); setError(null); setShowForgot(false); }}>
-                    ✨ Jetzt registrieren
-                  </button>
-                </>
-              ) : (
-                <>
-                  Schon dabei?{" "}
-                  <button type="button"
-                    onClick={() => { setMode("login"); setNeedsTotp(false); setTotp(""); setError(null); }}>
-                    🔑 Hier einloggen
-                  </button>
-                </>
               )}
-            </div>
+
+            </form>
           </div>
         </div>
 

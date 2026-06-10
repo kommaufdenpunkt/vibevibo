@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { listNearbyVibos } from "@/lib/db";
 
+// GET ?lat&lng&radius — andere User in der Nähe mit lebendem VIBO + frischer Position
 export async function GET(req) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });

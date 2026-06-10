@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits, userRow, getUserById, bumpXP } from "@/lib/db";
+import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits, userRow, getUserById, bumpXP, isBlockedBetween } from "@/lib/db";
 import { EARN } from "@/lib/credits";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage, moderateAudio } from "@/lib/fidolin";
 import { parseMediaUrl, serializeMedia } from "@/lib/media";
+import { sanitizeWallText } from "@/lib/sanitizeHtml";
 import { sendPushToUser } from "@/lib/push";
 
 const MAX_IMG_BYTES   = 700_000;
@@ -19,8 +20,14 @@ export async function POST(req, { params }) {
   const { username } = await params;
   const target = getUserByUsername(username);
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (target.id !== me.id && isBlockedBetween(me.id, target.id)) {
+    return NextResponse.json({ error: "Du kannst hier nicht schreiben (Sperre)." }, { status: 403 });
+  }
   const body = await req.json();
-  const cleaned  = String(body.text || "").trim().slice(0, 1000);
+  // Pinnwand-Text: HTML-Inline-Formatierung erlauben (B/I/U/Farbe/Link/etc),
+  // dabei automatische @-Mention-Verlinkung + Sanitizer.
+  const rawText = String(body.text || "").trim().slice(0, 1000);
+  const cleaned = rawText ? sanitizeWallText(rawText, { maxLen: 1200 }) : "";
   const rawImage = body.image ? String(body.image) : "";
   const rawAudio = body.audio ? String(body.audio) : "";
   const musicUrl = body.musicUrl ? String(body.musicUrl) : "";

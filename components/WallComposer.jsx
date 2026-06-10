@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import SmileyPicker from "./SmileyPicker";
 import MentionTextarea from "./MentionTextarea";
+import InlineToolbar from "./InlineToolbar";
 import { parseMediaUrl } from "@/lib/media";
 
 // Bild im Browser auf 600px verkleinern -> kleines JPEG
@@ -43,6 +44,7 @@ export default function WallComposer({ targetUsername, onPosted, placeholder = "
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const fileRef = useRef(null);
+  const taRef = useRef(null);
 
   // Voice-Recording-State
   const [recording, setRecording] = useState(false);
@@ -139,12 +141,14 @@ export default function WallComposer({ targetUsername, onPosted, placeholder = "
 
   return (
     <form onSubmit={submit}>
+      <InlineToolbar taRef={taRef} value={text} onChange={setText} maxLength={MAX_TEXT} />
       <MentionTextarea
-        rows={2}
+        rows={3}
         value={text}
         maxLength={MAX_TEXT}
         onChange={setText}
         placeholder={placeholder}
+        innerRef={taRef}
       />
 
       {/* Char-Counter */}

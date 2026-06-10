@@ -14,7 +14,6 @@ const COOKIE = "vv_session";
 // Alles was OHNE Session erreichbar bleiben muss
 const PUBLIC_EXACT = new Set([
   "/login",
-  "/admin",           // Admin-Seite sichert sich selbst per VV_ADMIN_PASSWORD
   "/datenschutz",
   "/impressum",
   "/favicon.ico",
@@ -32,7 +31,6 @@ const PUBLIC_PREFIX = [
   "/api/ping",        // health/presence ping
   "/api/maintenance", // wartungsfenster lesen
   "/api/push/key",    // VAPID public key zum subscriben
-  "/api/ads/status",  // Werbe-Config (Landing braucht das public)
   "/api/admin/",      // admin-routes sichern sich selbst
 ];
 

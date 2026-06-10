@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { complimentsUnreadCount, complimentsReceivedCount, welcomeNewUserIfNeeded } from "@/lib/db";
+import { complimentsUnreadCount, complimentsReceivedCount } from "@/lib/db";
 import { rankProgress, rankName, rankEmoji, rankColor } from "@/lib/rank";
 
 export async function GET() {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ user: null });
-  // Fidolin begrüßt jeden User einmalig auf der Pinnwand (idempotent)
-  try { welcomeNewUserIfNeeded(user.id); } catch {}
   // Komplimente-Counter: total empfangen (fuers Profil) + ungelesen (fuers Badge)
   const complimentsTotal = complimentsReceivedCount(user.id);
   const complimentsUnread = complimentsUnreadCount(user.id);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   getUserByUsername, addGift, getGifts, addNotification,
   spendCredits, adminGrantCredits, userRow, getUserById, bumpXP,
+  isBlockedBetween,
 } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import {
@@ -19,6 +20,9 @@ export async function POST(req, { params }) {
   const target = getUserByUsername(username);
   if (!target) return NextResponse.json({ error: "User nicht gefunden." }, { status: 404 });
   if (target.id === me.id) return NextResponse.json({ error: "Du kannst dir nichts selbst schenken 😄" }, { status: 400 });
+  if (isBlockedBetween(me.id, target.id)) {
+    return NextResponse.json({ error: "Du kannst dieser Person nichts schenken (Sperre)." }, { status: 403 });
+  }
 
   const body = await req.json().catch(() => ({}));
   const giftId = String(body?.giftId || "");

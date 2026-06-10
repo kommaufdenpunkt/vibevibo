@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { relTime } from "@/lib/format";
-import { playIncomingSound } from "@/lib/sound";
+import { playPing } from "@/lib/sound";
 import Avatar from "./Avatar";
 
 const TYPE_LABEL = {
@@ -59,7 +59,7 @@ export default function NotificationsBell() {
       const list = d.notifications || [];
       setNotifs(list);
       if (prevUnreadRef.current != null && next > prevUnreadRef.current) {
-        playIncomingSound(me?.soundPack || "icq");
+        playPing();
         const fresh = list.find((n) => !n.read);
         if (fresh) {
           setToast(fresh);
@@ -112,10 +112,10 @@ export default function NotificationsBell() {
       const r = await api.markAllRead();
       setUnread(0);
       setNotifs((ns) => ns.map((n) => ({ ...n, read: true })));
-      setAllReadFlash("\u2713 " + (r.chats || 0) + " Chats + " + (r.rooms || 0) + " Raeume + Benachrichtigungen abgeraeumt");
+      setAllReadFlash(`✓ ${(r.chats || 0)} Chats + ${(r.rooms || 0)} Räume + Benachrichtigungen abgeräumt`);
       setTimeout(() => setAllReadFlash(""), 3500);
     } catch (e) {
-      setAllReadFlash("\u26A0 Konnte nicht alles als gelesen markieren");
+      setAllReadFlash("⚠ Konnte nicht alles als gelesen markieren");
       setTimeout(() => setAllReadFlash(""), 3500);
     } finally { setAllReadBusy(false); }
   }
@@ -247,7 +247,7 @@ export default function NotificationsBell() {
               </div>
               <div className="vv-notif-allread-bar">
                 <button type="button" className="vv-notif-allread-btn" disabled={allReadBusy} onClick={handleAllRead}>
-                  {allReadBusy ? "raeumt auf..." : "\u2713 Alles als gelesen markieren"}
+                  {allReadBusy ? "räumt auf…" : "✓ Alles als gelesen markieren"}
                 </button>
               </div>
               {allReadFlash && <div className="vv-notif-allread-flash">{allReadFlash}</div>}

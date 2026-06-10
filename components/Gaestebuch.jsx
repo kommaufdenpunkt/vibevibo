@@ -7,6 +7,7 @@ import { useMe } from "@/lib/useMe";
 import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
 import MentionText from "./MentionText";
+import InlineToolbar from "./InlineToolbar";
 
 function fileToImage(file, maxDim = 700) {
   return new Promise((resolve, reject) => {
@@ -39,6 +40,7 @@ export default function Gaestebuch({ profile, initialEntries = [] }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const fileRef = useRef(null);
+  const taRef = useRef(null);
 
   const isOwner = me?.username === profile.username;
 
@@ -87,7 +89,9 @@ export default function Gaestebuch({ profile, initialEntries = [] }) {
       </div>
       {me ? (
         <form onSubmit={submit}>
+          <InlineToolbar taRef={taRef} value={text} onChange={setText} maxLength={600} />
           <textarea
+            ref={taRef}
             className="vv-textarea"
             rows={3}
             value={text}
@@ -132,7 +136,12 @@ export default function Gaestebuch({ profile, initialEntries = [] }) {
                   <a href="#" style={{ marginLeft: 6, color: "#a00" }} onClick={(e) => { e.preventDefault(); remove(entry.id); }}>[löschen]</a>
                 )}
               </div>
-              {entry.text && <div style={{ whiteSpace: "pre-wrap", marginTop: 4 }}><MentionText text={entry.text} /></div>}
+              {entry.text && (() => {
+                const looksHtml = /<\/?[a-z][^>]*>/i.test(entry.text);
+                return looksHtml
+                  ? <div className="vv-wall-text" style={{ marginTop: 4 }} dangerouslySetInnerHTML={{ __html: entry.text }} />
+                  : <div style={{ whiteSpace: "pre-wrap", marginTop: 4 }}><MentionText text={entry.text} /></div>;
+              })()}
               {entry.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={entry.image} alt="Gästebuch-Foto" style={{ display: "block", maxWidth: "100%", maxHeight: 360, borderRadius: 10, marginTop: 8, border: "2px solid #fff", boxShadow: "0 6px 16px rgba(0,0,0,0.18)" }} />

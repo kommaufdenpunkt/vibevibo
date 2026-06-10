@@ -33,9 +33,11 @@ export default function MentionTextarea({
   value, onChange,
   placeholder, rows = 2, maxLength = 1000,
   className = "vv-textarea",
+  innerRef,
   ...rest
 }) {
-  const ref = useRef(null);
+  const localRef = useRef(null);
+  const ref = innerRef || localRef;
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState(null);
   const [queryRange, setQueryRange] = useState(null);
