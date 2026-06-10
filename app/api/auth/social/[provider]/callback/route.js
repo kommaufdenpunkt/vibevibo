@@ -1,31 +1,30 @@
 import { NextResponse } from "next/server";
 import {
   consumeOAuthState, findUserByLinkedAccount, upsertLinkedAccount,
-  createUser, getUserById, getUserByUsername, createSession, audit, updateUser,
+  getUserById, getUserByUsername, createSession, audit,
 } from "@/lib/db";
 import { setSessionCookie } from "@/lib/auth";
-import { getOrCreateDeviceId } from "@/lib/device";
 import { getClientIp } from "@/lib/ip";
 import { exchangeCodeForToken, fetchUserProfile, isProviderConfigured } from "@/lib/socialAuth";
 import { getPublicBaseUrl } from "@/lib/publicUrl";
+import { signPayload, ONBOARD_COOKIE } from "@/lib/socialOnboarding";
 
 function slugifyName(name, providerUserId) {
   let base = String(name || "").toLowerCase()
     .replace(/[^a-z0-9_.]+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
   if (!base || base.length < 3) base = "user_" + String(providerUserId || Date.now()).slice(-6);
-  return base.slice(0, 22);
+  return base.slice(0, 17);
 }
 
-async function uniqueUsername(base) {
-  let candidate = base;
-  for (let i = 0; i < 20; i++) {
-    if (!getUserByUsername(candidate)) return candidate;
-    candidate = `${base}${Math.floor(Math.random() * 9999)}`.slice(0, 22);
+function suggestUsername(base) {
+  if (!getUserByUsername(base)) return base;
+  for (let i = 0; i < 10; i++) {
+    const cand = `${base}${Math.floor(Math.random() * 9999)}`.slice(0, 17);
+    if (!getUserByUsername(cand)) return cand;
   }
-  return base + Date.now().toString(36);
+  return base.slice(0, 12) + Date.now().toString(36).slice(-4);
 }
 
-// GET /api/auth/social/[provider]/callback?code=...&state=...
 export async function GET(req, { params }) {
   const { provider } = await params;
   if (!isProviderConfigured(provider)) {
@@ -54,7 +53,7 @@ export async function GET(req, { params }) {
     return NextResponse.redirect(new URL(`/login?err=oauth_token`, getPublicBaseUrl(req)));
   }
 
-  // Link-Mode: existierender User verknuepft Provider
+  // Link-Mode: existierender, eingeloggter User verknuepft Provider
   if (state.user_id) {
     upsertLinkedAccount(state.user_id, provider, {
       providerUserId: profile.providerUserId,
@@ -75,14 +74,11 @@ export async function GET(req, { params }) {
   if (existingUserId) {
     const existing = getUserById(existingUserId);
     if (existing) {
-      // Session erstellen → einloggen
       const ip = getClientIp(req);
       const ua = req.headers.get("user-agent") || "";
-      const deviceId = await getOrCreateDeviceId();
       const sessionToken = createSession(existing.id);
       await setSessionCookie(sessionToken);
       audit({ userId: existing.id, action: `social.${provider}.login`, ip, ua });
-      // Token aktualisieren
       upsertLinkedAccount(existing.id, provider, {
         providerUserId: profile.providerUserId,
         displayName: profile.displayName,
@@ -97,47 +93,33 @@ export async function GET(req, { params }) {
     }
   }
 
-  // Neuer Account anlegen
+  // Neuer Account: Profile-Daten in signed Cookie -> Onboarding-Page (Pflichtfelder + AGB + Captcha)
   const baseName = slugifyName(profile.displayName, profile.providerUserId);
-  const username = await uniqueUsername(baseName);
-  const displayName = profile.displayName || username;
-  // Random Password (User loggt sich nur ueber Social ein bis er ein Passwort setzt)
-  const randomPw = require("crypto").randomBytes(24).toString("hex");
-  const ip = getClientIp(req);
-  let user;
-  try {
-    user = createUser({
-      username, displayName, password: randomPw,
-      emoji: "🙂", regIp: ip,
-    });
-  } catch (e) {
-    audit({ action: `social.${provider}.signup_fail`, ip, detail: e.message || "" });
-    return NextResponse.redirect(new URL(`/login?err=signup_failed`, getPublicBaseUrl(req)));
-  }
-
-  // Link verknuepfen
-  upsertLinkedAccount(user.id, provider, {
+  const suggested = suggestUsername(baseName);
+  const payload = signPayload({
+    provider,
     providerUserId: profile.providerUserId,
-    displayName: profile.displayName,
-    avatarUrl: profile.avatarUrl,
+    displayName: profile.displayName || "",
+    email: profile.email || "",
+    avatarUrl: profile.avatarUrl || "",
+    suggestedUsername: suggested,
     accessToken: token.accessToken,
     refreshToken: token.refreshToken,
     expiresAt: token.expiresIn ? Date.now() + token.expiresIn * 1000 : 0,
     scope: token.scope,
-    rawProfile: profile.raw,
+    nextUrl: state.next_url || "/profile",
+    startedAt: Date.now(),
   });
 
-  // Avatar-URL als Avatar-Vorschlag (geht durch Fidolin-Review beim Speichern)
-  if (profile.avatarUrl) {
-    try {
-      updateUser(user.id, { /* placeholder — Avatar wird ueber pic-Upload spaeter geprueft */ });
-    } catch {}
-  }
+  audit({ action: `social.${provider}.onboard_start`, ip: getClientIp(req) });
 
-  // Session
-  const sessionToken = createSession(user.id);
-  await setSessionCookie(sessionToken);
-  audit({ userId: user.id, action: `social.${provider}.signup`, ip });
-
-  return NextResponse.redirect(new URL((state.next_url || "/profile") + "?new=" + provider, getPublicBaseUrl(req)));
+  const res = NextResponse.redirect(new URL("/onboarding/social", getPublicBaseUrl(req)));
+  res.cookies.set(ONBOARD_COOKIE, payload, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 30 * 60,
+  });
+  return res;
 }
