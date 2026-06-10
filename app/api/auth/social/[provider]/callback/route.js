@@ -7,6 +7,7 @@ import { setSessionCookie } from "@/lib/auth";
 import { getOrCreateDeviceId } from "@/lib/device";
 import { getClientIp } from "@/lib/ip";
 import { exchangeCodeForToken, fetchUserProfile, isProviderConfigured } from "@/lib/socialAuth";
+import { getPublicBaseUrl } from "@/lib/publicUrl";
 
 function slugifyName(name, providerUserId) {
   let base = String(name || "").toLowerCase()
@@ -28,21 +29,21 @@ async function uniqueUsername(base) {
 export async function GET(req, { params }) {
   const { provider } = await params;
   if (!isProviderConfigured(provider)) {
-    return NextResponse.redirect(new URL("/login?err=provider_off", req.url));
+    return NextResponse.redirect(new URL("/login?err=provider_off", getPublicBaseUrl(req)));
   }
 
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const stateParam = url.searchParams.get("state");
   if (!code || !stateParam) {
-    return NextResponse.redirect(new URL("/login?err=oauth_missing", req.url));
+    return NextResponse.redirect(new URL("/login?err=oauth_missing", getPublicBaseUrl(req)));
   }
   const state = consumeOAuthState(stateParam);
   if (!state || state.provider !== provider) {
-    return NextResponse.redirect(new URL("/login?err=oauth_state", req.url));
+    return NextResponse.redirect(new URL("/login?err=oauth_state", getPublicBaseUrl(req)));
   }
 
-  const callbackUrl = `${url.protocol}//${url.host}/api/auth/social/${provider}/callback`;
+  const callbackUrl = `${getPublicBaseUrl(req)}/api/auth/social/${provider}/callback`;
 
   let token, profile;
   try {
@@ -50,7 +51,7 @@ export async function GET(req, { params }) {
     profile = await fetchUserProfile(provider, token.accessToken);
   } catch (e) {
     audit({ action: `social.${provider}.fail`, ip: getClientIp(req), detail: e.message || "" });
-    return NextResponse.redirect(new URL(`/login?err=oauth_token`, req.url));
+    return NextResponse.redirect(new URL(`/login?err=oauth_token`, getPublicBaseUrl(req)));
   }
 
   // Link-Mode: existierender User verknuepft Provider
@@ -66,7 +67,7 @@ export async function GET(req, { params }) {
       rawProfile: profile.raw,
     });
     audit({ userId: state.user_id, action: `social.${provider}.linked`, ip: getClientIp(req) });
-    return NextResponse.redirect(new URL((state.next_url || "/profile") + "?linked=" + provider, req.url));
+    return NextResponse.redirect(new URL((state.next_url || "/profile") + "?linked=" + provider, getPublicBaseUrl(req)));
   }
 
   // Login-Mode: existiert schon ein verknuepfter Account?
@@ -92,7 +93,7 @@ export async function GET(req, { params }) {
         scope: token.scope,
         rawProfile: profile.raw,
       });
-      return NextResponse.redirect(new URL(state.next_url || "/", req.url));
+      return NextResponse.redirect(new URL(state.next_url || "/", getPublicBaseUrl(req)));
     }
   }
 
@@ -111,7 +112,7 @@ export async function GET(req, { params }) {
     });
   } catch (e) {
     audit({ action: `social.${provider}.signup_fail`, ip, detail: e.message || "" });
-    return NextResponse.redirect(new URL(`/login?err=signup_failed`, req.url));
+    return NextResponse.redirect(new URL(`/login?err=signup_failed`, getPublicBaseUrl(req)));
   }
 
   // Link verknuepfen
@@ -138,5 +139,5 @@ export async function GET(req, { params }) {
   await setSessionCookie(sessionToken);
   audit({ userId: user.id, action: `social.${provider}.signup`, ip });
 
-  return NextResponse.redirect(new URL((state.next_url || "/profile") + "?new=" + provider, req.url));
+  return NextResponse.redirect(new URL((state.next_url || "/profile") + "?new=" + provider, getPublicBaseUrl(req)));
 }
