@@ -390,7 +390,25 @@ export default function Buschfunk() {
         </div>
       ) : (
         <div>
-          {events.map((ev, i) => renderEvent(ev, i, i === events.length - 1))}
+          {(() => {
+            const out = [];
+            let cutInserted = false;
+            const hasFriends = events.some((e) => e.isFriend);
+            const hasOthers = events.some((e) => !e.isFriend);
+            for (let i = 0; i < events.length; i++) {
+              const ev = events[i];
+              if (hasFriends && hasOthers && !cutInserted && !ev.isFriend) {
+                out.push(
+                  <div key="bf-cut" className="vv-bf-cut">
+                    ★ Du bist nun auf dem aktuellen Stand ★
+                  </div>
+                );
+                cutInserted = true;
+              }
+              out.push(renderEvent(ev, i, i === events.length - 1));
+            }
+            return out;
+          })()}
         </div>
       )}
     </div>
