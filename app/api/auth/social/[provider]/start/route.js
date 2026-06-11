@@ -7,7 +7,7 @@ import { getPublicBaseUrl } from "@/lib/publicUrl";
 // GET /api/auth/social/[provider]/start?next=...
 export async function GET(req, { params }) {
   const { provider } = await params;
-  if (!["facebook", "instagram", "snapchat"].includes(provider)) {
+  if (!["facebook", "instagram", "snapchat", "google"].includes(provider)) {
     return NextResponse.json({ error: "unknown provider" }, { status: 404 });
   }
   if (!isProviderConfigured(provider)) {

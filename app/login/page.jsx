@@ -185,23 +185,15 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* 🔗 Social-Login (Facebook / Instagram / Snapchat) */}
+              {/* 🔗 Social-Login (Google) */}
               {!needsTotp && (
                 <div className="vv-login-social">
                   <div className="vv-login-social-sep">
                     <span>oder</span>
                   </div>
-                  <a href="/api/auth/social/facebook/start" className="vv-login-social-btn vv-login-social-fb">
-                    <span style={{ fontSize: 20 }}>📘</span>
-                    <span>{mode === "login" ? "Mit Facebook einloggen" : "Mit Facebook beitreten"}</span>
-                  </a>
-                  <a href="/api/auth/social/instagram/start" className="vv-login-social-btn vv-login-social-ig">
-                    <span style={{ fontSize: 20 }}>📸</span>
-                    <span>{mode === "login" ? "Mit Instagram einloggen" : "Mit Instagram beitreten"}</span>
-                  </a>
-                  <a href="/api/auth/social/snapchat/start" className="vv-login-social-btn vv-login-social-snap">
-                    <span style={{ fontSize: 20 }}>👻</span>
-                    <span>{mode === "login" ? "Mit Snapchat einloggen" : "Mit Snapchat beitreten"}</span>
+                  <a href="/api/auth/social/google/start" className="vv-login-social-btn vv-login-social-google">
+                    <span style={{ fontSize: 20 }}>🅖</span>
+                    <span>{mode === "login" ? "Mit Google einloggen" : "Mit Google beitreten"}</span>
                   </a>
                   <p className="vv-login-social-note">
                     Wir übernehmen nur Name + E-Mail + Profilbild. Du kannst alles später anpassen.
