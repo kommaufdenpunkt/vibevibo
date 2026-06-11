@@ -33,6 +33,15 @@ const NODE_COLOR = {
   status: "#ff6fae",
 };
 
+const TYPE_LABEL = {
+  pinnwand: "📌 Pinnwand",
+  gift: "🎁 Geschenk",
+  grouppost: "🏘️ Gruppe",
+  newuser: "🎉 Neu da",
+  newpic: "🖼️ Neues Bild",
+  status: "💬 Status",
+};
+
 function userChip(u) {
   if (!u) return null;
   return (
@@ -331,40 +340,37 @@ function renderEvent(ev, i, isLast) {
   }
 
   const isBoosted = ev.type === "status" && (ev.boostedUntil || 0) > Date.now();
+  const isFresh = Date.now() - ev.at < 3600000; // < 1h alt
+  const nodeColor = NODE_COLOR[ev.type] || "#ddd";
+  const hasDetail = (ev.type === "pinnwand" || ev.type === "status" || ev.type === "grouppost") && ev.detail;
+
   return (
-    <div key={i} style={{
-      position: "relative", display: "flex", gap: 10, paddingBottom: isLast ? 0 : 14,
-      ...(isBoosted ? {
-        background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
-        border: "2px solid #f59e0b",
-        borderRadius: 12, padding: 10, marginBottom: 8,
-        boxShadow: "0 0 14px rgba(245,158,11,0.3)",
-      } : {}),
-    }}>
-      {!isLast && !isBoosted && <div style={{ position: "absolute", left: 14, top: 30, bottom: 0, width: 2, background: "#ececf3" }} />}
-      <div style={{
-        zIndex: 1, width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
-        background: "#fff", border: `2px solid ${NODE_COLOR[ev.type] || "#ddd"}`,
-        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
-      }}>{icon}</div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {isBoosted && (
-          <div style={{ fontSize: 10, fontWeight: 800, color: "#b45309", marginBottom: 2 }}>
-            📣 BOOSTED · bleibt 24h oben
-          </div>
+    <div key={i} className={`vv-bf-card${isBoosted ? " vv-bf-card-boost" : ""}${ev.isFriend ? " vv-bf-card-friend" : ""}`}
+         style={{ "--bf-accent": nodeColor }}>
+      <Link href={`/u/${ev.actor.username}`} className="vv-bf-card-avatar">
+        <Avatar url={ev.actor.avatarUrl} name={ev.actor.displayName} className="vv-avatar vv-avatar-sm" />
+        <span className="vv-bf-card-avatar-icon">{icon}</span>
+      </Link>
+      <div className="vv-bf-card-body">
+        <div className="vv-bf-card-head">
+          <span className="vv-bf-card-badge">{TYPE_LABEL[ev.type] || "✨"}</span>
+          {isBoosted && <span className="vv-bf-card-boost-tag">📣 24h-Boost</span>}
+          {isFresh && !isBoosted && <span className="vv-bf-card-new-tag">✨ NEU</span>}
+          <span className="vv-bf-card-time">{relTime(ev.at)}</span>
+        </div>
+        <div className="vv-bf-card-text">{text}</div>
+        {hasDetail && ev.type === "status" && (
+          <div className="vv-bf-card-bubble">„<MentionText text={ev.detail} />"</div>
         )}
-        <div style={{ fontSize: 13, lineHeight: 1.45 }}>{text}</div>
-        <div style={{ fontSize: 11, color: "#9a9aa8", marginTop: 2 }}>{relTime(ev.at)}</div>
         <EmbeddedMedia audioUrl={ev.audioUrl} mediaJson={ev.media} compact />
-        {/* Kommentare nur für Status-Posts (Buschfunk-eigene Posts) */}
         {ev.postId > 0 && ["status","pinnwand","gift","grouppost","newpic"].includes(ev.type) && (
           <CommentsSection postId={ev.postId} type={ev.type} />
         )}
       </div>
       {ev.picUrl && (
-        <Link href={`/u/${ev.actor.username}`} style={{ flexShrink: 0 }}>
+        <Link href={`/u/${ev.actor.username}`} className="vv-bf-card-pic">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={ev.picUrl} alt="" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover" }} />
+          <img src={ev.picUrl} alt="" />
         </Link>
       )}
     </div>
@@ -389,18 +395,32 @@ export default function Buschfunk() {
           Noch nichts los. Schreib jemandem auf die Pinnwand!
         </div>
       ) : (
-        <div>
+        <div className="vv-bf-feed">
           {(() => {
             const out = [];
             let cutInserted = false;
+            let friendHeaderInserted = false;
             const hasFriends = events.some((e) => e.isFriend);
             const hasOthers = events.some((e) => !e.isFriend);
             for (let i = 0; i < events.length; i++) {
               const ev = events[i];
+              if (hasFriends && !friendHeaderInserted && ev.isFriend) {
+                out.push(
+                  <div key="bf-header-friends" className="vv-bf-section-header vv-bf-section-friends">
+                    ⭐ DEIN FREUNDESKREIS ⭐
+                  </div>
+                );
+                friendHeaderInserted = true;
+              }
               if (hasFriends && hasOthers && !cutInserted && !ev.isFriend) {
                 out.push(
                   <div key="bf-cut" className="vv-bf-cut">
-                    ★ Du bist nun auf dem aktuellen Stand ★
+                    ✓ Du bist nun auf dem aktuellen Stand
+                  </div>
+                );
+                out.push(
+                  <div key="bf-header-others" className="vv-bf-section-header vv-bf-section-others">
+                    🌍 AUS DEM NETZ 🌍
                   </div>
                 );
                 cutInserted = true;

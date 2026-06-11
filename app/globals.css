@@ -6848,17 +6848,159 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-friends-grid-nost { grid-template-columns: 1fr; }
 }
 
-/* Buschfunk Freunde/Andere Trenner */
-.vv-bf-cut {
-  margin: 18px 0 12px;
+/* Buschfunk Feed */
+.vv-bf-feed { display: flex; flex-direction: column; gap: 10px; }
+
+.vv-bf-section-header {
   text-align: center;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.6px;
-  color: #831843;
-  background: linear-gradient(90deg, transparent, #fbcfe8 20%, #fbcfe8 80%, transparent);
-  padding: 6px 12px;
+  letter-spacing: 1.5px;
+  padding: 8px 16px;
   border-radius: 999px;
+  margin: 8px 0 4px;
+  text-transform: uppercase;
+}
+.vv-bf-section-friends {
+  background: linear-gradient(135deg, #fef3c7, #fbcfe8, #fde68a);
+  color: #831843;
+  box-shadow: inset 0 0 0 1px rgba(245,158,11,0.4), 0 2px 8px rgba(245,158,11,0.15);
+}
+.vv-bf-section-others {
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  color: #1e3a8a;
+  box-shadow: inset 0 0 0 1px rgba(59,130,246,0.3);
+}
+.vv-bf-cut {
+  text-align: center;
+  font-size: 11px;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  padding: 6px 12px;
+  margin: 6px 0 0;
+  border-top: 1px dashed #cbd5e1;
+}
+
+/* Buschfunk Card */
+.vv-bf-card {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #f0e7f5;
+  border-left: 4px solid var(--bf-accent, #e9d5ff);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.vv-bf-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(168,85,247,0.12);
+}
+.vv-bf-card-friend {
+  background: linear-gradient(180deg, #fffaf3 0%, #fff 60%);
+  border-color: #fce7f3;
+}
+.vv-bf-card-boost {
+  background: linear-gradient(135deg, #fff7ed, #fef3c7);
+  border: 2px solid #f59e0b !important;
+  box-shadow: 0 0 18px rgba(245,158,11,0.3);
+}
+
+.vv-bf-card-avatar {
+  position: relative;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.vv-bf-card-avatar .vv-avatar {
+  width: 42px; height: 42px;
+  border: 2px solid var(--bf-accent, #fbcfe8);
+  border-radius: 50%;
+}
+.vv-bf-card-avatar-icon {
+  position: absolute;
+  right: -4px; bottom: -4px;
+  width: 22px; height: 22px;
+  background: var(--bf-accent, #fbcfe8);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.vv-bf-card-body { flex: 1; min-width: 0; }
+.vv-bf-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.vv-bf-card-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bf-accent, #fbcfe8);
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+  letter-spacing: 0.3px;
+}
+.vv-bf-card-boost-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  color: #fff;
+  animation: vv-bf-pulse 2s ease-in-out infinite;
+}
+.vv-bf-card-new-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f472b6, #ec4899);
+  color: #fff;
+  animation: vv-bf-pulse 1.6s ease-in-out infinite;
+}
+.vv-bf-card-time {
+  margin-left: auto;
+  font-size: 11px;
+  color: #9a9aa8;
+}
+.vv-bf-card-text { font-size: 13.5px; line-height: 1.5; color: #1c1c1e; }
+.vv-bf-card-bubble {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: #fce7f3;
+  border-radius: 12px 12px 12px 4px;
+  font-size: 13px;
+  color: #831843;
+  font-style: italic;
+}
+.vv-bf-card-pic {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.vv-bf-card-pic img {
+  width: 64px; height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+@keyframes vv-bf-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+}
+
+@media (max-width: 480px) {
+  .vv-bf-card { padding: 8px; gap: 8px; }
+  .vv-bf-card-avatar .vv-avatar { width: 36px; height: 36px; }
+  .vv-bf-card-pic img { width: 48px; height: 48px; }
 }
 
 /* =================================================================
