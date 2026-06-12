@@ -136,7 +136,7 @@ export default function ProfileView({ profile, pinnwand, guestbook = [], gifts, 
         {...(profile.profileSkin ? { "data-skin": profile.profileSkin } : {})}
       >
       {(profile.bgMusic || profile.bgMusicUrl) && (
-        <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} />
+        <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} owner={profile.username} />
       )}
 
       {/* === Profil-Kopf mit Banner === */}

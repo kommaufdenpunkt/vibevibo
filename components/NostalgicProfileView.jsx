@@ -207,7 +207,7 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
 
             {(profile.bgMusic || profile.bgMusicUrl) && (
               <Card title="♬ PROFILMUSIK ♬" tone="cyan">
-                <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} />
+                <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} owner={profile.username} />
               </Card>
             )}
 

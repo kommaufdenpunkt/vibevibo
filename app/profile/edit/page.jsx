@@ -211,20 +211,27 @@ export default function EditProfilePage() {
 
         {/* 4) Profilmusik */}
         <div className="vv-edit-card" data-tone="gold">
-          <div className="vv-edit-card-title">④ ♬ PROFILMUSIK</div>
+          <div className="vv-edit-card-title">④ ♬ PROFILMUSIK / PLAYLIST</div>
           <div className="vv-edit-card-body">
-            <div className="vv-edit-hint">Wie früher bei MySpace 🎧 — Besucher hören deinen Song.</div>
-            <label>🎶 Songtitel (zum Anzeigen)</label>
+            <div className="vv-edit-hint">
+              Wie früher bei MySpace 🎧 — Besucher hören deine Songs. <b>Eine YouTube-URL pro Zeile</b> = Playlist. Auto-Next + Mini-Player zum Mitnehmen durch die Seite.
+            </div>
+            <label>🎶 Playlist-Titel (Anzeige-Name)</label>
             <input className="vv-edit-input"
-              placeholder="z.B. Tokio Hotel - Durch den Monsun"
+              placeholder="z.B. Meine Y2K-Vibes oder Tokio Hotel - Durch den Monsun"
               value={form.bgMusic} maxLength={200}
               onChange={(e) => up("bgMusic", e.target.value)} />
 
-            <label className="vv-edit-spaced">▶ YouTube-Link</label>
-            <input className="vv-edit-input"
-              placeholder="https://www.youtube.com/watch?v=..."
+            <label className="vv-edit-spaced">▶ YouTube-Links (eine pro Zeile)</label>
+            <textarea className="vv-edit-input vv-edit-textarea"
+              rows={5}
+              placeholder={`https://www.youtube.com/watch?v=...\nhttps://youtu.be/...\nhttps://www.youtube.com/watch?v=...`}
               value={form.bgMusicUrl}
-              onChange={(e) => up("bgMusicUrl", e.target.value)} />
+              onChange={(e) => up("bgMusicUrl", e.target.value)}
+              spellCheck={false} />
+            <div className="vv-edit-counter">
+              {(form.bgMusicUrl || "").split("\n").filter((l) => l.trim()).length} Song(s) · {(form.bgMusicUrl || "").length} Zeichen
+            </div>
           </div>
         </div>
 

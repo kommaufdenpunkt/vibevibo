@@ -3120,7 +3120,7 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-msgapp-search {
   flex-shrink: 0;
   padding: 10px 14px 8px;
-  background: var(--vv-bg);
+  background: transparent;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -3132,23 +3132,30 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 .vv-msgapp-search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   font-size: 14px;
-  opacity: 0.55;
+  opacity: 0.75;
   pointer-events: none;
 }
 .vv-msgapp-search-input {
   width: 100%;
-  padding: 10px 36px 10px 36px;
-  border: 1px solid var(--vv-border);
-  border-radius: 12px;
-  background: var(--vv-input-bg);
+  padding: 11px 38px 11px 38px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
   font-size: 15px;
   color: var(--vv-text);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+[data-theme="light"] .vv-msgapp-search-input,
+.vv-theme-light .vv-msgapp-search-input {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.1);
 }
 .vv-msgapp-search-input:focus {
   border-color: var(--vv-accent, #ec4899);
@@ -3180,17 +3187,24 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-msgapp-chiprow::-webkit-scrollbar { display: none; }
 .vv-msgapp-chip {
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 999px;
-  border: 1px solid var(--vv-border);
-  background: var(--vv-input-bg);
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
   color: var(--vv-text);
   font: inherit;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+[data-theme="light"] .vv-msgapp-chip,
+.vv-theme-light .vv-msgapp-chip {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.1);
 }
 .vv-msgapp-chip:active { transform: scale(0.97); }
 .vv-msgapp-chip.active {
@@ -8855,4 +8869,159 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-nost-page[data-gender="m"] .vv-inline-greet-save {
   background: linear-gradient(135deg, #06b6d4, #2d7dd2);
   box-shadow: 0 4px 14px rgba(45,125,210,0.4);
+}
+
+/* =================================================================
+   📌 Mini-Music-Dock — floating bottom-right
+   ================================================================= */
+.vv-mini-dock {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  z-index: 180;
+  width: min(320px, calc(100vw - 28px));
+  background: linear-gradient(135deg, rgba(15,3,30,0.92), rgba(45,10,78,0.92));
+  color: #fce7f3;
+  border-radius: 14px;
+  border: 1px solid rgba(236,72,153,0.4);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.05) inset;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  font-family: inherit;
+  animation: vv-mini-dock-in 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes vv-mini-dock-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.vv-mini-dock.collapsed { width: auto; min-width: 0; }
+
+.vv-mini-dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px 10px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.vv-mini-dock-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.vv-mini-dock-eq > span {
+  display: inline-block;
+  width: 3px;
+  background: linear-gradient(180deg, #ec4899, #a855f7);
+  border-radius: 2px;
+  animation: vv-mini-eq 0.9s ease-in-out infinite;
+}
+.vv-mini-dock-eq > span:nth-child(1) { height: 7px; animation-delay: 0s; }
+.vv-mini-dock-eq > span:nth-child(2) { height: 14px; animation-delay: 0.2s; }
+.vv-mini-dock-eq > span:nth-child(3) { height: 9px; animation-delay: 0.4s; }
+@keyframes vv-mini-eq {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1.1); }
+}
+
+.vv-mini-dock-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.vv-mini-dock.collapsed .vv-mini-dock-info { display: none; }
+.vv-mini-dock-title {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+}
+.vv-mini-dock-owner {
+  display: block;
+  font-size: 10.5px;
+  color: rgba(252,231,243,0.65);
+  text-decoration: none;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vv-mini-dock-owner:hover { color: #fce7f3; text-decoration: underline; }
+
+.vv-mini-dock-controls {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.vv-mini-dock-controls > button,
+.vv-mini-dock-collapse {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: #fce7f3;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, transform 0.1s;
+}
+.vv-mini-dock-controls > button:hover,
+.vv-mini-dock-collapse:hover {
+  background: rgba(236,72,153,0.25);
+}
+.vv-mini-dock-controls > button:active,
+.vv-mini-dock-collapse:active { transform: scale(0.92); }
+
+.vv-mini-dock-collapse {
+  margin-left: 2px;
+  background: transparent;
+}
+
+@media (max-width: 520px) {
+  .vv-mini-dock {
+    left: 14px;
+    right: 14px;
+    width: auto;
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* =================================================================
+   📌 Inline-Greeting-Title (editierbar direkt am Profil)
+   ================================================================= */
+.vv-jappy-title-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  cursor: pointer;
+}
+.vv-jappy-title-input {
+  flex: 1;
+  min-width: 160px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.95);
+  color: #4a044e;
+  font: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+}
+.vv-jappy-title-input:focus {
+  border-color: #fde68a;
+  box-shadow: 0 0 0 3px rgba(253,224,71,0.25);
 }

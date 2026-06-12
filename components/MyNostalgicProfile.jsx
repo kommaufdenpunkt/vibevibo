@@ -113,9 +113,6 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
           <Link href="/profile/transactions" className="vv-nost-action">💰<span>Transaktionen</span></Link>
         </div>
 
-        {/* Komplimente-Inbox prominent obendrueber */}
-        <ComplimentInbox />
-
         {/* 🌸 Begrüßungs-HTML — Jappy-Style mit Inline-Editor */}
         <div className="vv-nost-card vv-nost-card-violet vv-jappy-greet">
           <div className="vv-nost-card-title vv-jappy-greet-title">
@@ -168,7 +165,7 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
 
             {(profile.bgMusic || profile.bgMusicUrl) && (
               <Card title="♬ MEINE PROFILMUSIK ♬" tone="cyan">
-                <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} />
+                <MusicPlayer track={profile.bgMusic} url={profile.bgMusicUrl} owner={profile.username} />
               </Card>
             )}
 
@@ -226,6 +223,10 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
                   ))}
                 </div>
               )}
+            </Card>
+
+            <Card title="💖 KOMPLIMENTE FÜR DICH 💖" tone="violet" tiny>
+              <ComplimentInbox />
             </Card>
 
           </aside>
