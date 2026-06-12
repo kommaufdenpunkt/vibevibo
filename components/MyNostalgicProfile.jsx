@@ -17,6 +17,7 @@ import Gaestebuch from "@/components/Gaestebuch";
 import MusicPlayer from "@/components/MusicPlayer";
 import ProfileSkin from "@/components/ProfileSkin";
 import ComplimentInbox from "@/components/ComplimentInbox";
+import InlineGreetingEditor from "@/components/InlineGreetingEditor";
 import OnlineSince from "@/components/OnlineSince";
 import PremiumBadges from "@/components/PremiumBadges";
 import Marquee from "@/components/Marquee";
@@ -115,35 +116,15 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
         {/* Komplimente-Inbox prominent obendrueber */}
         <ComplimentInbox />
 
-        {/* 🌸 Begrüßungs-HTML — Jappy-Style mit Edit-Button */}
+        {/* 🌸 Begrüßungs-HTML — Jappy-Style mit Inline-Editor */}
         <div className="vv-nost-card vv-nost-card-violet vv-jappy-greet">
           <div className="vv-nost-card-title vv-jappy-greet-title">
             <span className="vv-jappy-star">✿</span>
             <span>🌸 HERZLICH WILLKOMMEN AUF MEINER SEITE! 🌸</span>
             <span className="vv-jappy-star">✿</span>
-            <Link href="/profile/edit#begruessung" className="vv-jappy-greet-edit" title="Begrüßungstext bearbeiten">
-              ✎ Bearbeiten
-            </Link>
           </div>
           <div className="vv-nost-card-body vv-jappy-greet-body">
-            {profile.greetingHtml && profile.greetingHtml.trim() ? (
-              <div className="vv-nost-greeting"
-                dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
-            ) : (
-              <div className="vv-jappy-greet-empty">
-                <div style={{ fontSize: 38, marginBottom: 6 }}>💌</div>
-                <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6, color: "#7e22ce" }}>
-                  Noch kein Begrüßungstext!
-                </div>
-                <div style={{ fontSize: 13, color: "#6b21a8", marginBottom: 12, lineHeight: 1.5 }}>
-                  Schreib deinen Besuchern was Schönes — wie früher bei Jappy:<br/>
-                  „★ Welcome to my page ★ ich freu mich riesig, dass du da bist! 💖"
-                </div>
-                <Link href="/profile/edit#begruessung" className="vv-jappy-greet-cta">
-                  ✎ Jetzt Begrüßungstext schreiben
-                </Link>
-              </div>
-            )}
+            <InlineGreetingEditor initialHtml={profile.greetingHtml || ""} />
           </div>
         </div>
 

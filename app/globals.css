@@ -8584,3 +8584,275 @@ input[type="number"], input[type="tel"], textarea, select {
   max-height: 480px;
   overflow-y: auto;
 }
+
+/* =================================================================
+   🎨 Skin-Editor — Live-Vorschau in Mini-Browser-Frame
+   ================================================================= */
+.vv-skin-editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .vv-skin-editor-grid { grid-template-columns: 1fr; }
+  .vv-skin-preview-col { position: static !important; }
+}
+
+.vv-skin-editor-col { display: flex; flex-direction: column; }
+.vv-skin-preview-col {
+  position: sticky;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vv-skin-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px 2px;
+}
+
+.vv-skin-preview-frame {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.18),
+    0 0 0 1px rgba(0,0,0,0.08);
+  background: #f0f0f3;
+  border: 2px dashed #ec4899;
+}
+.vv-skin-preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, #f5f5f7, #e7e7eb);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.vv-skin-preview-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.vv-skin-preview-url {
+  flex: 1;
+  margin-left: 10px;
+  padding: 4px 10px;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #555;
+  font-family: "Courier New", monospace;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.06);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vv-skin-preview-stage {
+  max-height: 620px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  background: #fff;
+  /* Damit der Scope greift muss die Stage echte Hoehe haben */
+  min-height: 320px;
+}
+.vv-skin-preview-stage::-webkit-scrollbar { width: 8px; }
+.vv-skin-preview-stage::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 4px; }
+
+.vv-skin-preview-tip {
+  padding: 8px 10px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px dashed #f59e0b;
+  border-radius: 10px;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Innerhalb der Stage die typo eine Spur kompakter */
+.vv-skin-preview-stage .vv-nost-card { margin-bottom: 8px; }
+.vv-skin-preview-stage .vv-nost-card-title { letter-spacing: 0.8px; }
+
+/* =================================================================
+   🌸 InlineGreetingEditor — direkt im Profil bearbeiten
+   ================================================================= */
+.vv-inline-greet-view {
+  position: relative;
+}
+.vv-inline-greet-edit-btn {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  z-index: 2;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: linear-gradient(135deg, #ec4899, #a855f7);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(168,85,247,0.4);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.vv-inline-greet-edit-btn:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 5px 14px rgba(168,85,247,0.5);
+}
+
+.vv-inline-greet-edit {
+  padding: 4px 2px 2px;
+}
+.vv-inline-greet-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 5px;
+  background: rgba(168,85,247,0.08);
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+.vv-inline-greet-toolbar > button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid rgba(168,85,247,0.25);
+  background: #fff;
+  color: #4a044e;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.vv-inline-greet-toolbar > button:hover {
+  background: #fdf2f8;
+  border-color: #ec4899;
+}
+
+.vv-inline-greet-snips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 6px 4px;
+}
+.vv-inline-greet-snip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #c4b5fd;
+  background: linear-gradient(135deg, #fdf2f8, #f3e8ff);
+  color: #581c87;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.vv-inline-greet-snip:hover {
+  transform: translateY(-1px);
+}
+
+.vv-inline-greet-ta {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid #c4b5fd;
+  background: #fff;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  color: #2d0a4e;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.vv-inline-greet-ta:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 3px rgba(236,72,153,0.18);
+}
+
+.vv-inline-greet-preview {
+  padding: 10px 12px;
+  background: linear-gradient(180deg, #ffffff, #fdf2f8);
+  border: 2px dashed #f9a8d4;
+  border-radius: 10px;
+  min-height: 70px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: #4a044e;
+}
+
+.vv-inline-greet-save,
+.vv-inline-greet-cancel {
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: none;
+  font: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.vv-inline-greet-save {
+  flex: 1;
+  background: linear-gradient(135deg, #ec4899, #a855f7);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(168,85,247,0.4);
+}
+.vv-inline-greet-save:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(168,85,247,0.5);
+}
+.vv-inline-greet-save:disabled { opacity: 0.6; cursor: default; }
+.vv-inline-greet-cancel {
+  background: #fff;
+  color: #831843;
+  border: 2px solid #f9a8d4;
+}
+.vv-inline-greet-cancel:hover { background: #fdf2f8; }
+
+.vv-inline-greet-flash {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.vv-inline-greet-flash[data-tone="ok"] {
+  background: #dcfce7;
+  color: #166534;
+}
+.vv-inline-greet-flash[data-tone="warn"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Boy-Variante (blau/cyan) */
+.vv-nost-page[data-gender="m"] .vv-inline-greet-edit-btn {
+  background: linear-gradient(135deg, #06b6d4, #2d7dd2);
+  box-shadow: 0 3px 10px rgba(45,125,210,0.4);
+}
+.vv-nost-page[data-gender="m"] .vv-inline-greet-snip {
+  border-color: #7dd3fc;
+  background: linear-gradient(135deg, #f0f9ff, #cffafe);
+  color: #075985;
+}
+.vv-nost-page[data-gender="m"] .vv-inline-greet-ta:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6,182,212,0.18);
+}
+.vv-nost-page[data-gender="m"] .vv-inline-greet-save {
+  background: linear-gradient(135deg, #06b6d4, #2d7dd2);
+  box-shadow: 0 4px 14px rgba(45,125,210,0.4);
+}
