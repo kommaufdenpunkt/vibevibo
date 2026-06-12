@@ -22,6 +22,10 @@ const QUICK_SNIPPETS = [
   { label: "🤍 Minimal", html: `<p style="text-align:center"><b>Hi.</b><br/>Schön dass du da bist. ✿</p>` },
 ];
 
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 export default function InlineGreetingEditor({ initialHtml = "" }) {
   const { refresh, me } = useMe();
   const [editing, setEditing] = useState(false);
@@ -29,7 +33,10 @@ export default function InlineGreetingEditor({ initialHtml = "" }) {
   const [draft, setDraft] = useState(initialHtml);
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
+  const [imageModal, setImageModal] = useState(null); // { url, alt, tab, photos }
+  const [linkModal, setLinkModal] = useState(null);   // { text, url }
   const taRef = useRef(null);
+  const fileRef = useRef(null);
 
   useEffect(() => {
     setHtml(initialHtml);

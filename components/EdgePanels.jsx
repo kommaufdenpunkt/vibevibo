@@ -113,6 +113,11 @@ export default function EdgePanels() {
         aria-label="Schnellzugriff öffnen"
       ><span className="vv-edge-tab-icon">⚡</span></button>
 
+      {/* Floating Bell — top-right, immer erreichbar */}
+      <div className="vv-edge-bell-float">
+        <NotificationsBell />
+      </div>
+
       {/* Overlay */}
       {(leftOpen || rightOpen) && (
         <div className="vv-edge-overlay" onClick={() => { setLeftOpen(false); setRightOpen(false); }} />
@@ -162,13 +167,12 @@ export default function EdgePanels() {
           <button onClick={() => setRightOpen(false)} className="vv-edge-close" aria-label="Schliessen">×</button>
         </div>
 
-        {/* Status-Karte: Vibes, Bell, Status */}
+        {/* Status-Karte: Vibes + Status (Bell ist ausserhalb als Floating-Button) */}
         <div className="vv-edge-statuscard">
           <Link href="/messenger?tab=vibo" className="vv-edge-vibes" title="Deine Vibes">
             <span style={{ fontSize: 18 }}>✨</span>
             <span style={{ fontWeight: 800 }}>{vibes != null ? vibes : "—"}</span>
           </Link>
-          <div className="vv-edge-bell-wrap"><NotificationsBell /></div>
           <Link href="/profile/status" className="vv-edge-status" title="Status setzen">
             <span style={{ fontSize: 14 }}>💭</span>
             <span style={{

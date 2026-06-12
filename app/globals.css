@@ -9025,3 +9025,61 @@ input[type="number"], input[type="tel"], textarea, select {
   border-color: #fde68a;
   box-shadow: 0 0 0 3px rgba(253,224,71,0.25);
 }
+
+/* =================================================================
+   🔔 Bell als floating Button oben rechts (statt im rechten Edge-Panel)
+   ================================================================= */
+.vv-edge-bell-float {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  z-index: 190;
+}
+/* Bell-Knopf eigenstaendig stylen — nicht mehr das alte Navbar-Look */
+.vv-edge-bell-float .vv-notif-bell {
+  width: 42px; height: 42px;
+  padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  background: linear-gradient(135deg, #ec4899, #a855f7) !important;
+  color: #fff !important;
+  border: 2px solid rgba(255,255,255,0.85) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 6px 18px rgba(168,85,247,0.45), 0 0 0 1px rgba(0,0,0,0.05) inset;
+  margin-right: 0;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.15s;
+}
+.vv-edge-bell-float .vv-notif-bell:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 8px 22px rgba(168,85,247,0.55);
+}
+.vv-edge-bell-float .vv-notif-bell-badge {
+  top: -3px; right: -3px;
+  border: 2px solid #fff;
+}
+
+/* Notif-Pop muss aus dem Container raus, da der vv-edge-bell-float klein ist */
+.vv-edge-bell-float .vv-notif-pop {
+  position: fixed !important;
+  top: calc(64px + env(safe-area-inset-top, 0px)) !important;
+  right: 12px !important;
+  left: auto !important;
+  max-width: min(360px, calc(100vw - 24px));
+  z-index: 200;
+}
+@media (max-width: 520px) {
+  .vv-edge-bell-float .vv-notif-pop {
+    right: 8px !important;
+    left: 8px !important;
+    max-width: none;
+  }
+}
+
+/* Wenn auf kleinen Screens die Bell mit dem rechten Edge-Tab kollidiert,
+   etwas nach links rutschen */
+@media (max-width: 520px) {
+  .vv-edge-bell-float {
+    right: calc(56px + env(safe-area-inset-right, 0px));
+  }
+}
