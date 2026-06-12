@@ -36,8 +36,7 @@ function MessengerInner() {
   const [users, setUsers] = useState([]);
   const [tab, setTab] = useState("chats"); // chats | freunde | vibo | profil
   const [query, setQuery] = useState("");
-  const [unreadOnly, setUnreadOnly] = useState(false);
-  const [onlineFriendsOnly, setOnlineFriendsOnly] = useState(false);
+  const [chatFilter, setChatFilter] = useState("all"); // all | unread | groups
   const [creating, setCreating] = useState(false);
   const [theme, setTheme] = useTheme();
   const [autoLogout, setAutoLogout] = useState(0);
@@ -79,24 +78,26 @@ function MessengerInner() {
 
   const q = query.trim().toLowerCase();
   const filteredConvs = useMemo(() => {
-    let arr = !q ? conversations : conversations.filter((c) =>
+    let arr = conversations;
+    if (q) arr = arr.filter((c) =>
       (c.partnerDisplayName || "").toLowerCase().includes(q) ||
       (c.partnerUsername || "").toLowerCase().includes(q) ||
       (c.lastText || "").toLowerCase().includes(q));
-    if (unreadOnly) arr = arr.filter((c) => (c.unread || 0) > 0);
+    if (chatFilter === "unread") arr = arr.filter((c) => (c.unread || 0) > 0);
+    if (chatFilter === "groups") arr = [];
     return arr;
-  }, [conversations, q, unreadOnly]);
+  }, [conversations, q, chatFilter]);
   const filteredRooms = useMemo(() => {
-    let arr = !q ? rooms : rooms.filter((r) => (r.name || "").toLowerCase().includes(q));
-    if (unreadOnly) arr = arr.filter((r) => (r.unread || 0) > 0);
+    let arr = rooms;
+    if (q) arr = arr.filter((r) => (r.name || "").toLowerCase().includes(q));
+    if (chatFilter === "unread") arr = arr.filter((r) => (r.unread || 0) > 0);
     return arr;
-  }, [rooms, q, unreadOnly]);
+  }, [rooms, q, chatFilter]);
   const filteredUsers = useMemo(() => {
-    let f = !q ? users : users.filter((u) =>
+    const f = !q ? users : users.filter((u) =>
       (u.displayName || "").toLowerCase().includes(q) ||
       (u.username || "").toLowerCase().includes(q) ||
       (u.mood || "").toLowerCase().includes(q));
-    if (onlineFriendsOnly) f = f.filter((u) => isOnlineActivity(u.lastSeen));
     return [...f].sort((a, b) => {
       // Aktivste oben: Stufe 5 → 0
       const la = activityLevel(a.lastSeen);
@@ -104,7 +105,7 @@ function MessengerInner() {
       if (la !== lb) return lb - la;
       return (b.lastSeen || 0) - (a.lastSeen || 0);
     });
-  }, [users, q, onlineFriendsOnly]);
+  }, [users, q]);
 
   if (!me) return null;
 
@@ -132,26 +133,31 @@ function MessengerInner() {
 
       {(tab === "chats" || tab === "freunde") && (
         <div className="vv-msgapp-search">
-          <input
-            type="search" value={query} onChange={(e) => setQuery(e.target.value)}
-            placeholder={tab === "chats" ? "🔍 In Chats suchen…" : "🔍 Person suchen…"}
-            className="vv-msgapp-search-input"
-          />
+          <div className="vv-msgapp-search-wrap">
+            <span className="vv-msgapp-search-icon" aria-hidden="true">🔍</span>
+            <input
+              type="search" value={query} onChange={(e) => setQuery(e.target.value)}
+              placeholder={tab === "chats" ? "In Chats suchen…" : "Person suchen…"}
+              className="vv-msgapp-search-input"
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery("")}
+                className="vv-msgapp-search-clear" aria-label="Suche leeren">×</button>
+            )}
+          </div>
           {tab === "chats" && (
-            <div className="vv-msgapp-filter-row">
-              <button type="button"
-                className={`vv-msgapp-filterchip${unreadOnly ? " is-active" : ""}`}
-                onClick={() => setUnreadOnly((v) => !v)}>
-                📬 Nur Ungelesene{totalUnread > 0 && ` (${totalUnread})`}
+            <div className="vv-msgapp-chiprow" role="tablist" aria-label="Chat-Filter">
+              <button type="button" onClick={() => setChatFilter("all")}
+                className={`vv-msgapp-chip${chatFilter === "all" ? " active" : ""}`}>
+                💬 Alle
               </button>
-            </div>
-          )}
-          {tab === "freunde" && (
-            <div className="vv-msgapp-filter-row">
-              <button type="button"
-                className={`vv-msgapp-filterchip${onlineFriendsOnly ? " is-active" : ""}`}
-                onClick={() => setOnlineFriendsOnly((v) => !v)}>
-                🟢 Nur Online{onlineCount > 0 && ` (${onlineCount})`}
+              <button type="button" onClick={() => setChatFilter("unread")}
+                className={`vv-msgapp-chip${chatFilter === "unread" ? " active" : ""}`}>
+                📭 Ungelesen{totalUnread > 0 ? ` · ${totalUnread}` : ""}
+              </button>
+              <button type="button" onClick={() => setChatFilter("groups")}
+                className={`vv-msgapp-chip${chatFilter === "groups" ? " active" : ""}`}>
+                👯 Gruppen{rooms.length > 0 ? ` · ${rooms.length}` : ""}
               </button>
             </div>
           )}
@@ -162,16 +168,22 @@ function MessengerInner() {
         {tab === "chats" && (
           <>
             <div className="vv-msgapp-status">
+              <span style={{
+                display: "inline-block", width: 7, height: 7, borderRadius: 999,
+                background: totalUnread > 0 ? "#ec4899" : "#10b981",
+                boxShadow: `0 0 8px ${totalUnread > 0 ? "#ec4899" : "#10b981"}`,
+              }} aria-hidden="true" />
               {totalUnread > 0
-                ? <><strong>{totalUnread}</strong> ungelesen · {onlineCount} online</>
-                : <>Alles gelesen · {onlineCount} online</>}
+                ? <span><strong>{totalUnread}</strong> ungelesen · {onlineCount} online</span>
+                : <span>Alles gelesen · {onlineCount} online</span>}
             </div>
 
             {filteredRooms.length > 0 && (
               <>
-                <div className="vv-msgapp-section">Gruppen</div>
+                <div className="vv-msgapp-section">👯 Gruppen</div>
                 {filteredRooms.map((r) => (
-                  <Link key={r.id} href={`/messenger/rooms/${r.id}`} className="vv-msgapp-row">
+                  <Link key={r.id} href={`/messenger/rooms/${r.id}`} className="vv-msgapp-row"
+                    data-unread={r.unread > 0 ? "1" : "0"}>
                     <div className="vv-msgapp-row-icon" style={{ background: "linear-gradient(135deg,#f7e0b0,#ffd9ec)" }}>
                       <span style={{ fontSize: 22 }}>{r.emoji || "💬"}</span>
                       {r.unread > 0 && <span className="vv-msgapp-badge">{r.unread > 99 ? "99+" : r.unread}</span>}
@@ -193,9 +205,10 @@ function MessengerInner() {
 
             {filteredConvs.length > 0 && (
               <>
-                <div className="vv-msgapp-section">Chats</div>
+                <div className="vv-msgapp-section">💬 Chats</div>
                 {filteredConvs.map((c) => (
-                  <Link key={c.partnerUsername} href={`/messenger/${c.partnerUsername}`} className="vv-msgapp-row">
+                  <Link key={c.partnerUsername} href={`/messenger/${c.partnerUsername}`} className="vv-msgapp-row"
+                    data-unread={c.unread > 0 ? "1" : "0"}>
                     <div className="vv-msgapp-row-icon" style={{ background: "transparent" }}>
                       <Avatar url={c.partnerAvatar} name={c.partnerDisplayName} className="vv-avatar" style={{ width: 48, height: 48 }} />
                       {c.unread > 0 && <span className="vv-msgapp-badge">{c.unread > 99 ? "99+" : c.unread}</span>}
@@ -218,10 +231,35 @@ function MessengerInner() {
 
             {filteredRooms.length === 0 && filteredConvs.length === 0 && (
               <div className="vv-msgapp-empty">
-                {q ? "Nichts gefunden." : (
+                {q ? (
                   <>
-                    <div style={{ fontSize: 50, marginBottom: 8 }}>💬</div>
-                    Noch keine Chats. Wechsel auf <strong>Freunde</strong> und schreib jemandem!
+                    <div style={{ fontSize: 44, marginBottom: 10, opacity: 0.5 }}>🔍</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Nichts gefunden</div>
+                    <div style={{ fontSize: 13, opacity: 0.75 }}>Probier einen anderen Suchbegriff.</div>
+                  </>
+                ) : chatFilter === "unread" ? (
+                  <>
+                    <div style={{ fontSize: 44, marginBottom: 10 }}>✨</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Alles gelesen!</div>
+                    <div style={{ fontSize: 13, opacity: 0.75 }}>Keine ungelesenen Nachrichten.</div>
+                  </>
+                ) : chatFilter === "groups" ? (
+                  <>
+                    <div style={{ fontSize: 44, marginBottom: 10 }}>👯</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Keine Gruppen</div>
+                    <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 12 }}>Erstell eine neue Gruppe mit deinen Freunden!</div>
+                    <button type="button" onClick={() => setCreating(true)} className="vv-msgapp-empty-cta">
+                      ➕ Neue Gruppe
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 50, marginBottom: 10 }}>💬</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Noch keine Chats</div>
+                    <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 12 }}>Wechsel auf <strong>Freunde</strong> und schreib jemandem!</div>
+                    <button type="button" onClick={() => changeTab("freunde")} className="vv-msgapp-empty-cta">
+                      👥 Zu den Freunden
+                    </button>
                   </>
                 )}
               </div>

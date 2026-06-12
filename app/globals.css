@@ -3119,22 +3119,106 @@ input[type="number"], input[type="tel"], textarea, select {
 
 .vv-msgapp-search {
   flex-shrink: 0;
-  padding: 8px 14px;
+  padding: 10px 14px 8px;
   background: var(--vv-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vv-msgapp-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.vv-msgapp-search-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 14px;
+  opacity: 0.55;
+  pointer-events: none;
 }
 .vv-msgapp-search-input {
   width: 100%;
-  padding: 9px 14px;
-  border: none;
+  padding: 10px 36px 10px 36px;
+  border: 1px solid var(--vv-border);
   border-radius: 12px;
   background: var(--vv-input-bg);
-  font-size: 16px;
+  font-size: 15px;
   color: var(--vv-text);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.vv-msgapp-search-input:focus {
+  border-color: var(--vv-accent, #ec4899);
+  box-shadow: 0 0 0 3px rgba(236,72,153,0.18);
 }
 .vv-msgapp-search-input::placeholder { color: var(--vv-muted); }
+.vv-msgapp-search-input::-webkit-search-cancel-button { display: none; }
+.vv-msgapp-search-clear {
+  position: absolute;
+  right: 8px;
+  width: 22px; height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: var(--vv-muted, #9ca3af);
+  color: var(--vv-card, #fff);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.vv-msgapp-chiprow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.vv-msgapp-chiprow::-webkit-scrollbar { display: none; }
+.vv-msgapp-chip {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--vv-border);
+  background: var(--vv-input-bg);
+  color: var(--vv-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.vv-msgapp-chip:active { transform: scale(0.97); }
+.vv-msgapp-chip.active {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(236,72,153,0.35);
+}
+
+.vv-msgapp-empty-cta {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(168,85,247,0.35);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.vv-msgapp-empty-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(168,85,247,0.45);
+}
 
 .vv-msgapp-main {
   flex: 1 1 0;
@@ -3148,33 +3232,59 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 
 .vv-msgapp-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 16px 4px;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--vv-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.vv-msgapp-status::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--vv-border), transparent);
 }
 .vv-msgapp-section {
   padding: 14px 16px 6px;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   color: var(--vv-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vv-msgapp-section::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--vv-border), transparent);
 }
 
 .vv-msgapp-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-bottom: 0.5px solid var(--vv-border);
   text-decoration: none;
   color: var(--vv-text);
   background: var(--vv-card);
   transition: background 0.12s;
+  position: relative;
 }
+.vv-msgapp-row:hover { background: var(--vv-active, rgba(236,72,153,0.06)); }
 .vv-msgapp-row:active { background: var(--vv-active); }
+.vv-msgapp-row[data-unread="1"] {
+  background: linear-gradient(90deg, rgba(236,72,153,0.07), transparent 60%);
+}
+.vv-msgapp-row[data-unread="1"] .vv-msgapp-row-name,
+.vv-msgapp-row[data-unread="1"] .vv-msgapp-row-preview { font-weight: 700; color: var(--vv-text); }
 .vv-msgapp-row-icon {
   position: relative;
   width: 48px; height: 48px;
