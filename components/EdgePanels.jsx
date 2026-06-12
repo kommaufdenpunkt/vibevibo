@@ -21,15 +21,6 @@ const NAV_GROUPS = [
     ],
   },
   {
-    title: "🎮 Spielen",
-    items: [
-      { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
-      { href: "/spiele", label: "Spiele-Sammlung", icon: "🎮" },
-      { href: "/rang", label: "Rang & XP", icon: "🏆" },
-      { href: "/shop", label: "Shop", icon: "🛍️" },
-    ],
-  },
-  {
     title: "🌍 Community",
     items: [
       { href: "/karte", label: "Realitätskarte", icon: "🗺️" },
@@ -163,15 +154,27 @@ export default function EdgePanels() {
         </div>
 
         <div className="vv-edge-quick">
-          <div className="vv-edge-nav-grouptitle">🚀 Schnell-Aktionen</div>
+          <div className="vv-edge-nav-grouptitle">🎮 Spielen</div>
           <Link href="/spiele" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #fbbf24, #f97316)" }}>
             <span className="vv-edge-quick-emoji">🎮</span>
-            <span className="vv-edge-quick-label">Spiele</span>
+            <span className="vv-edge-quick-label">Spiele-Sammlung</span>
           </Link>
           <Link href="/vibo" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #ec4899, #db2777)" }}>
             <span className="vv-edge-quick-emoji">🥚</span>
-            <span className="vv-edge-quick-label">VIBO</span>
+            <span className="vv-edge-quick-label">Mein VIBO</span>
           </Link>
+          <Link href="/rang" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)" }}>
+            <span className="vv-edge-quick-emoji">🏆</span>
+            <span className="vv-edge-quick-label">Rang & XP</span>
+          </Link>
+          <Link href="/shop" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #f43f5e, #be185d)" }}>
+            <span className="vv-edge-quick-emoji">🛍️</span>
+            <span className="vv-edge-quick-label">Shop</span>
+          </Link>
+        </div>
+
+        <div className="vv-edge-quick">
+          <div className="vv-edge-nav-grouptitle">🚀 Schnell-Aktionen</div>
           <Link href="/messenger" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)" }}>
             <span className="vv-edge-quick-emoji">💬</span>
             <span className="vv-edge-quick-label">Messenger</span>

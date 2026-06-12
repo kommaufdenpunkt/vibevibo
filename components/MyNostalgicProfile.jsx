@@ -115,11 +115,37 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
         {/* Komplimente-Inbox prominent obendrueber */}
         <ComplimentInbox />
 
-        {/* 🌸 Begrüßungs-HTML, vom User selber gestaltet — Title weg, freier Style */}
-        {profile.greetingHtml && profile.greetingHtml.trim() && (
-          <div className="vv-nost-greeting-wrap"
-            dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
-        )}
+        {/* 🌸 Begrüßungs-HTML — Jappy-Style mit Edit-Button */}
+        <div className="vv-nost-card vv-nost-card-violet vv-jappy-greet">
+          <div className="vv-nost-card-title vv-jappy-greet-title">
+            <span className="vv-jappy-star">✿</span>
+            <span>🌸 HERZLICH WILLKOMMEN AUF MEINER SEITE! 🌸</span>
+            <span className="vv-jappy-star">✿</span>
+            <Link href="/profile/edit#begruessung" className="vv-jappy-greet-edit" title="Begrüßungstext bearbeiten">
+              ✎ Bearbeiten
+            </Link>
+          </div>
+          <div className="vv-nost-card-body vv-jappy-greet-body">
+            {profile.greetingHtml && profile.greetingHtml.trim() ? (
+              <div className="vv-nost-greeting"
+                dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
+            ) : (
+              <div className="vv-jappy-greet-empty">
+                <div style={{ fontSize: 38, marginBottom: 6 }}>💌</div>
+                <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6, color: "#7e22ce" }}>
+                  Noch kein Begrüßungstext!
+                </div>
+                <div style={{ fontSize: 13, color: "#6b21a8", marginBottom: 12, lineHeight: 1.5 }}>
+                  Schreib deinen Besuchern was Schönes — wie früher bei Jappy:<br/>
+                  „★ Welcome to my page ★ ich freu mich riesig, dass du da bist! 💖"
+                </div>
+                <Link href="/profile/edit#begruessung" className="vv-jappy-greet-cta">
+                  ✎ Jetzt Begrüßungstext schreiben
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* 📚 3-Spalten Forum-Layout */}
         <div className="vv-nost-grid">
@@ -221,7 +247,24 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
               )}
             </Card>
 
-            {/* Vibes-Konto-Card entfernt — Klick auf ✨-Pille im Hero fuehrt zu Transaktionen */}
+            <Card title="🛍 MEIN VIBES-KONTO 🛍" tone="violet" tiny>
+              <Link href="/profile/transactions" style={{
+                display: "block", padding: "10px 12px", borderRadius: 10,
+                background: "linear-gradient(135deg,#fef3c7,#fde68a)",
+                color: "#7c2d12", textDecoration: "none", fontSize: 13, fontWeight: 700,
+                border: "1px dashed #f59e0b",
+              }}>
+                💰 Transaktionen ansehen
+              </Link>
+              <Link href="/shop" style={{
+                marginTop: 6, display: "block", padding: "10px 12px", borderRadius: 10,
+                background: "linear-gradient(135deg,#fce7f3,#f9a8d4)",
+                color: "#831843", textDecoration: "none", fontSize: 13, fontWeight: 700,
+                textAlign: "center",
+              }}>
+                🛒 Zum Shop
+              </Link>
+            </Card>
           </aside>
         </div>
 

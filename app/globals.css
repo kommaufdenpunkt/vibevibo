@@ -7983,3 +7983,197 @@ input[type="number"], input[type="tel"], textarea, select {
   color: #bbf7d0 !important;
   border-bottom: 1px solid rgba(34,197,94,0.35);
 }
+
+/* =================================================================
+   🌸 JAPPY-STYLE BEGRÜSSUNGSBOX — Y2K, Glitzer, Comic Sans Vibes
+   ================================================================= */
+.vv-jappy-greet {
+  position: relative;
+  margin: 14px auto 18px !important;
+  border: 4px double #d946ef !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 0 0 3px #fbcfe8 inset,
+    0 4px 22px rgba(217,70,239,0.25),
+    0 0 30px rgba(236,72,153,0.15);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255,192,225,0.55) 0 12px, transparent 14px),
+    radial-gradient(circle at 88% 84%, rgba(186,140,255,0.45) 0 10px, transparent 12px),
+    radial-gradient(circle at 28% 92%, rgba(255,210,236,0.4) 0 6px, transparent 8px),
+    radial-gradient(circle at 78% 14%, rgba(186,140,255,0.35) 0 5px, transparent 7px),
+    linear-gradient(180deg, #fff6fb 0%, #faedff 100%) !important;
+  overflow: hidden;
+}
+.vv-jappy-greet::before {
+  content: "★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 14px;
+  background: linear-gradient(90deg, #ec4899, #a855f7, #06b6d4, #ec4899);
+  background-size: 300% 100%;
+  animation: vv-jappy-rainbow 8s linear infinite;
+  color: #fff;
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-align: center;
+  line-height: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.vv-jappy-greet::after {
+  content: "♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 14px;
+  background: linear-gradient(90deg, #06b6d4, #a855f7, #ec4899, #06b6d4);
+  background-size: 300% 100%;
+  animation: vv-jappy-rainbow 10s linear infinite reverse;
+  color: #fff;
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-align: center;
+  line-height: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+@keyframes vv-jappy-rainbow {
+  from { background-position: 0% 50%; }
+  to { background-position: 300% 50%; }
+}
+
+.vv-jappy-greet-title {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap;
+  position: relative;
+  margin: 18px 14px 0 !important;
+  padding: 8px 12px !important;
+  background: linear-gradient(135deg, #ec4899, #a855f7, #d946ef) !important;
+  background-size: 200% 200%;
+  animation: vv-jappy-shift 6s ease infinite;
+  color: #fff !important;
+  border-radius: 12px !important;
+  font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", cursive !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 0 12px rgba(255,255,255,0.4);
+  letter-spacing: 1.2px !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 3px 0 rgba(190,24,93,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+@keyframes vv-jappy-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.vv-jappy-star {
+  display: inline-block;
+  color: #fde68a;
+  text-shadow: 0 0 8px #fbbf24, 0 0 18px #f59e0b;
+  font-size: 20px;
+  animation: vv-jappy-twinkle 1.6s ease-in-out infinite alternate;
+}
+.vv-jappy-greet-title .vv-jappy-star:last-child { animation-delay: 0.8s; }
+@keyframes vv-jappy-twinkle {
+  from { transform: rotate(-8deg) scale(0.9); opacity: 0.7; }
+  to { transform: rotate(12deg) scale(1.15); opacity: 1; }
+}
+
+.vv-jappy-greet-edit {
+  margin-left: auto;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.92) !important;
+  color: #831843 !important;
+  font-family: system-ui, sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.3px !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 2px 6px rgba(131,24,67,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.vv-jappy-greet-edit:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 4px 10px rgba(131,24,67,0.4);
+}
+
+.vv-jappy-greet-body {
+  margin: 12px 14px 22px !important;
+  padding: 16px 18px !important;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.6) 0 2px, transparent 2px 14px),
+    linear-gradient(180deg, #ffffff 0%, #fff6fb 100%) !important;
+  border-radius: 12px;
+  border: 2px dashed #f9a8d4;
+}
+
+.vv-jappy-greet-empty {
+  text-align: center;
+  padding: 14px 6px;
+}
+.vv-jappy-greet-cta {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ec4899, #a855f7);
+  color: #fff !important;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  box-shadow: 0 4px 0 rgba(190,24,93,0.5), 0 6px 18px rgba(168,85,247,0.45);
+  border: 2px solid #fff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.vv-jappy-greet-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgba(190,24,93,0.5), 0 10px 22px rgba(168,85,247,0.55);
+}
+
+/* Boy-Variante — blau/cyan statt pink/lila */
+.vv-nost-page[data-gender="m"] .vv-jappy-greet {
+  border-color: #06b6d4 !important;
+  box-shadow:
+    0 0 0 3px #cffafe inset,
+    0 4px 22px rgba(6,182,212,0.25);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(186,230,253,0.55) 0 12px, transparent 14px),
+    radial-gradient(circle at 88% 84%, rgba(147,197,253,0.45) 0 10px, transparent 12px),
+    linear-gradient(180deg, #f0f9ff 0%, #ecfeff 100%) !important;
+}
+.vv-nost-page[data-gender="m"] .vv-jappy-greet-title {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6, #0ea5e9) !important;
+  box-shadow: 0 3px 0 rgba(30,64,175,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.vv-nost-page[data-gender="m"] .vv-jappy-greet-body {
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.6) 0 2px, transparent 2px 14px),
+    linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%) !important;
+  border-color: #7dd3fc;
+}
+.vv-nost-page[data-gender="m"] .vv-jappy-greet-cta {
+  background: linear-gradient(135deg, #06b6d4, #2d7dd2);
+  box-shadow: 0 4px 0 rgba(30,64,175,0.5), 0 6px 18px rgba(45,125,210,0.45);
+}
+
+/* Auf kleinen Screens etwas kompakter */
+@media (max-width: 640px) {
+  .vv-jappy-greet-title {
+    font-size: 13px !important;
+    padding: 6px 10px !important;
+  }
+  .vv-jappy-greet-edit {
+    font-size: 10px !important;
+    padding: 3px 8px !important;
+  }
+  .vv-jappy-greet-body {
+    padding: 12px 12px !important;
+    margin: 10px 10px 18px !important;
+  }
+}

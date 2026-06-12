@@ -139,18 +139,6 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
             <Link href="/" className="vv-nost-action">
               🏠<span>Startseite</span>
             </Link>
-            <button type="button" onClick={async () => {
-              if (!confirm(`@${profile.username} blockieren?\nKein Chat, keine Pinnwand, keine Geschenke, keine Komplimente. Beidseitig.`)) return;
-              try {
-                await api.blockUser(profile.username);
-                onChange?.();
-                window.location.reload();
-              } catch (e) { alert(e.message); }
-            }}
-              className="vv-nost-action"
-              style={{ background: "none", fontFamily: "inherit", cursor: "pointer", color: "#b91c1c" }}>
-              🚫<span>Blockieren</span>
-            </button>
           </div>
         )}
         {!me && (
@@ -164,10 +152,19 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
         {/* VIBO-Widget */}
         <ViboProfileWidget username={profile.username} isOwner={isOwner} />
 
-        {/* 🌸 Begrüßungs-HTML — über volle Breite, ohne Title-Banner */}
+        {/* 🌸 Begrüßungs-HTML — Jappy-Style, über volle Breite */}
         {profile.greetingHtml && profile.greetingHtml.trim() && (
-          <div className="vv-nost-greeting-wrap"
-            dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
+          <div className="vv-nost-card vv-nost-card-violet vv-jappy-greet">
+            <div className="vv-nost-card-title vv-jappy-greet-title">
+              <span className="vv-jappy-star">✿</span>
+              <span>🌸 HERZLICH WILLKOMMEN BEI {profile.displayName.toUpperCase()}! 🌸</span>
+              <span className="vv-jappy-star">✿</span>
+            </div>
+            <div className="vv-nost-card-body vv-jappy-greet-body">
+              <div className="vv-nost-greeting"
+                dangerouslySetInnerHTML={{ __html: profile.greetingHtml }} />
+            </div>
+          </div>
         )}
 
         {/* 📚 3-Spalten Forum-Layout */}

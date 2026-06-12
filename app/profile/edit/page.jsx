@@ -241,7 +241,7 @@ export default function EditProfilePage() {
       <div className="vv-edit-section-title">💑 Beziehung & Flirt</div>
       <RelationshipSettings />
 
-      <div className="vv-edit-section-title">🎀 Lauftext & Begrüßung</div>
+      <div id="begruessung" className="vv-edit-section-title">🎀 Lauftext & Begrüßung</div>
       <MarqueeGreetingEditor />
 
       <div className="vv-edit-section-title">🎨 Look & Style</div>
