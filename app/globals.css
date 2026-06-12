@@ -8403,3 +8403,184 @@ input[type="number"], input[type="tel"], textarea, select {
   color: #fce7f3 !important;
 }
 .vv-edge-status:hover { border-color: #ec4899; }
+
+/* =================================================================
+   🛠 MarqueeGreetingEditor v2 — uebersichtliches Layout, 2 Modi
+   ================================================================= */
+.vv-mge2-modeswitch {
+  display: flex;
+  gap: 4px;
+  padding: 8px 14px 0;
+}
+.vv-mge2-mode {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1.5px solid var(--vv-border, rgba(168,85,247,0.25));
+  border-radius: 999px;
+  background: var(--vv-input-bg, #fff);
+  color: var(--vv-text, #4a044e);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+}
+.vv-mge2-mode:active { transform: scale(0.97); }
+.vv-mge2-mode.active {
+  background: linear-gradient(135deg, #ec4899, #a855f7);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(168,85,247,0.35);
+}
+
+.vv-mge2-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .vv-mge2-split { grid-template-columns: 1fr; }
+}
+
+.vv-mge2-form { display: flex; flex-direction: column; }
+.vv-mge2-label {
+  display: block;
+  margin: 10px 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #7e22ce;
+}
+.vv-nost-page[data-gender="m"] .vv-mge2-label { color: #1e40af; }
+.vv-mge2-hint {
+  margin: 4px 0 2px;
+  font-size: 11px;
+  color: var(--vv-muted, #6b7280);
+  opacity: 0.85;
+}
+
+.vv-mge2-preview-col {
+  position: sticky;
+  top: 14px;
+}
+.vv-mge2-preview-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--vv-muted, #6b7280);
+  margin-bottom: 6px;
+}
+.vv-mge2-empty {
+  color: var(--vv-muted, #9a9aa8);
+  font-style: italic;
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 13px;
+}
+
+.vv-mge2-tpls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.vv-mge2-tpl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #c4b5fd;
+  background: linear-gradient(135deg, #fdf2f8, #f3e8ff);
+  color: #581c87;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.vv-mge2-tpl:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(168,85,247,0.25);
+}
+
+.vv-mge2-toolbar {
+  background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.08));
+  border-radius: 10px;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+
+.vv-mge2-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+/* Modals */
+.vv-mge2-modal-overlay {
+  position: fixed; inset: 0;
+  z-index: 1000;
+  background: rgba(15,3,30,0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: vv-mge2-fadein 0.18s ease;
+}
+@keyframes vv-mge2-fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.vv-mge2-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--vv-card, #fff);
+  color: var(--vv-text, #222);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  border: 1px solid var(--vv-border, rgba(0,0,0,0.08));
+  animation: vv-mge2-pop 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes vv-mge2-pop {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.vv-mge2-modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #7e22ce;
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+}
+.vv-mge2-img-preview {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  text-align: center;
+}
+.vv-mge2-img-preview img {
+  max-width: 100%;
+  max-height: 180px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+/* Preview-Card wirkt wie ein kleines Profil */
+.vv-mge2-preview-col .vv-mge-preview {
+  background: linear-gradient(180deg, #ffffff 0%, #fdf2f8 100%);
+  border: 2px dashed #f9a8d4;
+  border-radius: 12px;
+  padding: 14px;
+  min-height: 220px;
+  max-height: 480px;
+  overflow-y: auto;
+}
