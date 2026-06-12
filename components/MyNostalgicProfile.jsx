@@ -225,9 +225,7 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
               )}
             </Card>
 
-            <Card title="💖 KOMPLIMENTE FÜR DICH 💖" tone="violet" tiny>
-              <ComplimentInbox />
-            </Card>
+            <ComplimentInbox />
 
           </aside>
         </div>
