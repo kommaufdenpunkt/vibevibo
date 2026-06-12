@@ -247,24 +247,6 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
               )}
             </Card>
 
-            <Card title="🛍 MEIN VIBES-KONTO 🛍" tone="violet" tiny>
-              <Link href="/profile/transactions" style={{
-                display: "block", padding: "10px 12px", borderRadius: 10,
-                background: "linear-gradient(135deg,#fef3c7,#fde68a)",
-                color: "#7c2d12", textDecoration: "none", fontSize: 13, fontWeight: 700,
-                border: "1px dashed #f59e0b",
-              }}>
-                💰 Transaktionen ansehen
-              </Link>
-              <Link href="/shop" style={{
-                marginTop: 6, display: "block", padding: "10px 12px", borderRadius: 10,
-                background: "linear-gradient(135deg,#fce7f3,#f9a8d4)",
-                color: "#831843", textDecoration: "none", fontSize: 13, fontWeight: 700,
-                textAlign: "center",
-              }}>
-                🛒 Zum Shop
-              </Link>
-            </Card>
           </aside>
         </div>
 
