@@ -7078,6 +7078,21 @@ input[type="number"], input[type="tel"], textarea, select {
   font-weight: 700;
 }
 .vv-edge-nav-icon { font-size: 18px; width: 24px; text-align: center; }
+.vv-edge-nav-logout {
+  width: 100%;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  font: inherit;
+  color: #fca5a5;
+  cursor: pointer;
+  text-align: left;
+}
+.vv-edge-nav-logout:hover {
+  background: rgba(239,68,68,0.18);
+  border-left-color: #ef4444;
+  color: #fecaca;
+}
 
 .vv-edge-pwa {
   margin: 14px;
@@ -8355,6 +8370,18 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-theme-dark .vv-edge-bell-wrap {
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.1);
+}
+/* Bell auf der hellen Pastell-Karte sichtbar machen (default ist white-on-pink fuer die Navbar) */
+.vv-edge-bell-wrap .vv-notif-bell {
+  background: transparent;
+  color: #831843;
+  border-color: rgba(131,24,67,0.25);
+  margin-right: 0;
+}
+[data-theme="dark"] .vv-edge-bell-wrap .vv-notif-bell,
+.vv-theme-dark .vv-edge-bell-wrap .vv-notif-bell {
+  color: #fce7f3;
+  border-color: rgba(252,231,243,0.35);
 }
 
 .vv-edge-status {

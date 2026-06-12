@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import NotificationsBell from "@/components/NotificationsBell";
@@ -33,6 +33,14 @@ const NAV_GROUPS = [
     ],
   },
   {
+    title: "🎁 Inhalte",
+    items: [
+      { href: "/fotos", label: "Fotos", icon: "📸" },
+      { href: "/geschenke", label: "Geschenke", icon: "🎁" },
+      { href: "/shop", label: "Shop", icon: "🛍️" },
+    ],
+  },
+  {
     title: "ℹ️ Info",
     items: [
       { href: "/datenschutz", label: "Datenschutz", icon: "🛡️" },
@@ -49,7 +57,15 @@ export default function EdgePanels() {
   const [installed, setInstalled] = useState(false);
   const [vibes, setVibes] = useState(null);
   const pathname = usePathname();
-  const { me } = useMe();
+  const router = useRouter();
+  const { me, logout } = useMe();
+
+  async function handleLogout() {
+    setLeftOpen(false);
+    try { await logout(); } catch {}
+    router.push("/login");
+    router.refresh();
+  }
 
   // Vibes-Saldo nachladen, wenn das rechte Panel aufgeht oder me wechselt
   useEffect(() => {
@@ -127,6 +143,12 @@ export default function EdgePanels() {
               ))}
             </div>
           ))}
+          <div className="vv-edge-nav-group">
+            <button type="button" onClick={handleLogout} className="vv-edge-nav-item vv-edge-nav-logout">
+              <span className="vv-edge-nav-icon">↩</span>
+              <span>Logout</span>
+            </button>
+          </div>
         </nav>
       </aside>
 
