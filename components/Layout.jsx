@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Banner from "@/components/Banner";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useMe } from "@/lib/useMe";
 
@@ -49,7 +48,6 @@ export default function Layout({ children }) {
     return (
       <div className="vv-page">
         <Banner />
-        <Navbar />
         <div className="vv-messenger-desktop-frame">{children}</div>
         <Footer />
       </div>
@@ -59,7 +57,6 @@ export default function Layout({ children }) {
   return (
     <div className="vv-page">
       <Banner />
-      <Navbar />
       {children}
       <Footer />
     </div>

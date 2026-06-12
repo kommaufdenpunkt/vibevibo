@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMe } from "@/lib/useMe";
+import { api } from "@/lib/api";
+import NotificationsBell from "@/components/NotificationsBell";
 
 const NAV_GROUPS = [
   {
@@ -45,8 +47,15 @@ export default function EdgePanels() {
   const [rightOpen, setRightOpen] = useState(false);
   const [installable, setInstallable] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const [vibes, setVibes] = useState(null);
   const pathname = usePathname();
   const { me } = useMe();
+
+  // Vibes-Saldo nachladen, wenn das rechte Panel aufgeht oder me wechselt
+  useEffect(() => {
+    if (!me) return;
+    api.credits().then((d) => setVibes(d.balance)).catch(() => {});
+  }, [me, rightOpen]);
 
   // Bei Routen-Wechsel Panels schliessen
   useEffect(() => {
@@ -129,6 +138,23 @@ export default function EdgePanels() {
             <div className="vv-edge-sub">Tipps & Apps</div>
           </div>
           <button onClick={() => setRightOpen(false)} className="vv-edge-close" aria-label="Schliessen">×</button>
+        </div>
+
+        {/* Status-Karte: Vibes, Bell, Status */}
+        <div className="vv-edge-statuscard">
+          <Link href="/messenger?tab=vibo" className="vv-edge-vibes" title="Deine Vibes">
+            <span style={{ fontSize: 18 }}>✨</span>
+            <span style={{ fontWeight: 800 }}>{vibes != null ? vibes : "—"}</span>
+          </Link>
+          <div className="vv-edge-bell-wrap"><NotificationsBell /></div>
+          <Link href="/profile/status" className="vv-edge-status" title="Status setzen">
+            <span style={{ fontSize: 14 }}>💭</span>
+            <span style={{
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              flex: 1, fontSize: 12, fontWeight: 700,
+            }}>{me?.mood || "Status setzen"}</span>
+            <span style={{ opacity: 0.6, fontSize: 11 }}>›</span>
+          </Link>
         </div>
 
         <div className="vv-edge-pwa">
