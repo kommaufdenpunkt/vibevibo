@@ -4908,11 +4908,25 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 
 .vv-home-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 8px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 14px 8px;
+  margin: 0 -14px;
+  scroll-padding-inline: 14px;
+  mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
 }
+.vv-home-tiles::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .vv-home-tile {
+  flex: 0 0 auto;
+  width: 112px;
+  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -5110,8 +5124,8 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-home-hero { padding: 16px 12px; }
   .vv-home-hero-title { font-size: 20px; }
   .vv-home-hero-sub { font-size: 11px; }
-  .vv-home-tiles { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .vv-home-tile { padding: 9px 4px; }
+  .vv-home-tiles { gap: 8px; padding: 4px 12px 8px; margin: 0 -12px; scroll-padding-inline: 12px; }
+  .vv-home-tile { width: 96px; padding: 9px 4px; }
   .vv-home-tile-emoji { font-size: 22px; }
   .vv-home-tile-sub { font-size: 8.5px; }
   .vv-home-card-title { padding: 6px 10px; font-size: 12px; letter-spacing: 1px; }
@@ -5138,7 +5152,7 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-nost-wordart { font-size: 18px; padding: 3px 9px; }
   .vv-nost-actions { grid-template-columns: repeat(2, 1fr); }
   .vv-edit-tiles { grid-template-columns: repeat(2, 1fr); }
-  .vv-home-tiles { grid-template-columns: repeat(2, 1fr); }
+  .vv-home-tile { width: 88px; }
   .vv-pin-react { padding: 4px 7px; }
 }
 
