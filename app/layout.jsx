@@ -1,5 +1,6 @@
 import "./globals.css";
 import Layout from "@/components/Layout";
+import EdgePanels from "@/components/EdgePanels";
 import PwaRegister from "@/components/PwaRegister";
 import ScreenshotGuard from "@/components/ScreenshotGuard";
 import MessageNotifier from "@/components/MessageNotifier";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }) {
       <body>
         <MeProvider>
           <Layout>{children}</Layout>
+          <EdgePanels />
           <PwaRegister />
           <ScreenshotGuard />
           <MessageNotifier />

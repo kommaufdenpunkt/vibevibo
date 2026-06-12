@@ -9,10 +9,9 @@ import { api } from "@/lib/api";
 import ViboSprite from "./ViboSprite";
 
 const ROUND_MS = 30_000;
-const TICK_MS = 30;            // ~33 fps
 const SPAWN_BASE = 900;        // ms zwischen Spawns am Anfang
 const SPAWN_MIN = 350;         // ms zwischen Spawns am Ende
-const FALL_SPEED = 0.18;       // %/tick
+const FALL_SPEED = 6;          // %/Sekunde
 const ITEMS = ["🍔","🍕","🍎","🍪","🍩","🍓","🍌","🧀","🍇","🥕"];
 const BOMBS = ["💣","☠️"];
 
@@ -34,6 +33,9 @@ export default function ViboMinigame({ vibo, onClose }) {
   const startedAtRef = useRef(0);
   const itemIdRef = useRef(0);
   const popIdRef = useRef(0);
+  const petXRef = useRef(50);   // Bewegung als Ref, damit Game-Loop nicht ständig resettet wird
+  const petBounceRef = useRef(null);
+  const [petBounce, setPetBounce] = useState(0);
 
   // Tap/Drag: VIBO folgt dem Finger
   function handlePointer(e) {
@@ -43,13 +45,17 @@ export default function ViboMinigame({ vibo, onClose }) {
     const r = el.getBoundingClientRect();
     const t = (e.touches && e.touches[0]) || e;
     const x = ((t.clientX - r.left) / r.width) * 100;
-    setPetX(Math.max(8, Math.min(92, x)));
+    const clamped = Math.max(8, Math.min(92, x));
+    petXRef.current = clamped;
+    setPetX(clamped);
   }
 
   function start() {
     setPhase("playing");
     setScore(0); setBombs(0); setPop([]); setItems([]);
     setTimeLeft(ROUND_MS); setReward(null); setError("");
+    setPetX(50);
+    petXRef.current = 50;
     startedAtRef.current = Date.now();
   }
 
@@ -62,11 +68,13 @@ export default function ViboMinigame({ vibo, onClose }) {
     finally { setBusy(false); }
   }, []);
 
-  // Game-Loop
+  // Game-Loop mit requestAnimationFrame (60fps, smooth)
   useEffect(() => {
     if (phase !== "playing") return;
     const startedAt = startedAtRef.current;
     let cancelled = false;
+    let rafId = 0;
+    let lastFrame = performance.now();
 
     function spawn() {
       if (cancelled || Date.now() - startedAt >= ROUND_MS) return;
@@ -74,15 +82,23 @@ export default function ViboMinigame({ vibo, onClose }) {
       const id = ++itemIdRef.current;
       const kind = isBomb ? BOMBS[Math.floor(Math.random() * BOMBS.length)] : ITEMS[Math.floor(Math.random() * ITEMS.length)];
       setItems((it) => [...it, { id, x: rand(8, 92), y: -8, kind, isBomb }]);
-      // immer schneller spawnen
       const elapsed = Date.now() - startedAt;
       const progress = Math.min(1, elapsed / ROUND_MS);
-      const next = SPAWN_BASE - (SPAWN_BASE - SPAWN_MIN) * progress;
-      spawnTimer = setTimeout(spawn, next + rand(-100, 100));
+      const nextDelay = SPAWN_BASE - (SPAWN_BASE - SPAWN_MIN) * progress;
+      spawnTimer = setTimeout(spawn, nextDelay + rand(-100, 100));
     }
     let spawnTimer = setTimeout(spawn, 600);
 
-    const tick = setInterval(() => {
+    function bouncePet() {
+      setPetBounce((n) => n + 1);
+      clearTimeout(petBounceRef.current);
+      petBounceRef.current = setTimeout(() => setPetBounce(0), 250);
+    }
+
+    function frame(now) {
+      if (cancelled) return;
+      const dt = Math.min(50, now - lastFrame) / 1000; // s, gedeckelt
+      lastFrame = now;
       const elapsed = Date.now() - startedAt;
       const left = Math.max(0, ROUND_MS - elapsed);
       setTimeLeft(left);
@@ -90,11 +106,9 @@ export default function ViboMinigame({ vibo, onClose }) {
       setItems((it) => {
         const next = [];
         for (const i of it) {
-          const ny = i.y + FALL_SPEED * TICK_MS;
-          // Kollision mit VIBO? Pet ist auf y=80..96, breite ~10
+          const ny = i.y + FALL_SPEED * dt * 16.6; // ~normalisiert auf alte Tick-Rate
           const petY = 86;
-          if (ny >= petY - 6 && ny <= petY + 8 && Math.abs(i.x - petX) < 9) {
-            // Treffer
+          if (ny >= petY - 6 && ny <= petY + 8 && Math.abs(i.x - petXRef.current) < 9) {
             const pid = ++popIdRef.current;
             if (i.isBomb) {
               setBombs((b) => b + 1);
@@ -103,11 +117,12 @@ export default function ViboMinigame({ vibo, onClose }) {
             } else {
               setScore((s) => s + 1);
               setPop((p) => [...p, { id: pid, x: i.x, y: petY, text: "+1" }]);
+              bouncePet();
             }
             setTimeout(() => setPop((p) => p.filter((q) => q.id !== pid)), 700);
             continue;
           }
-          if (ny > 105) continue; // unten raus
+          if (ny > 105) continue;
           next.push({ ...i, y: ny });
         }
         return next;
@@ -115,14 +130,22 @@ export default function ViboMinigame({ vibo, onClose }) {
 
       if (left <= 0) {
         cancelled = true;
-        clearInterval(tick);
         clearTimeout(spawnTimer);
+        clearTimeout(petBounceRef.current);
         setPhase("done");
+        return;
       }
-    }, TICK_MS);
+      rafId = requestAnimationFrame(frame);
+    }
+    rafId = requestAnimationFrame(frame);
 
-    return () => { cancelled = true; clearInterval(tick); clearTimeout(spawnTimer); };
-  }, [phase, petX]);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafId);
+      clearTimeout(spawnTimer);
+      clearTimeout(petBounceRef.current);
+    };
+  }, [phase]);
 
   useEffect(() => {
     if (phase === "done" && reward === null && !busy) {
@@ -147,10 +170,11 @@ export default function ViboMinigame({ vibo, onClose }) {
           border: "2px solid #f59e0b",
         }}>
           <div style={{ fontSize: 14, marginBottom: 10 }}>
-            🎯 <b>30 Sekunden</b>. Fang so viele Snacks wie möglich.
+            🍔 <b>Füttere dein VIBO!</b> 30 Sekunden lang Snacks fangen.
           </div>
           <div style={{ fontSize: 13, color: "#92400e", marginBottom: 12 }}>
             👆 Tippen/Wischen bewegt {vibo?.name || "dein VIBO"} nach links/rechts.<br/>
+            🍔 Jeder gefangene Snack = +1 Futter für {vibo?.name || "dein VIBO"}<br/>
             💣 <b>Bomben meiden</b> (−2 Punkte!)<br/>
             ✨ Pro 3 Punkte gibt's 1 Vibe (max 10/Runde).
           </div>
@@ -171,9 +195,9 @@ export default function ViboMinigame({ vibo, onClose }) {
             color: "#fff", fontWeight: 800, marginBottom: 8,
             boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
           }}>
-            <span>🎯 {score}</span>
-            <span>💣 {bombs}</span>
-            <span>⏱ {Math.ceil(timeLeft / 1000)}s</span>
+            <span title="Futter">🍔 {score}</span>
+            <span title="Bomben">💣 {bombs}</span>
+            <span title="Restzeit">⏱ {Math.ceil(timeLeft / 1000)}s</span>
           </div>
 
           {/* Arena */}
@@ -238,8 +262,8 @@ export default function ViboMinigame({ vibo, onClose }) {
             <div style={{
               position: "absolute",
               left: `${petX}%`, top: "82%",
-              transform: "translate(-50%, -50%)",
-              transition: "left 0.15s ease-out",
+              transform: `translate(-50%, -50%) scale(${petBounce ? 1.2 : 1}) translateY(${petBounce ? -6 : 0}px)`,
+              transition: petBounce ? "transform 0.12s ease-out" : "left 0.12s ease-out, transform 0.25s ease-out",
               pointerEvents: "none",
               filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.4))",
             }}>
@@ -257,8 +281,13 @@ export default function ViboMinigame({ vibo, onClose }) {
                 <div style={{ fontSize: 42 }}>🏁</div>
                 <div style={{ fontSize: 22, fontWeight: 900 }}>Runde vorbei!</div>
                 <div style={{ fontSize: 14, opacity: 0.95 }}>
-                  🎯 {score} Punkte · 💣 {bombs} Bomben
+                  🍔 {score} Snacks gefüttert · 💣 {bombs} Bomben
                 </div>
+                {score > 0 && (
+                  <div style={{ fontSize: 13, color: "#fde68a" }}>
+                    {vibo?.name || "Dein VIBO"} ist {score >= 15 ? "pappsatt" : score >= 8 ? "ordentlich gefüttert" : "ein bisschen satter"} 🤤
+                  </div>
+                )}
                 {busy && <div style={{ fontSize: 13 }}>Wird gewertet…</div>}
                 {reward && (
                   <div style={{
