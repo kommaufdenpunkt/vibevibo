@@ -618,9 +618,9 @@ export default function SkinPage() {
       </div>
 
       {/* === CSS-Editor + Live-Vorschau === */}
-      <div className="vv-grid-2 vv-mt-12">
-        <div>
-          <label><strong>CSS-Editor</strong></label>
+      <div className="vv-skin-editor-grid vv-mt-12">
+        <div className="vv-skin-editor-col">
+          <label><strong>📝 CSS-Editor</strong></label>
           <textarea
             className="vv-textarea"
             style={{ fontFamily: "Courier New, monospace", minHeight: 360, fontSize: 12 }}
@@ -628,23 +628,145 @@ export default function SkinPage() {
             onChange={(e) => setCss(e.target.value)}
             spellCheck={false}
           />
+          <div className="vv-muted" style={{ fontSize: 11, marginTop: 4 }}>
+            {css.length} Zeichen · Gefährliche Statements werden serverseitig entfernt.
+          </div>
         </div>
-        <div>
-          <label><strong>Live-Vorschau</strong></label>
-          <div className="vv-skin" style={{ border: "2px dashed #ff3e9d", borderRadius: 6, padding: 8 }}>
-            {css && <style dangerouslySetInnerHTML={{ __html: scopeCss(css, ".vv-skin") }} />}
-            <div className="vv-card">
-              <h3>Beispiel-Karte</h3>
-              <p>So sieht dein Profil aus.</p>
-              <div className="vv-pinnwand-entry">
-                <div className="vv-pinnwand-meta"><strong>kevin_skater</strong> 🛹 · vor 2 Std.</div>
-                <div>Hdl du knuddelmaus 🥰</div>
-              </div>
-              <div className="vv-row vv-mt-8">
-                <span className="vv-mood">Mood: verliebt 💘</span>
-                <button type="button" className="vv-btn vv-btn-pink">Button</button>
+
+        <div className="vv-skin-preview-col">
+          <div className="vv-skin-preview-header">
+            <strong>👁 Live-Vorschau</strong>
+            <span className="vv-muted" style={{ fontSize: 11 }}>So sieht dein Profil aus</span>
+          </div>
+
+          {/* Mini-Browser-Rahmen */}
+          <div className="vv-skin-preview-frame">
+            <div className="vv-skin-preview-toolbar">
+              <span className="vv-skin-preview-dot" style={{ background: "#ff5f57" }} />
+              <span className="vv-skin-preview-dot" style={{ background: "#ffbd2e" }} />
+              <span className="vv-skin-preview-dot" style={{ background: "#28ca42" }} />
+              <span className="vv-skin-preview-url">vibevibo.de/u/{me.username}</span>
+            </div>
+
+            <div className="vv-skin vv-skin-preview-stage">
+              {css && <style dangerouslySetInnerHTML={{ __html: scopeCss(css, ".vv-skin") }} />}
+              <div className="vv-nost-page" data-gender={me.gender || ""}>
+
+                {/* Marquee */}
+                <div className="vv-nost-marquee">
+                  <div style={{ padding: "6px 12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    ★ ✿ ♡ Willkommen auf meinem Profil ♡ ✿ ★
+                  </div>
+                </div>
+
+                {/* Hero */}
+                <div className="vv-nost-hero" style={{ position: "relative", textAlign: "center", padding: "16px 12px" }}>
+                  <div className="vv-nost-hero-glitter" />
+                  <div className="vv-nost-hero-stars">
+                    <span>✩</span><span>★</span><span>✿</span><span>♡</span>
+                    <span>♥</span><span>✿</span><span>★</span><span>✩</span>
+                  </div>
+                  <div className="vv-nost-avatar-frame" style={{ display: "inline-block" }}>
+                    <div className="vv-nost-avatar" style={{
+                      width: 64, height: 64, borderRadius: "50%",
+                      background: "linear-gradient(135deg,#fce7f3,#a855f7)",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 28,
+                    }}>🌸</div>
+                  </div>
+                  <h1 className="vv-nost-wordart" style={{ fontSize: 22, margin: "8px 0 2px" }}>
+                    {me.displayName || me.username}
+                  </h1>
+                  <div className="vv-nost-username">@{me.username}</div>
+                  <div className="vv-nost-mood" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, padding: "3px 10px", borderRadius: 999, fontSize: 12 }}>
+                    <span>💭</span><span>verliebt 💘</span>
+                  </div>
+                  <div className="vv-nost-cert" style={{ marginTop: 10, padding: 8, borderRadius: 10, fontSize: 11 }}>
+                    <div className="vv-nost-cert-title" style={{ fontWeight: 800, marginBottom: 4 }}>★ OFFIZIELLES VIBE★VIBO MITGLIED ★</div>
+                    <div className="vv-nost-cert-row" style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+                      <span><b>Nr.</b> #00042</span>
+                      <span><b>Seit</b> 12.06.2026</span>
+                      <span><b>Tage</b> 1</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action-Buttons */}
+                <div className="vv-nost-actions" style={{ display: "flex", gap: 4, justifyContent: "center", margin: "10px 0", flexWrap: "wrap" }}>
+                  <button type="button" className="vv-nost-action" style={{ padding: "6px 10px", borderRadius: 8, fontSize: 11, border: "2px solid", cursor: "default" }}>✎ Bearbeiten</button>
+                  <button type="button" className="vv-nost-action" style={{ padding: "6px 10px", borderRadius: 8, fontSize: 11, border: "2px solid", cursor: "default" }}>💭 Status</button>
+                  <button type="button" className="vv-nost-action" style={{ padding: "6px 10px", borderRadius: 8, fontSize: 11, border: "2px solid", cursor: "default" }}>🛍 Shop</button>
+                </div>
+
+                {/* Karte: Über mich */}
+                <div className="vv-nost-card vv-nost-card-violet" style={{ marginBottom: 8 }}>
+                  <div className="vv-nost-card-title" style={{ padding: 8, fontSize: 12 }}>✿ ÜBER MICH ✿</div>
+                  <div className="vv-nost-card-body" style={{ padding: 10, fontSize: 12 }}>
+                    <div style={{ marginBottom: 6 }}>
+                      <span className="vv-nost-chip" style={{ display: "inline-block", padding: "2px 8px", borderRadius: 999, fontSize: 11, marginRight: 4 }}>📍 Berlin</span>
+                      <span className="vv-nost-chip" style={{ display: "inline-block", padding: "2px 8px", borderRadius: 999, fontSize: 11, marginRight: 4 }}>🏫 Goethe-Gym</span>
+                      <span className="vv-nost-chip" style={{ display: "inline-block", padding: "2px 8px", borderRadius: 999, fontSize: 11 }}>💕 vergeben</span>
+                    </div>
+                    <div style={{ fontSize: 12, lineHeight: 1.4 }}>
+                      Hi! Ich liebe Y2K, Emo-Bands, Bubble-Tea und alte Nokia-Klingeltöne. ✿
+                    </div>
+                  </div>
+                </div>
+
+                {/* Karte: Pinnwand */}
+                <div className="vv-nost-card vv-nost-card-pink" style={{ marginBottom: 8 }}>
+                  <div className="vv-nost-card-title" style={{ padding: 8, fontSize: 12 }}>✎ PINNWAND ✎</div>
+                  <div className="vv-nost-card-body" style={{ padding: 10 }}>
+                    <div className="vv-nost-tabs" style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+                      <button type="button" className="vv-nost-tab active" style={{ padding: "4px 10px", borderRadius: 8, fontSize: 11, cursor: "default", border: "1px solid" }}>📌 Pinnwand</button>
+                      <button type="button" className="vv-nost-tab" style={{ padding: "4px 10px", borderRadius: 8, fontSize: 11, cursor: "default", border: "1px solid" }}>📖 Gästebuch</button>
+                    </div>
+                    <div className="vv-pinnwand-entry" style={{ padding: 8, borderRadius: 8, border: "1px solid", marginBottom: 4, fontSize: 12 }}>
+                      <div className="vv-pinnwand-meta" style={{ fontSize: 10, opacity: 0.7, marginBottom: 3 }}>
+                        <strong>kevin_skater</strong> 🛹 · vor 2 Std.
+                      </div>
+                      <div>Hdl du knuddelmaus 🥰</div>
+                    </div>
+                    <div className="vv-pinnwand-entry" style={{ padding: 8, borderRadius: 8, border: "1px solid", fontSize: 12 }}>
+                      <div className="vv-pinnwand-meta" style={{ fontSize: 10, opacity: 0.7, marginBottom: 3 }}>
+                        <strong>lisa_2k</strong> 💖 · gestern
+                      </div>
+                      <div>Cooles Profil ✨</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Karte: Steckbrief */}
+                <div className="vv-nost-card vv-nost-card-cyan" style={{ marginBottom: 8 }}>
+                  <div className="vv-nost-card-title" style={{ padding: 8, fontSize: 12 }}>📋 STECKBRIEF</div>
+                  <div className="vv-nost-card-body" style={{ padding: 10, fontSize: 12 }}>
+                    <div className="vv-nost-steckbrief-row" style={{ display: "flex", gap: 8, marginBottom: 3 }}>
+                      <span className="vv-nost-steckbrief-label" style={{ fontWeight: 700, minWidth: 70 }}>Lieblingsband:</span>
+                      <span className="vv-nost-steckbrief-value">Tokio Hotel</span>
+                    </div>
+                    <div className="vv-nost-steckbrief-row" style={{ display: "flex", gap: 8 }}>
+                      <span className="vv-nost-steckbrief-label" style={{ fontWeight: 700, minWidth: 70 }}>Lieblingsfarbe:</span>
+                      <span className="vv-nost-steckbrief-value">Pink ✿</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="vv-nost-footer" style={{
+                  padding: "8px 10px", textAlign: "center", fontSize: 10,
+                  borderRadius: 10, border: "1px solid",
+                  display: "flex", justifyContent: "center", gap: 6,
+                }}>
+                  <span>★</span>
+                  <span>{me.displayName || me.username}'s VibeVibo · Mitglied #00042</span>
+                  <span>★</span>
+                </div>
               </div>
             </div>
+          </div>
+
+          <div className="vv-skin-preview-tip">
+            💡 Die Vorschau zeigt alle 40+ stylebaren Bereiche. Was hier so aussieht, sieht auch auf deinem Profil so aus.
           </div>
         </div>
       </div>
