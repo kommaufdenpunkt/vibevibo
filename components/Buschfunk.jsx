@@ -392,6 +392,7 @@ export default function Buschfunk() {
 
   const load = async () => {
     setRefreshing(true);
+    const t0 = Date.now();
     try {
       const d = await api.buschfunk();
       const next = d.events || [];
@@ -400,7 +401,9 @@ export default function Buschfunk() {
         return next;
       });
     } catch {}
-    setTimeout(() => setRefreshing(false), 350);
+    // Mindestens 400 ms Spin-Animation, auch wenn API schneller zurueckkommt
+    const elapsed = Date.now() - t0;
+    setTimeout(() => setRefreshing(false), Math.max(0, 400 - elapsed));
   };
 
   useEffect(() => {
