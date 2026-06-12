@@ -377,22 +377,72 @@ function renderEvent(ev, i, isLast) {
   );
 }
 
+const FILTER_TABS = [
+  { key: "all", label: "✨ Alle", types: null },
+  { key: "friends", label: "⭐ Freunde", types: null, friendsOnly: true },
+  { key: "status", label: "💬 Status", types: ["status"] },
+  { key: "gift", label: "🎁 Geschenke", types: ["gift"] },
+  { key: "pinnwand", label: "📌 Pinnwand", types: ["pinnwand"] },
+];
+
 export default function Buschfunk() {
   const [events, setEvents] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const load = async () => {
+    setRefreshing(true);
+    try {
+      const d = await api.buschfunk();
+      const next = d.events || [];
+      setEvents((prev) => {
+        if (prev.length === next.length && prev[0]?.id === next[0]?.id && prev[0]?.at === next[0]?.at) return prev;
+        return next;
+      });
+    } catch {}
+    setTimeout(() => setRefreshing(false), 350);
+  };
 
   useEffect(() => {
-    const load = () => api.buschfunk().then((d) => { const next = d.events || []; setEvents((prev) => { if (prev.length === next.length && prev[0]?.id === next[0]?.id && prev[0]?.at === next[0]?.at) return prev; return next; }); }).catch(() => {});
     load();
     const t = setInterval(load, 120000);
     return () => clearInterval(t);
   }, []);
 
+  const tab = FILTER_TABS.find((t) => t.key === filter) || FILTER_TABS[0];
+  const filtered = events.filter((ev) => {
+    if (tab.friendsOnly && !ev.isFriend) return false;
+    if (tab.types && !tab.types.includes(ev.type)) return false;
+    return true;
+  });
+
   return (
     <div className="vv-card">
-      
-      {events.length === 0 ? (
+      <div className="vv-bf-toolbar">
+        <div className="vv-bf-filter-chips">
+          {FILTER_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className={`vv-bf-filter-chip${filter === t.key ? " active" : ""}`}
+              onClick={() => setFilter(t.key)}
+            >{t.label}</button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className={`vv-bf-refresh${refreshing ? " spinning" : ""}`}
+          onClick={load}
+          title="Aktualisieren"
+          aria-label="Aktualisieren"
+        >↻</button>
+      </div>
+
+      {filtered.length === 0 ? (
         <div className="vv-muted vv-center" style={{ padding: "16px 0" }}>
-          Noch nichts los. Schreib jemandem auf die Pinnwand!
+          {filter === "all"
+            ? "Noch nichts los. Schreib jemandem auf die Pinnwand!"
+            : "Hier ist nichts mit diesem Filter — probier einen anderen Tab."}
         </div>
       ) : (
         <div className="vv-bf-feed">
@@ -400,10 +450,10 @@ export default function Buschfunk() {
             const out = [];
             let cutInserted = false;
             let friendHeaderInserted = false;
-            const hasFriends = events.some((e) => e.isFriend);
-            const hasOthers = events.some((e) => !e.isFriend);
-            for (let i = 0; i < events.length; i++) {
-              const ev = events[i];
+            const hasFriends = filter === "all" && filtered.some((e) => e.isFriend);
+            const hasOthers = filter === "all" && filtered.some((e) => !e.isFriend);
+            for (let i = 0; i < filtered.length; i++) {
+              const ev = filtered[i];
               if (hasFriends && !friendHeaderInserted && ev.isFriend) {
                 out.push(
                   <div key="bf-header-friends" className="vv-bf-section-header vv-bf-section-friends">
@@ -425,7 +475,7 @@ export default function Buschfunk() {
                 );
                 cutInserted = true;
               }
-              out.push(renderEvent(ev, i, i === events.length - 1));
+              out.push(renderEvent(ev, i, i === filtered.length - 1));
             }
             return out;
           })()}

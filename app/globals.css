@@ -6848,6 +6848,70 @@ input[type="number"], input[type="tel"], textarea, select {
   .vv-friends-grid-nost { grid-template-columns: 1fr; }
 }
 
+/* Buschfunk Toolbar */
+.vv-bf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0e7f5;
+}
+.vv-bf-filter-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.vv-bf-filter-chips::-webkit-scrollbar { height: 4px; }
+.vv-bf-filter-chips::-webkit-scrollbar-thumb { background: #f9a8d4; border-radius: 4px; }
+.vv-bf-filter-chip {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #fbcfe8;
+  background: #fff;
+  color: #831843;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.vv-bf-filter-chip:hover {
+  background: #fce7f3;
+  transform: translateY(-1px);
+}
+.vv-bf-filter-chip.active {
+  background: linear-gradient(135deg, #ec4899, #f472b6);
+  color: #fff;
+  border-color: #db2777;
+  box-shadow: 0 2px 8px rgba(236,72,153,0.3);
+}
+.vv-bf-refresh {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #fbcfe8;
+  background: #fff;
+  color: #831843;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.vv-bf-refresh:hover { background: #fce7f3; transform: scale(1.05); }
+.vv-bf-refresh.spinning { animation: vv-bf-spin 0.6s ease-in-out; pointer-events: none; }
+@keyframes vv-bf-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Buschfunk Feed */
 .vv-bf-feed { display: flex; flex-direction: column; gap: 10px; }
 
