@@ -5,8 +5,11 @@
   "description": "Nostalgische Social-Plattform im Geist von MySpace, SchuelerVZ, Jappy, Lokalisten & wer-kennt-wen",
   "scripts": {
     "dev": "next dev -p 3000",
+    "predev": "node scripts/build-changelog.mjs",
     "build": "next build",
-    "start": "next start -p 3000"
+    "prebuild": "node scripts/build-changelog.mjs",
+    "start": "next start -p 3000",
+    "changelog": "node scripts/build-changelog.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
