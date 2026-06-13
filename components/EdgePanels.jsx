@@ -10,6 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import NotificationsBell from "@/components/NotificationsBell";
+import ChangelogPanel from "@/components/ChangelogPanel";
 
 const NAV_GROUPS = [
   {
@@ -182,6 +183,8 @@ export default function EdgePanels() {
             <span style={{ opacity: 0.6, fontSize: 11 }}>›</span>
           </Link>
         </div>
+
+        <ChangelogPanel />
 
         <div className="vv-edge-pwa">
           <div className="vv-edge-pwa-icon">📲</div>

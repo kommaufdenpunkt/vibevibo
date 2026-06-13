@@ -9083,3 +9083,102 @@ input[type="number"], input[type="tel"], textarea, select {
     right: calc(56px + env(safe-area-inset-right, 0px));
   }
 }
+
+/* =================================================================
+   🆕 Changelog-Panel im rechten Edge-Panel
+   ================================================================= */
+.vv-edge-changelog {
+  margin: 12px 12px 4px;
+  padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.12));
+  border: 1px solid rgba(236,72,153,0.25);
+}
+.vv-edge-changelog-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px 6px;
+  border-bottom: 1px dashed rgba(236,72,153,0.3);
+  margin-bottom: 8px;
+}
+.vv-edge-changelog-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  background: linear-gradient(135deg, #ec4899, #a855f7);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(168,85,247,0.45);
+  animation: vv-changelog-pulse 1.6s ease-in-out infinite;
+}
+@keyframes vv-changelog-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.vv-edge-changelog-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vv-edge-changelog-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 2px 0;
+}
+.vv-edge-changelog-dot {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.vv-edge-changelog-text {
+  flex: 1;
+  min-width: 0;
+}
+.vv-edge-changelog-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #f3e8ff;
+}
+.vv-edge-changelog-time {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: rgba(243,232,255,0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.vv-edge-changelog-more {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px dashed rgba(236,72,153,0.45);
+  background: transparent;
+  color: #fce7f3;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.vv-edge-changelog-more:hover {
+  background: rgba(236,72,153,0.18);
+  border-color: rgba(236,72,153,0.7);
+}
