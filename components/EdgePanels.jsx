@@ -12,14 +12,14 @@ import { api } from "@/lib/api";
 import NotificationsBell from "@/components/NotificationsBell";
 import ChangelogPanel from "@/components/ChangelogPanel";
 
+// 🎯 Aufgeräumte Navigation (Phase 1): nur 8 Haupt-Punkte sichtbar.
+// Alles andere ist weiter erreichbar via /apps (Launcher) oder Direkt-URL.
 const NAV_GROUPS = [
   {
     title: "👤 Persönlich",
     items: [
       { href: "/heute", label: "Heute", icon: "🏠" },
       { href: "/profile", label: "Mein Profil", icon: "🪪" },
-      { href: "/profile/edit", label: "Profil bearbeiten", icon: "✏️" },
-      { href: "/profile/skin", label: "Skin / Theme", icon: "🎨" },
       { href: "/messenger", label: "Messenger", icon: "💬" },
       { href: "/freunde", label: "Freunde", icon: "👯" },
     ],
@@ -27,28 +27,18 @@ const NAV_GROUPS = [
   {
     title: "🌍 Community",
     items: [
-      { href: "/karte", label: "Realitätskarte", icon: "🗺️" },
       { href: "/buschfunk", label: "Buschfunk", icon: "📣" },
-      { href: "/gruppen", label: "Gruppen", icon: "🏘️" },
-      { href: "/live", label: "Live", icon: "📺" },
-      { href: "/schulen", label: "Schulen", icon: "🎓" },
-    ],
-  },
-  {
-    title: "🎁 Inhalte",
-    items: [
+      { href: "/karte", label: "Karte", icon: "🗺️" },
+      { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
       { href: "/fotos", label: "Fotos", icon: "📸" },
-      { href: "/geschenke", label: "Geschenke", icon: "🎁" },
-      { href: "/shop", label: "Shop", icon: "🛍️" },
-      { href: "/vibes-verdienen", label: "Vibes & Empfehlungen", icon: "💰" },
     ],
   },
   {
-    title: "ℹ️ Info",
+    title: "🛍️ Mehr",
     items: [
-      { href: "/datenschutz", label: "Datenschutz", icon: "🛡️" },
-      { href: "/impressum", label: "Impressum", icon: "📄" },
-      { href: "/installieren", label: "App installieren", icon: "📲" },
+      { href: "/shop", label: "Shop", icon: "🛍️" },
+      { href: "/vibes-verdienen", label: "Vibes verdienen", icon: "💰" },
+      { href: "/apps", label: "Alle Apps", icon: "📲" },
     ],
   },
 ];
@@ -210,35 +200,24 @@ export default function EdgePanels() {
           )}
         </div>
 
-        <div className="vv-edge-quick">
-          <div className="vv-edge-nav-grouptitle">🎮 Spielen</div>
-          <Link href="/spiele" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #fbbf24, #f97316)" }}>
-            <span className="vv-edge-quick-emoji">🎮</span>
-            <span className="vv-edge-quick-label">Spiele-Sammlung</span>
-          </Link>
-          <Link href="/vibo" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #ec4899, #db2777)" }}>
-            <span className="vv-edge-quick-emoji">🥚</span>
-            <span className="vv-edge-quick-label">Mein VIBO</span>
-          </Link>
-          <Link href="/rang" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)" }}>
-            <span className="vv-edge-quick-emoji">🏆</span>
-            <span className="vv-edge-quick-label">Rang & XP</span>
-          </Link>
-          <Link href="/shop" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #f43f5e, #be185d)" }}>
-            <span className="vv-edge-quick-emoji">🛍️</span>
-            <span className="vv-edge-quick-label">Shop</span>
-          </Link>
-        </div>
-
+        {/* Aufgeräumte Schnell-Aktionen — 4 wichtigste Sprungbretter */}
         <div className="vv-edge-quick">
           <div className="vv-edge-nav-grouptitle">🚀 Schnell-Aktionen</div>
+          <Link href="/heute" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #ec4899, #db2777)" }}>
+            <span className="vv-edge-quick-emoji">🏠</span>
+            <span className="vv-edge-quick-label">Heute</span>
+          </Link>
           <Link href="/messenger" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)" }}>
             <span className="vv-edge-quick-emoji">💬</span>
             <span className="vv-edge-quick-label">Messenger</span>
           </Link>
-          <Link href="/buschfunk" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #8b5cf6, #6366f1)" }}>
+          <Link href="/buschfunk" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #fb923c, #ea580c)" }}>
             <span className="vv-edge-quick-emoji">📣</span>
             <span className="vv-edge-quick-label">Buschfunk</span>
+          </Link>
+          <Link href="/vibo" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)" }}>
+            <span className="vv-edge-quick-emoji">🥚</span>
+            <span className="vv-edge-quick-label">Mein VIBO</span>
           </Link>
         </div>
       </aside>
