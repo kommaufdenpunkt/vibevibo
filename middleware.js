@@ -23,6 +23,7 @@ const PUBLIC_EXACT = new Set([
   "/icon-192.png",
   "/icon-512.png",
   "/apple-icon.png",
+  "/api/stripe/webhook",  // Stripe-Webhook hat Signatur-Auth statt Session
 ]);
 
 const PUBLIC_PREFIX = [
