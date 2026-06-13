@@ -4,7 +4,7 @@
 // Transparenter Hintergrund (Theme scheint durch), Glas-Karten,
 // kompakter Header-Strip + Tab-Strip + Tab-Content in Glass-Cards.
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMe } from "@/lib/useMe";
@@ -22,7 +22,16 @@ const TABS = [
   { id: "map",    icon: "🗺️", label: "Karte" },
 ];
 
-export default function ViboPage() {
+// Wrapper mit Suspense — Next.js 15+ braucht das fuer useSearchParams
+export default function ViboPageWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <ViboPage />
+    </Suspense>
+  );
+}
+
+function ViboPage() {
   const { me, loading } = useMe();
   const router = useRouter();
   const params = useSearchParams();

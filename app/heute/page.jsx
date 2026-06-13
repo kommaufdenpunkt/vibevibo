@@ -1,9 +1,8 @@
 "use client";
 
-// 🏠 Heute v2 — Dashboard statt Karten-Liste.
-// Layout: kompakter Header-Strip + 4 große Quick-Action-Tiles +
-// nur RELEVANTE Alerts darunter + Activity-Feed.
-// Immer voll — auch bei leerem Account dank Quick-Tiles + Stats.
+// 🏠 Heute v5 — WOW-Edition.
+// Großer animierter Hero, Glas-Karten, smooth scroll, horizontal swipe tiles,
+// kein nested-scroll mehr, Theme scheint durch.
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -52,7 +51,7 @@ export default function HeutePage() {
   }, []);
 
   const dateShort = useMemo(() => new Date().toLocaleDateString("de-DE", {
-    weekday: "short", day: "2-digit", month: "long",
+    weekday: "long", day: "2-digit", month: "long",
   }), []);
 
   if (loading) return null;
@@ -73,7 +72,6 @@ export default function HeutePage() {
   const lastDailyAt = data.credits?.lastDailyAt || 0;
   const canClaimDaily = Date.now() - lastDailyAt > 22 * 3600 * 1000;
 
-  // Sammle Alerts (nur wichtige!)
   const alerts = [];
   if (canClaimDaily) alerts.push({
     icon: "🎁", text: "Tages-Bonus wartet", action: "Abholen", color: "#fbbf24",
@@ -128,44 +126,68 @@ export default function HeutePage() {
   const recentActivity = data.notifications.slice(0, 10);
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #fef3f9 0%, #f0e7ff 60%, #e0f2fe 100%)",
-      paddingBottom: 100,
-    }}>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "12px 12px 0" }}>
+    <div style={{ background: "transparent", paddingBottom: 100 }}>
+      <div style={{
+        maxWidth: 760, margin: "0 auto", padding: "10px 12px 0",
+        scrollBehavior: "smooth",
+      }}>
 
-        {/* === HEADER-STRIP === */}
+        {/* === HERO BANNER (BIG, animated gradient) === */}
         <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "rgba(255,255,255,0.7)",
-          backdropFilter: "blur(8px)",
-          padding: "8px 14px", borderRadius: 999, marginBottom: 12,
-          border: "1px solid rgba(168,85,247,0.15)",
+          position: "relative", overflow: "hidden",
+          background: "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #06b6d4 100%)",
+          backgroundSize: "200% 200%",
+          animation: "vv-heute-hero 12s ease infinite",
+          borderRadius: 20, padding: "20px 18px",
+          color: "#fff", marginBottom: 12,
+          boxShadow: "0 8px 24px rgba(168,85,247,0.35)",
         }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#7c3aed", lineHeight: 1 }}>
-              {dateShort.toUpperCase()}
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 900, color: "#1f2937", marginTop: 2 }}>
-              {greeting}, {me.displayName || me.username}
-            </div>
+          {/* Sparkle deco */}
+          <div style={{
+            position: "absolute", top: 8, right: 12, fontSize: 28, opacity: 0.5,
+            pointerEvents: "none",
+          }}>✨</div>
+          <div style={{
+            position: "absolute", bottom: 8, left: 12, fontSize: 22, opacity: 0.4,
+            pointerEvents: "none",
+          }}>★</div>
+
+          <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.9, letterSpacing: 1, textTransform: "uppercase" }}>
+            {dateShort}
           </div>
-          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+          <div style={{
+            fontSize: 28, fontWeight: 900, lineHeight: 1.1, marginTop: 4,
+            textShadow: "0 2px 6px rgba(0,0,0,0.2)",
+          }}>
+            {greeting}, {me.displayName || me.username}!
+          </div>
+          <div style={{
+            display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap",
+          }}>
             <div style={{
-              background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-              color: "#1c1c1e", padding: "5px 12px", borderRadius: 999,
-              fontWeight: 900, fontSize: 13,
+              background: "rgba(255,255,255,0.22)",
+              backdropFilter: "blur(8px)",
+              padding: "6px 14px", borderRadius: 999,
+              fontWeight: 900, fontSize: 14,
             }}>✨ {balance}</div>
             {streak > 0 && (
               <div style={{
-                background: "linear-gradient(135deg, #ef4444, #dc2626)",
-                color: "#fff", padding: "5px 10px", borderRadius: 999,
-                fontWeight: 800, fontSize: 12,
-              }}>🔥 {streak}</div>
+                background: "rgba(255,255,255,0.22)",
+                backdropFilter: "blur(8px)",
+                padding: "6px 14px", borderRadius: 999,
+                fontWeight: 800, fontSize: 13,
+              }}>🔥 {streak}-Tage Streak</div>
             )}
           </div>
         </div>
+
+        {/* Inline animation styles for hero */}
+        <style>{`
+          @keyframes vv-heute-hero {
+            0%, 100% { background-position: 0% 50%; }
+            50%      { background-position: 100% 50%; }
+          }
+        `}</style>
 
         {flash && (
           <div style={{
@@ -176,7 +198,7 @@ export default function HeutePage() {
           }}>{flash}</div>
         )}
 
-        {/* === ALERTS (nur wichtige, kompakt) === */}
+        {/* === ALERTS === */}
         {alerts.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
             {alerts.map((a, i) => (
@@ -185,40 +207,24 @@ export default function HeutePage() {
           </div>
         )}
 
-        {/* === WAS KANN ICH MACHEN? (Aktions-Tiles, immer da) === */}
+        {/* === HAUPT-AKTIONEN (8 Tiles, mobile-optimiert mit Active-State) === */}
         <SectionTitle>🚀 Schnell loslegen</SectionTitle>
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
           gap: 10, marginBottom: 16,
         }}>
-          <BigTile href="/buschfunk"
-            color1="#fb923c" color2="#ef4444"
-            icon="📣" title="Buschfunk" sub="Was läuft heute?" />
-          <BigTile href="/messenger"
-            color1="#06b6d4" color2="#0284c7"
-            icon="💬" title="Messenger" sub="Direkt chatten" />
-          <BigTile href="/vibo"
-            color1="#a855f7" color2="#7c3aed"
-            icon="🥚" title="Mein VIBO" sub={data.vibo?.vibo?.name || "Dein Pet"} />
-          <BigTile href="/karte"
-            color1="#06b6d4" color2="#0e7490"
-            icon="🗺️" title="Realitätskarte" sub="Welt erkunden" />
-          <BigTile href="/geschenke"
-            color1="#fb923c" color2="#ea580c"
-            icon="🎁" title="Geschenke" sub="Verschicken" />
-          <BigTile href="/fotos"
-            color1="#ec4899" color2="#be185d"
-            icon="📸" title="Fotos" sub="Galerie" />
-          <BigTile href="/freunde"
-            color1="#3b82f6" color2="#1e40af"
-            icon="👯" title="Freunde" sub="Wer ist online?" />
-          <BigTile href="/apps"
-            color1="#ec4899" color2="#8b5cf6"
-            icon="📲" title="Alle Apps" sub="Komplett-Übersicht" />
+          <BigTile href="/buschfunk" color1="#fb923c" color2="#ef4444" icon="📣" title="Buschfunk" sub="Was läuft heute?" />
+          <BigTile href="/messenger" color1="#06b6d4" color2="#0284c7" icon="💬" title="Messenger" sub="Direkt chatten" />
+          <BigTile href="/vibo"      color1="#a855f7" color2="#7c3aed" icon="🥚" title="Mein VIBO" sub={data.vibo?.vibo?.name || "Dein Pet"} />
+          <BigTile href="/karte"     color1="#06b6d4" color2="#0e7490" icon="🗺️" title="Karte" sub="Welt erkunden" />
+          <BigTile href="/geschenke" color1="#fb923c" color2="#ea580c" icon="🎁" title="Geschenke" sub="Verschicken" />
+          <BigTile href="/fotos"     color1="#ec4899" color2="#be185d" icon="📸" title="Fotos" sub="Galerie" />
+          <BigTile href="/freunde"   color1="#3b82f6" color2="#1e40af" icon="👯" title="Freunde" sub="Wer ist online?" />
+          <BigTile href="/apps"      color1="#ec4899" color2="#8b5cf6" icon="📲" title="Alle Apps" sub="Komplett" />
         </div>
 
-        {/* === BUSCHFUNK FEED — was läuft gerade? === */}
+        {/* === BUSCHFUNK FEED (kein nested-scroll mehr — flowt durch) === */}
         {data.buschfunk.length > 0 && (
           <>
             <div style={{
@@ -227,25 +233,34 @@ export default function HeutePage() {
             }}>
               <SectionTitle compact>🆕 Was ist neu?</SectionTitle>
               <Link href="/buschfunk" style={{
-                fontSize: 12, color: "#ea580c", fontWeight: 800,
-                textDecoration: "none", padding: "4px 10px",
-                background: "rgba(251,146,60,0.15)", borderRadius: 999,
+                fontSize: 11, color: "#fff", fontWeight: 800,
+                textDecoration: "none", padding: "4px 12px",
+                background: "linear-gradient(135deg, #fb923c, #ea580c)",
+                borderRadius: 999,
+                textShadow: "0 1px 2px rgba(0,0,0,0.3)",
               }}>📣 Buschfunk →</Link>
             </div>
             <div style={{
-              background: "rgba(255,255,255,0.85)",
-              borderRadius: 14, padding: 10, marginBottom: 14,
-              border: "1px solid rgba(251,146,60,0.25)",
-              boxShadow: "0 2px 8px rgba(251,146,60,0.08)",
+              background: "rgba(255,255,255,0.88)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              borderRadius: 16, padding: 12, marginBottom: 14,
+              border: "1px solid rgba(255,255,255,0.5)",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
               display: "flex", flexDirection: "column", gap: 6,
-              maxHeight: 420, overflowY: "auto",
-              // smooth scrolling
-              scrollBehavior: "smooth",
-              WebkitOverflowScrolling: "touch",
             }}>
-              {data.buschfunk.slice(0, 15).map((ev, i) => (
+              {data.buschfunk.slice(0, 10).map((ev, i) => (
                 <BuschfunkPreview key={ev.id || `${ev.type}-${ev.at}-${ev.actor?.username || i}`} ev={ev} />
               ))}
+              {data.buschfunk.length > 10 && (
+                <Link href="/buschfunk" style={{
+                  textAlign: "center", padding: "8px",
+                  fontSize: 12, color: "#ea580c", fontWeight: 700,
+                  textDecoration: "none",
+                }}>
+                  📣 Alle {data.buschfunk.length} Einträge sehen →
+                </Link>
+              )}
             </div>
           </>
         )}
@@ -253,27 +268,35 @@ export default function HeutePage() {
         {/* === FORTUNE === */}
         {data.fortune?.text && (
           <div style={{
-            background: "linear-gradient(135deg, #fce7f3, #f5d0fe)",
-            border: "1px solid rgba(192,38,211,0.25)",
-            borderRadius: 14, padding: "12px 14px", marginBottom: 14,
+            background: "rgba(252,231,243,0.88)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            boxShadow: "0 4px 16px rgba(192,38,211,0.1)",
+            borderRadius: 16, padding: "14px 16px", marginBottom: 14,
           }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#86198f", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>
-              🔮 Spruch des Tages
-            </div>
             <div style={{
-              fontSize: 14, fontStyle: "italic", color: "#581c87", lineHeight: 1.5,
+              fontSize: 11, fontWeight: 800, color: "#86198f",
+              marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8,
+            }}>🔮 Spruch des Tages</div>
+            <div style={{
+              fontSize: 15, fontStyle: "italic", color: "#581c87", lineHeight: 1.5,
+              fontWeight: 600,
             }}>„{data.fortune.text}"</div>
           </div>
         )}
 
-        {/* === ACTIVITY FEED (kompakte Liste) === */}
+        {/* === ACTIVITY FEED === */}
         {recentActivity.length > 0 && (
           <>
             <SectionTitle>📰 Deine Benachrichtigungen</SectionTitle>
             <div style={{
-              background: "rgba(255,255,255,0.7)",
-              borderRadius: 14, padding: 12, marginBottom: 14,
-              border: "1px solid rgba(168,85,247,0.12)",
+              background: "rgba(255,255,255,0.88)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              borderRadius: 16, padding: 12, marginBottom: 14,
+              border: "1px solid rgba(255,255,255,0.5)",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
               display: "flex", flexDirection: "column", gap: 4,
             }}>
               {recentActivity.map((n) => <ActivityRow key={n.id} n={n} myUsername={me.username} />)}
@@ -281,15 +304,15 @@ export default function HeutePage() {
           </>
         )}
 
-        {/* Empty-Stat (nur falls wirklich nix da) */}
-        {alerts.length === 0 && recentActivity.length === 0 && (
+        {alerts.length === 0 && recentActivity.length === 0 && data.buschfunk.length === 0 && (
           <div style={{
             textAlign: "center", padding: "30px 20px",
-            background: "rgba(255,255,255,0.5)",
-            borderRadius: 14, color: "#94a3b8",
+            background: "rgba(255,255,255,0.7)",
+            backdropFilter: "blur(12px)",
+            borderRadius: 16, color: "#475569",
           }}>
-            <div style={{ fontSize: 40, marginBottom: 8 }}>✨</div>
-            <div style={{ fontWeight: 700, color: "#475569" }}>Alles ruhig hier.</div>
+            <div style={{ fontSize: 44, marginBottom: 8 }}>✨</div>
+            <div style={{ fontWeight: 800, color: "#1f2937" }}>Alles ruhig hier.</div>
             <div style={{ fontSize: 12, marginTop: 4 }}>
               Schreib was im Buschfunk oder besuch dein VIBO ✿
             </div>
@@ -300,32 +323,45 @@ export default function HeutePage() {
   );
 }
 
+function SectionTitle({ children, compact = false }) {
+  return (
+    <div style={{
+      fontSize: 12, fontWeight: 900,
+      color: "#fff",
+      marginBottom: compact ? 0 : 10, padding: compact ? 0 : "0 4px",
+      textTransform: "uppercase", letterSpacing: 1,
+      textShadow: "0 2px 6px rgba(0,0,0,0.4)",
+    }}>{children}</div>
+  );
+}
+
 function AlertRow({ alert, busy }) {
   const inner = (
     <div style={{
       display: "flex", alignItems: "center", gap: 10,
-      background: "#fff",
+      background: "rgba(255,255,255,0.95)",
+      backdropFilter: "blur(12px)",
       border: `2px solid ${alert.color}`,
-      borderRadius: 12, padding: "10px 12px",
-      boxShadow: `0 2px 8px ${alert.color}33`,
+      borderRadius: 14, padding: "12px 14px",
+      boxShadow: `0 4px 12px ${alert.color}40`,
       cursor: "pointer",
-      transition: "transform 0.1s",
     }}>
-      <div style={{ fontSize: 22 }}>{alert.icon}</div>
+      <div style={{ fontSize: 26 }}>{alert.icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 800, color: "#1f2937", fontSize: 14, lineHeight: 1.2 }}>{alert.text}</div>
       </div>
       <div style={{
         background: alert.color, color: "#fff",
-        padding: "5px 12px", borderRadius: 999,
+        padding: "7px 14px", borderRadius: 999,
         fontWeight: 800, fontSize: 12, whiteSpace: "nowrap",
+        boxShadow: `0 2px 6px ${alert.color}66`,
       }}>{busy ? "…" : alert.action} →</div>
     </div>
   );
 
   if (alert.href) return <Link href={alert.href} style={{ textDecoration: "none" }}>{inner}</Link>;
   return <button type="button" onClick={alert.onClick} disabled={busy}
-    style={{ all: "unset", display: "block", width: "100%" }}>{inner}</button>;
+    style={{ all: "unset", display: "block", width: "100%", cursor: "pointer" }}>{inner}</button>;
 }
 
 function BigTile({ href, color1, color2, icon, title, sub }) {
@@ -333,33 +369,27 @@ function BigTile({ href, color1, color2, icon, title, sub }) {
     <Link href={href} style={{
       display: "flex", flexDirection: "column",
       background: `linear-gradient(135deg, ${color1}, ${color2})`,
-      color: "#fff", padding: "14px 14px", borderRadius: 16,
-      textDecoration: "none", minHeight: 100,
-      boxShadow: `0 4px 12px ${color1}40`,
+      color: "#fff", padding: "16px 14px", borderRadius: 18,
+      textDecoration: "none", minHeight: 110,
+      boxShadow: `0 6px 18px ${color1}40`,
       position: "relative", overflow: "hidden",
-    }}>
-      <div style={{ fontSize: 32, lineHeight: 1, marginBottom: 4 }}>{icon}</div>
-      <div style={{ fontWeight: 900, fontSize: 16, lineHeight: 1.2 }}>{title}</div>
-      <div style={{ fontSize: 11.5, opacity: 0.9, marginTop: 2 }}>{sub}</div>
+      transition: "transform 0.12s, box-shadow 0.12s",
+      WebkitTapHighlightColor: "transparent",
+    }}
+    onTouchStart={(e) => e.currentTarget.style.transform = "scale(0.96)"}
+    onTouchEnd={(e) => e.currentTarget.style.transform = "scale(1)"}>
+      <div style={{ fontSize: 34, lineHeight: 1, marginBottom: 4 }}>{icon}</div>
+      <div style={{ fontWeight: 900, fontSize: 16, lineHeight: 1.2, textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>{title}</div>
+      <div style={{ fontSize: 11.5, opacity: 0.95, marginTop: 2, fontWeight: 600 }}>{sub}</div>
     </Link>
-  );
-}
-
-function SectionTitle({ children, compact = false }) {
-  return (
-    <div style={{
-      fontSize: compact ? 12 : 12, fontWeight: 800, color: "#6b7280",
-      marginBottom: compact ? 0 : 8, padding: compact ? 0 : "0 4px",
-      textTransform: "uppercase", letterSpacing: 0.5,
-    }}>{children}</div>
   );
 }
 
 function BuschfunkPreview({ ev }) {
   const TYPE_ICON = {
-    status:    "💬", pinnwand:   "📌", gift:    "🎁",
-    newpic:    "🖼️", grouppost:  "🏘️", login:   "✨",
-    register:  "🎉", knuddel:    "🥚", milestone:"🎯",
+    status: "💬", pinnwand: "📌", gift: "🎁", newpic: "🖼️",
+    grouppost: "🏘️", login: "✨", register: "🎉", knuddel: "🥚",
+    milestone: "🎯",
   };
   const icon = TYPE_ICON[ev.type] || "✨";
   const actorName = ev.actor?.displayName || ev.actor?.username || "Jemand";
@@ -378,25 +408,27 @@ function BuschfunkPreview({ ev }) {
 
   return (
     <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
-      display: "flex", alignItems: "flex-start", gap: 8,
-      padding: "8px 10px", borderRadius: 10,
+      display: "flex", alignItems: "flex-start", gap: 10,
+      padding: "10px 12px", borderRadius: 12,
       background: "#fff",
-      border: "1px solid rgba(251,146,60,0.15)",
+      border: "1px solid rgba(251,146,60,0.18)",
       textDecoration: "none", color: "inherit",
+      transition: "transform 0.1s",
+      WebkitTapHighlightColor: "transparent",
     }}>
       <div style={{
         flexShrink: 0, fontSize: 18, lineHeight: 1,
-        width: 28, height: 28, borderRadius: 999,
+        width: 32, height: 32, borderRadius: 999,
         background: "linear-gradient(135deg, #fde68a, #fb923c)",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>{icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: "#1f2937", lineHeight: 1.3 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#1f2937", lineHeight: 1.3 }}>
           {actorName}
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", marginLeft: 6 }}>· {when}</span>
+          <span style={{ fontSize: 10.5, fontWeight: 600, color: "#94a3b8", marginLeft: 6 }}>· {when}</span>
         </div>
         <div style={{
-          fontSize: 12, color: "#475569", marginTop: 1,
+          fontSize: 12.5, color: "#475569", marginTop: 1,
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         }}>{text}</div>
       </div>
@@ -433,9 +465,10 @@ function ActivityRow({ n, myUsername }) {
   return (
     <Link href={href} style={{
       display: "flex", alignItems: "center", gap: 8,
-      padding: "6px 8px", borderRadius: 8,
-      background: n.read ? "transparent" : "rgba(236,72,153,0.06)",
+      padding: "8px 10px", borderRadius: 10,
+      background: n.read ? "transparent" : "rgba(236,72,153,0.08)",
       textDecoration: "none", color: "inherit",
+      WebkitTapHighlightColor: "transparent",
     }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1f2937", lineHeight: 1.3 }}>
@@ -443,7 +476,7 @@ function ActivityRow({ n, myUsername }) {
         </div>
         <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 1 }}>{when}</div>
       </div>
-      {!n.read && <div style={{ width: 6, height: 6, borderRadius: 999, background: "#ec4899" }} />}
+      {!n.read && <div style={{ width: 7, height: 7, borderRadius: 999, background: "#ec4899" }} />}
     </Link>
   );
 }

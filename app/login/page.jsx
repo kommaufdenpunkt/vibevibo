@@ -3,15 +3,20 @@
 // 🔑 LOGIN — komplett im 2007er-Style mit WordArt, Glitzer-Avatar und neon Vibes.
 // Tabs für Login/Registrieren, 2FA, Emoji-Picker mit Animation, Mobile-First.
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 
 const EMOJIS = ["🙂","😎","🌸","🛹","👑","🎮","💅","🎧","🦄","🌈","🔥","🌟","💖","🎀","🍀","⚡","🦋","☕"];
 
-export default function LoginPage() {
+export default function LoginPageWrapper() {
+  return <Suspense fallback={null}><LoginPage /></Suspense>;
+}
+
+function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { refresh } = useMe();
   const [mode, setMode] = useState("login");
   const [busy, setBusy] = useState(false);
@@ -49,7 +54,12 @@ export default function LoginPage() {
         });
       }
       await refresh();
-      router.push("/profile");
+      // Wenn der User mit ?next=/foo umgeleitet wurde, dorthin zurueck.
+      // Sonst Standard: /heute (Tages-Hub statt /profile)
+      const nextUrl = searchParams.get("next");
+      const dest = nextUrl && nextUrl.startsWith("/") && !nextUrl.startsWith("//")
+        ? nextUrl : "/heute";
+      router.push(dest);
       router.refresh();
     } catch (e) {
       setError(e.message);
@@ -184,23 +194,6 @@ export default function LoginPage() {
                   </button>
                 )}
               </div>
-
-              {/* 🔗 Social-Login (Google) */}
-              {!needsTotp && (
-                <div className="vv-login-social">
-                  <div className="vv-login-social-sep">
-                    <span>oder</span>
-                  </div>
-                  <a href="/api/auth/social/google/start" className="vv-login-social-btn vv-login-social-google">
-                    <span style={{ fontSize: 20 }}>🅖</span>
-                    <span>{mode === "login" ? "Mit Google einloggen" : "Mit Google beitreten"}</span>
-                  </a>
-                  <p className="vv-login-social-note">
-                    Wir übernehmen nur Name + E-Mail + Profilbild. Du kannst alles später anpassen.
-                  </p>
-                </div>
-              )}
-
             </form>
           </div>
         </div>
