@@ -26,22 +26,25 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-export default function InlineGreetingEditor({ initialHtml = "" }) {
+export default function InlineGreetingEditor({ initialHtml = "", initialTitle = "" }) {
   const { refresh, me } = useMe();
   const [editing, setEditing] = useState(false);
   const [html, setHtml] = useState(initialHtml);
   const [draft, setDraft] = useState(initialHtml);
+  const [title, setTitle] = useState(initialTitle);
+  const [titleDraft, setTitleDraft] = useState(initialTitle);
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
-  const [imageModal, setImageModal] = useState(null); // { url, alt, tab, photos }
-  const [linkModal, setLinkModal] = useState(null);   // { text, url }
+  const [imageModal, setImageModal] = useState(null);
+  const [linkModal, setLinkModal] = useState(null);
   const taRef = useRef(null);
-  const fileRef = useRef(null);
 
   useEffect(() => {
     setHtml(initialHtml);
     setDraft(initialHtml);
-  }, [initialHtml]);
+    setTitle(initialTitle);
+    setTitleDraft(initialTitle);
+  }, [initialHtml, initialTitle]);
 
   function flashMsg(msg, ms = 2500) {
     setFlash(msg);
@@ -78,9 +81,13 @@ export default function InlineGreetingEditor({ initialHtml = "" }) {
     if (!me) return;
     setBusy(true);
     try {
-      await api.updateMe(me.username, { greetingHtml: draft.slice(0, GREETING_MAX) });
+      await api.updateMe(me.username, {
+        greetingHtml: draft.slice(0, GREETING_MAX),
+        greetingTitle: titleDraft.slice(0, 120),
+      });
       await refresh();
       setHtml(draft);
+      setTitle(titleDraft);
       setEditing(false);
       flashMsg("✅ Gespeichert!");
     } catch (e) {
@@ -89,8 +96,10 @@ export default function InlineGreetingEditor({ initialHtml = "" }) {
   }
 
   function cancel() {
-    if (draft !== html && !confirm("Änderungen verwerfen?")) return;
+    const dirty = draft !== html || titleDraft !== title;
+    if (dirty && !confirm("Änderungen verwerfen?")) return;
     setDraft(html);
+    setTitleDraft(title);
     setEditing(false);
   }
 
@@ -98,6 +107,18 @@ export default function InlineGreetingEditor({ initialHtml = "" }) {
   if (editing) {
     return (
       <div className="vv-inline-greet-edit">
+        {/* Titel-Feld */}
+        <label className="vv-inline-greet-titlelabel">
+          📌 Überschrift <span style={{ opacity: 0.6, fontWeight: 500 }}>(leer = Standard)</span>
+        </label>
+        <input
+          className="vv-inline-greet-titleinput"
+          value={titleDraft}
+          onChange={(e) => setTitleDraft(e.target.value.slice(0, 120))}
+          placeholder="🌸 HERZLICH WILLKOMMEN AUF MEINER SEITE! 🌸"
+          maxLength={120}
+        />
+
         {/* Toolbar */}
         <div className="vv-inline-greet-toolbar">
           <button type="button" onClick={() => wrap("<b>", "</b>")} title="Fett" style={{ fontWeight: 900 }}>B</button>

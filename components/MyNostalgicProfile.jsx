@@ -117,11 +117,14 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
         <div className="vv-nost-card vv-nost-card-violet vv-jappy-greet">
           <div className="vv-nost-card-title vv-jappy-greet-title">
             <span className="vv-jappy-star">✿</span>
-            <span>🌸 HERZLICH WILLKOMMEN AUF MEINER SEITE! 🌸</span>
+            <span>{(profile.greetingTitle && profile.greetingTitle.trim()) || "🌸 HERZLICH WILLKOMMEN AUF MEINER SEITE! 🌸"}</span>
             <span className="vv-jappy-star">✿</span>
           </div>
           <div className="vv-nost-card-body vv-jappy-greet-body">
-            <InlineGreetingEditor initialHtml={profile.greetingHtml || ""} />
+            <InlineGreetingEditor
+              initialHtml={profile.greetingHtml || ""}
+              initialTitle={profile.greetingTitle || ""}
+            />
           </div>
         </div>
 

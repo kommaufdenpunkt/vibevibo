@@ -157,7 +157,7 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
           <div className="vv-nost-card vv-nost-card-violet vv-jappy-greet">
             <div className="vv-nost-card-title vv-jappy-greet-title">
               <span className="vv-jappy-star">✿</span>
-              <span>🌸 HERZLICH WILLKOMMEN BEI {profile.displayName.toUpperCase()}! 🌸</span>
+              <span>{(profile.greetingTitle && profile.greetingTitle.trim()) || `🌸 HERZLICH WILLKOMMEN BEI ${profile.displayName.toUpperCase()}! 🌸`}</span>
               <span className="vv-jappy-star">✿</span>
             </div>
             <div className="vv-nost-card-body vv-jappy-greet-body">
