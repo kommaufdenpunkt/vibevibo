@@ -18,6 +18,7 @@ import MusicPlayer from "@/components/MusicPlayer";
 import ProfileSkin from "@/components/ProfileSkin";
 import ComplimentInbox from "@/components/ComplimentInbox";
 import InlineGreetingEditor from "@/components/InlineGreetingEditor";
+import AmazonShelf from "@/components/AmazonShelf";
 import OnlineSince from "@/components/OnlineSince";
 import PremiumBadges from "@/components/PremiumBadges";
 import Marquee from "@/components/Marquee";
@@ -232,6 +233,8 @@ export default function MyNostalgicProfile({ profile, pinnwand, guestbook, gifts
 
           </aside>
         </div>
+
+        <AmazonShelf compact={true} max={6} title="💝 Passend zu deinem Vibe" />
 
         {/* Klassischer 2000er-Footer */}
         <div className="vv-nost-footer">

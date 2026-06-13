@@ -11,6 +11,7 @@ import PwaInfo from "@/components/PwaInfo";
 import InstallNow from "@/components/InstallNow";
 import RewardedAdButton from "@/components/RewardedAdButton";
 import AdSlot from "@/components/AdSlot";
+import AmazonShelf from "@/components/AmazonShelf";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { ColoredName } from "@/components/GenderAge";
@@ -146,6 +147,8 @@ export default function HomePage() {
           <span className="vv-home-tile-sub">XP & Levels</span>
         </Link>
       </div>
+
+      <AmazonShelf compact={false} max={6} />
 
       {/* 3-Spalten-Layout */}
       <div className="vv-home-grid">

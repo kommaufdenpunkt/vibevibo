@@ -22,6 +22,7 @@ import PremiumBadges from "@/components/PremiumBadges";
 import ComplimentModal from "@/components/ComplimentModal";
 import ViboProfileWidget from "@/components/ViboProfileWidget";
 import Marquee from "@/components/Marquee";
+import AmazonShelf from "@/components/AmazonShelf";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import { relTime } from "@/lib/format";
@@ -294,6 +295,8 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
             )}
           </aside>
         </div>
+
+        <AmazonShelf compact={true} max={6} title="💝 Passend zu diesem Vibe" />
 
         {/* Klassischer 2000er-Footer */}
         <div className="vv-nost-footer">
