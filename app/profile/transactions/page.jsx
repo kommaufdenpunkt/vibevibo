@@ -29,6 +29,8 @@ function classify(tx) {
   if (r === "world_pickup_crystal") return { cat: "karte", emoji: "💎",  title: "Kristall auf der Karte" };
   if (r === "vibo_knuddel")       return { cat: "vibo",    emoji: "🥚",  title: `VIBO geknuddelt${tx.refUsername ? ` → @${tx.refUsername}` : ""}` };
   if (r === "vibo_minigame")      return { cat: "vibo",    emoji: "🍕",  title: "Snack-Schnapp-Mini-Game" };
+  if (r === "stripe_purchase")    return { cat: "echtgeld",emoji: "💳",  title: "Vibes-Pack gekauft (Stripe)" };
+  if (r === "stripe_vip")         return { cat: "echtgeld",emoji: "💎",  title: "VIP-Zugang gekauft (Stripe)" };
   if (r.startsWith("shop_buy:"))  return { cat: "viboshop",emoji: "🛒",  title: `VIBO-Shop: ${prettyItem(r.slice(9))}` };
   if (r.startsWith("premium:"))   return { cat: "shop",    emoji: "🛍️",  title: `Shop: ${prettyItem(r.slice(8))}` };
   if (r.startsWith("room_upgrade:")) return { cat: "viboshop", emoji: "🏗️", title: `Wohnung erweitert (Stufe ${r.slice(17)})` };
@@ -71,6 +73,7 @@ const CATEGORIES = [
   { id: "vibo",     label: "VIBO",        color: "#a78bfa", emoji: "🥚" },
   { id: "viboshop", label: "VIBO-Shop",   color: "#10b981", emoji: "🛒" },
   { id: "shop",     label: "Shop",        color: "#8b5cf6", emoji: "🛍️" },
+  { id: "echtgeld", label: "Echtgeld",    color: "#f59e0b", emoji: "💳" },
   { id: "karte",    label: "Karte",       color: "#06b6d4", emoji: "🗺️" },
   { id: "admin",    label: "Admin",       color: "#dc2626", emoji: "👑" },
   { id: "andere",   label: "Andere",      color: "#94a3b8", emoji: "✨" },
