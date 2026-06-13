@@ -9089,18 +9089,51 @@ input[type="number"], input[type="tel"], textarea, select {
    ================================================================= */
 .vv-edge-changelog {
   margin: 12px 12px 4px;
-  padding: 12px;
+  padding: 0;
   border-radius: 14px;
   background: linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.12));
   border: 1px solid rgba(236,72,153,0.25);
+  overflow: hidden;
+  transition: background 0.18s, border-color 0.18s;
+}
+.vv-edge-changelog.open {
+  background: linear-gradient(135deg, rgba(236,72,153,0.18), rgba(168,85,247,0.18));
 }
 .vv-edge-changelog-head {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 2px 6px;
+  gap: 10px;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  color: #f3e8ff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  text-align: left;
+}
+.vv-edge-changelog-head:hover {
+  background: rgba(236,72,153,0.1);
+}
+.vv-edge-changelog.open .vv-edge-changelog-head {
   border-bottom: 1px dashed rgba(236,72,153,0.3);
-  margin-bottom: 8px;
+}
+.vv-edge-changelog-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.vv-edge-changelog-headtitle {
+  flex: 1;
+  text-transform: uppercase;
+}
+.vv-edge-changelog-caret {
+  opacity: 0.55;
+  font-size: 10px;
+  margin-left: 4px;
 }
 .vv-edge-changelog-badge {
   display: inline-flex;
@@ -9125,10 +9158,15 @@ input[type="number"], input[type="tel"], textarea, select {
 .vv-edge-changelog-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 12px 14px 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  animation: vv-changelog-slide 0.22s ease;
+}
+@keyframes vv-changelog-slide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .vv-edge-changelog-item {
   display: flex;
@@ -9165,8 +9203,8 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 
 .vv-edge-changelog-more {
-  margin-top: 10px;
-  width: 100%;
+  margin: 10px 14px 12px;
+  width: calc(100% - 28px);
   padding: 8px 10px;
   border: 1px dashed rgba(236,72,153,0.45);
   background: transparent;

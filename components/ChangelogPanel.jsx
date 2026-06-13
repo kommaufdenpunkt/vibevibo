@@ -1,8 +1,10 @@
 "use client";
 
 // 🆕 NEU-Panel fuer das rechte Edge-Panel.
-// Zeigt die letzten Features als Timeline mit Datum/Uhrzeit.
-// Mehr-anzeigen-Knopf klappt die alten Eintraege auf.
+// Standardmaessig zugeklappt — nur der Header mit NEU-Badge wird gezeigt.
+// Klick auf den Header → Liste klappt auf.
+// Innerhalb der Liste: Vorschau (PREVIEW_COUNT), darunter Knopf fuer
+// "alle X anzeigen".
 
 import { useEffect, useState } from "react";
 import { CHANGELOG, formatChangelogTime, latestChangelogAt } from "@/lib/changelog";
@@ -11,7 +13,8 @@ const PREVIEW_COUNT = 6;
 const SEEN_KEY = "vv_changelog_seen";
 
 export default function ChangelogPanel() {
-  const [expanded, setExpanded] = useState(false);
+  const [open, setOpen] = useState(false);       // Hauptpanel auf/zu
+  const [showAll, setShowAll] = useState(false); // innerhalb auf/zu
   const [seenAt, setSeenAt] = useState(null);
 
   useEffect(() => {
@@ -21,47 +24,54 @@ export default function ChangelogPanel() {
     } catch { setSeenAt(0); }
   }, []);
 
-  // Beim Mounten als gesehen markieren (User hat das rechte Panel aufgemacht)
+  // Beim Aufklappen als gesehen markieren — nicht direkt beim Mount,
+  // damit die "NEU"-Badge bis zum Klick sichtbar bleibt.
   useEffect(() => {
-    if (seenAt == null) return;
-    try {
-      localStorage.setItem(SEEN_KEY, String(latestChangelogAt()));
-    } catch {}
-  }, [seenAt]);
+    if (!open) return;
+    try { localStorage.setItem(SEEN_KEY, String(latestChangelogAt())); } catch {}
+  }, [open]);
 
-  const items = expanded ? CHANGELOG : CHANGELOG.slice(0, PREVIEW_COUNT);
+  const items = showAll ? CHANGELOG : CHANGELOG.slice(0, PREVIEW_COUNT);
   const newCount = seenAt != null
     ? CHANGELOG.filter((e) => new Date(e.at).getTime() > seenAt).length
     : 0;
 
   return (
-    <div className="vv-edge-changelog">
-      <div className="vv-edge-changelog-head">
-        <span className="vv-edge-nav-grouptitle" style={{ padding: 0, flex: 1 }}>
-          🆕 Was ist neu?
-        </span>
-        {newCount > 0 && (
+    <div className={`vv-edge-changelog${open ? " open" : ""}`}>
+      <button type="button"
+        className="vv-edge-changelog-head"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}>
+        <span className="vv-edge-changelog-icon" aria-hidden="true">🆕</span>
+        <span className="vv-edge-changelog-headtitle">Was ist neu?</span>
+        {newCount > 0 && !open && (
           <span className="vv-edge-changelog-badge">{newCount > 99 ? "99+" : newCount}</span>
         )}
-      </div>
-      <ul className="vv-edge-changelog-list">
-        {items.map((e, i) => (
-          <li key={`${e.at}-${i}`} className="vv-edge-changelog-item">
-            <span className="vv-edge-changelog-dot" aria-hidden="true">
-              <span style={{ fontSize: 13 }}>{e.emoji}</span>
-            </span>
-            <div className="vv-edge-changelog-text">
-              <div className="vv-edge-changelog-title">{e.title}</div>
-              <div className="vv-edge-changelog-time">{formatChangelogTime(e.at)}</div>
-            </div>
-          </li>
-        ))}
-      </ul>
-      {CHANGELOG.length > PREVIEW_COUNT && (
-        <button type="button" className="vv-edge-changelog-more"
-          onClick={() => setExpanded((v) => !v)}>
-          {expanded ? "▲ Weniger anzeigen" : `▼ Alle ${CHANGELOG.length} Updates anzeigen`}
-        </button>
+        <span className="vv-edge-changelog-caret" aria-hidden="true">{open ? "▲" : "▼"}</span>
+      </button>
+
+      {open && (
+        <>
+          <ul className="vv-edge-changelog-list">
+            {items.map((e, i) => (
+              <li key={`${e.at}-${i}`} className="vv-edge-changelog-item">
+                <span className="vv-edge-changelog-dot" aria-hidden="true">
+                  <span style={{ fontSize: 13 }}>{e.emoji}</span>
+                </span>
+                <div className="vv-edge-changelog-text">
+                  <div className="vv-edge-changelog-title">{e.title}</div>
+                  <div className="vv-edge-changelog-time">{formatChangelogTime(e.at)}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {CHANGELOG.length > PREVIEW_COUNT && (
+            <button type="button" className="vv-edge-changelog-more"
+              onClick={() => setShowAll((v) => !v)}>
+              {showAll ? "▲ Weniger anzeigen" : `▼ Alle ${CHANGELOG.length} Updates anzeigen`}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
