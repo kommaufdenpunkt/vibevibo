@@ -172,7 +172,7 @@ export default function EdgePanels() {
 
         {/* Status-Karte: Vibes + Status (Bell ist ausserhalb als Floating-Button) */}
         <div className="vv-edge-statuscard">
-          <Link href="/messenger?tab=vibo" className="vv-edge-vibes" title="Deine Vibes">
+          <Link href="/profile/transactions" className="vv-edge-vibes" title="Vibes-Transaktionen">
             <span style={{ fontSize: 18 }}>✨</span>
             <span style={{ fontWeight: 800 }}>{vibes != null ? vibes : "—"}</span>
           </Link>
