@@ -15,14 +15,45 @@ export default function StripeShop() {
   const [busy, setBusy] = useState("");
   const [flash, setFlash] = useState("");
 
-  // Beim Mount: Wenn ?stripe=success in der URL ist, Hinweis zeigen.
+  // Beim Mount: Wenn ?stripe=success&session_id=… in der URL ist, direkt
+  // bei Stripe verifizieren + Vibes/VIP gutschreiben (Fallback ohne Webhook).
   useEffect(() => {
     try {
       const p = new URLSearchParams(window.location.search);
       const s = p.get("stripe");
-      if (s === "success") {
-        setFlash("✅ Zahlung erfolgreich! Vibes/VIP werden gleich gutgeschrieben.");
-        setTimeout(() => setFlash(""), 8000);
+      const sessionId = p.get("session_id");
+      if (s === "success" && sessionId) {
+        setFlash("⏳ Verifiziere Zahlung bei Stripe…");
+        fetch("/api/stripe/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ sessionId }),
+        }).then((r) => r.json()).then((d) => {
+          if (d.ok) {
+            if (d.kind === "vibes") {
+              setFlash(`✅ +${d.amount} ✨ gutgeschrieben! Neuer Saldo: ${d.balance}`);
+              // Seite neu laden damit das Profil-Saldo aktualisiert wird
+              setTimeout(() => window.location.replace("/shop"), 2000);
+            } else if (d.kind === "vip") {
+              const days = d.days || 30;
+              setFlash(`✅ VIP für ${days} Tage aktiviert! Werbefrei bis ${new Date(d.vipUntil).toLocaleDateString("de-DE")}.`);
+              setTimeout(() => window.location.replace("/shop"), 2500);
+            } else {
+              setFlash("✅ Zahlung verifiziert.");
+              setTimeout(() => setFlash(""), 5000);
+            }
+          } else if (d.reason === "duplicate") {
+            setFlash("ⓘ Diese Zahlung wurde bereits gutgeschrieben.");
+            setTimeout(() => setFlash(""), 5000);
+          } else {
+            setFlash(`⚠ ${d.error || d.reason || "Verify fehlgeschlagen"}`);
+            setTimeout(() => setFlash(""), 8000);
+          }
+        }).catch((e) => {
+          setFlash(`⚠ Netzwerk-Fehler bei Verify: ${e.message}`);
+          setTimeout(() => setFlash(""), 8000);
+        });
       } else if (s === "cancel") {
         setFlash("ⓘ Zahlung abgebrochen — kein Geld abgebucht.");
         setTimeout(() => setFlash(""), 5000);
