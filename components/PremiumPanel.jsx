@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import HelpCard from "./HelpCard";
 import RewardedAdButton from "./RewardedAdButton";
+import StripeShop from "./StripeShop";
 import { PREMIUM_GROUPS } from "@/lib/premium";
 
 // Items die einen Text-Input brauchen (vor dem Kauf)
@@ -136,6 +137,9 @@ export default function PremiumPanel() {
           fontWeight: 800, fontSize: 16,
         }}>✨ {data.balance}</div>
       </div>
+
+      {/* 💳 Echtgeld-Pakete (Stripe) — ganz oben, vor allen Vibes-Items */}
+      <StripeShop />
 
       {/* Wenn balance niedrig: Rewarded-Ad als Mini-Vibes-Quelle anbieten */}
       {(data.balance || 0) < 100 && (
