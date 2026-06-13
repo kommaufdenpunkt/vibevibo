@@ -20,6 +20,7 @@ import GenderAge from "@/components/GenderAge";
 import Avatar from "@/components/Avatar";
 import AdminBroadcast from "@/components/AdminBroadcast";
 import AdminSettings from "@/components/AdminSettings";
+import AdminEconomy from "@/components/AdminEconomy";
 import { relTime } from "@/lib/format";
 import { deviceLabel } from "@/lib/device";
 
@@ -326,7 +327,11 @@ export default async function AdminPage({ searchParams }) {
       {tab === "vibeslog" && <VibesLog q={q} pw={pw} />}
       {tab === "events" && <SeasonEvents q={q} pw={pw} />}
       {tab === "broadcast" && <AdminBroadcast pw={pw} />}
-      {tab === "settings" && <AdminSettings pw={pw} />}
+      {tab === "settings" && <>
+        <AdminEconomy />
+        <div style={{ height: 14 }} />
+        <AdminSettings pw={pw} />
+      </>}
       {tab === "audit" && <AuditLog q={q} />}
       </main>
     </div>
