@@ -109,6 +109,13 @@ export default function InlineGreetingEditor({ initialHtml = "" }) {
           <button type="button" onClick={() => insertAt("<br/>")} title="Zeilenumbruch">↵</button>
           <button type="button" onClick={() => insertAt("<hr/>")} title="Trennlinie">⎯</button>
           <span className="vv-mge-tb-sep" />
+          <button type="button" onClick={() => setImageModal({ url: "", alt: "" })} title="Bild einfügen">🖼</button>
+          <button type="button" onClick={() => {
+            const el = taRef.current;
+            const sel = el ? draft.slice(el.selectionStart, el.selectionEnd) : "";
+            setLinkModal({ text: sel || "", url: "https://" });
+          }} title="Link einfügen">🔗</button>
+          <span className="vv-mge-tb-sep" />
           <details className="vv-mge-colorpicker">
             <summary title="Farbe">🎨</summary>
             <div className="vv-mge-colors">
@@ -171,6 +178,73 @@ export default function InlineGreetingEditor({ initialHtml = "" }) {
         {flash && (
           <div className="vv-inline-greet-flash" data-tone={flash.startsWith("⚠") ? "warn" : "ok"}>
             {flash}
+          </div>
+        )}
+
+        {/* Bild-Modal */}
+        {imageModal && (
+          <div className="vv-mge2-modal-overlay" onClick={() => setImageModal(null)}>
+            <div className="vv-mge2-modal" onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => { if (e.key === "Escape") setImageModal(null); }}>
+              <div className="vv-mge2-modal-title">🖼 Bild einfügen</div>
+              <label className="vv-mge2-label">Bild-URL</label>
+              <input className="vv-edit-input" type="url" value={imageModal.url} autoFocus
+                onChange={(e) => setImageModal({ ...imageModal, url: e.target.value })}
+                placeholder="https://imgur.com/dein-bild.gif" />
+              <div style={{ fontSize: 11, color: "var(--vv-muted,#6b7280)", marginTop: 4 }}>
+                💡 Lad dein Bild bei <a href="https://imgur.com" target="_blank" rel="noreferrer" style={{ color: "#7e22ce" }}>imgur.com</a> oder <a href="https://postimages.org" target="_blank" rel="noreferrer" style={{ color: "#7e22ce" }}>postimages.org</a> hoch und kopier den Direkt-Link.
+              </div>
+              <label className="vv-mge2-label">Beschreibung (Alt-Text, optional)</label>
+              <input className="vv-edit-input" value={imageModal.alt}
+                onChange={(e) => setImageModal({ ...imageModal, alt: e.target.value })}
+                placeholder="z.B. Mein Bandlogo" />
+              {imageModal.url.trim() && (
+                <div className="vv-mge2-img-preview">
+                  <img src={imageModal.url} alt=""
+                    onError={(e) => { e.currentTarget.style.opacity = 0.3; }} />
+                </div>
+              )}
+              <div className="vv-mge2-actions">
+                <button type="button" onClick={() => setImageModal(null)} className="vv-edit-savebar-cancel">Abbrechen</button>
+                <button type="button" className="vv-edit-savebar-save" style={{ flex: 1 }}
+                  disabled={!imageModal.url.trim()}
+                  onClick={() => {
+                    const u = imageModal.url.trim();
+                    const a = imageModal.alt.trim();
+                    insertAt(`<img src="${escapeHtml(u)}" alt="${escapeHtml(a)}" style="max-width:100%;border-radius:10px" />`);
+                    setImageModal(null);
+                  }}>Einfügen</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Link-Modal */}
+        {linkModal && (
+          <div className="vv-mge2-modal-overlay" onClick={() => setLinkModal(null)}>
+            <div className="vv-mge2-modal" onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => { if (e.key === "Escape") setLinkModal(null); }}>
+              <div className="vv-mge2-modal-title">🔗 Link einfügen</div>
+              <label className="vv-mge2-label">Sichtbarer Text</label>
+              <input className="vv-edit-input" value={linkModal.text} autoFocus
+                onChange={(e) => setLinkModal({ ...linkModal, text: e.target.value })}
+                placeholder="z.B. Mein Lieblingssong" />
+              <label className="vv-mge2-label">URL</label>
+              <input className="vv-edit-input" type="url" value={linkModal.url}
+                onChange={(e) => setLinkModal({ ...linkModal, url: e.target.value })}
+                placeholder="https://..." />
+              <div className="vv-mge2-actions">
+                <button type="button" onClick={() => setLinkModal(null)} className="vv-edit-savebar-cancel">Abbrechen</button>
+                <button type="button" className="vv-edit-savebar-save" style={{ flex: 1 }}
+                  disabled={!linkModal.url.trim()}
+                  onClick={() => {
+                    const t = linkModal.text.trim() || linkModal.url.trim();
+                    const u = linkModal.url.trim();
+                    insertAt(`<a href="${escapeHtml(u)}" target="_blank">${escapeHtml(t)}</a>`);
+                    setLinkModal(null);
+                  }}>Einfügen</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
