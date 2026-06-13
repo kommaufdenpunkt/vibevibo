@@ -1,17 +1,34 @@
 import { NextResponse } from "next/server";
-import { isAdminRequest } from "@/lib/admin";
+import { checkAdminPassword } from "@/lib/admin";
 import { computeEconomyHealth, runFidolinEconomyCheck, setEconomyMultiplier, getEconomyMultiplier } from "@/lib/economy";
+
+export const dynamic = "force-dynamic";
+
+// Auth: Header ODER ?pw= Query-Param (Admin-Page navigiert mit ?pw=...)
+function authOk(req, url) {
+  const pwHeader = req.headers.get("x-admin-password") || "";
+  if (pwHeader && checkAdminPassword(pwHeader)) return true;
+  const pwQuery = url.searchParams.get("pw") || "";
+  if (pwQuery && checkAdminPassword(pwQuery)) return true;
+  return false;
+}
 
 // GET → aktuelle Wirtschafts-Gesundheit (read-only)
 export async function GET(req) {
-  if (!isAdminRequest(req)) return NextResponse.json({ error: "auth required" }, { status: 401 });
-  const days = Number(new URL(req.url).searchParams.get("days") || 7);
-  return NextResponse.json({ health: computeEconomyHealth(days) });
+  const url = new URL(req.url);
+  if (!authOk(req, url)) return NextResponse.json({ error: "auth required" }, { status: 401 });
+  const days = Number(url.searchParams.get("days") || 7);
+  try {
+    return NextResponse.json({ health: computeEconomyHealth(days) });
+  } catch (e) {
+    return NextResponse.json({ error: "compute error", detail: String(e?.message || e) }, { status: 500 });
+  }
 }
 
 // POST { action: "apply" | "set", multiplier? } — anwenden oder manuell setzen
 export async function POST(req) {
-  if (!isAdminRequest(req)) return NextResponse.json({ error: "auth required" }, { status: 401 });
+  const url = new URL(req.url);
+  if (!authOk(req, url)) return NextResponse.json({ error: "auth required" }, { status: 401 });
   const body = await req.json().catch(() => ({}));
   const action = String(body?.action || "").trim();
 

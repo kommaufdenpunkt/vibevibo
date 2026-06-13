@@ -22,16 +22,28 @@ export default function AdminEconomy() {
   const [flash, setFlash] = useState("");
   const [manualMult, setManualMult] = useState("");
 
+  const [loadError, setLoadError] = useState("");
   async function load() {
+    setLoadError("");
     try {
       const r = await fetch(`/api/admin/economy?pw=${encodeURIComponent(pw())}`, {
         headers: { "x-admin-password": pw() },
+        cache: "no-store",
       });
-      if (!r.ok) throw new Error("Auth?");
-      const d = await r.json();
+      const text = await r.text();
+      let d = null;
+      try { d = JSON.parse(text); } catch { /* not json */ }
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status} — ${d?.error || text.slice(0, 200)}`);
+      }
+      if (!d?.health) {
+        throw new Error("Antwort hat kein health-Objekt");
+      }
       setHealth(d.health);
       setManualMult(String(d.health?.currentMultiplier ?? "1.0"));
-    } catch (e) { setFlash(`⚠ ${e.message}`); }
+    } catch (e) {
+      setLoadError(e.message || String(e));
+    }
   }
   useEffect(() => { load(); }, []);
 
@@ -51,7 +63,19 @@ export default function AdminEconomy() {
     finally { setBusy(false); }
   }
 
-  if (!health) return <div className="vv-card" style={{ padding: 14 }}>Lade Wirtschafts-Status…</div>;
+  if (!health) {
+    return (
+      <div className="vv-card" style={{ padding: 14 }}>
+        {loadError ? (
+          <>
+            <div style={{ fontWeight: 700, color: "#dc2626", marginBottom: 6 }}>⚠ Wirtschafts-Status konnte nicht geladen werden</div>
+            <pre style={{ fontSize: 11, color: "#7f1d1d", whiteSpace: "pre-wrap", background: "#fef2f2", padding: 8, borderRadius: 6, border: "1px solid #fecaca" }}>{loadError}</pre>
+            <button type="button" onClick={load} className="vv-btn vv-btn-sm" style={{ marginTop: 8 }}>↻ Erneut versuchen</button>
+          </>
+        ) : "Lade Wirtschafts-Status…"}
+      </div>
+    );
+  }
 
   const trafficLight = health.flow >= 0.9 && health.flow <= 1.1
     ? { color: "#16a34a", label: "Grün" }
