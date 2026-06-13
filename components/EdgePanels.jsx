@@ -16,7 +16,8 @@ const NAV_GROUPS = [
   {
     title: "👤 Persönlich",
     items: [
-      { href: "/profile", label: "Mein Profil", icon: "🏠" },
+      { href: "/heute", label: "Heute", icon: "🏠" },
+      { href: "/profile", label: "Mein Profil", icon: "🪪" },
       { href: "/profile/edit", label: "Profil bearbeiten", icon: "✏️" },
       { href: "/profile/skin", label: "Skin / Theme", icon: "🎨" },
       { href: "/messenger", label: "Messenger", icon: "💬" },
@@ -39,8 +40,7 @@ const NAV_GROUPS = [
       { href: "/fotos", label: "Fotos", icon: "📸" },
       { href: "/geschenke", label: "Geschenke", icon: "🎁" },
       { href: "/shop", label: "Shop", icon: "🛍️" },
-      { href: "/vibes-verdienen", label: "Vibes verdienen", icon: "💰" },
-      { href: "/empfehlungen", label: "Empfehlungen", icon: "💝" },
+      { href: "/vibes-verdienen", label: "Vibes & Empfehlungen", icon: "💰" },
     ],
   },
   {
