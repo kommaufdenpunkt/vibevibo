@@ -4,6 +4,7 @@ import EdgePanels from "@/components/EdgePanels";
 import PwaRegister from "@/components/PwaRegister";
 import PwaInstallTracker from "@/components/PwaInstallTracker";
 import MiniMusicDock from "@/components/MiniMusicDock";
+import GlobalAdFooter from "@/components/GlobalAdFooter";
 import ScreenshotGuard from "@/components/ScreenshotGuard";
 import MessageNotifier from "@/components/MessageNotifier";
 import ChatOverlay from "@/components/ChatOverlay";
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
           <PwaRegister />
           <PwaInstallTracker />
           <MiniMusicDock />
+          <GlobalAdFooter />
           <ScreenshotGuard />
           <MessageNotifier />
           <ChatOverlay />
