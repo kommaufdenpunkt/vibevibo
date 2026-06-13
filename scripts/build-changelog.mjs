@@ -17,6 +17,24 @@ const ROOT = resolve(__dirname, "..");
 const OUT = join(ROOT, "lib", "changelog.generated.js");
 const MAX_ENTRIES = 80;
 
+// Patterns die einen Eintrag als "admin-only" markieren (nicht fuer
+// normale User sichtbar). Heuristik aus Subject + Emoji.
+const ADMIN_PATTERNS = [
+  /\badmin\b/i, /\b\/admin\//i, /admintool/i, /admin-?panel/i,
+  /\bDB[-\s]?Patch\b/i, /patch_/i, /\bschema\b/i, /\bdb\.js\b/i,
+  /\bintern(al|e)?\b/i, /\bbuild[:\s-]/i, /\bci[:\s-]/i,
+  /^chore[:\s-]/i, /^refactor[:\s-]/i,
+  /audit[-\s]?fix/i, /\.mjs\b/i,
+  /\bmoderation\b/i, /fidolin/i,
+];
+const ADMIN_EMOJIS = new Set(["🛡", "🔧", "🤖", "🛠", "♻️"]);
+
+function classifyAudience(emoji, title) {
+  if (ADMIN_EMOJIS.has(emoji)) return "admin";
+  for (const re of ADMIN_PATTERNS) if (re.test(title)) return "admin";
+  return "public";
+}
+
 // Subject -> Emoji-Defaults (wenn der Commit-Text noch kein Emoji hat)
 const KEYWORD_EMOJI = [
   [/^(feat|feature)[:\s(]/i, "✨"],
@@ -112,7 +130,8 @@ function main() {
     const { emoji, title } = pickEmoji(subject);
     const cleaned = cleanTitle(title);
     if (!cleaned) continue;
-    entries.push({ at: iso, emoji, title: cleaned, sha: hash.slice(0, 7) });
+    const audience = classifyAudience(emoji, cleaned);
+    entries.push({ at: iso, emoji, title: cleaned, sha: hash.slice(0, 7), audience });
     if (entries.length >= MAX_ENTRIES) break;
   }
 

@@ -108,6 +108,13 @@ const SIDEBAR_GROUPS = [
       ["audit", "📜", "Audit-Log"],
     ],
   },
+  {
+    id: "info", label: "Info", emoji: "🆕",
+    items: [
+      // Externe Route — wird im Sidebar-Render auf /admin/neu gemappt
+      ["__neu__", "🆕", "Neuigkeiten"],
+    ],
+  },
 ];
 
 export default async function AdminPage({ searchParams }) {
@@ -267,10 +274,12 @@ export default async function AdminPage({ searchParams }) {
                 <span>{group.emoji}</span> {group.label}
               </div>
               {group.items.map(([id, emoji, label, badgeKey]) => {
-                const active = id === tab;
+                const isExternal = id === "__neu__";
+                const href = isExternal ? `/admin/neu?pw=${encodeURIComponent(pw)}` : `/admin?${q}&tab=${id}`;
+                const active = !isExternal && id === tab;
                 const badge = badgeKey && stats[badgeKey] ? stats[badgeKey] : 0;
                 return (
-                  <a key={id} href={`/admin?${q}&tab=${id}`}
+                  <a key={id} href={href}
                      className={`vv-adminsidebar-item${active ? " vv-adminsidebar-item-active" : ""}`}>
                     <span className="vv-adminsidebar-emoji">{emoji}</span>
                     <span className="vv-adminsidebar-label">{label}</span>
