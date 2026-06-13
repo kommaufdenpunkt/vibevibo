@@ -1,104 +1,213 @@
 "use client";
 
-// 🥚 VIBO — eigene Seite (vorher nur via /messenger?tab=vibo erreichbar).
-// Verbindet alle VIBO-Komponenten zentral mit 2007er-Style-Wrapper.
+// 🥚 VIBO v3 — Generalüberholt zum 2. Mal:
+// Transparenter Hintergrund (Theme scheint durch), Glas-Karten,
+// kompakter Header-Strip + Tab-Strip + Tab-Content in Glass-Cards.
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import ViboPet from "@/components/ViboPet";
 import QuestPanel from "@/components/QuestPanel";
 import ShopPanel from "@/components/ShopPanel";
 import CardCollection from "@/components/CardCollection";
 import WorldMap from "@/components/WorldMap";
-import ActivityBars from "@/components/ActivityBars";
+
+const TABS = [
+  { id: "pet",    icon: "🥚", label: "VIBO" },
+  { id: "quests", icon: "🎯", label: "Quests" },
+  { id: "shop",   icon: "🛒", label: "Shop" },
+  { id: "cards",  icon: "🃏", label: "Karten" },
+  { id: "map",    icon: "🗺️", label: "Karte" },
+];
 
 export default function ViboPage() {
   const { me, loading } = useMe();
   const router = useRouter();
+  const params = useSearchParams();
+  const [tab, setTab] = useState(() => {
+    const t = params.get("tab");
+    return TABS.find((x) => x.id === t) ? t : "pet";
+  });
+  const [vibo, setVibo] = useState(null);
 
   useEffect(() => {
     if (!loading && !me) router.push("/login");
   }, [loading, me, router]);
 
+  // Hole VIBO-Header-Info (Name, Stufe, ageDays) für die Titelzeile
+  useEffect(() => {
+    if (!me) return;
+    fetch("/api/vibo").then((r) => r.ok ? r.json() : null)
+      .then((d) => setVibo(d?.vibo || null)).catch(() => {});
+  }, [me]);
+
   if (loading || !me) return null;
 
   return (
-    <div className="vv-vibo-page">
-      {/* ★ HERO ★ */}
-      <div className="vv-vibo-hero">
-        <div className="vv-vibo-hero-stars">
-          <span>✨</span><span>★</span><span>✿</span><span>♡</span>
-          <span>♥</span><span>★</span><span>✿</span><span>✩</span>
-        </div>
-        <div className="vv-vibo-hero-emoji">🥚</div>
-        <h1 className="vv-vibo-hero-title">★ MEIN VIBO ★</h1>
-        <div className="vv-vibo-hero-sub">
-          ✿ Dein virtuelles Pet · füttern · spielen · großziehen ✿
-        </div>
-        <div className="vv-vibo-hero-actions">
-          <Link href="/karte" className="vv-vibo-hero-link">🗺️ Karte</Link>
-          <Link href="/shop" className="vv-vibo-hero-link">🛍 Shop</Link>
-          <Link href="/profile/transactions" className="vv-vibo-hero-link">💰 Vibes</Link>
-          <Link href="/profile" className="vv-vibo-hero-link">↩ Profil</Link>
-        </div>
-      </div>
+    <div style={{
+      background: "transparent",  // Theme/Skin scheint durch
+      paddingBottom: 100,
+    }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "12px 12px 0" }}>
 
-      {/* Pet + Quests */}
-      <div className="vv-vibo-grid">
-        <div className="vv-vibo-col-main">
-          <div className="vv-vibo-card" data-tone="violet">
-            <div className="vv-vibo-card-title">🥚 DEIN VIBO</div>
-            <div className="vv-vibo-card-body">
-              <ViboPet />
+        {/* === HEADER-STRIP (Glas-Pille) === */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          padding: "8px 14px", borderRadius: 999, marginBottom: 12,
+          border: "1px solid rgba(255,255,255,0.4)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+        }}>
+          <Link href="/heute" style={{
+            background: "linear-gradient(135deg, #a855f7, #7c3aed)",
+            color: "#fff", borderRadius: 999,
+            padding: "5px 12px", fontSize: 12, fontWeight: 800,
+            textDecoration: "none", whiteSpace: "nowrap",
+          }}>← Heute</Link>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, color: "#7c3aed",
+              textTransform: "uppercase", letterSpacing: 0.5,
+            }}>Dein Tamagotchi</div>
+            <div style={{
+              fontSize: 16, fontWeight: 900, color: "#1f2937",
+              lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            }}>
+              🥚 {vibo?.name || "Mein VIBO"}
+              {vibo && vibo.ageDays != null && (
+                <span style={{
+                  fontSize: 11, color: "#94a3b8", fontWeight: 600,
+                  marginLeft: 6,
+                }}>· Tag {vibo.ageDays}</span>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="vv-vibo-card" data-tone="cyan">
-            <div className="vv-vibo-card-title">🗺 ITEMS AUF DER KARTE</div>
-            <div className="vv-vibo-card-body">
-              <div style={{ fontSize: 11.5, opacity: 0.8, marginBottom: 8 }}>
-                Items einsammeln, Basar besuchen, fischen — auch in der Vollbild-Karte.
+        {/* === TAB-STRIP (Glas) === */}
+        <div style={{
+          display: "flex", gap: 4,
+          background: "rgba(255,255,255,0.6)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderRadius: 14, padding: 4,
+          border: "1px solid rgba(255,255,255,0.4)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          marginBottom: 12,
+          overflowX: "auto",
+          scrollbarWidth: "none",
+        }}>
+          {TABS.map((t) => (
+            <button key={t.id} type="button"
+              onClick={() => setTab(t.id)}
+              style={{
+                flex: "1 0 auto",
+                padding: "8px 14px",
+                borderRadius: 10,
+                border: "none",
+                background: tab === t.id
+                  ? "linear-gradient(135deg, #a855f7, #7c3aed)"
+                  : "transparent",
+                color: tab === t.id ? "#fff" : "#475569",
+                fontWeight: tab === t.id ? 800 : 600,
+                fontSize: 13,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                boxShadow: tab === t.id ? "0 2px 8px rgba(124,58,237,0.35)" : "none",
+                transition: "all 0.15s",
+              }}>
+              <span style={{ marginRight: 4 }}>{t.icon}</span>{t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* === TAB-CONTENT in Glas-Karte === */}
+        {tab === "pet" && (
+          <GlassCard>
+            <ViboPet />
+          </GlassCard>
+        )}
+
+        {tab === "quests" && (
+          <GlassCard title="🎯 Quests" subtitle="Erfülle Aufgaben für Vibes und Items.">
+            <QuestPanel />
+          </GlassCard>
+        )}
+
+        {tab === "shop" && (
+          <GlassCard title="🛒 VIBO-Shop" subtitle="Futter, Möbel, Karten — alles für dein VIBO.">
+            <ShopPanel />
+          </GlassCard>
+        )}
+
+        {tab === "cards" && (
+          <GlassCard title="🃏 Sammelkarten" subtitle="Deine Sammlung — tauschbar mit Freunden.">
+            <CardCollection />
+          </GlassCard>
+        )}
+
+        {tab === "map" && (
+          <GlassCard
+            title="🗺️ Item-Karte"
+            subtitle="Items einsammeln, Basar besuchen, fischen."
+            footer={
+              <div style={{ textAlign: "center", marginTop: 10 }}>
+                <Link href="/karte" style={{
+                  display: "inline-block",
+                  background: "linear-gradient(135deg, #06b6d4, #0891b2)",
+                  color: "#fff", padding: "8px 16px", borderRadius: 999,
+                  fontWeight: 800, fontSize: 13, textDecoration: "none",
+                  boxShadow: "0 2px 8px rgba(8,145,178,0.3)",
+                }}>↗ Karte als Vollbild öffnen</Link>
               </div>
-              <WorldMap compact />
-              <div style={{ marginTop: 8, textAlign: "center" }}>
-                <Link href="/karte" className="vv-vibo-fullmap-btn">↗ Karte als Vollbild öffnen</Link>
-              </div>
-            </div>
-          </div>
-        </div>
+            }>
+            <WorldMap compact />
+          </GlassCard>
+        )}
 
-        <div className="vv-vibo-col-side">
-          <div className="vv-vibo-card" data-tone="pink">
-            <div className="vv-vibo-card-title">🎯 QUESTS</div>
-            <div className="vv-vibo-card-body">
-              <QuestPanel />
-            </div>
-          </div>
-
-          <div className="vv-vibo-card" data-tone="gold">
-            <div className="vv-vibo-card-title">🛒 VIBO-SHOP</div>
-            <div className="vv-vibo-card-body">
-              <ShopPanel />
-            </div>
-          </div>
-
-          <div className="vv-vibo-card" data-tone="violet">
-            <div className="vv-vibo-card-title">🃏 SAMMELKARTEN</div>
-            <div className="vv-vibo-card-body">
-              <CardCollection />
-            </div>
-          </div>
+        {/* Tipp-Streifen */}
+        <div style={{
+          marginTop: 16, padding: "10px 14px",
+          background: "rgba(255,255,255,0.7)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          borderRadius: 12, fontSize: 11.5, color: "#475569", textAlign: "center",
+          border: "1px solid rgba(255,255,255,0.4)",
+          lineHeight: 1.5,
+        }}>
+          💡 <b>Pflege täglich</b> — füttern, streicheln, spielen · Energie verfällt mit der Zeit · Quests bringen ✨
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Footer */}
-      <div className="vv-vibo-footer">
-        <span>★</span>
-        <span>VIBO lebt von dir — füttere täglich, spiele regelmäßig, erfülle Quests für mehr Vibes ✨</span>
-        <span>★</span>
-      </div>
+function GlassCard({ title, subtitle, children, footer }) {
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.88)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      borderRadius: 16, padding: 16,
+      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+      border: "1px solid rgba(255,255,255,0.4)",
+    }}>
+      {title && (
+        <div style={{ marginBottom: 10 }}>
+          <h2 style={{
+            margin: 0, fontSize: 17, fontWeight: 900, color: "#581c87",
+          }}>{title}</h2>
+          {subtitle && (
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{subtitle}</div>
+          )}
+        </div>
+      )}
+      {children}
+      {footer}
     </div>
   );
 }
