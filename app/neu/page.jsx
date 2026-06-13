@@ -1,20 +1,33 @@
 "use client";
 
-// 🆕 Was-ist-neu-Seite (oeffentlich) — zeigt alle public-Eintraege
-// aus dem Changelog mit Datum/Uhrzeit als Timeline.
+// 🆕 Was-ist-neu-Seite — Public, Timeline, Emoji-Reaktionen.
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CHANGELOG_PUBLIC, formatChangelogTime, latestChangelogAt } from "@/lib/changelog";
+import { useMe } from "@/lib/useMe";
+import ChangelogReactions from "@/components/ChangelogReactions";
 
 const SEEN_KEY = "vv_changelog_seen";
 
 export default function NeuPage() {
+  const { me } = useMe();
+  const [reactions, setReactions] = useState({});
+
   useEffect(() => {
     try { localStorage.setItem(SEEN_KEY, String(latestChangelogAt())); } catch {}
   }, []);
 
-  // Nach Tag gruppieren (YYYY-MM-DD im de-Locale)
+  // Bulk-Fetch der Reaktions-Zaehler fuer alle sichtbaren Eintraege
+  useEffect(() => {
+    const keys = CHANGELOG_PUBLIC.map((e) => e.key).filter(Boolean);
+    if (keys.length === 0) return;
+    const url = `/api/changelog/reactions?keys=${encodeURIComponent(keys.join(","))}`;
+    fetch(url).then((r) => r.ok ? r.json() : { reactions: {} })
+      .then((d) => setReactions(d.reactions || {}))
+      .catch(() => {});
+  }, []);
+
   const groups = useMemo(() => {
     const map = new Map();
     for (const e of CHANGELOG_PUBLIC) {
@@ -32,7 +45,7 @@ export default function NeuPage() {
         <Link href="/" className="vv-neu-back">← Start</Link>
         <h1 className="vv-neu-title">🆕 Was ist neu auf VibeVibo?</h1>
         <p className="vv-neu-sub">
-          Hier siehst du chronologisch, was sich auf der Plattform getan hat. ✿
+          Chronologische Timeline mit Datum und Uhrzeit — und Reaktionen auf jeden Beitrag ✿
         </p>
       </div>
 
@@ -47,12 +60,17 @@ export default function NeuPage() {
             <section key={day} className="vv-neu-day">
               <div className="vv-neu-day-title">{day}</div>
               <ul className="vv-neu-list">
-                {items.map((e, i) => (
-                  <li key={`${e.at}-${i}`} className="vv-neu-item">
+                {items.map((e) => (
+                  <li key={e.key} className="vv-neu-item">
                     <span className="vv-neu-dot" aria-hidden="true">{e.emoji}</span>
                     <div className="vv-neu-text">
                       <div className="vv-neu-itemtitle">{e.title}</div>
                       <div className="vv-neu-itemtime">{formatChangelogTime(e.at)}</div>
+                      <ChangelogReactions
+                        entryKey={e.key}
+                        initial={reactions[e.key] || {}}
+                        loggedIn={!!me}
+                      />
                     </div>
                   </li>
                 ))}
