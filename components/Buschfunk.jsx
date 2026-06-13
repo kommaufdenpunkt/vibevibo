@@ -10,6 +10,7 @@ import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
 import PremiumBadges from "./PremiumBadges";
 import MentionText from "./MentionText";
+import { AMAZON_RECOMMENDATIONS, amazonSearch } from "@/lib/affiliate";
 import EmbeddedMedia from "./EmbeddedMedia";
 import Avatar from "./Avatar";
 import VoiceRecorder from "./VoiceRecorder";
@@ -479,6 +480,26 @@ export default function Buschfunk() {
                 cutInserted = true;
               }
               out.push(renderEvent(ev, i, i === filtered.length - 1));
+              // Dezente Affiliate-Karte alle 12 Posts (NUR im "Aus dem Netz"-Bereich,
+              // nie im Freundeskreis-Bereich)
+              if (cutInserted && (i + 1) % 12 === 0 && i < filtered.length - 1) {
+                const idx = Math.floor((i + 1) / 12) % AMAZON_RECOMMENDATIONS.length;
+                const rec = AMAZON_RECOMMENDATIONS[idx];
+                out.push(
+                  <a key={`bf-aff-${i}`}
+                    href={amazonSearch(rec.query)}
+                    target="_blank" rel="noopener sponsored"
+                    className="vv-bf-native-ad">
+                    <span className="vv-bf-native-ad-label">Werbung</span>
+                    <span className="vv-bf-native-ad-emoji">{rec.emoji}</span>
+                    <div className="vv-bf-native-ad-body">
+                      <div className="vv-bf-native-ad-title">{rec.title}</div>
+                      <div className="vv-bf-native-ad-desc">{rec.desc}</div>
+                    </div>
+                    <span className="vv-bf-native-ad-cta">Auf Amazon →</span>
+                  </a>
+                );
+              }
             }
             return out;
           })()}
