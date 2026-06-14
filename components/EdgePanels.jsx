@@ -18,7 +18,7 @@ const NAV_GROUPS = [
   {
     title: "👤 Persönlich",
     items: [
-      { href: "/heute", label: "Heute", icon: "🏠" },
+      { href: "/heute", label: "Startseite", icon: "🏠" },
       { href: "/profile", label: "Mein Profil", icon: "🪪" },
       { href: "/messenger", label: "Messenger", icon: "💬" },
       { href: "/freunde", label: "Freunde", icon: "👯" },
@@ -205,7 +205,7 @@ export default function EdgePanels() {
           <div className="vv-edge-nav-grouptitle">🚀 Schnell-Aktionen</div>
           <Link href="/heute" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #ec4899, #db2777)" }}>
             <span className="vv-edge-quick-emoji">🏠</span>
-            <span className="vv-edge-quick-label">Heute</span>
+            <span className="vv-edge-quick-label">Startseite</span>
           </Link>
           <Link href="/messenger" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)" }}>
             <span className="vv-edge-quick-emoji">💬</span>

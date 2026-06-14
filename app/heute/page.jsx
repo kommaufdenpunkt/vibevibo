@@ -610,7 +610,7 @@ function UserTiles({ fallback }) {
 
   // Map von App-IDs zu Tile-Konfigs (gleiche IDs wie in app/apps/page.jsx)
   const APP_TILES = {
-    heute:       { href: "/heute",       icon: "🏠", title: "Heute",         sub: "Tages-Übersicht",  color1: "#fbbf24", color2: "#ea580c" },
+    heute:       { href: "/heute",       icon: "🏠", title: "Startseite",    sub: "Tages-Übersicht",  color1: "#fbbf24", color2: "#ea580c" },
     profile:     { href: "/profile",     icon: "🪪", title: "Mein Profil",    sub: "Deine Seite",      color1: "#ec4899", color2: "#be185d" },
     edit:        { href: "/profile/edit", icon: "✏️", title: "Bearbeiten",    sub: "Profil pflegen",   color1: "#fb923c", color2: "#c2410c" },
     skin:        { href: "/profile/skin", icon: "🎨", title: "Skin",          sub: "Look anpassen",    color1: "#a855f7", color2: "#7c3aed" },

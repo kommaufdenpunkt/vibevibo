@@ -9,7 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const DOCK_ITEMS = [
-  { href: "/heute",     icon: "🏠", label: "Heute" },
+  { href: "/heute",     icon: "🏠", label: "Startseite" },
   { href: "/buschfunk", icon: "📣", label: "Buschfunk" },
   { href: "/vibo",      icon: "🥚", label: "VIBO" },
   { href: "/coms",      icon: "🏘️", label: "Coms" },
