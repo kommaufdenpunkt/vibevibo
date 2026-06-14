@@ -116,6 +116,25 @@ function MessengerInner() {
 
   return (
     <div className="vv-msgapp">
+      {/* Transparenter Look: Chat-Zeilen + Container ohne dunklen Card-Hintergrund */}
+      <style>{`
+        .vv-msgapp,
+        .vv-msgapp-main,
+        .vv-msgapp-section,
+        .vv-msgapp-row,
+        .vv-msgapp-status {
+          background: transparent !important;
+        }
+        .vv-msgapp-row {
+          border-bottom: 1px solid rgba(255,255,255,0.12);
+        }
+        .vv-msgapp-row[data-unread="1"] {
+          background: rgba(236,72,153,0.12) !important;
+        }
+        .vv-msgapp-row:hover {
+          background: rgba(255,255,255,0.06) !important;
+        }
+      `}</style>
       {/* iOS-Style Header */}
       <header className="vv-msgapp-header">
         <div className="vv-msgapp-header-title">
