@@ -8,6 +8,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
+import PremiumHero from "@/components/PremiumHero";
+import PremiumSkeleton from "@/components/PremiumSkeleton";
 
 // 🎛 Layout: liest die User-Konfiguration aus localStorage.
 // Default-Reihenfolge wenn nichts gesetzt.
@@ -122,7 +124,7 @@ export default function HeutePage() {
     return () => observer.disconnect();
   }, [sortedBuschfunk, bfVisible, bfTotal, bfLoadingMore]);
 
-  if (loading) return null;
+  if (loading) return <PremiumSkeleton type="page" />;
   if (!me) {
     return (
       <div style={{ padding: 40, textAlign: "center" }}>
@@ -215,8 +217,21 @@ export default function HeutePage() {
         display: "flex", flexDirection: "column",
       }}>
 
-        {/* === HERO BANNER (BIG, animated gradient) === */}
+        {/* === HERO BANNER (Premium) === */}
         {isOn("hero") && <div style={sectionStyle("hero")}>
+        <PremiumHero
+          eyebrow={dateShort}
+          title={`${greeting}, ${me.displayName || me.username}!`}
+          gradient="default"
+          stats={[
+            { label: "✨", value: balance },
+            ...(streak > 0 ? [{ label: "🔥", value: `${streak}-Tage Streak` }] : []),
+          ]}
+        />
+        </div>}
+
+        {/* Legacy-Hero ausgeblendet — wird durch PremiumHero ersetzt */}
+        {false && <div>
         <div style={{
           position: "relative", overflow: "hidden",
           background: "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #06b6d4 100%)",
@@ -644,21 +659,31 @@ function UserTiles({ fallback }) {
 
 function BigTile({ href, color1, color2, icon, title, sub }) {
   return (
-    <Link href={href} style={{
+    <Link href={href} className="vv-prem-tile" style={{
       display: "flex", flexDirection: "column",
       background: `linear-gradient(135deg, ${color1}, ${color2})`,
       color: "#fff", padding: "16px 14px", borderRadius: 18,
       textDecoration: "none", minHeight: 110,
-      boxShadow: `0 6px 18px ${color1}40`,
+      boxShadow: `
+        0 1px 0 rgba(255,255,255,0.25) inset,
+        0 -1px 0 rgba(0,0,0,0.12) inset,
+        0 6px 18px ${color1}55,
+        0 2px 6px rgba(0,0,0,0.08)
+      `,
       position: "relative", overflow: "hidden",
-      transition: "transform 0.12s, box-shadow 0.12s",
-      WebkitTapHighlightColor: "transparent",
-    }}
-    onTouchStart={(e) => e.currentTarget.style.transform = "scale(0.96)"}
-    onTouchEnd={(e) => e.currentTarget.style.transform = "scale(1)"}>
-      <div style={{ fontSize: 34, lineHeight: 1, marginBottom: 4 }}>{icon}</div>
-      <div style={{ fontWeight: 900, fontSize: 16, lineHeight: 1.2, textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>{title}</div>
-      <div style={{ fontSize: 11.5, opacity: 0.95, marginTop: 2, fontWeight: 600 }}>{sub}</div>
+    }}>
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse at top left, rgba(255,255,255,0.18), transparent 65%)",
+        pointerEvents: "none",
+      }} />
+      <div style={{ fontSize: 34, lineHeight: 1, marginBottom: 4, position: "relative" }}>{icon}</div>
+      <div style={{
+        fontWeight: 900, fontSize: 16, lineHeight: 1.2,
+        textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+        letterSpacing: -0.2, position: "relative",
+      }}>{title}</div>
+      <div style={{ fontSize: 11.5, opacity: 0.95, marginTop: 2, fontWeight: 600, position: "relative" }}>{sub}</div>
     </Link>
   );
 }

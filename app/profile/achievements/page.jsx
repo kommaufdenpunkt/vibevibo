@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
+import PremiumHero from "@/components/PremiumHero";
 
 const CATEGORIES = {
   anfang:    { label: "🌱 Anfang",    color: "#10b981" },
@@ -52,33 +53,13 @@ export default function AchievementsPage() {
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "12px 12px 0" }}>
 
         {/* Hero */}
-        <div style={{
-          background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)",
-          backgroundSize: "200% 200%",
-          animation: "vv-ach-hero 14s ease infinite",
-          color: "#fff", borderRadius: 18, padding: "18px 20px",
-          marginBottom: 14, boxShadow: "0 8px 24px rgba(245,158,11,0.35)",
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.95, letterSpacing: 1, textTransform: "uppercase" }}>
-            🏆 Auszeichnungen
-          </div>
-          <h1 style={{ margin: "4px 0 6px", fontSize: 26, fontWeight: 900, textShadow: "0 2px 6px rgba(0,0,0,0.2)" }}>
-            Deine Sammlung
-          </h1>
-          <div style={{
-            display: "inline-block", background: "rgba(0,0,0,0.25)",
-            padding: "6px 14px", borderRadius: 999,
-            fontWeight: 900, fontSize: 14,
-          }}>
-            {data.stats.earned} / {data.stats.total} freigeschaltet
-          </div>
-        </div>
-        <style>{`
-          @keyframes vv-ach-hero {
-            0%, 100% { background-position: 0% 50%; }
-            50%      { background-position: 100% 50%; }
-          }
-        `}</style>
+        <PremiumHero
+          eyebrow="🏆 Auszeichnungen"
+          title="Deine Sammlung"
+          gradient="gold"
+          sparkles={["🏆", "★", "✨"]}
+          stats={[{ value: `${data.stats.earned} / ${data.stats.total} freigeschaltet`, color: "rgba(0,0,0,0.25)" }]}
+        />
 
         {Object.entries(CATEGORIES).map(([catId, catInfo]) => {
           const items = grouped[catId] || [];

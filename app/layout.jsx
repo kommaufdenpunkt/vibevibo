@@ -4,6 +4,7 @@ import EdgePanels from "@/components/EdgePanels";
 import PwaRegister from "@/components/PwaRegister";
 import PwaInstallTracker from "@/components/PwaInstallTracker";
 import MiniMusicDock from "@/components/MiniMusicDock";
+import QuickDock from "@/components/QuickDock";
 import GlobalAdFooter from "@/components/GlobalAdFooter";
 import ScreenshotGuard from "@/components/ScreenshotGuard";
 import MessageNotifier from "@/components/MessageNotifier";
@@ -60,6 +61,47 @@ export default function RootLayout({ children }) {
     <html lang="de">
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+        {/* ✨ Premium-Refinements: edle Typo, weichere Scroll-Animation, edle Focus-Rings */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          * { -webkit-tap-highlight-color: transparent; }
+          html, body {
+            font-feature-settings: "tnum", "ss01", "kern";
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            scroll-behavior: smooth;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+              scroll-behavior: auto !important;
+            }
+          }
+          /* Edle Fokus-Rings nur fuer Keyboard-Nutzer */
+          :focus-visible {
+            outline: 2px solid rgba(236, 72, 153, 0.6);
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+          /* Premium-Button-Klasse fuer Hover/Press */
+          .vv-prem-btn {
+            transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+          }
+          .vv-prem-btn:hover { transform: translateY(-1px); }
+          .vv-prem-btn:active { transform: translateY(0) scale(0.98); }
+          /* Premium-Tile mit Active-Lift */
+          .vv-prem-tile { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease; }
+          .vv-prem-tile:hover { transform: translateY(-2px) scale(1.012); }
+          .vv-prem-tile:active { transform: translateY(0) scale(0.97); }
+          /* Page-Mount-Animation */
+          @keyframes vv-page-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .vv-page-in { animation: vv-page-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        ` }} />
       </head>
       <body>
         <MeProvider>
@@ -68,6 +110,7 @@ export default function RootLayout({ children }) {
           <PwaRegister />
           <PwaInstallTracker />
           <MiniMusicDock />
+          <QuickDock />
           <GlobalAdFooter />
           <ScreenshotGuard />
           <MessageNotifier />

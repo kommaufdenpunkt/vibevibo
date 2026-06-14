@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
+import PremiumHero from "@/components/PremiumHero";
 
 export default function PrivacyPage() {
   const { me, loading } = useMe();
@@ -62,31 +63,13 @@ export default function PrivacyPage() {
     <div style={{ background: "transparent", paddingBottom: 100 }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "12px 12px 0" }}>
 
-        {/* Header */}
-        <div style={{
-          background: "linear-gradient(135deg, #1e40af 0%, #6366f1 50%, #a855f7 100%)",
-          backgroundSize: "200% 200%",
-          animation: "vv-shield-hero 14s ease infinite",
-          color: "#fff", borderRadius: 18, padding: "18px 20px",
-          marginBottom: 14, boxShadow: "0 8px 24px rgba(99,102,241,0.35)",
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.9, letterSpacing: 1, textTransform: "uppercase" }}>
-            🛡 Schutz & Privatsphäre
-          </div>
-          <h1 style={{ margin: "4px 0 6px", fontSize: 24, fontWeight: 900 }}>
-            Du bestimmst, wer dich kontaktieren darf
-          </h1>
-          <div style={{ fontSize: 13, opacity: 0.95, lineHeight: 1.4 }}>
-            Wir wollen, dass du dich hier sicher fühlst. Hier stellst du ein, wer dich anschreiben,
-            auf deine Pinnwand posten oder dein Profil verfolgen darf.
-          </div>
-        </div>
-        <style>{`
-          @keyframes vv-shield-hero {
-            0%, 100% { background-position: 0% 50%; }
-            50%      { background-position: 100% 50%; }
-          }
-        `}</style>
+        <PremiumHero
+          eyebrow="🛡 Schutz & Privatsphäre"
+          title="Du bestimmst, wer dich kontaktieren darf"
+          subtitle="Wir wollen, dass du dich hier sicher fühlst. Hier stellst du ein, wer dich anschreiben, auf deine Pinnwand posten oder dein Profil verfolgen darf."
+          gradient="cool"
+          sparkles={["🛡", "✨", "★"]}
+        />
 
         {flash && (
           <div style={{

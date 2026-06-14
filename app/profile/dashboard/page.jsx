@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
+import PremiumHero from "@/components/PremiumHero";
 
 const STORAGE_KEY = "vv_dashboard_layout";
 
@@ -142,30 +143,13 @@ export default function DashboardEditorPage() {
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "12px 12px 0" }}>
 
         {/* Hero */}
-        <div style={{
-          background: "linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)",
-          backgroundSize: "200% 200%",
-          animation: "vv-dash-hero 14s ease infinite",
-          color: "#fff", borderRadius: 18, padding: "18px 20px",
-          marginBottom: 14, boxShadow: "0 8px 24px rgba(139,92,246,0.35)",
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.95, letterSpacing: 1, textTransform: "uppercase" }}>
-            🎛 Dein Dashboard
-          </div>
-          <h1 style={{ margin: "4px 0 6px", fontSize: 26, fontWeight: 900, textShadow: "0 2px 6px rgba(0,0,0,0.2)" }}>
-            Heute zusammenstellen
-          </h1>
-          <div style={{ fontSize: 13, opacity: 0.95, lineHeight: 1.4 }}>
-            Wähle welche Sektionen auf <Link href="/heute" style={{ color: "#fff", fontWeight: 800 }}>/heute</Link> erscheinen
-            und in welcher Reihenfolge. Speicherung im Browser — alle Geräte separat.
-          </div>
-        </div>
-        <style>{`
-          @keyframes vv-dash-hero {
-            0%, 100% { background-position: 0% 50%; }
-            50%      { background-position: 100% 50%; }
-          }
-        `}</style>
+        <PremiumHero
+          eyebrow="🎛 Dein Dashboard"
+          title="Heute zusammenstellen"
+          subtitle="Wähle welche Sektionen auf /heute erscheinen und in welcher Reihenfolge. Speicherung im Browser — alle Geräte separat."
+          gradient="sunset"
+          sparkles={["🎛", "✨", "♡"]}
+        />
 
         {flash && (
           <div style={{
