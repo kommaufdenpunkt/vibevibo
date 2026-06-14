@@ -59,6 +59,45 @@ export default function HeutePage() {
     weekday: "long", day: "2-digit", month: "long",
   }), []);
 
+  // ⚠ WICHTIG: Hooks duerfen NICHT nach early-return stehen!
+  // Buschfunk sortieren (Freunde zuerst) — muss VOR jedem return passieren
+  const sortedBuschfunk = useMemo(() => {
+    const arr = [...(data.buschfunk || [])];
+    arr.sort((a, b) => {
+      const af = a.isFriend ? 0 : 1;
+      const bf = b.isFriend ? 0 : 1;
+      if (af !== bf) return af - bf;
+      return (b.at || 0) - (a.at || 0);
+    });
+    return arr;
+  }, [data.buschfunk]);
+
+  // IntersectionObserver fuer Infinite-Scroll — auch vor early-return
+  useEffect(() => {
+    if (!sentinelRef.current || sortedBuschfunk.length === 0) return;
+    const el = sentinelRef.current;
+    const observer = new IntersectionObserver(async (entries) => {
+      if (!entries[0].isIntersecting || bfLoadingMore) return;
+      if (bfVisible >= sortedBuschfunk.length) {
+        if (bfTotal < 200) {
+          setBfLoadingMore(true);
+          const newTotal = Math.min(200, bfTotal + 50);
+          try {
+            const r = await fetch(`/api/buschfunk?limit=${newTotal}`).then((r) => r.json());
+            setData((d) => ({ ...d, buschfunk: r.events || [] }));
+            setBfTotal(newTotal);
+            setBfVisible((v) => v + 15);
+          } catch {}
+          setBfLoadingMore(false);
+        }
+        return;
+      }
+      setBfVisible((v) => Math.min(v + 15, sortedBuschfunk.length));
+    }, { rootMargin: "400px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sortedBuschfunk, bfVisible, bfTotal, bfLoadingMore]);
+
   if (loading) return null;
   if (!me) {
     return (
@@ -130,49 +169,7 @@ export default function HeutePage() {
 
   const recentActivity = data.notifications.slice(0, 10);
 
-  // Buschfunk sortieren: Freunde zuerst, dann öffentlich
-  const sortedBuschfunk = useMemo(() => {
-    const arr = [...(data.buschfunk || [])];
-    arr.sort((a, b) => {
-      // Erst Freunde, dann nicht-Freunde
-      const af = a.isFriend ? 0 : 1;
-      const bf = b.isFriend ? 0 : 1;
-      if (af !== bf) return af - bf;
-      // Innerhalb gleicher Gruppe: neueste zuerst
-      return (b.at || 0) - (a.at || 0);
-    });
-    return arr;
-  }, [data.buschfunk]);
-
-  // IntersectionObserver fuer Infinite-Scroll
-  useEffect(() => {
-    if (!sentinelRef.current || sortedBuschfunk.length === 0) return;
-    const el = sentinelRef.current;
-    const observer = new IntersectionObserver(async (entries) => {
-      if (!entries[0].isIntersecting || bfLoadingMore) return;
-      // Bereits alle angezeigt? Wenn noch nicht alle von API geladen, mehr holen
-      if (bfVisible >= sortedBuschfunk.length) {
-        if (bfTotal < 200) {
-          setBfLoadingMore(true);
-          const newTotal = Math.min(200, bfTotal + 50);
-          try {
-            const r = await fetch(`/api/buschfunk?limit=${newTotal}`).then((r) => r.json());
-            setData((d) => ({ ...d, buschfunk: r.events || [] }));
-            setBfTotal(newTotal);
-            setBfVisible((v) => v + 15);
-          } catch {}
-          setBfLoadingMore(false);
-        }
-        return;
-      }
-      // Mehr aus bereits geladenen Events anzeigen
-      setBfVisible((v) => Math.min(v + 15, sortedBuschfunk.length));
-    }, { rootMargin: "400px" });  // 400px = lade frueh, kein Ruckler
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [sortedBuschfunk, bfVisible, bfTotal, bfLoadingMore]);
-
-  // Wo trennen sich Freunde von Öffentlichkeit?
+  // Wo trennen sich Freunde von Öffentlichkeit? (Kein Hook — pure compute)
   const friendsCount = sortedBuschfunk.findIndex((ev) => !ev.isFriend);
   const friendsLast = friendsCount === -1 ? sortedBuschfunk.length : friendsCount;
 
@@ -552,7 +549,8 @@ function BuschfunkPreview({ ev }) {
   const meta = BF_TYPE[ev.type] || BF_TYPE.status;
   const actorName = ev.actor?.displayName || ev.actor?.username || "Jemand";
   const username = ev.actor?.username;
-  const avatarUrl = ev.actor?.avatarUrl;
+  const avatarUrl = ev.actor?.avatarUrl || "";
+  const profileHref = username ? `/u/${username}` : "/buschfunk";
 
   let text = "";
   let isQuote = false;
@@ -567,6 +565,25 @@ function BuschfunkPreview({ ev }) {
 
   const when = relTime(ev.at);
 
+  async function gruschelBack(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!username) return;
+    try {
+      await api.sendNudge(username);
+      // Mini-Feedback: kleines Toast via window-Custom-Event
+      if (typeof window !== "undefined") {
+        const t = document.createElement("div");
+        t.textContent = `🫶 Zurück gegruschelt @${username}`;
+        t.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:10px 18px;border-radius:999px;font-weight:800;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2);";
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2200);
+      }
+    } catch (err) {
+      console.warn("nudge failed", err);
+    }
+  }
+
   return (
     <div style={{
       background: "#fff",
@@ -574,61 +591,58 @@ function BuschfunkPreview({ ev }) {
       overflow: "hidden",
       borderLeft: `4px solid ${meta.g1}`,
       boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-      transition: "transform 0.12s",
-      WebkitTapHighlightColor: "transparent",
     }}>
-      {/* Header: Avatar + Name + Type-Chip + Time */}
-      <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
-        display: "flex", alignItems: "center", gap: 10,
-        padding: "10px 12px 8px", textDecoration: "none", color: "inherit",
+      {/* Eine GROSSE klickbare Flaeche fuer Header + Body */}
+      <Link href={profileHref} style={{
+        display: "block", textDecoration: "none", color: "inherit",
+        padding: "10px 12px 12px",
+        WebkitTapHighlightColor: "transparent",
       }}>
+        {/* Header: Avatar + Name + Type-Chip + Time */}
         <div style={{
-          flexShrink: 0,
-          width: 38, height: 38, borderRadius: 999,
-          background: `linear-gradient(135deg, ${meta.g1}, ${meta.g2})`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 18, color: "#fff",
-          boxShadow: `0 2px 6px ${meta.g1}66`,
-          overflow: "hidden",
-          backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
         }}>
-          {!avatarUrl && meta.icon}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap",
+            flexShrink: 0,
+            width: 40, height: 40, borderRadius: 999,
+            background: avatarUrl
+              ? `url(${avatarUrl}) center/cover, linear-gradient(135deg, ${meta.g1}, ${meta.g2})`
+              : `linear-gradient(135deg, ${meta.g1}, ${meta.g2})`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 18, color: "#fff",
+            boxShadow: `0 2px 6px ${meta.g1}66`,
           }}>
-            <strong style={{ fontSize: 13.5, color: "#1f2937", lineHeight: 1.2 }}>
-              {actorName}
-            </strong>
-            <span style={{
-              background: meta.chip, color: meta.chipText,
-              padding: "1px 7px", borderRadius: 999,
-              fontSize: 9.5, fontWeight: 800, letterSpacing: 0.2,
-              textTransform: "uppercase",
-            }}>{meta.icon} {meta.label}</span>
-            {ev.isFriend && (
+            {!avatarUrl && meta.icon}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap",
+            }}>
+              <strong style={{ fontSize: 14, color: "#1f2937", lineHeight: 1.2 }}>
+                {actorName}
+              </strong>
               <span style={{
-                background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-                color: "#fff", padding: "1px 7px", borderRadius: 999,
+                background: meta.chip, color: meta.chipText,
+                padding: "1px 7px", borderRadius: 999,
                 fontSize: 9.5, fontWeight: 800, letterSpacing: 0.2,
                 textTransform: "uppercase",
-              }}>⭐ Freund</span>
-            )}
-          </div>
-          <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 1 }}>
-            @{username} · {when}
+              }}>{meta.icon} {meta.label}</span>
+              {ev.isFriend && (
+                <span style={{
+                  background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                  color: "#fff", padding: "1px 7px", borderRadius: 999,
+                  fontSize: 9.5, fontWeight: 800,
+                  textTransform: "uppercase",
+                }}>⭐ Freund</span>
+              )}
+            </div>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
+              @{username} · {when}
+            </div>
           </div>
         </div>
-      </Link>
 
-      {/* Body: Text */}
-      <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
-        display: "block", textDecoration: "none", color: "inherit",
-        padding: "0 12px 10px",
-      }}>
+        {/* Body: Text */}
         {isQuote ? (
           <div style={{
             background: meta.chip, color: meta.chipText,
@@ -642,32 +656,34 @@ function BuschfunkPreview({ ev }) {
         )}
       </Link>
 
-      {/* Footer: Actions */}
+      {/* Footer: Action-Buttons mit stopPropagation */}
       <div style={{
         display: "flex", borderTop: "1px solid #f1f5f9",
-        background: "rgba(248,250,252,0.5)",
+        background: "rgba(248,250,252,0.6)",
       }}>
-        <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
-          flex: 1, textAlign: "center", padding: "7px 0",
-          fontSize: 11.5, fontWeight: 700, color: "#475569",
+        <Link href={profileHref} style={{
+          flex: 1, textAlign: "center", padding: "9px 0",
+          fontSize: 12, fontWeight: 700, color: "#475569",
           textDecoration: "none",
+          WebkitTapHighlightColor: "rgba(0,0,0,0.05)",
         }}>👤 Profil</Link>
         {username && (
-          <button type="button" onClick={(e) => {
-            e.preventDefault(); e.stopPropagation();
-            api.sendNudge(username).catch(() => {});
-          }} style={{
-            all: "unset",
-            flex: 1, textAlign: "center", padding: "7px 0",
-            fontSize: 11.5, fontWeight: 700, color: "#475569",
-            cursor: "pointer", borderLeft: "1px solid #f1f5f9",
-          }}>🫶 Gruscheln</button>
+          <button type="button"
+            onClick={gruschelBack}
+            style={{
+              all: "unset", boxSizing: "border-box",
+              flex: 1, textAlign: "center", padding: "9px 0",
+              fontSize: 12, fontWeight: 700, color: "#475569",
+              cursor: "pointer", borderLeft: "1px solid #f1f5f9",
+              WebkitTapHighlightColor: "rgba(0,0,0,0.05)",
+            }}>🫶 Gruscheln</button>
         )}
         {username && (
-          <Link href={`/messenger/${username}`} style={{
-            flex: 1, textAlign: "center", padding: "7px 0",
-            fontSize: 11.5, fontWeight: 700, color: "#475569",
+          <Link href={`/messenger/${username}`} onClick={(e) => e.stopPropagation()} style={{
+            flex: 1, textAlign: "center", padding: "9px 0",
+            fontSize: 12, fontWeight: 700, color: "#475569",
             textDecoration: "none", borderLeft: "1px solid #f1f5f9",
+            WebkitTapHighlightColor: "rgba(0,0,0,0.05)",
           }}>💬 Schreiben</Link>
         )}
       </div>

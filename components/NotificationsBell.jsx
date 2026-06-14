@@ -64,9 +64,6 @@ export default function NotificationsBell() {
     lastUnreadRef.current = unread;
   }, [unread]);
 
-  // Auf /heute komplett ausblenden (Notifications sind dort inline)
-  const hideOnHeute = pathname === "/heute" || pathname?.startsWith("/heute/");
-  if (hideOnHeute) return null;
   const prevUnreadRef = useRef(null);
   const [allReadBusy, setAllReadBusy] = useState(false);
   const [allReadFlash, setAllReadFlash] = useState("");
@@ -217,6 +214,8 @@ export default function NotificationsBell() {
   }
 
   if (!me) return null;
+  // Auf /heute komplett ausblenden (Notifications sind dort inline)
+  if (pathname === "/heute" || pathname?.startsWith("/heute/")) return null;
 
   return (
     <>
