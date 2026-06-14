@@ -9,6 +9,27 @@ import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 
+// 🎛 Layout: liest die User-Konfiguration aus localStorage.
+// Default-Reihenfolge wenn nichts gesetzt.
+const DEFAULT_LAYOUT = [
+  { id: "hero", enabled: true },
+  { id: "alerts", enabled: true },
+  { id: "tiles", enabled: true },
+  { id: "buschfunk", enabled: true },
+  { id: "fortune", enabled: true },
+  { id: "activity", enabled: true },
+];
+function loadDashboardLayout() {
+  if (typeof window === "undefined") return DEFAULT_LAYOUT;
+  try {
+    const raw = localStorage.getItem("vv_dashboard_layout");
+    if (!raw) return DEFAULT_LAYOUT;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr) || arr.length === 0) return DEFAULT_LAYOUT;
+    return arr;
+  } catch { return DEFAULT_LAYOUT; }
+}
+
 export default function HeutePage() {
   const { me, loading } = useMe();
   const [data, setData] = useState({
@@ -22,6 +43,9 @@ export default function HeutePage() {
   const [bfTotal, setBfTotal] = useState(50);     // wie viele von API geholt
   const [bfLoadingMore, setBfLoadingMore] = useState(false);
   const sentinelRef = useRef(null);
+  // 🎛 Dashboard-Layout
+  const [layout, setLayout] = useState(DEFAULT_LAYOUT);
+  useEffect(() => { setLayout(loadDashboardLayout()); }, []);
 
   useEffect(() => {
     if (!me) return;
@@ -173,14 +197,26 @@ export default function HeutePage() {
   const friendsCount = sortedBuschfunk.findIndex((ev) => !ev.isFriend);
   const friendsLast = friendsCount === -1 ? sortedBuschfunk.length : friendsCount;
 
+  // 🎛 Layout: section-id -> CSS-order-Wert. Wrap jede Sektion in <div style={{order:N}}>
+  // damit der User die Reihenfolge im /profile/dashboard editieren kann.
+  const orderMap = {};
+  layout.forEach((entry, idx) => { orderMap[entry.id] = idx; });
+  const isOn = (id) => {
+    const it = layout.find((s) => s.id === id);
+    return !it || it.enabled;
+  };
+  const sectionStyle = (id) => ({ order: orderMap[id] ?? 99 });
+
   return (
     <div style={{ background: "transparent", paddingBottom: 100 }}>
       <div style={{
         maxWidth: 760, margin: "0 auto", padding: "10px 12px 0",
         scrollBehavior: "smooth",
+        display: "flex", flexDirection: "column",
       }}>
 
         {/* === HERO BANNER (BIG, animated gradient) === */}
+        {isOn("hero") && <div style={sectionStyle("hero")}>
         <div style={{
           position: "relative", overflow: "hidden",
           background: "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #06b6d4 100%)",
@@ -228,8 +264,9 @@ export default function HeutePage() {
             )}
           </div>
         </div>
+        </div>}
 
-        {/* Inline animation styles for hero */}
+        {/* Inline animation styles for hero (global, ausserhalb der Sections) */}
         <style>{`
           @keyframes vv-heute-hero {
             0%, 100% { background-position: 0% 50%; }
@@ -247,8 +284,8 @@ export default function HeutePage() {
         )}
 
         {/* === ALERTS === */}
-        {alerts.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+        {isOn("alerts") && alerts.length > 0 && (
+          <div style={{ ...sectionStyle("alerts"), display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
             {alerts.map((a, i) => (
               <AlertRow key={i} alert={a} busy={busy === "daily" && a.icon === "🎁"} />
             ))}
@@ -256,19 +293,29 @@ export default function HeutePage() {
         )}
 
         {/* === HAUPT-AKTIONEN (Custom-Tiles aus Apps oder Default) === */}
+        {isOn("tiles") && <div style={sectionStyle("tiles")}>
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
           marginBottom: 8, padding: "0 4px",
         }}>
           <SectionTitle compact>🚀 Schnell loslegen</SectionTitle>
-          <Link href="/apps" style={{
-            fontSize: 11, color: "#fff", fontWeight: 800,
-            textDecoration: "none", padding: "4px 12px",
-            background: "rgba(255,255,255,0.18)",
-            backdropFilter: "blur(8px)",
-            borderRadius: 999,
-            border: "1px solid rgba(255,255,255,0.3)",
-          }}>🎛 Anpassen →</Link>
+          <div style={{ display: "flex", gap: 6 }}>
+            <Link href="/profile/dashboard" style={{
+              fontSize: 11, color: "#fff", fontWeight: 800,
+              textDecoration: "none", padding: "4px 12px",
+              background: "linear-gradient(135deg, #ec4899, #8b5cf6)",
+              borderRadius: 999,
+              boxShadow: "0 2px 6px rgba(139,92,246,0.35)",
+            }}>🎛 Layout</Link>
+            <Link href="/apps" style={{
+              fontSize: 11, color: "#fff", fontWeight: 800,
+              textDecoration: "none", padding: "4px 12px",
+              background: "rgba(255,255,255,0.18)",
+              backdropFilter: "blur(8px)",
+              borderRadius: 999,
+              border: "1px solid rgba(255,255,255,0.3)",
+            }}>📲 Pinnen</Link>
+          </div>
         </div>
         <div style={{
           display: "grid",
@@ -286,10 +333,11 @@ export default function HeutePage() {
             { href: "/apps",      color1: "#ec4899", color2: "#8b5cf6", icon: "📲", title: "Alle Apps", sub: "Komplett" },
           ]} />
         </div>
+        </div>}
 
         {/* === BUSCHFUNK FEED mit Infinite-Scroll + Freunde-zuerst === */}
-        {sortedBuschfunk.length > 0 && (
-          <>
+        {isOn("buschfunk") && sortedBuschfunk.length > 0 && (
+          <div style={sectionStyle("buschfunk")}>
             <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               marginBottom: 8, padding: "0 4px",
@@ -423,12 +471,13 @@ export default function HeutePage() {
                 fontSize: 12, color: "#94a3b8", fontStyle: "italic", fontWeight: 600,
               }}>✿ Du bist am Ende des Buschfunks angekommen ✿</div>
             )}
-          </>
+          </div>
         )}
 
         {/* === FORTUNE === */}
-        {data.fortune?.text && (
+        {isOn("fortune") && data.fortune?.text && (
           <div style={{
+            ...sectionStyle("fortune"),
             background: "rgba(252,231,243,0.88)",
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
@@ -448,8 +497,8 @@ export default function HeutePage() {
         )}
 
         {/* === ACTIVITY FEED === */}
-        {recentActivity.length > 0 && (
-          <>
+        {isOn("activity") && recentActivity.length > 0 && (
+          <div style={sectionStyle("activity")}>
             <SectionTitle>📰 Deine Benachrichtigungen</SectionTitle>
             <div style={{
               background: "rgba(255,255,255,0.88)",
@@ -462,7 +511,7 @@ export default function HeutePage() {
             }}>
               {recentActivity.map((n) => <ActivityRow key={n.id} n={n} myUsername={me.username} />)}
             </div>
-          </>
+          </div>
         )}
 
         {alerts.length === 0 && recentActivity.length === 0 && data.buschfunk.length === 0 && (
@@ -471,6 +520,7 @@ export default function HeutePage() {
             background: "rgba(255,255,255,0.7)",
             backdropFilter: "blur(12px)",
             borderRadius: 16, color: "#475569",
+            order: 999,
           }}>
             <div style={{ fontSize: 44, marginBottom: 8 }}>✨</div>
             <div style={{ fontWeight: 800, color: "#1f2937" }}>Alles ruhig hier.</div>
