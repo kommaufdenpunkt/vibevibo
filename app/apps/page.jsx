@@ -14,6 +14,7 @@ const APPS = [
   { id: "profile",     cat: "start",   icon: "🪪", name: "Mein Profil",    desc: "Deine Seite",     href: "/profile" },
   { id: "edit",        cat: "start",   icon: "✏️", name: "Bearbeiten",     desc: "Profil pflegen",  href: "/profile/edit" },
   { id: "skin",        cat: "start",   icon: "🎨", name: "Skin / Theme",   desc: "Look anpassen",   href: "/profile/skin" },
+  { id: "privacy",     cat: "start",   icon: "🛡", name: "Schutz",         desc: "Privatsphäre",    href: "/profile/privacy" },
 
   // 💬 Reden
   { id: "messenger",   cat: "talk",    icon: "💬", name: "Messenger",      desc: "1-zu-1 Chat",     href: "/messenger" },

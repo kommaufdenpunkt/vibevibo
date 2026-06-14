@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification, bumpQuestProgress, isBlockedBetween } from "@/lib/db";
+import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification, bumpQuestProgress } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
 import { sendPushToUser } from "@/lib/push";
+import { canMessage } from "@/lib/privacy";
 
 const MAX_IMG_BYTES = 700_000;
 const IMG_RE = /^data:image\/(png|jpeg|jpg|webp);base64,/;
@@ -36,9 +37,10 @@ export async function POST(req) {
   const body = await req.json();
   const target = getUserByUsername(body.to);
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });
-  if (isBlockedBetween(me.id, target.id)) {
-    return NextResponse.json({ error: "Diese Konversation ist nicht moeglich (Sperre)." }, { status: 403 });
-  }
+
+  // 🛡 Privatsphaere-Check: dm_policy des Empfaengers
+  const dmCheck = canMessage(me.id, target.id);
+  if (!dmCheck.ok) return NextResponse.json({ error: dmCheck.reason }, { status: 403 });
 
   if (body.kind === "voice") {
     const audioUrl = String(body.audioUrl || "");
