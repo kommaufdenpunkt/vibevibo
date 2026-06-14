@@ -4,7 +4,7 @@
 // Großer animierter Hero, Glas-Karten, smooth scroll, horizontal swipe tiles,
 // kein nested-scroll mehr, Theme scheint durch.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
@@ -17,6 +17,11 @@ export default function HeutePage() {
   });
   const [busy, setBusy] = useState("");
   const [flash, setFlash] = useState("");
+  // Infinite-Scroll-State fuer Buschfunk
+  const [bfVisible, setBfVisible] = useState(15); // wie viele Events anzeigen
+  const [bfTotal, setBfTotal] = useState(50);     // wie viele von API geholt
+  const [bfLoadingMore, setBfLoadingMore] = useState(false);
+  const sentinelRef = useRef(null);
 
   useEffect(() => {
     if (!me) return;
@@ -28,7 +33,7 @@ export default function HeutePage() {
       api.fortune().catch(() => null),
       api.quests().catch(() => ({ quests: [] })),
       api.birthdays().catch(() => []),
-      api.buschfunk().catch(() => null),
+      fetch("/api/buschfunk?limit=50").then((r) => r.ok ? r.json() : null).catch(() => null),
     ]).then(([notif, credits, vibo, ads, fortune, quests, bdays, buschfunk]) => {
       setData({
         notifications: notif?.notifications || [],
@@ -124,6 +129,52 @@ export default function HeutePage() {
   });
 
   const recentActivity = data.notifications.slice(0, 10);
+
+  // Buschfunk sortieren: Freunde zuerst, dann öffentlich
+  const sortedBuschfunk = useMemo(() => {
+    const arr = [...(data.buschfunk || [])];
+    arr.sort((a, b) => {
+      // Erst Freunde, dann nicht-Freunde
+      const af = a.isFriend ? 0 : 1;
+      const bf = b.isFriend ? 0 : 1;
+      if (af !== bf) return af - bf;
+      // Innerhalb gleicher Gruppe: neueste zuerst
+      return (b.at || 0) - (a.at || 0);
+    });
+    return arr;
+  }, [data.buschfunk]);
+
+  // IntersectionObserver fuer Infinite-Scroll
+  useEffect(() => {
+    if (!sentinelRef.current || sortedBuschfunk.length === 0) return;
+    const el = sentinelRef.current;
+    const observer = new IntersectionObserver(async (entries) => {
+      if (!entries[0].isIntersecting || bfLoadingMore) return;
+      // Bereits alle angezeigt? Wenn noch nicht alle von API geladen, mehr holen
+      if (bfVisible >= sortedBuschfunk.length) {
+        if (bfTotal < 200) {
+          setBfLoadingMore(true);
+          const newTotal = Math.min(200, bfTotal + 50);
+          try {
+            const r = await fetch(`/api/buschfunk?limit=${newTotal}`).then((r) => r.json());
+            setData((d) => ({ ...d, buschfunk: r.events || [] }));
+            setBfTotal(newTotal);
+            setBfVisible((v) => v + 15);
+          } catch {}
+          setBfLoadingMore(false);
+        }
+        return;
+      }
+      // Mehr aus bereits geladenen Events anzeigen
+      setBfVisible((v) => Math.min(v + 15, sortedBuschfunk.length));
+    }, { rootMargin: "400px" });  // 400px = lade frueh, kein Ruckler
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sortedBuschfunk, bfVisible, bfTotal, bfLoadingMore]);
+
+  // Wo trennen sich Freunde von Öffentlichkeit?
+  const friendsCount = sortedBuschfunk.findIndex((ev) => !ev.isFriend);
+  const friendsLast = friendsCount === -1 ? sortedBuschfunk.length : friendsCount;
 
   return (
     <div style={{ background: "transparent", paddingBottom: 100 }}>
@@ -224,8 +275,8 @@ export default function HeutePage() {
           <BigTile href="/apps"      color1="#ec4899" color2="#8b5cf6" icon="📲" title="Alle Apps" sub="Komplett" />
         </div>
 
-        {/* === BUSCHFUNK FEED (kein nested-scroll mehr — flowt durch) === */}
-        {data.buschfunk.length > 0 && (
+        {/* === BUSCHFUNK FEED mit Infinite-Scroll + Freunde-zuerst === */}
+        {sortedBuschfunk.length > 0 && (
           <>
             <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -240,28 +291,126 @@ export default function HeutePage() {
                 textShadow: "0 1px 2px rgba(0,0,0,0.3)",
               }}>📣 Buschfunk →</Link>
             </div>
-            <div style={{
-              background: "rgba(255,255,255,0.88)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              borderRadius: 16, padding: 12, marginBottom: 14,
-              border: "1px solid rgba(255,255,255,0.5)",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-              display: "flex", flexDirection: "column", gap: 6,
-            }}>
-              {data.buschfunk.slice(0, 10).map((ev, i) => (
-                <BuschfunkPreview key={ev.id || `${ev.type}-${ev.at}-${ev.actor?.username || i}`} ev={ev} />
-              ))}
-              {data.buschfunk.length > 10 && (
-                <Link href="/buschfunk" style={{
-                  textAlign: "center", padding: "8px",
-                  fontSize: 12, color: "#ea580c", fontWeight: 700,
-                  textDecoration: "none",
+
+            {/* ===== ⭐ FREUNDE-SEKTION ===== */}
+            {friendsLast > 0 && bfVisible > 0 && (
+              <>
+                {/* Großer goldener Banner */}
+                <div style={{
+                  background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                  borderRadius: 14,
+                  padding: "10px 14px",
+                  marginBottom: 8,
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  boxShadow: "0 4px 12px rgba(245,158,11,0.3)",
                 }}>
-                  📣 Alle {data.buschfunk.length} Einträge sehen →
-                </Link>
-              )}
-            </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ fontSize: 22 }}>⭐</div>
+                    <div>
+                      <div style={{
+                        fontSize: 14, fontWeight: 900, color: "#fff",
+                        textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                      }}>Von deinen Freunden</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>
+                        {friendsLast} Eintrag{friendsLast === 1 ? "" : "e"} insgesamt
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{
+                    background: "rgba(255,255,255,0.25)",
+                    backdropFilter: "blur(8px)",
+                    padding: "4px 10px", borderRadius: 999,
+                    fontSize: 11, fontWeight: 800, color: "#fff",
+                  }}>{Math.min(bfVisible, friendsLast)}/{friendsLast}</div>
+                </div>
+
+                <div style={{
+                  background: "rgba(255,255,255,0.92)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  borderRadius: 16, padding: 10, marginBottom: 14,
+                  border: "2px solid rgba(245,158,11,0.25)",
+                  boxShadow: "0 4px 16px rgba(245,158,11,0.12)",
+                  display: "flex", flexDirection: "column", gap: 8,
+                }}>
+                  {sortedBuschfunk.slice(0, Math.min(bfVisible, friendsLast)).map((ev, i) => (
+                    <BuschfunkPreview key={ev.id || `${ev.type}-${ev.at}-${ev.actor?.username || i}`} ev={ev} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* ===== 🌍 ÖFFENTLICH-SEKTION ===== */}
+            {bfVisible > friendsLast && (
+              <>
+                {/* Großer cyan-blauer Banner */}
+                <div style={{
+                  background: "linear-gradient(135deg, #06b6d4, #0891b2)",
+                  borderRadius: 14,
+                  padding: "10px 14px",
+                  marginBottom: 8,
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  boxShadow: "0 4px 12px rgba(8,145,178,0.3)",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ fontSize: 22 }}>🌍</div>
+                    <div>
+                      <div style={{
+                        fontSize: 14, fontWeight: 900, color: "#fff",
+                        textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                      }}>Aus dem Netz</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>
+                        Öffentliche Posts der ganzen Community
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{
+                    background: "rgba(255,255,255,0.25)",
+                    backdropFilter: "blur(8px)",
+                    padding: "4px 10px", borderRadius: 999,
+                    fontSize: 11, fontWeight: 800, color: "#fff",
+                  }}>{bfVisible - friendsLast}/{sortedBuschfunk.length - friendsLast}</div>
+                </div>
+
+                <div style={{
+                  background: "rgba(255,255,255,0.92)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  borderRadius: 16, padding: 10, marginBottom: 14,
+                  border: "2px solid rgba(8,145,178,0.2)",
+                  boxShadow: "0 4px 16px rgba(8,145,178,0.1)",
+                  display: "flex", flexDirection: "column", gap: 8,
+                }}>
+                  {sortedBuschfunk.slice(friendsLast, bfVisible).map((ev, i) => (
+                    <BuschfunkPreview key={ev.id || `pub-${ev.type}-${ev.at}-${ev.actor?.username || i}`} ev={ev} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* === Lade-Indikator + Sentinel === */}
+            {bfLoadingMore && (
+              <div style={{
+                textAlign: "center", padding: "12px",
+                background: "rgba(255,255,255,0.85)",
+                borderRadius: 12, marginBottom: 14,
+                fontSize: 12, color: "#475569", fontWeight: 800,
+              }}>⏳ Lade mehr Einträge…</div>
+            )}
+            {!bfLoadingMore && bfVisible < sortedBuschfunk.length && (
+              <div ref={sentinelRef} style={{ height: 1 }} />
+            )}
+            {!bfLoadingMore && bfVisible >= sortedBuschfunk.length && bfTotal < 200 && (
+              <div ref={sentinelRef} style={{ height: 1 }} />
+            )}
+            {bfVisible >= sortedBuschfunk.length && bfTotal >= 200 && (
+              <div style={{
+                textAlign: "center", padding: "16px",
+                background: "rgba(255,255,255,0.7)",
+                borderRadius: 12, marginBottom: 14,
+                fontSize: 12, color: "#94a3b8", fontStyle: "italic", fontWeight: 600,
+              }}>✿ Du bist am Ende des Buschfunks angekommen ✿</div>
+            )}
           </>
         )}
 
@@ -385,54 +534,144 @@ function BigTile({ href, color1, color2, icon, title, sub }) {
   );
 }
 
+// Pro Buschfunk-Typ eigene Farbe + Akzent — wie ein Instagram-Feed,
+// jeder Post-Typ hat eigenen Look.
+const BF_TYPE = {
+  status:     { icon: "💬", label: "Status",      g1: "#3b82f6", g2: "#6366f1", chip: "#dbeafe", chipText: "#1e40af" },
+  pinnwand:   { icon: "📌", label: "Pinnwand",    g1: "#fb923c", g2: "#ea580c", chip: "#ffedd5", chipText: "#9a3412" },
+  gift:       { icon: "🎁", label: "Geschenk",    g1: "#ec4899", g2: "#be185d", chip: "#fce7f3", chipText: "#9d174d" },
+  newpic:     { icon: "🖼️", label: "Neues Bild",  g1: "#a855f7", g2: "#7c3aed", chip: "#ede9fe", chipText: "#5b21b6" },
+  grouppost:  { icon: "🏘️", label: "Gruppe",      g1: "#06b6d4", g2: "#0891b2", chip: "#cffafe", chipText: "#155e75" },
+  login:      { icon: "✨", label: "Online",      g1: "#10b981", g2: "#059669", chip: "#d1fae5", chipText: "#065f46" },
+  register:   { icon: "🎉", label: "Neu dabei",   g1: "#f59e0b", g2: "#d97706", chip: "#fef3c7", chipText: "#92400e" },
+  knuddel:    { icon: "🥚", label: "Knuddel",     g1: "#84cc16", g2: "#65a30d", chip: "#ecfccb", chipText: "#3f6212" },
+  milestone:  { icon: "🎯", label: "Meilenstein", g1: "#f43f5e", g2: "#be123c", chip: "#ffe4e6", chipText: "#9f1239" },
+};
+
 function BuschfunkPreview({ ev }) {
-  const TYPE_ICON = {
-    status: "💬", pinnwand: "📌", gift: "🎁", newpic: "🖼️",
-    grouppost: "🏘️", login: "✨", register: "🎉", knuddel: "🥚",
-    milestone: "🎯",
-  };
-  const icon = TYPE_ICON[ev.type] || "✨";
+  const meta = BF_TYPE[ev.type] || BF_TYPE.status;
   const actorName = ev.actor?.displayName || ev.actor?.username || "Jemand";
   const username = ev.actor?.username;
+  const avatarUrl = ev.actor?.avatarUrl;
 
   let text = "";
-  if (ev.type === "status")     text = ev.detail ? `„${ev.detail}"` : "neuer Status";
-  else if (ev.type === "pinnwand") text = ev.detail ? `„${ev.detail}"` : "Pinnwand-Eintrag";
-  else if (ev.type === "gift")     text = `🎁 Geschenk verschickt`;
-  else if (ev.type === "newpic")   text = "neues Profilbild";
-  else if (ev.type === "register") text = "neu bei VibeVibo — sag Hallo!";
-  else if (ev.type === "knuddel")  text = "geknuddelt 🫶";
+  let isQuote = false;
+  if (ev.type === "status")     { text = ev.detail || ""; isQuote = !!ev.detail; }
+  else if (ev.type === "pinnwand") { text = ev.detail || "Pinnwand-Eintrag"; isQuote = !!ev.detail; }
+  else if (ev.type === "gift")     text = "hat ein Geschenk verschickt 🎁";
+  else if (ev.type === "newpic")   text = "hat ein neues Profilbild! 📸";
+  else if (ev.type === "register") text = "ist neu bei VibeVibo — sag Hallo! 🎉";
+  else if (ev.type === "knuddel")  text = "hat geknuddelt 🫶";
+  else if (ev.type === "login")    text = "ist online ✨";
   else text = ev.type;
 
   const when = relTime(ev.at);
 
   return (
-    <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
-      display: "flex", alignItems: "flex-start", gap: 10,
-      padding: "10px 12px", borderRadius: 12,
+    <div style={{
       background: "#fff",
-      border: "1px solid rgba(251,146,60,0.18)",
-      textDecoration: "none", color: "inherit",
-      transition: "transform 0.1s",
+      borderRadius: 14,
+      overflow: "hidden",
+      borderLeft: `4px solid ${meta.g1}`,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      transition: "transform 0.12s",
       WebkitTapHighlightColor: "transparent",
     }}>
-      <div style={{
-        flexShrink: 0, fontSize: 18, lineHeight: 1,
-        width: 32, height: 32, borderRadius: 999,
-        background: "linear-gradient(135deg, #fde68a, #fb923c)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>{icon}</div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: "#1f2937", lineHeight: 1.3 }}>
-          {actorName}
-          <span style={{ fontSize: 10.5, fontWeight: 600, color: "#94a3b8", marginLeft: 6 }}>· {when}</span>
-        </div>
+      {/* Header: Avatar + Name + Type-Chip + Time */}
+      <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "10px 12px 8px", textDecoration: "none", color: "inherit",
+      }}>
         <div style={{
-          fontSize: 12.5, color: "#475569", marginTop: 1,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-        }}>{text}</div>
+          flexShrink: 0,
+          width: 38, height: 38, borderRadius: 999,
+          background: `linear-gradient(135deg, ${meta.g1}, ${meta.g2})`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 18, color: "#fff",
+          boxShadow: `0 2px 6px ${meta.g1}66`,
+          overflow: "hidden",
+          backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}>
+          {!avatarUrl && meta.icon}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap",
+          }}>
+            <strong style={{ fontSize: 13.5, color: "#1f2937", lineHeight: 1.2 }}>
+              {actorName}
+            </strong>
+            <span style={{
+              background: meta.chip, color: meta.chipText,
+              padding: "1px 7px", borderRadius: 999,
+              fontSize: 9.5, fontWeight: 800, letterSpacing: 0.2,
+              textTransform: "uppercase",
+            }}>{meta.icon} {meta.label}</span>
+            {ev.isFriend && (
+              <span style={{
+                background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                color: "#fff", padding: "1px 7px", borderRadius: 999,
+                fontSize: 9.5, fontWeight: 800, letterSpacing: 0.2,
+                textTransform: "uppercase",
+              }}>⭐ Freund</span>
+            )}
+          </div>
+          <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 1 }}>
+            @{username} · {when}
+          </div>
+        </div>
+      </Link>
+
+      {/* Body: Text */}
+      <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
+        display: "block", textDecoration: "none", color: "inherit",
+        padding: "0 12px 10px",
+      }}>
+        {isQuote ? (
+          <div style={{
+            background: meta.chip, color: meta.chipText,
+            padding: "10px 12px", borderRadius: 10,
+            fontSize: 14, fontStyle: "italic", lineHeight: 1.4,
+            fontWeight: 600,
+            borderLeft: `3px solid ${meta.g1}`,
+          }}>„{text}"</div>
+        ) : (
+          <div style={{ fontSize: 13.5, color: "#1f2937", lineHeight: 1.4 }}>{text}</div>
+        )}
+      </Link>
+
+      {/* Footer: Actions */}
+      <div style={{
+        display: "flex", borderTop: "1px solid #f1f5f9",
+        background: "rgba(248,250,252,0.5)",
+      }}>
+        <Link href={username ? `/u/${username}` : "/buschfunk"} style={{
+          flex: 1, textAlign: "center", padding: "7px 0",
+          fontSize: 11.5, fontWeight: 700, color: "#475569",
+          textDecoration: "none",
+        }}>👤 Profil</Link>
+        {username && (
+          <button type="button" onClick={(e) => {
+            e.preventDefault(); e.stopPropagation();
+            api.sendNudge(username).catch(() => {});
+          }} style={{
+            all: "unset",
+            flex: 1, textAlign: "center", padding: "7px 0",
+            fontSize: 11.5, fontWeight: 700, color: "#475569",
+            cursor: "pointer", borderLeft: "1px solid #f1f5f9",
+          }}>🫶 Gruscheln</button>
+        )}
+        {username && (
+          <Link href={`/messenger/${username}`} style={{
+            flex: 1, textAlign: "center", padding: "7px 0",
+            fontSize: 11.5, fontWeight: 700, color: "#475569",
+            textDecoration: "none", borderLeft: "1px solid #f1f5f9",
+          }}>💬 Schreiben</Link>
+        )}
       </div>
-    </Link>
+    </div>
   );
 }
 
