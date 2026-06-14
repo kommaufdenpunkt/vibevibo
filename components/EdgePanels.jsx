@@ -38,7 +38,6 @@ const NAV_GROUPS = [
     items: [
       { href: "/shop", label: "Shop", icon: "🛍️" },
       { href: "/vibes-verdienen", label: "Vibes verdienen", icon: "💰" },
-      { href: "/apps", label: "Alle Apps", icon: "📲" },
     ],
   },
 ];

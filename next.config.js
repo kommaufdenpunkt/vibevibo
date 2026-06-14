@@ -97,6 +97,8 @@ const nextConfig = {
       // /gruppen → /coms (altes URL-Schema, dauerhafte Weiterleitung)
       { source: "/gruppen", destination: "/coms", permanent: true },
       { source: "/gruppen/:slug*", destination: "/coms/:slug*", permanent: true },
+      // /apps deaktiviert — leitet auf /heute
+      { source: "/apps", destination: "/heute", permanent: true },
     ];
   },
   async headers() {

@@ -322,14 +322,14 @@ export default function HeutePage() {
               borderRadius: 999,
               boxShadow: "0 2px 6px rgba(139,92,246,0.35)",
             }}>🎛 Layout</Link>
-            <Link href="/apps" style={{
+            <Link href="/profile/dashboard" style={{
               fontSize: 11, color: "#fff", fontWeight: 800,
               textDecoration: "none", padding: "4px 12px",
               background: "rgba(255,255,255,0.18)",
               backdropFilter: "blur(8px)",
               borderRadius: 999,
               border: "1px solid rgba(255,255,255,0.3)",
-            }}>📲 Pinnen</Link>
+            }}>🎛 Anpassen</Link>
           </div>
         </div>
         <div style={{
@@ -345,7 +345,6 @@ export default function HeutePage() {
             { href: "/geschenke", color1: "#fb923c", color2: "#ea580c", icon: "🎁", title: "Geschenke", sub: "Verschicken" },
             { href: "/fotos",     color1: "#ec4899", color2: "#be185d", icon: "📸", title: "Fotos", sub: "Galerie" },
             { href: "/freunde",   color1: "#3b82f6", color2: "#1e40af", icon: "👯", title: "Freunde", sub: "Wer ist online?" },
-            { href: "/apps",      color1: "#ec4899", color2: "#8b5cf6", icon: "📲", title: "Alle Apps", sub: "Komplett" },
           ]} />
         </div>
         </div>}
@@ -618,7 +617,7 @@ function UserTiles({ fallback }) {
     privacy:     { href: "/profile/privacy", icon: "🛡", title: "Schutz",     sub: "Privatsphäre",     color1: "#3b82f6", color2: "#1e40af" },
     messenger:   { href: "/messenger",   icon: "💬", title: "Messenger",      sub: "1-zu-1 Chat",      color1: "#06b6d4", color2: "#0284c7" },
     buschfunk:   { href: "/buschfunk",   icon: "📣", title: "Buschfunk",      sub: "Status & Posts",   color1: "#fb923c", color2: "#ef4444" },
-    gruppen:     { href: "/coms",     icon: "🏘️", title: "Gruppen",       sub: "Themen-Räume",      color1: "#8b5cf6", color2: "#6d28d9" },
+    gruppen:     { href: "/coms",     icon: "🏘️", title: "Coms",         sub: "Communities",      color1: "#8b5cf6", color2: "#6d28d9" },
     live:        { href: "/live",        icon: "📺", title: "Live",          sub: "Video-Streams",    color1: "#dc2626", color2: "#991b1b" },
     friends:     { href: "/freunde",     icon: "👯", title: "Freunde",       sub: "Wer ist online?",  color1: "#3b82f6", color2: "#1e40af" },
     neu:         { href: "/neu",         icon: "🆕", title: "Neuigkeiten",   sub: "Was läuft",        color1: "#10b981", color2: "#065f46" },
