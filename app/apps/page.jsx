@@ -21,7 +21,7 @@ const APPS = [
   // 💬 Reden
   { id: "messenger",   cat: "talk",    icon: "💬", name: "Messenger",      desc: "1-zu-1 Chat",     href: "/messenger" },
   { id: "buschfunk",   cat: "talk",    icon: "📣", name: "Buschfunk",      desc: "Status & Posts",  href: "/buschfunk" },
-  { id: "gruppen",     cat: "talk",    icon: "🏘️", name: "Gruppen",        desc: "Themen-Räume",    href: "/gruppen" },
+  { id: "gruppen",     cat: "talk",    icon: "🏘️", name: "Gruppen",        desc: "Themen-Räume",    href: "/coms" },
   { id: "live",        cat: "talk",    icon: "📺", name: "Live",           desc: "Video-Streams",   href: "/live" },
 
   // 👯 Freundschaft

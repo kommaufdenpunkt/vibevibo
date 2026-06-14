@@ -106,7 +106,7 @@ export default function HomePage() {
           <span>Fotos</span>
           <span className="vv-home-tile-sub">Galerie</span>
         </Link>
-        <Link href="/gruppen" className="vv-home-tile" data-tone="violet">
+        <Link href="/coms" className="vv-home-tile" data-tone="violet">
           <span className="vv-home-tile-emoji">🏘️</span>
           <span>Gruppen</span>
           <span className="vv-home-tile-sub">Forum</span>

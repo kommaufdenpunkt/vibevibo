@@ -618,7 +618,7 @@ function UserTiles({ fallback }) {
     privacy:     { href: "/profile/privacy", icon: "🛡", title: "Schutz",     sub: "Privatsphäre",     color1: "#3b82f6", color2: "#1e40af" },
     messenger:   { href: "/messenger",   icon: "💬", title: "Messenger",      sub: "1-zu-1 Chat",      color1: "#06b6d4", color2: "#0284c7" },
     buschfunk:   { href: "/buschfunk",   icon: "📣", title: "Buschfunk",      sub: "Status & Posts",   color1: "#fb923c", color2: "#ef4444" },
-    gruppen:     { href: "/gruppen",     icon: "🏘️", title: "Gruppen",       sub: "Themen-Räume",      color1: "#8b5cf6", color2: "#6d28d9" },
+    gruppen:     { href: "/coms",     icon: "🏘️", title: "Gruppen",       sub: "Themen-Räume",      color1: "#8b5cf6", color2: "#6d28d9" },
     live:        { href: "/live",        icon: "📺", title: "Live",          sub: "Video-Streams",    color1: "#dc2626", color2: "#991b1b" },
     friends:     { href: "/freunde",     icon: "👯", title: "Freunde",       sub: "Wer ist online?",  color1: "#3b82f6", color2: "#1e40af" },
     neu:         { href: "/neu",         icon: "🆕", title: "Neuigkeiten",   sub: "Was läuft",        color1: "#10b981", color2: "#065f46" },

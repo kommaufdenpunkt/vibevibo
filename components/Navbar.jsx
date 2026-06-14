@@ -74,7 +74,7 @@ const LINK_SECTIONS = [
       { href: "/freunde", icon: "👯", label: "Freunde" },
       { href: "/schulen", icon: "🏫", label: "Schulen" },
       { href: "/messenger", icon: "✉️", label: "Nachrichten" },
-      { href: "/gruppen", icon: "🏘️", label: "Gruppen" },
+      { href: "/coms", icon: "🏘️", label: "Gruppen" },
       { href: "/live", icon: "🎥", label: "Live" },
     ],
   },

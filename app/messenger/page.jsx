@@ -464,7 +464,7 @@ function MessengerInner() {
             <Link href="/profile" className="vv-msgapp-link-row">🌟 <span>Mein Profil</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
             <Link href="/profile/edit" className="vv-msgapp-link-row">✏️ <span>Profil bearbeiten</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
             <Link href="/freunde" className="vv-msgapp-link-row">👥 <span>Freunde</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
-            <Link href="/gruppen" className="vv-msgapp-link-row">👯 <span>Gruppen (Foren)</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
+            <Link href="/coms" className="vv-msgapp-link-row">👯 <span>Gruppen (Foren)</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
             <Link href="/" className="vv-msgapp-link-row">🏠 <span>Zur Hauptseite</span> <span style={{ marginLeft: "auto", color: "var(--vv-muted)" }}>›</span></Link>
             <button type="button" onClick={() => window.dispatchEvent(new Event("vv-pwa-install"))}
               className="vv-msgapp-link-row" style={{ background: "none", border: "none", width: "100%", textAlign: "left", cursor: "pointer", font: "inherit" }}>

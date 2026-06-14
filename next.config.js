@@ -82,12 +82,36 @@ const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
 ];
 
+// Cache-Header: lange Cache-Zeiten fuer statische Assets, kurze fuer HTML.
+// Spart Bandwidth und macht die App fuehlbar schneller — vor allem auf Mobile.
+const longCache = { key: "Cache-Control", value: "public, max-age=31536000, immutable" };
+const mediumCache = { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" };
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  compress: true,                    // gzip aktiv (default true, hier explizit)
+  productionBrowserSourceMaps: false, // kleinere Bundles fuer Production
+  async redirects() {
+    return [
+      // /gruppen → /coms (altes URL-Schema, dauerhafte Weiterleitung)
+      { source: "/gruppen", destination: "/coms", permanent: true },
+      { source: "/gruppen/:slug*", destination: "/coms/:slug*", permanent: true },
+    ];
+  },
   async headers() {
     return [
+      // Sicherheits-Header auf ALLE Routen
       { source: "/(.*)", headers: securityHeaders },
+      // Statische Next.js Assets (immutable durch Content-Hash)
+      { source: "/_next/static/(.*)", headers: [longCache] },
+      // Icons + Manifest (selten geaendert)
+      { source: "/icon-:size.png", headers: [mediumCache] },
+      { source: "/apple-icon.png", headers: [mediumCache] },
+      { source: "/favicon.ico", headers: [mediumCache] },
+      { source: "/manifest.webmanifest", headers: [mediumCache] },
+      // Service-Worker NIE cachen (sonst stecken Updates fest)
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
     ];
   },
 };
