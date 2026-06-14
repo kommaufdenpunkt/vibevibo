@@ -28,6 +28,7 @@ const NAV_GROUPS = [
     title: "🌍 Community",
     items: [
       { href: "/buschfunk", label: "Buschfunk", icon: "📣" },
+      { href: "/coms", label: "Coms", icon: "🏘️" },
       { href: "/karte", label: "Karte", icon: "🗺️" },
       { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
       { href: "/fotos", label: "Fotos", icon: "📸" },
