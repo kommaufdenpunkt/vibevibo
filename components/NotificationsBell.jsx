@@ -4,10 +4,12 @@
 // - In-App Toast-Popup wenn neue Benachrichtigung reinkommt
 // - CTA „Sperrbildschirm aktivieren" wenn Push noch nicht abonniert
 // - Klick öffnet Dropdown mit allen Benachrichtigungen
+// - Wackel-Animation wenn unread-Count nach oben springt
+// - Ausgeblendet auf /heute (Notifications sind dort inline)
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
 import { relTime } from "@/lib/format";
@@ -43,11 +45,28 @@ function notifHref(n, meName) {
 export default function NotificationsBell() {
   const { me } = useMe();
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
   const [unread, setUnread] = useState(0);
   const [toast, setToast] = useState(null);
   const [pushOn, setPushOn] = useState(null); // null=checking, true/false
+  const [wiggle, setWiggle] = useState(false);
+  const lastUnreadRef = useRef(0);
+
+  // Wackel-Animation triggern wenn unread steigt
+  useEffect(() => {
+    if (unread > lastUnreadRef.current) {
+      setWiggle(true);
+      const t = setTimeout(() => setWiggle(false), 900);
+      return () => clearTimeout(t);
+    }
+    lastUnreadRef.current = unread;
+  }, [unread]);
+
+  // Auf /heute komplett ausblenden (Notifications sind dort inline)
+  const hideOnHeute = pathname === "/heute" || pathname?.startsWith("/heute/");
+  if (hideOnHeute) return null;
   const prevUnreadRef = useRef(null);
   const [allReadBusy, setAllReadBusy] = useState(false);
   const [allReadFlash, setAllReadFlash] = useState("");
@@ -221,13 +240,29 @@ export default function NotificationsBell() {
           type="button"
           onClick={() => (open ? setOpen(false) : onOpen())}
           aria-label="Benachrichtigungen"
-          className={`vv-notif-bell${unread > 0 ? " vv-notif-bell-active" : ""}`}
+          className={`vv-notif-bell${unread > 0 ? " vv-notif-bell-active" : ""}${wiggle ? " vv-notif-bell-wiggle" : ""}`}
         >
           🔔
           {unread > 0 && (
             <span className="vv-notif-bell-badge">{unread > 99 ? "99+" : unread}</span>
           )}
         </button>
+        {/* Wackel-Animation Keyframes inline (kein CSS-Patch noetig) */}
+        <style>{`
+          @keyframes vv-bell-wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            15% { transform: rotate(-22deg); }
+            30% { transform: rotate(18deg); }
+            45% { transform: rotate(-14deg); }
+            60% { transform: rotate(10deg); }
+            75% { transform: rotate(-6deg); }
+            90% { transform: rotate(3deg); }
+          }
+          .vv-notif-bell-wiggle {
+            animation: vv-bell-wiggle 0.85s ease-in-out;
+            transform-origin: 50% 0%;
+          }
+        `}</style>
         {open && (
           <>
             <div className="vv-notif-pop">
