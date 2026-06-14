@@ -61,52 +61,48 @@ function ViboPage() {
     }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "12px 12px 0" }}>
 
-        {/* === HEADER-STRIP (Glas-Pille) === */}
+        {/* === HEADER-STRIP (komplett transparent) === */}
         <div style={{
           display: "flex", alignItems: "center", gap: 10,
-          background: "rgba(255,255,255,0.85)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          padding: "8px 14px", borderRadius: 999, marginBottom: 12,
-          border: "1px solid rgba(255,255,255,0.4)",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+          background: "transparent",
+          padding: "8px 4px", marginBottom: 12,
         }}>
           <Link href="/heute" style={{
-            background: "linear-gradient(135deg, #a855f7, #7c3aed)",
+            background: "transparent",
+            border: "1.5px solid rgba(255,255,255,0.7)",
             color: "#fff", borderRadius: 999,
             padding: "5px 12px", fontSize: 12, fontWeight: 800,
             textDecoration: "none", whiteSpace: "nowrap",
+            textShadow: "0 1px 3px rgba(0,0,0,0.4)",
           }}>← Heute</Link>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontSize: 11, fontWeight: 700, color: "#7c3aed",
-              textTransform: "uppercase", letterSpacing: 0.5,
+              fontSize: 11, fontWeight: 800, color: "#fff",
+              opacity: 0.85,
+              textTransform: "uppercase", letterSpacing: 0.7,
+              textShadow: "0 1px 3px rgba(0,0,0,0.4)",
             }}>Dein Tamagotchi</div>
             <div style={{
-              fontSize: 16, fontWeight: 900, color: "#1f2937",
+              fontSize: 18, fontWeight: 900, color: "#fff",
               lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+              textShadow: "0 2px 6px rgba(0,0,0,0.4)",
             }}>
               🥚 {vibo?.name || "Mein VIBO"}
               {vibo && vibo.ageDays != null && (
                 <span style={{
-                  fontSize: 11, color: "#94a3b8", fontWeight: 600,
-                  marginLeft: 6,
+                  fontSize: 12, color: "#fff", fontWeight: 600,
+                  marginLeft: 8, opacity: 0.8,
                 }}>· Tag {vibo.ageDays}</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* === TAB-STRIP (Glas) === */}
+        {/* === TAB-STRIP (komplett transparent) === */}
         <div style={{
           display: "flex", gap: 4,
-          background: "rgba(255,255,255,0.6)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          borderRadius: 14, padding: 4,
-          border: "1px solid rgba(255,255,255,0.4)",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-          marginBottom: 12,
+          background: "transparent",
+          padding: 0, marginBottom: 14,
           overflowX: "auto",
           scrollbarWidth: "none",
         }}>
@@ -116,17 +112,19 @@ function ViboPage() {
               style={{
                 flex: "1 0 auto",
                 padding: "8px 14px",
-                borderRadius: 10,
-                border: "none",
+                borderRadius: 999,
+                border: tab === t.id ? "none" : "1.5px solid rgba(255,255,255,0.6)",
                 background: tab === t.id
                   ? "linear-gradient(135deg, #a855f7, #7c3aed)"
                   : "transparent",
-                color: tab === t.id ? "#fff" : "#475569",
-                fontWeight: tab === t.id ? 800 : 600,
+                color: "#fff",
+                fontWeight: tab === t.id ? 900 : 700,
                 fontSize: 13,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
-                boxShadow: tab === t.id ? "0 2px 8px rgba(124,58,237,0.35)" : "none",
+                boxShadow: tab === t.id ? "0 4px 12px rgba(124,58,237,0.5)" : "none",
+                textShadow: tab === t.id ? "0 1px 2px rgba(0,0,0,0.2)" : "0 1px 3px rgba(0,0,0,0.4)",
+                opacity: tab === t.id ? 1 : 0.85,
                 transition: "all 0.15s",
               }}>
               <span style={{ marginRight: 4 }}>{t.icon}</span>{t.label}
@@ -178,14 +176,13 @@ function ViboPage() {
           </GlassCard>
         )}
 
-        {/* Tipp-Streifen */}
+        {/* Tipp-Streifen (transparent) */}
         <div style={{
           marginTop: 16, padding: "10px 14px",
-          background: "rgba(255,255,255,0.7)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          borderRadius: 12, fontSize: 11.5, color: "#475569", textAlign: "center",
-          border: "1px solid rgba(255,255,255,0.4)",
+          background: "transparent",
+          fontSize: 11.5, color: "#fff", textAlign: "center",
+          opacity: 0.8,
+          textShadow: "0 1px 3px rgba(0,0,0,0.4)",
           lineHeight: 1.5,
         }}>
           💡 <b>Pflege täglich</b> — füttern, streicheln, spielen · Energie verfällt mit der Zeit · Quests bringen ✨
@@ -198,20 +195,22 @@ function ViboPage() {
 function GlassCard({ title, subtitle, children, footer }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.88)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
-      borderRadius: 16, padding: 16,
-      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-      border: "1px solid rgba(255,255,255,0.4)",
+      background: "transparent",
+      padding: 0,
     }}>
       {title && (
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: 10, padding: "0 4px" }}>
           <h2 style={{
-            margin: 0, fontSize: 17, fontWeight: 900, color: "#581c87",
+            margin: 0, fontSize: 18, fontWeight: 900,
+            color: "#fff",
+            textShadow: "0 2px 6px rgba(0,0,0,0.4)",
           }}>{title}</h2>
           {subtitle && (
-            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{subtitle}</div>
+            <div style={{
+              fontSize: 12, color: "#fff",
+              opacity: 0.85, marginTop: 2,
+              textShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            }}>{subtitle}</div>
           )}
         </div>
       )}
