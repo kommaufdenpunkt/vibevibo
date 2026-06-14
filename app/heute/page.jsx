@@ -255,21 +255,36 @@ export default function HeutePage() {
           </div>
         )}
 
-        {/* === HAUPT-AKTIONEN (8 Tiles, mobile-optimiert mit Active-State) === */}
-        <SectionTitle>🚀 Schnell loslegen</SectionTitle>
+        {/* === HAUPT-AKTIONEN (Custom-Tiles aus Apps oder Default) === */}
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          marginBottom: 8, padding: "0 4px",
+        }}>
+          <SectionTitle compact>🚀 Schnell loslegen</SectionTitle>
+          <Link href="/apps" style={{
+            fontSize: 11, color: "#fff", fontWeight: 800,
+            textDecoration: "none", padding: "4px 12px",
+            background: "rgba(255,255,255,0.18)",
+            backdropFilter: "blur(8px)",
+            borderRadius: 999,
+            border: "1px solid rgba(255,255,255,0.3)",
+          }}>🎛 Anpassen →</Link>
+        </div>
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
           gap: 10, marginBottom: 16,
         }}>
-          <BigTile href="/buschfunk" color1="#fb923c" color2="#ef4444" icon="📣" title="Buschfunk" sub="Was läuft heute?" />
-          <BigTile href="/messenger" color1="#06b6d4" color2="#0284c7" icon="💬" title="Messenger" sub="Direkt chatten" />
-          <BigTile href="/vibo"      color1="#a855f7" color2="#7c3aed" icon="🥚" title="Mein VIBO" sub={data.vibo?.vibo?.name || "Dein Pet"} />
-          <BigTile href="/karte"     color1="#06b6d4" color2="#0e7490" icon="🗺️" title="Karte" sub="Welt erkunden" />
-          <BigTile href="/geschenke" color1="#fb923c" color2="#ea580c" icon="🎁" title="Geschenke" sub="Verschicken" />
-          <BigTile href="/fotos"     color1="#ec4899" color2="#be185d" icon="📸" title="Fotos" sub="Galerie" />
-          <BigTile href="/freunde"   color1="#3b82f6" color2="#1e40af" icon="👯" title="Freunde" sub="Wer ist online?" />
-          <BigTile href="/apps"      color1="#ec4899" color2="#8b5cf6" icon="📲" title="Alle Apps" sub="Komplett" />
+          <UserTiles fallback={[
+            { href: "/buschfunk", color1: "#fb923c", color2: "#ef4444", icon: "📣", title: "Buschfunk", sub: "Was läuft heute?" },
+            { href: "/messenger", color1: "#06b6d4", color2: "#0284c7", icon: "💬", title: "Messenger", sub: "Direkt chatten" },
+            { href: "/vibo",      color1: "#a855f7", color2: "#7c3aed", icon: "🥚", title: "Mein VIBO", sub: data.vibo?.vibo?.name || "Dein Pet" },
+            { href: "/karte",     color1: "#06b6d4", color2: "#0e7490", icon: "🗺️", title: "Karte", sub: "Welt erkunden" },
+            { href: "/geschenke", color1: "#fb923c", color2: "#ea580c", icon: "🎁", title: "Geschenke", sub: "Verschicken" },
+            { href: "/fotos",     color1: "#ec4899", color2: "#be185d", icon: "📸", title: "Fotos", sub: "Galerie" },
+            { href: "/freunde",   color1: "#3b82f6", color2: "#1e40af", icon: "👯", title: "Freunde", sub: "Wer ist online?" },
+            { href: "/apps",      color1: "#ec4899", color2: "#8b5cf6", icon: "📲", title: "Alle Apps", sub: "Komplett" },
+          ]} />
         </div>
 
         {/* === BUSCHFUNK FEED mit Infinite-Scroll + Freunde-zuerst === */}
@@ -508,6 +523,73 @@ function AlertRow({ alert, busy }) {
   if (alert.href) return <Link href={alert.href} style={{ textDecoration: "none" }}>{inner}</Link>;
   return <button type="button" onClick={alert.onClick} disabled={busy}
     style={{ all: "unset", display: "block", width: "100%", cursor: "pointer" }}>{inner}</button>;
+}
+
+// 🎛 UserTiles — liest die im /apps-Launcher gepinnten Apps aus localStorage
+// (gleicher Key wie /apps). Wenn der User welche gepinnt hat, zeigen wir die statt
+// der Default-8. Read-only — Anpassen passiert im /apps-Launcher (☆/⭐).
+function UserTiles({ fallback }) {
+  const [pinned, setPinned] = useState(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("vv_apps_pinned");
+      const ids = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(ids) && ids.length > 0) setPinned(ids);
+      else setPinned([]);
+    } catch { setPinned([]); }
+  }, []);
+
+  // Bevor localStorage gelesen ist: Fallback rendern (kein Layout-Shift)
+  if (pinned === null || pinned.length === 0) {
+    return <>{fallback.map((t, i) => <BigTile key={t.href + i} {...t} />)}</>;
+  }
+
+  // Map von App-IDs zu Tile-Konfigs (gleiche IDs wie in app/apps/page.jsx)
+  const APP_TILES = {
+    heute:       { href: "/heute",       icon: "🏠", title: "Heute",         sub: "Tages-Übersicht",  color1: "#fbbf24", color2: "#ea580c" },
+    profile:     { href: "/profile",     icon: "🪪", title: "Mein Profil",    sub: "Deine Seite",      color1: "#ec4899", color2: "#be185d" },
+    edit:        { href: "/profile/edit", icon: "✏️", title: "Bearbeiten",    sub: "Profil pflegen",   color1: "#fb923c", color2: "#c2410c" },
+    skin:        { href: "/profile/skin", icon: "🎨", title: "Skin",          sub: "Look anpassen",    color1: "#a855f7", color2: "#7c3aed" },
+    privacy:     { href: "/profile/privacy", icon: "🛡", title: "Schutz",     sub: "Privatsphäre",     color1: "#3b82f6", color2: "#1e40af" },
+    messenger:   { href: "/messenger",   icon: "💬", title: "Messenger",      sub: "1-zu-1 Chat",      color1: "#06b6d4", color2: "#0284c7" },
+    buschfunk:   { href: "/buschfunk",   icon: "📣", title: "Buschfunk",      sub: "Status & Posts",   color1: "#fb923c", color2: "#ef4444" },
+    gruppen:     { href: "/gruppen",     icon: "🏘️", title: "Gruppen",       sub: "Themen-Räume",      color1: "#8b5cf6", color2: "#6d28d9" },
+    live:        { href: "/live",        icon: "📺", title: "Live",          sub: "Video-Streams",    color1: "#dc2626", color2: "#991b1b" },
+    friends:     { href: "/freunde",     icon: "👯", title: "Freunde",       sub: "Wer ist online?",  color1: "#3b82f6", color2: "#1e40af" },
+    neu:         { href: "/neu",         icon: "🆕", title: "Neuigkeiten",   sub: "Was läuft",        color1: "#10b981", color2: "#065f46" },
+    schulen:     { href: "/schulen",     icon: "🎓", title: "Schulen",       sub: "Klassen-Netz",     color1: "#0891b2", color2: "#155e75" },
+    compliments: { href: "/compliments", icon: "💝", title: "Komplimente",   sub: "Lieb sein",        color1: "#ec4899", color2: "#9d174d" },
+    vibo:        { href: "/vibo",        icon: "🥚", title: "Mein VIBO",     sub: "Dein Tamagotchi",  color1: "#a855f7", color2: "#7c3aed" },
+    "vibo-shop": { href: "/shop?tab=vibo", icon: "🛒", title: "VIBO-Shop",   sub: "Futter & Möbel",   color1: "#10b981", color2: "#065f46" },
+    "vibo-game": { href: "/vibo/minigame", icon: "🍕", title: "Mini-Game",   sub: "Snack-Schnapp",    color1: "#f59e0b", color2: "#b45309" },
+    cemetery:    { href: "/vibo/cemetery", icon: "🪦", title: "Friedhof",    sub: "Erinnerungen",     color1: "#64748b", color2: "#334155" },
+    karte:       { href: "/karte",       icon: "🗺️", title: "Karte",        sub: "Welt erkunden",    color1: "#06b6d4", color2: "#0e7490" },
+    fotos:       { href: "/fotos",       icon: "📸", title: "Fotos",         sub: "Galerie",          color1: "#ec4899", color2: "#be185d" },
+    geschenke:   { href: "/geschenke",   icon: "🎁", title: "Geschenke",     sub: "Verschicken",      color1: "#fb923c", color2: "#ea580c" },
+    markt:       { href: "/markt",       icon: "💰", title: "Markt",         sub: "Items handeln",    color1: "#f59e0b", color2: "#b45309" },
+    "vibes-earn": { href: "/vibes-verdienen", icon: "💰", title: "Vibes verdienen", sub: "Werbung & Co", color1: "#22c55e", color2: "#15803d" },
+    quests:      { href: "/quests",      icon: "🥇", title: "Quests",        sub: "Aufgaben",         color1: "#3b82f6", color2: "#1e3a8a" },
+    daily:       { href: "/heute",       icon: "🎁", title: "Tages-Bonus",   sub: "Tägliche ✨",       color1: "#fbbf24", color2: "#d97706" },
+    rang:        { href: "/rang",        icon: "🏆", title: "Rang & XP",     sub: "Level up",         color1: "#f59e0b", color2: "#92400e" },
+    shop:        { href: "/shop",        icon: "🛍️", title: "Shop",         sub: "Premium",          color1: "#a855f7", color2: "#6d28d9" },
+    echtgeld:    { href: "/shop#stripe", icon: "💳", title: "Echtgeld",      sub: "Vibes & VIP",      color1: "#f59e0b", color2: "#b45309" },
+    empfehl:     { href: "/vibes-verdienen?tab=empfehlungen", icon: "💝", title: "Empfehlungen", sub: "Amazon", color1: "#ec4899", color2: "#be185d" },
+    "vibes-tx":  { href: "/profile/transactions", icon: "📊", title: "Transaktionen", sub: "Verlauf", color1: "#8b5cf6", color2: "#5b21b6" },
+    games:       { href: "/spiele",      icon: "🎮", title: "Spiele",        sub: "Mini-Games",       color1: "#f43f5e", color2: "#9f1239" },
+    cards:       { href: "/cards",       icon: "🃏", title: "Karten",        sub: "Sammeln & Tauschen", color1: "#a855f7", color2: "#5b21b6" },
+    install:     { href: "/installieren", icon: "📲", title: "Als App",       sub: "PWA installieren", color1: "#10b981", color2: "#047857" },
+  };
+
+  const tiles = pinned
+    .map((id) => APP_TILES[id])
+    .filter(Boolean);
+
+  // Fallback wenn keine valid gepinnt
+  if (tiles.length === 0) {
+    return <>{fallback.map((t, i) => <BigTile key={t.href + i} {...t} />)}</>;
+  }
+
+  return <>{tiles.map((t, i) => <BigTile key={t.href + i} {...t} />)}</>;
 }
 
 function BigTile({ href, color1, color2, icon, title, sub }) {
