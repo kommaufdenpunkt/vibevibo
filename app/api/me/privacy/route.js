@@ -5,15 +5,32 @@ import { privacyStatusForUser } from "@/lib/privacy";
 
 export const dynamic = "force-dynamic";
 
+// userRow() filtert Privacy-Spalten weg. Daher lesen wir die Privacy-Felder
+// direkt ueber die Patch-Helpers — sonst zeigt das UI immer Defaults.
+function readPrivacyRaw(userId) {
+  if (typeof DB.getUserPrivacyFieldsV2 === "function") {
+    return DB.getUserPrivacyFieldsV2(userId);
+  }
+  if (typeof DB.getUserPrivacyFields === "function") {
+    return DB.getUserPrivacyFields(userId);
+  }
+  return null;
+}
+
 // GET = aktueller Stand
 export async function GET() {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
-  const u = DB.getUserById(me.id);
-  return NextResponse.json({ privacy: privacyStatusForUser(u) });
+  const raw = readPrivacyRaw(me.id);
+  if (!raw) {
+    return NextResponse.json({
+      error: "Privacy-Helper fehlt — bitte `node scripts/patch-privacy.mjs` + `node scripts/patch-privacy-v2.mjs` auf dem Server ausführen",
+    }, { status: 500 });
+  }
+  return NextResponse.json({ privacy: privacyStatusForUser(raw) });
 }
 
-// POST body: { dmPolicy?, wallPolicy?, hideVisits?, shieldMode? }
+// POST body: { dmPolicy?, wallPolicy?, hideVisits?, shieldMode?, quietFromHour?, quietToHour?, strictFirstMsg? }
 export async function POST(req) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
@@ -50,6 +67,7 @@ export async function POST(req) {
   }
 
   updateFn(me.id, patch);
-  const u = DB.getUserById(me.id);
-  return NextResponse.json({ ok: true, privacy: privacyStatusForUser(u) });
+  // Lese ueber Patch-Helper, nicht ueber userRow (Bug-Fix: userRow filtert Privacy-Spalten weg)
+  const raw = readPrivacyRaw(me.id);
+  return NextResponse.json({ ok: true, privacy: privacyStatusForUser(raw) });
 }
