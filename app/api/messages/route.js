@@ -38,9 +38,11 @@ export async function POST(req) {
   const target = getUserByUsername(body.to);
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  // 🛡 Privatsphaere-Check: dm_policy des Empfaengers
+  // 🛡 Privatsphaere-Check: dm_policy des Empfaengers (+ Ruhezeit)
   const dmCheck = canMessage(me.id, target.id);
   if (!dmCheck.ok) return NextResponse.json({ error: dmCheck.reason }, { status: 403 });
+  // strictFirstMsg: Fidolin wird strenger fuer Erst-Nachrichten geprueft
+  const strictFlag = !!dmCheck.strictFirstMsg;
 
   if (body.kind === "voice") {
     const audioUrl = String(body.audioUrl || "");
@@ -75,7 +77,7 @@ export async function POST(req) {
   if (!cleaned && !rawImage) return NextResponse.json({ error: "empty" }, { status: 400 });
 
   if (cleaned) {
-    const verdict = await checkTextPost(me.id, "nachricht", cleaned);
+    const verdict = await checkTextPost(me.id, "nachricht", cleaned, { strict: strictFlag });
     if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
   }
 

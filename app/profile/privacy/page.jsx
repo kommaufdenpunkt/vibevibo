@@ -173,6 +173,74 @@ export default function PrivacyPage() {
             description="Wenn aktiv, sieht niemand wer mein Profil besucht hat. Klassisches Verhalten: deaktiviert." />
         </SettingBlock>
 
+        {/* === RUHEZEIT === */}
+        <SettingBlock
+          icon="🌙" title="Ruhezeit für Nachrichten"
+          locked={false}>
+          <div style={{ fontSize: 12, color: "#475569", marginBottom: 10, lineHeight: 1.4 }}>
+            In dieser Zeit empfängst du <b>keine Nachrichten von Fremden</b> — nur Freunde dürfen
+            durch. Perfekt für nachts oder Arbeitszeit.
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b" }}>von Uhr</span>
+              <select disabled={busy} value={privacy.quietFromHour ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  update({ quietFromHour: v === "" ? null : Number(v) });
+                }}
+                style={{
+                  padding: "8px 10px", borderRadius: 8, fontSize: 14,
+                  border: "1px solid rgba(0,0,0,0.12)", background: "#fff",
+                }}>
+                <option value="">— aus —</option>
+                {Array.from({ length: 24 }, (_, i) => (
+                  <option key={i} value={i}>{String(i).padStart(2,"0")}:00</option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b" }}>bis Uhr</span>
+              <select disabled={busy} value={privacy.quietToHour ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  update({ quietToHour: v === "" ? null : Number(v) });
+                }}
+                style={{
+                  padding: "8px 10px", borderRadius: 8, fontSize: 14,
+                  border: "1px solid rgba(0,0,0,0.12)", background: "#fff",
+                }}>
+                <option value="">— aus —</option>
+                {Array.from({ length: 24 }, (_, i) => (
+                  <option key={i} value={i}>{String(i).padStart(2,"0")}:00</option>
+                ))}
+              </select>
+            </label>
+            {privacy.quietActive && (
+              <div style={{
+                background: "linear-gradient(135deg, #6366f1, #4338ca)",
+                color: "#fff", padding: "6px 12px", borderRadius: 999,
+                fontSize: 12, fontWeight: 800,
+                boxShadow: "0 2px 8px rgba(67,56,202,0.35)",
+              }}>
+                🌙 {String(privacy.quietFromHour).padStart(2,"0")}-{String(privacy.quietToHour).padStart(2,"0")} Uhr aktiv
+              </div>
+            )}
+          </div>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 8 }}>
+            Tipp: über Mitternacht möglich — z.B. 22 bis 8 = nachts gesperrt
+          </div>
+        </SettingBlock>
+
+        {/* === FIDOLIN STRICT FIRST MESSAGE === */}
+        <SettingBlock
+          icon="🤖" title="Fidolin strenger bei Erst-Nachrichten">
+          <ToggleRow current={privacy.strictFirstMsg} disabled={busy}
+            onChange={(v) => update({ strictFirstMsg: v })}
+            label="Bei der ersten Nachricht von Fremden: Fidolin prüft besonders streng"
+            description="Auch leicht anzügliche, distanzlose oder anbaggernde Erst-Nachrichten werden blockiert. Du bekommst die Nachricht gar nicht erst zu sehen. Bei späteren Nachrichten gilt der normale Filter." />
+        </SettingBlock>
+
         {/* === Block-Liste & Stummschaltungen — Verweis === */}
         <div style={{
           background: "rgba(255,255,255,0.85)",
