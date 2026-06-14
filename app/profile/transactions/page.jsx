@@ -31,6 +31,10 @@ function classify(tx) {
   if (r === "vibo_minigame")      return { cat: "vibo",    emoji: "🍕",  title: "Snack-Schnapp-Mini-Game" };
   if (r === "stripe_purchase")    return { cat: "echtgeld",emoji: "💳",  title: "Vibes-Pack gekauft (Stripe)" };
   if (r === "stripe_vip")         return { cat: "echtgeld",emoji: "💎",  title: "VIP-Zugang gekauft (Stripe)" };
+  if (r.startsWith("ad_reward:")) return { cat: "werbung", emoji: "📺",  title: `Werbung geguckt · ${prettyAdSlot(r.slice(10))}` };
+  if (r === "ad_view")            return { cat: "werbung", emoji: "📺",  title: "Werbung geguckt" };
+  if (r === "survey_complete")    return { cat: "werbung", emoji: "📋",  title: "Umfrage abgeschlossen" };
+  if (r === "offer_complete")     return { cat: "werbung", emoji: "🎁",  title: "Offer-Wall Belohnung" };
   if (r.startsWith("shop_buy:"))  return { cat: "viboshop",emoji: "🛒",  title: `VIBO-Shop: ${prettyItem(r.slice(9))}` };
   if (r.startsWith("premium:"))   return { cat: "shop",    emoji: "🛍️",  title: `Shop: ${prettyItem(r.slice(8))}` };
   if (r.startsWith("room_upgrade:")) return { cat: "viboshop", emoji: "🏗️", title: `Wohnung erweitert (Stufe ${r.slice(17)})` };
@@ -64,6 +68,23 @@ function prettyItem(slug) {
   return map[slug] || slug;
 }
 
+// Ad-Slot-IDs in lesbare Namen umwandeln
+function prettyAdSlot(slot) {
+  const map = {
+    "hub-simulator":   "Test-Werbung",
+    "hub-cpx":         "CPX Umfrage",
+    "hub-bitlabs":     "BitLabs Umfrage",
+    "hub-ayetstudios": "AyetStudios Offer",
+    "hub-pollfish":    "Pollfish Umfrage",
+    "hub-adgate":      "AdGate Offer",
+    "shop_lowbal":     "Shop Notfall-Vibes",
+    "buschfunk_boost": "Buschfunk-Boost",
+    "profile_visit":   "Profil-Besuch",
+    "home_banner":     "Home-Banner",
+  };
+  return map[slot] || slot;
+}
+
 const CATEGORIES = [
   { id: "all",      label: "Alle",        color: "#64748b", emoji: "📋" },
   { id: "daily",    label: "Tages-Bonus", color: "#fbbf24", emoji: "🎁" },
@@ -74,6 +95,7 @@ const CATEGORIES = [
   { id: "viboshop", label: "VIBO-Shop",   color: "#10b981", emoji: "🛒" },
   { id: "shop",     label: "Shop",        color: "#8b5cf6", emoji: "🛍️" },
   { id: "echtgeld", label: "Echtgeld",    color: "#f59e0b", emoji: "💳" },
+  { id: "werbung",  label: "Werbung",     color: "#22c55e", emoji: "📺" },
   { id: "karte",    label: "Karte",       color: "#06b6d4", emoji: "🗺️" },
   { id: "admin",    label: "Admin",       color: "#dc2626", emoji: "👑" },
   { id: "andere",   label: "Andere",      color: "#94a3b8", emoji: "✨" },
@@ -117,6 +139,10 @@ export default function TransactionsPage() {
   const [dirFilter, setDirFilter] = useState("all"); // all|earn|spend
   const [dateFilter, setDateFilter] = useState("all");
   const [search, setSearch] = useState("");
+  // Standardmaessig zugeklappt — Suche reicht meist.
+  // Wenn ein Filter aktiv ist (nicht "all"), bleibt es aufgeklappt damit der User sieht warum.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const hasActiveFilter = catFilter !== "all" || dirFilter !== "all" || dateFilter !== "all";
 
   useEffect(() => { if (!loading && !me) router.push("/login"); }, [me, loading, router]);
 
@@ -196,50 +222,98 @@ export default function TransactionsPage() {
       {/* Credits-Saldo + Daily Bonus */}
       <CreditsPanel embedded />
 
-      {/* Filter Card */}
-      <div className="vv-tx-card" data-tone="pink">
-        <div className="vv-tx-card-title">🔍 FILTER & SUCHE</div>
-        <div className="vv-tx-card-body">
-          <input
-            type="text" value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="🔍 Suchen (Titel, Username…)"
-            className="vv-tx-search"
-          />
-
-          <div className="vv-tx-filter-label">⇅ Richtung</div>
-          <div className="vv-tx-chip-row">
-            {[["all","Alle"], ["earn","↑ Eingänge"], ["spend","↓ Ausgaben"]].map(([k, l]) => (
-              <button key={k} type="button" onClick={() => setDirFilter(k)}
-                className={`vv-tx-chip${dirFilter === k ? " active" : ""}`}
-                style={dirFilter === k ? { background: "#ec4899", borderColor: "#831843" } : undefined}>
-                {l}
-              </button>
-            ))}
+      {/* Filter Card — ausklappbar. Suchfeld immer sichtbar. */}
+      <div style={{
+        background: "rgba(255,255,255,0.92)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderRadius: 16, padding: 12, marginBottom: 12,
+        border: "1px solid rgba(0,0,0,0.06)",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+      }}>
+        {/* Suchzeile + Filter-Toggle */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+            <span style={{
+              position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+              fontSize: 14, pointerEvents: "none",
+            }}>🔍</span>
+            <input
+              type="search" value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Suchen (Titel, Username…)"
+              style={{
+                width: "100%", padding: "10px 12px 10px 34px",
+                borderRadius: 999, fontSize: 14,
+                background: "rgba(248,250,252,0.9)",
+                border: "1px solid rgba(0,0,0,0.08)", outline: "none",
+              }}
+            />
           </div>
-
-          <div className="vv-tx-filter-label">📅 Zeitraum</div>
-          <div className="vv-tx-chip-row">
-            {DATE_FILTERS.map((f) => (
-              <button key={f.id} type="button" onClick={() => setDateFilter(f.id)}
-                className={`vv-tx-chip${dateFilter === f.id ? " active" : ""}`}
-                style={dateFilter === f.id ? { background: "#3b82f6", borderColor: "#1e3a8a" } : undefined}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="vv-tx-filter-label">📂 Kategorie</div>
-          <div className="vv-tx-chip-row">
-            {CATEGORIES.map((c) => (
-              <button key={c.id} type="button" onClick={() => setCatFilter(c.id)}
-                className={`vv-tx-chip${catFilter === c.id ? " active" : ""}`}
-                style={catFilter === c.id ? { background: c.color, borderColor: "rgba(0,0,0,0.3)" } : undefined}>
-                {c.emoji} {c.label}
-              </button>
-            ))}
-          </div>
+          <button type="button"
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-label="Filter öffnen"
+            style={{
+              background: filtersOpen || hasActiveFilter
+                ? "linear-gradient(135deg, #ec4899, #be185d)"
+                : "rgba(248,250,252,0.9)",
+              color: filtersOpen || hasActiveFilter ? "#fff" : "#475569",
+              border: "1px solid rgba(0,0,0,0.08)",
+              borderRadius: 999, padding: "10px 14px",
+              fontSize: 13, fontWeight: 800, cursor: "pointer",
+              whiteSpace: "nowrap", flexShrink: 0,
+              boxShadow: filtersOpen || hasActiveFilter ? "0 2px 8px rgba(236,72,153,0.35)" : "none",
+              transition: "all 0.15s",
+            }}>
+            {filtersOpen ? "▴ Filter" : "▾ Filter"}
+            {hasActiveFilter && (
+              <span style={{
+                background: "rgba(255,255,255,0.3)", marginLeft: 6,
+                padding: "1px 6px", borderRadius: 999, fontSize: 10,
+              }}>aktiv</span>
+            )}
+          </button>
         </div>
+
+        {/* Ausgeklappte Filter */}
+        {filtersOpen && (
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+            <FilterGroup label="⇅ Richtung">
+              {[["all","Alle"], ["earn","↑ Eingänge"], ["spend","↓ Ausgaben"]].map(([k, l]) => (
+                <Chip key={k} active={dirFilter === k} color="#ec4899"
+                  onClick={() => setDirFilter(k)}>{l}</Chip>
+              ))}
+            </FilterGroup>
+
+            <FilterGroup label="📅 Zeitraum">
+              {DATE_FILTERS.map((f) => (
+                <Chip key={f.id} active={dateFilter === f.id} color="#3b82f6"
+                  onClick={() => setDateFilter(f.id)}>{f.label}</Chip>
+              ))}
+            </FilterGroup>
+
+            <FilterGroup label="📂 Kategorie">
+              {CATEGORIES.map((c) => (
+                <Chip key={c.id} active={catFilter === c.id} color={c.color}
+                  onClick={() => setCatFilter(c.id)}>
+                  {c.emoji} {c.label}
+                </Chip>
+              ))}
+            </FilterGroup>
+
+            {hasActiveFilter && (
+              <div style={{ textAlign: "right" }}>
+                <button type="button" onClick={() => {
+                  setCatFilter("all"); setDirFilter("all"); setDateFilter("all");
+                }} style={{
+                  background: "transparent", border: "1px solid rgba(0,0,0,0.15)",
+                  borderRadius: 999, padding: "5px 12px", fontSize: 12,
+                  color: "#64748b", cursor: "pointer", fontWeight: 700,
+                }}>↻ Filter zurücksetzen</button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Listen nach Tag gruppiert */}
@@ -304,5 +378,35 @@ export default function TransactionsPage() {
         <span>★</span>
       </div>
     </div>
+  );
+}
+
+function FilterGroup({ label, children }) {
+  return (
+    <div>
+      <div style={{
+        fontSize: 10.5, fontWeight: 900, color: "#9d174d",
+        letterSpacing: 0.5, textTransform: "uppercase",
+        marginBottom: 5,
+      }}>{label}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{children}</div>
+    </div>
+  );
+}
+
+function Chip({ active, color, onClick, children }) {
+  return (
+    <button type="button" onClick={onClick}
+      style={{
+        background: active ? color : "rgba(248,250,252,0.9)",
+        color: active ? "#fff" : "#475569",
+        border: active ? "none" : "1px solid rgba(0,0,0,0.08)",
+        borderRadius: 999, padding: "5px 12px",
+        fontSize: 12, fontWeight: 800, cursor: "pointer",
+        whiteSpace: "nowrap",
+        boxShadow: active ? `0 2px 6px ${color}66` : "none",
+        textShadow: active ? "0 1px 2px rgba(0,0,0,0.2)" : "none",
+        transition: "all 0.12s",
+      }}>{children}</button>
   );
 }
