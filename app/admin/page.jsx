@@ -43,6 +43,7 @@ function untilLabel(until) {
 
 const TABS = [
   ["uebersicht", "📊 Übersicht"],
+  ["fidolin", "🤖 Fidolin"],
   ["warteliste", "⏳ Warteliste"],
   ["mitglieder", "👥 Mitglieder"],
   ["profilbilder", "🖼 Profilbilder"],
@@ -72,6 +73,7 @@ const SIDEBAR_GROUPS = [
   {
     id: "moderation", label: "Moderation", emoji: "🛡",
     items: [
+      ["fidolin",       "🤖", "Fidolin · Mod-Log"],
       ["profilbilder", "🖼", "Profilbilder", "pendingAvatars"],
       ["fotos",         "📷", "Fotos", "pendingPhotos"],
       ["meldungen",     "🚩", "Meldungen", "openReports"],
@@ -314,6 +316,7 @@ export default async function AdminPage({ searchParams }) {
         </div>
 
       {tab === "uebersicht" && <Uebersicht stats={stats} q={q} />}
+      {tab === "fidolin" && <Fidolin q={q} pw={pw} sp={sp} />}
       {tab === "warteliste" && <Warteliste q={q} />}
       {tab === "mitglieder" && <Mitglieder q={q} />}
       {tab === "profilbilder" && <Profilbilder q={q} />}
@@ -335,6 +338,186 @@ export default async function AdminPage({ searchParams }) {
       {tab === "audit" && <AuditLog q={q} />}
       </main>
     </div>
+  );
+}
+
+// 🤖 Fidolin — Mod-Log mit Filter, Stats, Quick-Aktionen
+function Fidolin({ q, pw, sp }) {
+  const filter = typeof sp?.f === "string" ? sp.f : "all";
+  // Lade die letzten 300 Mod-Eintraege, dann clientseitig filtern.
+  const all = listRecentModLog(300);
+  const now = Date.now();
+  const day = 86400000;
+  // Heute / 7-Tage Stats (kein extra DB-Call)
+  const today = all.filter((m) => now - m.created_at < day);
+  const week  = all.filter((m) => now - m.created_at < 7 * day);
+  const blocksToday   = today.filter((m) => m.decision === "blocked").length;
+  const banksToday    = today.filter((m) => m.kind === "ban").length;
+  const blocksWeek    = week.filter((m) => m.decision === "blocked").length;
+  const banksWeek     = week.filter((m) => m.kind === "ban").length;
+  const aiCount       = all.filter((m) => m.by === "fidolin").length;
+  const adminCount    = all.filter((m) => m.by === "admin").length;
+
+  // Filter anwenden
+  const filtered = all.filter((m) => {
+    if (filter === "all") return true;
+    if (filter === "blocked") return m.decision === "blocked";
+    if (filter === "banned") return m.kind === "ban" || m.kind === "unban";
+    if (filter === "approved") return m.decision === "approved";
+    if (filter === "ki") return m.by === "fidolin" || m.by?.startsWith("fidolin");
+    if (filter === "admin") return m.by === "admin";
+    if (filter === "today") return now - m.created_at < day;
+    return true;
+  });
+
+  const KIND_EMOJI = {
+    pinnwand: "📌", gaestebuch: "📖", buschfunk_comment: "📣", status: "💬",
+    avatar: "🖼", foto: "📷", message: "✉️", gruppenchat: "🏘",
+    grouppost: "🏘", ban: "🔨", unban: "🔓", live: "🎥",
+    vibes: "✨", note: "📝", picComment: "🖼",
+  };
+  const DECISION_COLOR = {
+    blocked: "#ef4444", approved: "#10b981", warned: "#f59e0b",
+    lifted: "#22c55e", comm: "#dc2626", full: "#b91c1c", profile: "#f59e0b",
+  };
+
+  const active = listActiveSanctions();
+  const TYPE_LABEL = { comm: "Kommunikation", profile: "Profil", full: "Komplett-Bann" };
+
+  return (
+    <>
+      {/* === Stats === */}
+      <div className="vv-card">
+        <h3>🤖 Fidolin — KI-Wächter</h3>
+        <div className="vv-muted" style={{ fontSize: 12, marginBottom: 10 }}>
+          {fidolinEnabled()
+            ? "🟢 KI aktiv (Gemini). Prüft Text, Bilder, Audio in Echtzeit."
+            : "🔴 KI inaktiv (kein GEMINI_API_KEY). Fallback nur Wortfilter."}
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <StatTile emoji="🚫" label="Blockiert heute" value={blocksToday} color="#ef4444" />
+          <StatTile emoji="🔨" label="Banns heute" value={banksToday} color="#dc2626" />
+          <StatTile emoji="📊" label="Blockiert 7d" value={blocksWeek} color="#f59e0b" />
+          <StatTile emoji="🔨" label="Banns 7d" value={banksWeek} color="#9a3412" />
+          <StatTile emoji="🤖" label="KI-Verdikte" value={aiCount} color="#3b82f6" />
+          <StatTile emoji="👤" label="Admin-Verdikte" value={adminCount} color="#8b5cf6" />
+        </div>
+      </div>
+
+      {/* === Aktive Banns (Quick-Lift) === */}
+      <div className="vv-card">
+        <h3>🔨 Aktive Banns ({active.length})</h3>
+        {active.length === 0 && <div className="vv-muted">Keine aktiven Banns.</div>}
+        {active.map((s) => (
+          <div className="vv-admin-row" key={s.id}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <strong>@{s.username}</strong>{" "}
+              <span style={{
+                background: DECISION_COLOR[s.type] || "#64748b", color: "#fff",
+                padding: "1px 8px", borderRadius: 999, fontSize: 10, fontWeight: 800,
+              }}>{TYPE_LABEL[s.type] || s.type}</span>
+              <div className="vv-muted" style={{ fontSize: 11 }}>
+                {untilLabel(s.until)} · von <b>{s.by}</b> · {s.reason}
+              </div>
+            </div>
+            <a className="vv-btn" href={`/admin?${q}&tab=fidolin&do=liftban&sid=${s.id}`}>
+              🔓 Aufheben
+            </a>
+          </div>
+        ))}
+      </div>
+
+      {/* === Filter-Chips === */}
+      <div className="vv-card">
+        <h3>📜 Mod-Log ({filtered.length}/{all.length})</h3>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+          {[
+            ["all",      "📋 Alle"],
+            ["today",    "🕒 Heute"],
+            ["blocked",  "🚫 Blockiert"],
+            ["banned",   "🔨 Banns/Unbanns"],
+            ["approved", "✅ Freigegeben"],
+            ["ki",       "🤖 KI-Verdikte"],
+            ["admin",    "👤 Admin-Verdikte"],
+          ].map(([id, label]) => {
+            const active = id === filter;
+            return (
+              <a key={id}
+                href={`/admin?${q}&tab=fidolin&f=${id}`}
+                className={`vv-btn vv-btn-sm${active ? " vv-btn-pink" : ""}`}
+                style={active ? { background: "#ec4899", color: "#fff", border: "none" } : {}}>
+                {label}
+              </a>
+            );
+          })}
+        </div>
+
+        {/* Tabelle */}
+        {filtered.length === 0 && <div className="vv-muted">Keine Einträge.</div>}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {filtered.slice(0, 200).map((m) => {
+            const decColor = DECISION_COLOR[m.decision] || "#64748b";
+            const isAI = (m.by || "").startsWith("fidolin");
+            return (
+              <div key={m.id} style={{
+                display: "flex", gap: 10, padding: "8px 10px",
+                border: "1px solid #e5e7eb", borderRadius: 8,
+                borderLeft: `4px solid ${decColor}`,
+                background: "#fff", alignItems: "flex-start",
+              }}>
+                <div style={{ fontSize: 20, flexShrink: 0 }}>
+                  {KIND_EMOJI[m.kind] || "•"}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginBottom: 2 }}>
+                    {m.username && (
+                      <a href={`/admin?${q}&tab=userakte&u=${encodeURIComponent(m.username)}`}
+                         style={{ fontSize: 13, fontWeight: 800, color: "#1f2937", textDecoration: "none" }}>
+                        @{m.username}
+                      </a>
+                    )}
+                    <span style={{
+                      background: "#f3f4f6", color: "#374151",
+                      padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 700,
+                    }}>{m.kind}</span>
+                    <span style={{
+                      background: decColor, color: "#fff",
+                      padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 800,
+                    }}>{m.decision || "—"}</span>
+                    <span style={{
+                      background: isAI ? "#dbeafe" : "#ede9fe",
+                      color: isAI ? "#1e40af" : "#5b21b6",
+                      padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 700,
+                    }}>{isAI ? "🤖 " : "👤 "}{m.by}</span>
+                  </div>
+                  {m.reason && (
+                    <div style={{ fontSize: 12, color: "#374151", marginBottom: 2 }}>
+                      <b>Grund:</b> {m.reason}
+                    </div>
+                  )}
+                  {m.content && (
+                    <div style={{
+                      fontSize: 11.5, color: "#6b7280", fontStyle: "italic",
+                      background: "#f9fafb", padding: "4px 8px", borderRadius: 6,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      maxWidth: "100%",
+                    }} title={m.content}>„{m.content.slice(0, 200)}"</div>
+                  )}
+                  <div className="vv-muted" style={{ fontSize: 10.5, marginTop: 2 }}>
+                    {new Date(m.created_at).toLocaleString("de-DE")} · {relTime(m.created_at)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {filtered.length > 200 && (
+          <div className="vv-muted" style={{ fontSize: 11, marginTop: 8, textAlign: "center" }}>
+            … nur 200 von {filtered.length} angezeigt — engerer Filter nehmen
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
