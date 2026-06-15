@@ -12,7 +12,7 @@ const DOCK_ITEMS = [
   { href: "/heute",     icon: "🏠", label: "Startseite" },
   { href: "/buschfunk", icon: "📣", label: "Buschfunk" },
   { href: "/vibo",      icon: "🥚", label: "VIBO" },
-  { href: "/coms",      icon: "🏘️", label: "Coms" },
+  { href: "/coms",      icon: "🌐", label: "Coms" },
 ];
 
 const HIDE_KEY = "vv_quickdock_off";
