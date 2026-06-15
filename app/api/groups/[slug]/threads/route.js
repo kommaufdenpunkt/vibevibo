@@ -4,13 +4,16 @@ import * as DB from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// GET — Thread-Liste der Com
+// GET — Thread-Liste der Com + Reactions
 export async function GET(_req, { params }) {
   const { slug } = await params;
   const g = typeof DB.getComsBySlug === "function" ? DB.getComsBySlug(slug) : null;
   if (!g) return NextResponse.json({ error: "Com nicht gefunden" }, { status: 404 });
   const threads = DB.getComThreads(g.id, { limit: 50 });
-  return NextResponse.json({ threads });
+  const reactions = threads.length > 0
+    ? DB.getComReactions("thread", threads.map((t) => t.id))
+    : {};
+  return NextResponse.json({ threads, reactions });
 }
 
 // POST — neuen Thread erstellen (Members only, Rate-Limit: max 3/h)

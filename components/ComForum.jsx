@@ -5,9 +5,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ComReactions from "@/components/ComReactions";
+import { useMe } from "@/lib/useMe";
 
 export default function ComForum({ slug, isMember, isOwner, isMod, themeColor = "#ec4899" }) {
+  const { me } = useMe();
   const [threads, setThreads] = useState(null);
+  const [reactions, setReactions] = useState({});
   const [openId, setOpenId] = useState(null);
   const [composing, setComposing] = useState(false);
   const [draft, setDraft] = useState({ title: "", body: "" });
@@ -21,6 +25,7 @@ export default function ComForum({ slug, isMember, isOwner, isMod, themeColor = 
       if (!r.ok) throw new Error("Fehler beim Laden.");
       const d = await r.json();
       setThreads(d.threads);
+      setReactions(d.reactions || {});
     } catch (e) {
       setErr(e.message);
     }
@@ -65,6 +70,7 @@ export default function ComForum({ slug, isMember, isOwner, isMod, themeColor = 
         isMember={isMember}
         isOwner={isOwner}
         isMod={isMod}
+        meId={me?.id}
         onBack={() => { setOpenId(null); reload(); }}
         onChange={reload}
       />
@@ -216,6 +222,19 @@ export default function ComForum({ slug, isMember, isOwner, isMod, themeColor = 
                 <span>letzte: {relTime(t.lastReplyAt)}</span>
               </>}
             </div>
+            {isMember && (
+              <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 8 }}>
+                <ComReactions
+                  slug={slug}
+                  targetType="thread"
+                  targetId={t.id}
+                  initial={reactions[t.id] || {}}
+                  myUserId={me?.id}
+                  themeColor={themeColor}
+                  compact
+                />
+              </div>
+            )}
           </button>
         ))}
       </div>
@@ -223,7 +242,7 @@ export default function ComForum({ slug, isMember, isOwner, isMod, themeColor = 
   );
 }
 
-function ThreadDetail({ slug, threadId, themeColor, isMember, isOwner, isMod, onBack, onChange }) {
+function ThreadDetail({ slug, threadId, themeColor, isMember, isOwner, isMod, meId, onBack, onChange }) {
   const [data, setData] = useState(null);
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
@@ -330,6 +349,19 @@ function ThreadDetail({ slug, threadId, themeColor, isMember, isOwner, isMod, on
           whiteSpace: "pre-wrap", wordBreak: "break-word",
         }}>{t.body}</div>
 
+        {isMember && (
+          <div style={{ marginTop: 10 }}>
+            <ComReactions
+              slug={slug}
+              targetType="thread"
+              targetId={t.id}
+              initial={data.reactions?.thread || {}}
+              myUserId={meId}
+              themeColor={themeColor}
+            />
+          </div>
+        )}
+
         {(isOwner || isMod) && (
           <div style={{
             display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap",
@@ -376,6 +408,19 @@ function ThreadDetail({ slug, threadId, themeColor, isMember, isOwner, isMod, on
               fontSize: 14, lineHeight: 1.5, color: "#1f2937",
               whiteSpace: "pre-wrap", wordBreak: "break-word",
             }}>{r.body}</div>
+            {isMember && (
+              <div style={{ marginTop: 6 }}>
+                <ComReactions
+                  slug={slug}
+                  targetType="reply"
+                  targetId={r.id}
+                  initial={data.reactions?.replies?.[r.id] || {}}
+                  myUserId={meId}
+                  themeColor={themeColor}
+                  compact
+                />
+              </div>
+            )}
           </div>
         ))}
         {data.replies.length === 0 && (

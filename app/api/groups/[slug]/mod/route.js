@@ -95,6 +95,7 @@ export async function GET(_req, { params }) {
       id: g.id, slug: g.slug, name: g.name, emoji: g.emoji,
       description: g.description, motto: g.motto, rules: g.rules,
       cover_emoji: g.cover_emoji, join_mode: g.join_mode, theme_color: g.theme_color,
+      welcome_post: g.welcome_post,
       memberCount: g.memberCount, postCount: g.postCount,
       ownerUsername: g.ownerUsername, ownerDisplayName: g.ownerDisplayName,
     },

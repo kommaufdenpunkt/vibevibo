@@ -4,7 +4,7 @@ import * as DB from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// GET — Thread + alle Replies
+// GET — Thread + alle Replies + Reactions
 export async function GET(_req, { params }) {
   const { slug, id } = await params;
   const g = typeof DB.getComsBySlug === "function" ? DB.getComsBySlug(slug) : null;
@@ -14,7 +14,17 @@ export async function GET(_req, { params }) {
     return NextResponse.json({ error: "Thread nicht gefunden" }, { status: 404 });
   }
   const replies = DB.getComThreadReplies(thread.id);
-  return NextResponse.json({ thread, replies });
+  const threadReactions = DB.getComReactions("thread", [thread.id]);
+  const replyReactions = replies.length > 0
+    ? DB.getComReactions("reply", replies.map((r) => r.id))
+    : {};
+  return NextResponse.json({
+    thread, replies,
+    reactions: {
+      thread: threadReactions[thread.id] || {},
+      replies: replyReactions,
+    },
+  });
 }
 
 // POST — Antwort hinzufügen

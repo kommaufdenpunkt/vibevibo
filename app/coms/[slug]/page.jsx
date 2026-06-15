@@ -11,6 +11,8 @@ import { useMe } from "@/lib/useMe";
 import { relTime } from "@/lib/format";
 import SmileyPicker from "@/components/SmileyPicker";
 import ComForum from "@/components/ComForum";
+import ComWelcomePost from "@/components/ComWelcomePost";
+import ComActivityStrip from "@/components/ComActivityStrip";
 
 const ROLE_BADGE = {
   owner: { emoji: "👑", label: "Owner", bg: "#fbbf24", color: "#7c2d12" },
@@ -267,6 +269,15 @@ export default function ComsPage() {
               <InfoTab group={group} themeColor={themeColor} />
             ) : (
             <>
+            {/* Welcome-Post + Activity-Strip auf Übersicht */}
+            <ComWelcomePost
+              slug={slug}
+              isOwner={isOwner}
+              initialText={comsGroup.welcome_post || ""}
+              themeColor={themeColor}
+            />
+            <ComActivityStrip slug={slug} themeColor={themeColor} />
+
             {/* POST-FORM */}
             {isMember && (
               <div style={{
