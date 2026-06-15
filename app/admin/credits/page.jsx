@@ -41,10 +41,13 @@ export default function AdminCreditsPage() {
     setBusy(true); setResult(null);
     try {
       const r = await fetch(
-        `/api/admin/grant-credits?pw=${encodeURIComponent(pw)}`,
+        `/api/admin/grant-credits`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-password": pw,
+          },
           body: JSON.stringify({
             username: username.trim(),
             amount: Number(amount),
