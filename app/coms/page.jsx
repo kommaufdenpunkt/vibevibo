@@ -15,11 +15,19 @@ export default function GruppenPage() {
   const [form, setForm] = useState({ name: "", slug: "", description: "", emoji: "👥" });
   const [createCost, setCreateCost] = useState(500);
   const [balance, setBalance] = useState(null);
+  const [category, setCategory] = useState(null); // null = alle
+  const [sort, setSort] = useState("new"); // new|trending|active|members
+  const [categories, setCategories] = useState([]);
 
   async function reload() {
-    const d = await api.listGroups();
-    setGroups(d.groups);
-    setMine(d.mine);
+    const params = new URLSearchParams();
+    if (category) params.set("category", category);
+    if (sort) params.set("sort", sort);
+    const r = await fetch(`/api/groups${params.toString() ? "?" + params.toString() : ""}`, { credentials: "include" });
+    const d = await r.json();
+    setGroups(d.groups || []);
+    setMine(d.mine || []);
+    setCategories(d.categories || []);
     if (typeof d.createCost === "number") setCreateCost(d.createCost);
   }
 
@@ -34,7 +42,7 @@ export default function GruppenPage() {
     } catch {}
   }
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { reload(); }, [category, sort]); // eslint-disable-line
   useEffect(() => { reloadBalance(); }, [me]);
 
   async function create(e) {
@@ -108,29 +116,84 @@ export default function GruppenPage() {
       </div>
       )}
 
+      {/* Filter-Bar */}
+      <div className="vv-card" style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
+          Sortierung
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+          {[
+            { id: "new",      label: "🆕 Neu" },
+            { id: "trending", label: "🔥 Trending" },
+            { id: "active",   label: "💬 Aktiv (24h)" },
+            { id: "members",  label: "👥 Größte" },
+          ].map((s) => (
+            <button key={s.id} onClick={() => setSort(s.id)} style={chipStyle(sort === s.id)}>
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
+          Kategorie
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <button onClick={() => setCategory(null)} style={chipStyle(category === null)}>
+            🌐 Alle
+          </button>
+          {categories.map((c) => (
+            <button key={c.id} onClick={() => setCategory(c.id)} style={chipStyle(category === c.id)}>
+              {c.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="vv-grid-2">
         <div>
           <div className="vv-card">
-            <h3>🌐 Alle Coms</h3>
-            {groups.length === 0 && <div className="vv-muted">Noch keine Coms gegründet.</div>}
-            {groups.map((g) => (
-              <Link key={g.slug} href={`/coms/${g.slug}`} className="vv-conv-entry">
+            <h3>🌐 {category ? categories.find((c) => c.id === category)?.label : "Alle Coms"}</h3>
+            {groups.length === 0 && <div className="vv-muted">Keine Coms hier.</div>}
+            {groups.map((g) => {
+              const boosted = g.boostUntil && g.boostUntil > Date.now();
+              return (
+              <Link key={g.slug} href={`/coms/${g.slug}`} className="vv-conv-entry" style={boosted ? {
+                background: "linear-gradient(135deg, rgba(251,191,36,0.15), rgba(236,72,153,0.1))",
+                border: "1px solid rgba(251,191,36,0.5)",
+                borderRadius: 12,
+                boxShadow: "0 0 12px rgba(251,191,36,0.25)",
+              } : {}}>
                 <div className="vv-avatar vv-avatar-sm" style={{ fontSize: 26 }}>{g.emoji}</div>
                 <div style={{ flex: 1 }}>
-                  <div className="vv-conv-name">{g.name}</div>
+                  <div className="vv-conv-name">
+                    {boosted && <span title="Geboostet" style={{ marginRight: 4 }}>🔥</span>}
+                    {g.name}
+                  </div>
                   <div className="vv-conv-preview">{g.description}</div>
                   <div className="vv-muted" style={{ fontSize: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {g.category && g.category !== "sonstiges" && (
+                      <>
+                        <span>{categories.find((c) => c.id === g.category)?.label || g.category}</span>
+                        <span>·</span>
+                      </>
+                    )}
                     <span>👥 {g.member_count} Mitglieder</span>
                     <span>·</span>
                     <span>👑 {g.owner_username
                       ? `${g.owner_emoji || ""} @${g.owner_username}`
                       : <b style={{ color: "#dc2626" }}>N/A (besitzerlos)</b>}</span>
+                    {g.post_count_24h > 0 && (
+                      <>
+                        <span>·</span>
+                        <span>💬 {g.post_count_24h} heute</span>
+                      </>
+                    )}
                     <span>·</span>
                     <span>seit {relTime(g.at)}</span>
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
         <div>
@@ -152,4 +215,18 @@ export default function GruppenPage() {
       </div>
     </>
   );
+}
+
+function chipStyle(active) {
+  return {
+    background: active ? "linear-gradient(135deg, #ec4899, #8b5cf6)" : "rgba(255,255,255,0.85)",
+    color: active ? "#fff" : "#475569",
+    border: active ? "none" : "1px solid rgba(0,0,0,0.08)",
+    padding: "5px 12px",
+    borderRadius: 999,
+    fontSize: 11.5,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: active ? "0 2px 8px rgba(139,92,246,0.3)" : "none",
+  };
 }

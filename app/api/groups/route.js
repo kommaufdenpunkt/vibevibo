@@ -4,15 +4,21 @@ import { getSessionUser } from "@/lib/auth";
 
 const COM_CREATE_COST = 500;
 
-export async function GET() {
+export async function GET(req) {
   const me = await getSessionUser();
-  const groups = typeof DB.listGroupsWithOwner === "function"
-    ? DB.listGroupsWithOwner()
-    : DB.listGroups();
+  const url = new URL(req.url);
+  const category = url.searchParams.get("category");
+  const sort = url.searchParams.get("sort") || "new";
+  const groups = typeof DB.listGroupsExtended === "function"
+    ? DB.listGroupsExtended({ category, sort })
+    : typeof DB.listGroupsWithOwner === "function"
+      ? DB.listGroupsWithOwner()
+      : DB.listGroups();
   return NextResponse.json({
     groups,
     mine: me ? DB.getMyGroups(me.id) : [],
     createCost: COM_CREATE_COST,
+    categories: DB.COM_CATEGORIES || [],
   });
 }
 

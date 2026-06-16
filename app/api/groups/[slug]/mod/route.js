@@ -85,6 +85,69 @@ export async function POST(req, { params }) {
     }
   }
 
+  if (action === "ban-user") {
+    if (!isMod) return NextResponse.json({ error: "Nur Officer/Owner dürfen bannen." }, { status: 403 });
+    const target = DB.getUserByUsername(body.targetUsername);
+    if (!target) return NextResponse.json({ error: "User nicht gefunden" }, { status: 404 });
+    const targetRole = DB.getComsRole(g.id, target.id);
+    if (targetRole === "owner") return NextResponse.json({ error: "Owner kann nicht gebannt werden." }, { status: 400 });
+    if (targetRole === "mod" && !isOwner) return NextResponse.json({ error: "Officer kann nur vom Owner gebannt werden." }, { status: 403 });
+    DB.addComBan({ groupId: g.id, userId: target.id, bannedBy: me.id, reason: body.reason || "Bann durch " + (isOwner ? "Owner" : "Officer") });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "unban-user") {
+    if (!isMod) return NextResponse.json({ error: "Nur Officer/Owner dürfen entbannen." }, { status: 403 });
+    const target = DB.getUserByUsername(body.targetUsername);
+    if (!target) return NextResponse.json({ error: "User nicht gefunden" }, { status: 404 });
+    DB.removeComBan(g.id, target.id);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "set-meta-ext") {
+    if (!isOwner) return NextResponse.json({ error: "Nur Owner kann Meta-Daten setzen." }, { status: 403 });
+    const ok = DB.setComMetaExtended(g.id, body.meta || {});
+    return NextResponse.json({ ok });
+  }
+
+  if (action === "boost") {
+    const v = Number(body.vibes);
+    if (!Number.isFinite(v) || v < 1) return NextResponse.json({ error: "Ungültige Vibes-Anzahl" }, { status: 400 });
+    const r = DB.boostCom({ groupId: g.id, userId: me.id, vibes: v });
+    if (!r.ok) return NextResponse.json({ error: `Dir fehlen ${r.missing} ✨` }, { status: 402 });
+    return NextResponse.json(r);
+  }
+
+  if (action === "news-create") {
+    if (!isOwner && !DB.hasOfficerPerm(g.id, me.id, "post-news")) {
+      return NextResponse.json({ error: "Du hast kein post-news-Recht." }, { status: 403 });
+    }
+    try {
+      const id = DB.createComNews({ groupId: g.id, authorId: me.id, title: body.title, body: body.body });
+      return NextResponse.json({ ok: true, id });
+    } catch (e) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+  }
+
+  if (action === "news-delete") {
+    if (!isMod) return NextResponse.json({ error: "Nur Officer/Owner dürfen News löschen." }, { status: 403 });
+    DB.deleteComNews(Number(body.newsId));
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "news-pin") {
+    if (!isMod) return NextResponse.json({ error: "Nur Officer/Owner dürfen pinnen." }, { status: 403 });
+    DB.pinComNews(Number(body.newsId), !!body.pinned);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "clear-fidolin") {
+    if (!isMod) return NextResponse.json({ error: "Nur Officer/Owner dürfen Fidolin overrulen." }, { status: 403 });
+    DB.clearFidolinAction({ targetType: body.targetType, targetId: body.targetId });
+    return NextResponse.json({ ok: true });
+  }
+
   if (action === "kick") {
     if (!isMod) return NextResponse.json({ error: "Nur Mods/Besitzer dürfen kicken." }, { status: 403 });
     const target = DB.getUserByUsername(body.targetUsername);
@@ -147,12 +210,26 @@ export async function GET(_req, { params }) {
     }
   }
 
+  // Bans nur für Officer/Owner
+  let bans = [];
+  if (myRole === "owner" || myRole === "mod") {
+    try { bans = DB.listComBans(g.id); } catch {}
+  }
+
+  // Custom Sparkles parsen
+  let sparkles = [];
+  try { sparkles = JSON.parse(g.sparkles || "[]"); } catch {}
+
   return NextResponse.json({
     group: {
       id: g.id, slug: g.slug, name: g.name, emoji: g.emoji,
       description: g.description, motto: g.motto, rules: g.rules,
       cover_emoji: g.cover_emoji, join_mode: g.join_mode, theme_color: g.theme_color,
       welcome_post: g.welcome_post,
+      category: g.category || "sonstiges",
+      sparkles,
+      boost_until: g.boost_until || 0,
+      boost_total: g.boost_total || 0,
       memberCount: g.memberCount, postCount: g.postCount,
       ownerUsername: g.ownerUsername, ownerDisplayName: g.ownerDisplayName,
       ownerless: g.owner_id == null,
@@ -161,5 +238,7 @@ export async function GET(_req, { params }) {
     members,
     officerPerms,
     availablePerms: DB.OFFICER_PERMS || [],
+    bans,
+    categories: DB.COM_CATEGORIES || [],
   });
 }

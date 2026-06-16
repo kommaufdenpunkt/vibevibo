@@ -8,11 +8,26 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function ComOfficerPanel({ slug, members, officerPerms, availablePerms, themeColor = "#ec4899", onChange }) {
+export default function ComOfficerPanel({ slug, members, officerPerms, availablePerms, bans = [], themeColor = "#ec4899", onChange }) {
   const [editingUser, setEditingUser] = useState(null);
   const [draftPerms, setDraftPerms] = useState([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [fidolinLog, setFidolinLog] = useState(null);
+  const [showFidolinLog, setShowFidolinLog] = useState(false);
+
+  async function loadFidolinLog() {
+    setShowFidolinLog(true);
+    try {
+      const r = await fetch(`/api/groups/${slug}/fidolin-log`, { credentials: "include" });
+      if (r.ok) {
+        const d = await r.json();
+        setFidolinLog(d.log || []);
+      } else {
+        setFidolinLog([]);
+      }
+    } catch { setFidolinLog([]); }
+  }
 
   async function api(action, body) {
     setBusy(true);
@@ -178,7 +193,102 @@ export default function ComOfficerPanel({ slug, members, officerPerms, available
         })}
       </div>
 
-      {/* Member → Promote */}
+      {/* Banned Members */}
+      {bans.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#991b1b", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4 }}>
+            ⛔ Gebannte Mitglieder ({bans.length})
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 180, overflowY: "auto" }}>
+            {bans.map((b) => (
+              <div key={b.username} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "6px 8px", borderRadius: 8, background: "#fef2f2",
+                border: "1px solid #fecaca",
+              }}>
+                <span style={{ fontSize: 16 }}>{b.emoji || "👤"}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#991b1b" }}>{b.displayName || b.username}</div>
+                  <div style={{ fontSize: 10, color: "#94a3b8" }}>
+                    {new Date(b.bannedAt).toLocaleDateString("de-DE")}
+                    {b.bannedByUsername && ` · gebannt von @${b.bannedByUsername}`}
+                    {b.reason && ` · ${b.reason.slice(0, 40)}`}
+                  </div>
+                </div>
+                <button disabled={busy} onClick={() => {
+                  if (confirm(`@${b.username} entbannen? Sie können dann wieder beitreten.`))
+                    api("unban-user", { targetUsername: b.username });
+                }} style={smallBtn("#10b981")}>↩ Entbannen</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Fidolin-Log */}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "#581c87", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4 }}>
+          🤖 Fidolin-Log
+        </div>
+        {!showFidolinLog ? (
+          <button onClick={loadFidolinLog} style={{ ...smallBtn(themeColor), fontSize: 12 }}>
+            🔍 Fidolin-Log einsehen
+          </button>
+        ) : (
+          <div style={{ background: "#f8fafc", borderRadius: 10, padding: 8, border: "1px solid rgba(0,0,0,0.06)" }}>
+            {!fidolinLog ? (
+              <div style={{ fontSize: 12, color: "#64748b" }}>⏳ Lade…</div>
+            ) : fidolinLog.length === 0 ? (
+              <div style={{ fontSize: 12, color: "#16a34a", fontWeight: 700 }}>
+                ✓ Fidolin hat noch nichts beanstandet. Alles ruhig.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 240, overflowY: "auto" }}>
+                {fidolinLog.map((l) => (
+                  <div key={l.id} style={{
+                    padding: 8, borderRadius: 8, background: "#fff",
+                    border: "1px solid rgba(0,0,0,0.05)",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <span style={{
+                        fontSize: 10, padding: "2px 8px", borderRadius: 999,
+                        background: l.action === "hide" ? "#fecaca" : l.action === "mark" ? "#fef3c7" : "#dbeafe",
+                        color: l.action === "hide" ? "#991b1b" : l.action === "mark" ? "#92400e" : "#1e40af",
+                        fontWeight: 800,
+                      }}>
+                        {l.action === "hide" ? "⛔ HIDE" : l.action === "mark" ? "🚨 MARK" : "🤖 HINT"}
+                      </span>
+                      <span style={{ fontSize: 10, color: "#64748b" }}>Score {l.score}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 10, color: "#94a3b8" }}>
+                        {new Date(l.ts).toLocaleString("de-DE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    {l.authorUsername && (
+                      <div style={{ fontSize: 11, color: "#64748b" }}>
+                        @{l.authorUsername} · {l.targetType}
+                      </div>
+                    )}
+                    {l.reason && (
+                      <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>
+                        Grund: {l.reason}
+                      </div>
+                    )}
+                    {l.contentPreview && (
+                      <div style={{
+                        fontSize: 11, color: "#475569", marginTop: 4,
+                        padding: "4px 6px", borderRadius: 4, background: "#f1f5f9",
+                        fontStyle: "italic",
+                      }}>"{l.contentPreview}"</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Member → Promote/Ban */}
       {plainMembers.length > 0 && (
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: "#475569", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4 }}>
@@ -198,6 +308,11 @@ export default function ComOfficerPanel({ slug, members, officerPerms, available
                   if (confirm(`@${m.username} zum Officer befördern?`))
                     api("promote", { targetUsername: m.username });
                 }} style={smallBtn(themeColor)}>↑ Promote</button>
+                <button disabled={busy} onClick={() => {
+                  const reason = prompt(`@${m.username} aus dieser Com bannen? Grund (optional):`, "");
+                  if (reason !== null)
+                    api("ban-user", { targetUsername: m.username, reason });
+                }} style={smallBtn("#dc2626")}>⛔ Bannen</button>
               </div>
             ))}
             {plainMembers.length > 30 && (

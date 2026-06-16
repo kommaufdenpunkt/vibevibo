@@ -272,6 +272,7 @@ export default function ComsPage() {
                     members={meta?.members || members}
                     officerPerms={meta?.officerPerms || {}}
                     availablePerms={meta?.availablePerms || []}
+                    bans={meta?.bans || []}
                     themeColor={themeColor}
                     onChange={reload}
                   />
