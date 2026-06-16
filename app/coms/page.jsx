@@ -114,13 +114,19 @@ export default function GruppenPage() {
             <h3>🌐 Alle Coms</h3>
             {groups.length === 0 && <div className="vv-muted">Noch keine Coms gegründet.</div>}
             {groups.map((g) => (
-              <Link key={g.slug} href={`/gruppen/${g.slug}`} className="vv-conv-entry">
+              <Link key={g.slug} href={`/coms/${g.slug}`} className="vv-conv-entry">
                 <div className="vv-avatar vv-avatar-sm" style={{ fontSize: 26 }}>{g.emoji}</div>
                 <div style={{ flex: 1 }}>
                   <div className="vv-conv-name">{g.name}</div>
                   <div className="vv-conv-preview">{g.description}</div>
-                  <div className="vv-muted" style={{ fontSize: 10 }}>
-                    👥 {g.member_count} · 💬 {g.post_count} · seit {relTime(g.at)}
+                  <div className="vv-muted" style={{ fontSize: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    <span>👥 {g.member_count} Mitglieder</span>
+                    <span>·</span>
+                    <span>👑 {g.owner_username
+                      ? `${g.owner_emoji || ""} @${g.owner_username}`
+                      : <b style={{ color: "#dc2626" }}>N/A (besitzerlos)</b>}</span>
+                    <span>·</span>
+                    <span>seit {relTime(g.at)}</span>
                   </div>
                 </div>
               </Link>
@@ -133,7 +139,7 @@ export default function GruppenPage() {
             {!me && <div className="vv-muted">Logge dich ein, um Coms beizutreten.</div>}
             {me && mine.length === 0 && <div className="vv-muted">Noch keiner Com beigetreten.</div>}
             {mine.map((g) => (
-              <Link key={g.slug} href={`/gruppen/${g.slug}`} className="vv-conv-entry">
+              <Link key={g.slug} href={`/coms/${g.slug}`} className="vv-conv-entry">
                 <div className="vv-avatar vv-avatar-sm" style={{ fontSize: 24 }}>{g.emoji}</div>
                 <div style={{ flex: 1 }}>
                   <div className="vv-conv-name">{g.name}</div>

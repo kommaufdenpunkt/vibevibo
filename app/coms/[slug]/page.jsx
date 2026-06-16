@@ -13,6 +13,7 @@ import SmileyPicker from "@/components/SmileyPicker";
 import ComForum from "@/components/ComForum";
 import ComWelcomePost from "@/components/ComWelcomePost";
 import ComActivityStrip from "@/components/ComActivityStrip";
+import ComOfficerPanel from "@/components/ComOfficerPanel";
 
 const ROLE_BADGE = {
   owner: { emoji: "👑", label: "Owner", bg: "#fbbf24", color: "#7c2d12" },
@@ -264,7 +265,19 @@ export default function ComsPage() {
                 themeColor={themeColor}
               />
             ) : activeTab === "members" ? (
-              <MembersTab members={meta?.members || members} themeColor={themeColor} ROLE_BADGE={ROLE_BADGE} />
+              <>
+                {isOwner && meta?.availablePerms && (
+                  <ComOfficerPanel
+                    slug={slug}
+                    members={meta?.members || members}
+                    officerPerms={meta?.officerPerms || {}}
+                    availablePerms={meta?.availablePerms || []}
+                    themeColor={themeColor}
+                    onChange={reload}
+                  />
+                )}
+                <MembersTab members={meta?.members || members} themeColor={themeColor} ROLE_BADGE={ROLE_BADGE} />
+              </>
             ) : activeTab === "info" ? (
               <InfoTab group={group} themeColor={themeColor} />
             ) : (

@@ -29,13 +29,60 @@ export async function POST(req, { params }) {
   const isMod = myRole === "mod" || isOwner;
 
   if (action === "promote" || action === "demote") {
-    if (!isOwner) return NextResponse.json({ error: "Nur der Besitzer kann Mod-Rollen vergeben." }, { status: 403 });
+    if (!isOwner) return NextResponse.json({ error: "Nur der Besitzer kann Officer-Rollen vergeben." }, { status: 403 });
     const target = DB.getUserByUsername(body.targetUsername);
     if (!target) return NextResponse.json({ error: "User nicht gefunden" }, { status: 404 });
     if (target.id === me.id) return NextResponse.json({ error: "Dich selbst kannst du nicht promovieren/degradieren." }, { status: 400 });
     const newRole = action === "promote" ? "mod" : "member";
     const ok = DB.setComsRole(g.id, target.id, newRole);
+    // Beim Promote: standardmäßig alle Standard-Officer-Rechte
+    if (newRole === "mod" && typeof DB.setOfficerPerms === "function") {
+      DB.setOfficerPerms(g.id, target.id, ["kick","delete-posts","pin-threads","lock-threads","delete-threads"]);
+    }
     return NextResponse.json({ ok, newRole });
+  }
+
+  if (action === "set-perms") {
+    if (!isOwner) return NextResponse.json({ error: "Nur der Besitzer kann Officer-Rechte ändern." }, { status: 403 });
+    const target = DB.getUserByUsername(body.targetUsername);
+    if (!target) return NextResponse.json({ error: "User nicht gefunden" }, { status: 404 });
+    const targetRole = DB.getComsRole(g.id, target.id);
+    if (targetRole !== "mod") return NextResponse.json({ error: "Nur Officer haben Rechte. Erst promoten." }, { status: 400 });
+    const newPerms = DB.setOfficerPerms(g.id, target.id, Array.isArray(body.perms) ? body.perms : []);
+    return NextResponse.json({ ok: true, perms: newPerms });
+  }
+
+  if (action === "transfer-owner") {
+    if (!isOwner) return NextResponse.json({ error: "Nur der aktuelle Owner kann übergeben." }, { status: 403 });
+    const target = DB.getUserByUsername(body.targetUsername);
+    if (!target) return NextResponse.json({ error: "User nicht gefunden" }, { status: 404 });
+    if (target.id === me.id) return NextResponse.json({ error: "An dich selbst kannst du nicht übergeben." }, { status: 400 });
+    try {
+      DB.transferComOwnership(g.id, me.id, target.id);
+      return NextResponse.json({ ok: true, newOwner: target.username });
+    } catch (e) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+  }
+
+  if (action === "release-owner") {
+    if (!isOwner) return NextResponse.json({ error: "Nur der Owner kann abdanken." }, { status: 403 });
+    try {
+      DB.releaseComOwnership(g.id, me.id);
+      return NextResponse.json({ ok: true });
+    } catch (e) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+  }
+
+  if (action === "claim-owner") {
+    if (myRole !== "mod") return NextResponse.json({ error: "Nur Officer können besitzerlose Coms übernehmen." }, { status: 403 });
+    try {
+      DB.claimOrphanCom(g.id, me.id);
+      return NextResponse.json({ ok: true });
+    } catch (e) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
   }
 
   if (action === "kick") {
@@ -90,6 +137,16 @@ export async function GET(_req, { params }) {
   const myRole = DB.getComsRole(g.id, me.id);
   const members = typeof DB.getComsMembers === "function" ? DB.getComsMembers(g.id) : [];
 
+  // Officer-Permissions je Mod ermitteln
+  const officerPerms = {};
+  if (typeof DB.getOfficerPerms === "function") {
+    for (const m of members) {
+      if (m.role === "mod") {
+        try { officerPerms[m.username] = DB.getOfficerPerms(g.id, m.userId); } catch {}
+      }
+    }
+  }
+
   return NextResponse.json({
     group: {
       id: g.id, slug: g.slug, name: g.name, emoji: g.emoji,
@@ -98,8 +155,11 @@ export async function GET(_req, { params }) {
       welcome_post: g.welcome_post,
       memberCount: g.memberCount, postCount: g.postCount,
       ownerUsername: g.ownerUsername, ownerDisplayName: g.ownerDisplayName,
+      ownerless: g.owner_id == null,
     },
     myRole,
     members,
+    officerPerms,
+    availablePerms: DB.OFFICER_PERMS || [],
   });
 }
