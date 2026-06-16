@@ -156,7 +156,7 @@ export default function RoomChatPage() {
   }
 
   async function leaveRoom() {
-    if (!window.confirm("Gruppe wirklich verlassen?")) return;
+    if (!window.confirm("Chatraum wirklich verlassen?")) return;
     try {
       await api.leaveRoom(roomId);
       router.push("/messenger");
