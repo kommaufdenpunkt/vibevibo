@@ -34,6 +34,7 @@ const PUBLIC_PREFIX = [
   "/api/push/key",
   "/api/admin/",
   "/api/_internal/",
+  "/api/welcome-bonus",
 ];
 
 export function middleware(req) {
