@@ -16,6 +16,8 @@ import ComForum from "@/components/ComForum";
 import ComWelcomePost from "@/components/ComWelcomePost";
 import ComActivityStrip from "@/components/ComActivityStrip";
 import ComOfficerPanel from "@/components/ComOfficerPanel";
+import RichTextEditor from "@/components/RichTextEditor";
+import RichTextDisplay from "@/components/RichTextDisplay";
 
 const ROLE_BADGE = {
   owner: { emoji: "👑", label: "Owner", bg: "#fbbf24", color: "#7c2d12" },
@@ -303,16 +305,15 @@ export default function ComsPage() {
                 border: `2px solid ${themeColor}33`,
               }}>
                 <form onSubmit={post}>
-                  <textarea value={text}
-                    onChange={(e) => setText(e.target.value)}
+                  <RichTextEditor
+                    value={text}
+                    onChange={setText}
                     placeholder={`Was läuft in ${group.name}? ✿`}
-                    style={{
-                      width: "100%", minHeight: 70, padding: "8px 10px",
-                      borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
-                      fontSize: 14, fontFamily: "inherit", resize: "vertical",
-                    }} />
+                    maxLength={4000}
+                    minHeight={90}
+                    themeColor={themeColor}
+                  />
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-                    <SmileyPicker onPick={(s) => setText((t) => t + s)} />
                     <div style={{ flex: 1 }} />
                     <button type="submit" style={{
                       background: `linear-gradient(135deg, ${themeColor}, ${shade(themeColor, -20)})`,
@@ -368,7 +369,7 @@ export default function ComsPage() {
                         )}
                       </div>
                     </div>
-                    <div style={{ whiteSpace: "pre-wrap", fontSize: 13.5, color: "#374151" }}>{p.text}</div>
+                    <RichTextDisplay text={p.text} style={{ fontSize: 13.5 }} />
                   </div>
                 ))}
               </div>

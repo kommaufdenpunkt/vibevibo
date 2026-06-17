@@ -6,6 +6,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ComReactions from "@/components/ComReactions";
+import RichTextEditor from "@/components/RichTextEditor";
+import RichTextDisplay from "@/components/RichTextDisplay";
 import { useMe } from "@/lib/useMe";
 
 export default function ComForum({ slug, isMember, isOwner, isMod, themeColor = "#ec4899" }) {
@@ -127,17 +129,13 @@ export default function ComForum({ slug, isMember, isOwner, isMod, themeColor = 
             }}
             required
           />
-          <textarea
+          <RichTextEditor
             value={draft.body}
-            onChange={(e) => setDraft({ ...draft, body: e.target.value })}
+            onChange={(b) => setDraft({ ...draft, body: b })}
             placeholder="Dein Beitrag — Gedanken, Frage, Diskussion…"
             maxLength={8000}
-            style={{
-              width: "100%", minHeight: 100, padding: "9px 11px",
-              borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
-              fontSize: 14, fontFamily: "inherit", resize: "vertical",
-            }}
-            required
+            minHeight={120}
+            themeColor={themeColor}
           />
           <div style={{ display: "flex", alignItems: "center", marginTop: 8, gap: 8 }}>
             <div style={{ fontSize: 11, color: "#94a3b8" }}>
@@ -344,10 +342,7 @@ function ThreadDetail({ slug, threadId, themeColor, isMember, isOwner, isMod, me
           {" "} · {" "} {relTime(t.createdAt)}
           {" "} · {" "} 💬 {t.replyCount}
         </div>
-        <div style={{
-          fontSize: 14, lineHeight: 1.5, color: "#1f2937",
-          whiteSpace: "pre-wrap", wordBreak: "break-word",
-        }}>{t.body}</div>
+        <RichTextDisplay text={t.body} />
 
         {isMember && (
           <div style={{ marginTop: 10 }}>
@@ -404,10 +399,7 @@ function ThreadDetail({ slug, threadId, themeColor, isMember, isOwner, isMod, me
                 }}>🗑</button>
               )}
             </div>
-            <div style={{
-              fontSize: 14, lineHeight: 1.5, color: "#1f2937",
-              whiteSpace: "pre-wrap", wordBreak: "break-word",
-            }}>{r.body}</div>
+            <RichTextDisplay text={r.body} />
             {isMember && (
               <div style={{ marginTop: 6 }}>
                 <ComReactions
@@ -446,20 +438,16 @@ function ThreadDetail({ slug, threadId, themeColor, isMember, isOwner, isMod, me
           borderRadius: 14, padding: 12,
           border: `2px solid ${themeColor}33`,
         }}>
-          <textarea
+          <RichTextEditor
             value={reply}
-            onChange={(e) => setReply(e.target.value)}
+            onChange={setReply}
             placeholder="Deine Antwort…"
             maxLength={4000}
-            style={{
-              width: "100%", minHeight: 70, padding: "8px 10px",
-              borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
-              fontSize: 14, fontFamily: "inherit", resize: "vertical",
-            }}
-            required
+            minHeight={90}
+            themeColor={themeColor}
           />
           <div style={{ display: "flex", alignItems: "center", marginTop: 8, gap: 8 }}>
-            <div style={{ fontSize: 11, color: "#94a3b8" }}>{reply.length}/4000</div>
+            <div style={{ fontSize: 11, color: "#94a3b8" }} />
             <div style={{ flex: 1 }} />
             <button type="submit" disabled={busy} style={{
               background: `linear-gradient(135deg, ${themeColor}, ${shade(themeColor, -20)})`,
