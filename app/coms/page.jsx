@@ -169,6 +169,12 @@ export default function GruppenPage() {
                   <div className="vv-conv-name">
                     {boosted && <span title="Geboostet" style={{ marginRight: 4 }}>🔥</span>}
                     {g.name}
+                    <code style={{
+                      marginLeft: 8, fontSize: 11, fontWeight: 600,
+                      color: "#64748b", background: "#f1f5f9",
+                      padding: "1px 6px", borderRadius: 4,
+                      fontFamily: "ui-monospace, Menlo, monospace",
+                    }}>/{g.slug}</code>
                   </div>
                   <div className="vv-conv-preview">{g.description}</div>
                   <div className="vv-muted" style={{ fontSize: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -207,7 +213,15 @@ export default function GruppenPage() {
               <Link key={g.slug} href={`/coms/${g.slug}`} className="vv-conv-entry">
                 <div className="vv-avatar vv-avatar-sm" style={{ fontSize: 24 }}>{g.emoji}</div>
                 <div style={{ flex: 1 }}>
-                  <div className="vv-conv-name">{g.name}</div>
+                  <div className="vv-conv-name">
+                    {g.name}
+                    <code style={{
+                      marginLeft: 8, fontSize: 11, fontWeight: 600,
+                      color: "#64748b", background: "#f1f5f9",
+                      padding: "1px 6px", borderRadius: 4,
+                      fontFamily: "ui-monospace, Menlo, monospace",
+                    }}>/{g.slug}</code>
+                  </div>
                   <div className="vv-conv-preview">Rolle: {g.role}</div>
                 </div>
               </Link>

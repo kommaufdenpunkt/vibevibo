@@ -342,6 +342,46 @@ export default function ComOfficerPanel({ slug, members, officerPerms, available
           </button>
         </details>
       )}
+
+      {/* Com komplett löschen */}
+      {owner && (
+        <details style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid rgba(220,38,38,0.2)" }}>
+          <summary style={{ fontSize: 11, color: "#991b1b", fontWeight: 800, cursor: "pointer" }}>
+            ☠ Com komplett löschen (unwiderruflich)
+          </summary>
+          <div style={{ fontSize: 12, color: "#475569", margin: "8px 0", lineHeight: 1.5 }}>
+            Die Com, alle Threads, Antworten, News, Wand-Posts, Reaktionen und Mitgliedschaften werden gelöscht.
+            Wenn die Com gerade geboostet ist, bekommst du die verbliebene Boost-Zeit als ✨ zurück erstattet.
+            <br /><br />
+            <b style={{ color: "#991b1b" }}>Das kann nicht rückgängig gemacht werden!</b>
+          </div>
+          <button disabled={busy} onClick={async () => {
+            const sure = prompt("Tippe den COM-NAMEN exakt ein um zu bestätigen:", "");
+            if (sure === null) return;
+            setBusy(true);
+            try {
+              const r = await fetch("/api/groups/" + slug + "/delete", {
+                method: "POST",
+                credentials: "include",
+              });
+              const d = await r.json();
+              if (!r.ok) throw new Error(d.error || "Fehler");
+              alert("✓ Com gelöscht. Refund: " + (d.refundVibes || 0) + " ✨\n\nDu wirst zur Coms-Liste weitergeleitet.");
+              window.location.href = "/coms";
+            } catch (e) {
+              alert("⚠ " + e.message);
+            } finally {
+              setBusy(false);
+            }
+          }} style={{
+            background: "#991b1b", color: "#fff", border: "none",
+            padding: "8px 14px", borderRadius: 999,
+            fontWeight: 800, fontSize: 12, cursor: "pointer",
+          }}>
+            ☠ Com endgültig löschen
+          </button>
+        </details>
+      )}
     </div>
   );
 }
