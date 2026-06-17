@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 // 🔍 Admin-Inspector — User suchen, Profil komplett einsehen, Aktionen ausführen.
 
 import { useEffect, useState } from "react";

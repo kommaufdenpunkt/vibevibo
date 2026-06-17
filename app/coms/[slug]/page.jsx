@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 // 🏘 Coms — Gruppen-Detail-Seite, 2007-Nostalgia-Style.
 // Sparkles, Marquee, Owner/Mod-Hierarchie, Mod-Aktionen, Theme-Farben.
 
