@@ -3,13 +3,105 @@
 // 📝 RichTextEditor — Textarea mit Markdown-Toolbar.
 // Speichert Markdown, gerendert via RichTextDisplay.
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+
+const EMOJI_CATEGORIES = {
+  "😀 Gesichter": [
+    "😀","😁","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰","😘","😗","😙","😚",
+    "😋","😛","😝","😜","🤪","🤨","🧐","🤓","😎","🥳","🥹","🤩","🥸","😏","😒","😞",
+    "😔","😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡","🤬",
+    "🤯","😳","🥵","🥶","😱","😨","😰","😥","😓","🤗","🤔","🤭","🤫","🤥","😶","😐",
+    "😑","😬","🙄","😯","😦","😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢",
+    "🤮","🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩","👻","💀","☠️",
+    "👽","👾","🤖",
+  ],
+  "👋 Hände": [
+    "👋","🤚","🖐","✋","🖖","👌","🤌","🤏","✌️","🤞","🤟","🤘","🤙","👈","👉","👆",
+    "👇","☝️","👍","👎","✊","👊","🤛","🤜","👏","🙌","👐","🤲","🤝","🙏","✍️","💅",
+    "🤳","💪","🦾","🦿",
+  ],
+  "❤️ Herzen & Liebe": [
+    "❤️","🧡","💛","💚","💙","💜","🤎","🖤","🤍","💔","❣️","💕","💞","💓","💗","💖",
+    "💘","💝","💟","💌","💋","💑","💏","👩‍❤️‍👨","👨‍❤️‍👨","👩‍❤️‍👩",
+  ],
+  "✨ Symbole": [
+    "✨","⭐","🌟","💫","🔥","⚡","💥","☄️","☀️","🌈","☁️","⛅","☁","🌤","⛈","🌩",
+    "❄️","☃","⛄","💨","💧","🌊","🎉","🎊","🎁","🎀","🎈","🪅","🎆","🎇","🧨","🪩",
+    "✅","❌","⭕","❗","❓","‼️","⁉️","💯","🆙","🆒","🆕","🆓","🔝","🆗","🅾️","🚫",
+  ],
+  "🎵 Aktivitäten": [
+    "🎮","🕹","🎯","🎲","🧩","🎰","🎨","🎭","🎬","📸","📷","🎤","🎧","🎵","🎶","🎼",
+    "🎹","🥁","🎸","🎺","🎷","🎻","🪕","⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🎱",
+    "🏓","🏸","🥅","🪁","🛷","⛷","🏂","🏄","🚴","🏃","💃","🕺","🤸","🤾","🤽","🏇",
+  ],
+  "🍕 Essen": [
+    "☕","🍵","🧋","🥤","🍺","🍻","🍷","🍸","🍹","🥂","🍾","🍶","🥃","🧉","🍕","🍔",
+    "🌭","🥪","🌮","🌯","🥙","🍝","🍜","🍲","🍛","🍣","🍱","🍤","🥟","🥗","🍿","🧈",
+    "🥨","🥖","🍞","🥯","🧀","🥚","🍳","🥞","🧇","🥓","🥩","🍗","🍖","🍕","🍰","🎂",
+    "🧁","🍮","🍭","🍬","🍫","🍩","🍪","🍯","🍓","🍇","🍉","🍊","🍌","🍍","🥭","🍎",
+  ],
+  "🐶 Tiere & Natur": [
+    "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐻‍❄️","🐨","🐯","🦁","🐮","🐷","🐸","🐵",
+    "🙈","🙉","🙊","🐒","🐔","🐧","🐦","🐤","🦆","🦅","🦉","🦇","🐺","🐗","🐴","🦄",
+    "🐝","🐛","🦋","🐌","🐞","🐜","🦗","🕷","🦂","🐢","🐍","🦎","🦖","🦕","🐙","🦑",
+    "🦞","🦀","🐡","🐠","🐟","🐬","🐳","🐋","🦈","🐊","🐅","🐆","🦓","🦍","🦧","🐘",
+    "🦛","🦏","🐪","🐫","🦒","🦘","🐃","🐂","🐄","🐎","🐖","🐏","🐑","🦙","🐐","🦌",
+    "🌸","💐","🌹","🥀","🌺","🌻","🌷","🌼","🌱","🌿","☘","🍀","🍃","🍂","🍁","🌳",
+    "🌲","🌴","🌵","🌾","🌎","🌍","🌏","🌕","🌖","🌗","🌘","🌑","🌒","🌓","🌔","🌚",
+  ],
+  "🚀 Reise & Orte": [
+    "✈️","🚀","🛸","🚁","🛩","🛫","🛬","🪂","💺","🚆","🚄","🚅","🚈","🚉","🚊","🚝",
+    "🚞","🚋","🚃","🚂","🛤","🚌","🚍","🚎","🚐","🚑","🚒","🚓","🚔","🚕","🚖","🚗",
+    "🚙","🛻","🚚","🚛","🚜","🏎","🏍","🛵","🦽","🦼","🛴","🚲","⛵","🚤","🚢","⛴",
+    "🛥","🚣","🏠","🏡","🏘","🏚","🏗","🏭","🏢","🏬","🏣","🏤","🏥","🏦","🏨","🏪",
+    "🏫","🏩","💒","🏛","⛪","🕌","🕍","🛕","🕋","⛩","🗼","🗽","🎡","🎢","🎠",
+  ],
+  "📌 Objekte & Werkzeuge": [
+    "📌","📍","📎","🖇","✏️","✒️","🖋","🖊","🖌","🖍","📝","💼","📁","📂","🗂","📅",
+    "📆","🗒","🗓","📇","📈","📉","📊","📋","📌","📍","📎","🖇","📏","📐","✂️","🗃",
+    "🗄","🗑","🔒","🔓","🔏","🔐","🔑","🗝","🔨","⛏","⚒","🛠","🗡","⚔","🔫","🪃",
+    "🏹","🛡","🪚","🔧","🪛","🔩","⚙️","🪤","🧰","🧲","🧪","🧫","🧬","🔬","🔭","📡",
+    "💉","🩸","💊","🩹","🩺","🚪","🛗","🪟","🛏","🛋","🪑","🚽","🪠","🚿","🛁","🪥",
+  ],
+};
+
+const RECENT_KEY = "vv_recent_emojis";
+const MAX_RECENT = 16;
 
 export default function RichTextEditor({
   value, onChange, placeholder, maxLength = 4000, minHeight = 120,
   themeColor = "#ec4899",
 }) {
   const ref = useRef(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [category, setCategory] = useState(Object.keys(EMOJI_CATEGORIES)[0]);
+  const [recent, setRecent] = useState([]);
+  const popoverRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+      if (Array.isArray(saved)) setRecent(saved.slice(0, MAX_RECENT));
+    } catch {}
+  }, []);
+
+  // Klick außerhalb schließt Popover
+  useEffect(() => {
+    if (!emojiOpen) return;
+    function onClick(e) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        setEmojiOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [emojiOpen]);
+
+  function pushRecent(emoji) {
+    const next = [emoji, ...recent.filter((x) => x !== emoji)].slice(0, MAX_RECENT);
+    setRecent(next);
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch {}
+  }
 
   function wrap(before, after = before) {
     const ta = ref.current;
@@ -84,13 +176,12 @@ export default function RichTextEditor({
     const newText = value.slice(0, s) + emoji + value.slice(s);
     if (newText.length > maxLength) return;
     onChange(newText);
+    pushRecent(emoji);
     requestAnimationFrame(() => {
       ta.focus();
       ta.setSelectionRange(s + emoji.length, s + emoji.length);
     });
   }
-
-  const QUICK_EMOJIS = ["✨", "🎉", "❤️", "🔥", "👋", "🌟", "💡", "🚀", "📌"];
 
   return (
     <div>
@@ -122,11 +213,66 @@ export default function RichTextEditor({
         <ToolBtn title="Link einfügen (mit Beschriftung)" onClick={insertLink}>🔗</ToolBtn>
         <ToolBtn title="Bild einfügen (per URL)" onClick={insertImage}>🖼</ToolBtn>
         <span style={sep} />
-        {QUICK_EMOJIS.map((e) => (
-          <ToolBtn key={e} title={"Emoji einfügen: " + e} onClick={() => insertEmoji(e)}>
-            <span style={{ fontSize: 14 }}>{e}</span>
+        <div style={{ position: "relative", display: "inline-block" }} ref={popoverRef}>
+          <ToolBtn
+            title="Emoji einfügen"
+            onClick={() => setEmojiOpen((o) => !o)}
+            active={emojiOpen}
+          >
+            <span style={{ fontSize: 15 }}>😀</span>
           </ToolBtn>
-        ))}
+          {emojiOpen && (
+            <div style={{
+              position: "absolute", top: "100%", left: 0, marginTop: 4,
+              background: "#fff", border: "1px solid rgba(0,0,0,0.1)",
+              borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+              padding: 8, zIndex: 100,
+              width: 320, maxWidth: "calc(100vw - 40px)",
+            }}>
+              {/* Kategorie-Tabs */}
+              <div style={{
+                display: "flex", gap: 4, marginBottom: 8, flexWrap: "wrap",
+                paddingBottom: 6, borderBottom: "1px solid rgba(0,0,0,0.06)",
+              }}>
+                {recent.length > 0 && (
+                  <CatTab active={category === "_recent"} onClick={() => setCategory("_recent")}>🕒</CatTab>
+                )}
+                {Object.keys(EMOJI_CATEGORIES).map((cat) => {
+                  const emoji = cat.split(" ")[0];
+                  return (
+                    <CatTab key={cat} active={category === cat} onClick={() => setCategory(cat)} title={cat.slice(2)}>
+                      {emoji}
+                    </CatTab>
+                  );
+                })}
+              </div>
+              {/* Emoji-Grid */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(8, 1fr)",
+                gap: 2, maxHeight: 220, overflowY: "auto",
+              }}>
+                {(category === "_recent" ? recent : EMOJI_CATEGORIES[category] || []).map((e, i) => (
+                  <button
+                    key={e + i}
+                    type="button"
+                    onClick={() => insertEmoji(e)}
+                    style={{
+                      background: "transparent", border: "none",
+                      padding: 4, borderRadius: 6, cursor: "pointer",
+                      fontSize: 20, lineHeight: 1,
+                    }}
+                    onMouseEnter={(ev) => ev.currentTarget.style.background = "#f1f5f9"}
+                    onMouseLeave={(ev) => ev.currentTarget.style.background = "transparent"}
+                  >{e}</button>
+                ))}
+              </div>
+              <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 6, textAlign: "center" }}>
+                {category === "_recent" ? "Zuletzt verwendet" : category}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <textarea
@@ -160,19 +306,37 @@ export default function RichTextEditor({
   );
 }
 
-function ToolBtn({ children, onClick, title }) {
+function ToolBtn({ children, onClick, title, active }) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
       style={{
-        background: "#fff", border: "1px solid rgba(0,0,0,0.08)",
+        background: active ? "#fef3c7" : "#fff",
+        border: active ? "1px solid #f59e0b" : "1px solid rgba(0,0,0,0.08)",
         padding: "4px 8px", borderRadius: 6,
         fontSize: 13, cursor: "pointer", color: "#475569",
         minWidth: 28, height: 26, display: "inline-flex",
         alignItems: "center", justifyContent: "center",
         fontWeight: 700,
+      }}
+    >{children}</button>
+  );
+}
+
+function CatTab({ children, active, onClick, title }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      style={{
+        background: active ? "#fdf2f8" : "transparent",
+        border: active ? "1px solid #ec4899" : "1px solid transparent",
+        padding: "4px 7px", borderRadius: 6,
+        fontSize: 16, cursor: "pointer",
+        minWidth: 30, lineHeight: 1,
       }}
     >{children}</button>
   );
