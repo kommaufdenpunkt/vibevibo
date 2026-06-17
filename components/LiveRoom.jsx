@@ -11,6 +11,7 @@ import { useNsfwGuard } from "@/lib/useNsfwGuard";
 import { EMOTES } from "@/lib/live";
 import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
+import MediaPermissionNotice from "./MediaPermissionNotice";
 
 const SIZE_PX = { sm: 28, md: 44, lg: 60, xl: 88 };
 const MUTE_DURATIONS = [1, 5, 15, 60];
@@ -291,6 +292,9 @@ export default function LiveRoom({ streamId, meId }) {
 
   return (
     <div style={{ position: "relative" }}>
+      {/* Kamera/Mikrofon-Hinweis — nur für Hosts oder potenzielle Hosts */}
+      {(iAmHost || stream?.hostPolicy === "open") && <MediaPermissionNotice compact />}
+
       {/* Header */}
       <div className="vv-card" style={{ padding: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

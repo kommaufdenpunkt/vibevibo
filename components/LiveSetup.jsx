@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { MAX_HOSTS_MULTI, RECOMMEND_AUDIO_ONLY_ABOVE, HOST_POLICIES } from "@/lib/live";
 import HelpCard from "./HelpCard";
+import MediaPermissionNotice from "./MediaPermissionNotice";
 
 export default function LiveSetup({ onClose, onCreated }) {
   const [mode, setMode] = useState("solo");
@@ -44,6 +45,8 @@ export default function LiveSetup({ onClose, onCreated }) {
         borderRadius: 16, padding: 18, boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
       }}>
         <h3 style={{ margin: "0 0 10px" }}>🎥 Live gehen</h3>
+
+        <MediaPermissionNotice />
 
         <HelpCard id="live-host-rules" title="Bevor du live gehst" emoji="📋" color="#ec4899">
           <b>Was geht:</b> Schwatzen, Musik teilen, Tutorials, Kunst, Spazieren, Show, Reaktionen.
