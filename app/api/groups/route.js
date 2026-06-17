@@ -9,14 +9,62 @@ export async function GET(req) {
   const url = new URL(req.url);
   const category = url.searchParams.get("category");
   const sort = url.searchParams.get("sort") || "new";
-  const groups = typeof DB.listGroupsExtended === "function"
-    ? DB.listGroupsExtended({ category, sort })
-    : typeof DB.listGroupsWithOwner === "function"
-      ? DB.listGroupsWithOwner()
-      : DB.listGroups();
+
+  // Robust mit mehrstufigem Fallback — listGroupsExtended hat Schema-Probleme
+  // (siehe coms-debug), nutzen wir listGroupsWithOwner als primäre Quelle.
+  let groups = [];
+  try {
+    if (typeof DB.listGroupsWithOwner === "function") {
+      groups = DB.listGroupsWithOwner();
+    } else if (typeof DB.listGroupsExtended === "function") {
+      groups = DB.listGroupsExtended({ category, sort });
+    } else {
+      groups = DB.listGroups();
+    }
+    // Kategorie-Filter im JS anwenden (falls Spalte da ist)
+    if (category && groups.length > 0 && groups[0].category) {
+      groups = groups.filter((g) => (g.category || "sonstiges") === category);
+    }
+    // Sort im JS anwenden
+    if (sort === "members") {
+      groups.sort((a, b) => (b.member_count || 0) - (a.member_count || 0));
+    } else if (sort === "trending") {
+      const now = Date.now();
+      groups.sort((a, b) => {
+        const ab = (a.boostUntil || 0) > now ? 1 : 0;
+        const bb = (b.boostUntil || 0) > now ? 1 : 0;
+        if (ab !== bb) return bb - ab;
+        return (b.at || 0) - (a.at || 0);
+      });
+    }
+    // "new" ist Default-Sort der Queries
+  } catch (e1) {
+    console.error("[groups] primary list failed:", e1.message);
+    try {
+      groups = DB.listGroups();
+    } catch { groups = []; }
+  }
+
+  let mine = [];
+  try {
+    if (me) mine = DB.getMyGroups(me.id) || [];
+  } catch (e) {
+    console.error("[groups] getMyGroups failed:", e.message);
+  }
+  // Fallback: wenn getMyGroups leer ist, suche nach owner_id-Match in groups
+  if (me && mine.length === 0 && groups.length > 0) {
+    const ownerName = me.username;
+    const ownedByMe = groups.filter((g) => g.owner_username === ownerName);
+    if (ownedByMe.length > 0) {
+      mine = ownedByMe.map((g) => ({
+        id: g.id, slug: g.slug, name: g.name, emoji: g.emoji, role: "owner",
+      }));
+    }
+  }
+
   return NextResponse.json({
     groups,
-    mine: me ? DB.getMyGroups(me.id) : [],
+    mine,
     createCost: COM_CREATE_COST,
     categories: DB.COM_CATEGORIES || [],
   });
