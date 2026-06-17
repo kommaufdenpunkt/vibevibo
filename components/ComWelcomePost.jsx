@@ -1,9 +1,11 @@
 "use client";
 
 // ✿ ComWelcomePost — gepinnter Begrüßungs-Text vom Owner.
-// Owner kann inline editieren.
+// Owner kann inline editieren mit Markdown-Toolbar (B/I/Strike/Link/Bild).
 
 import { useEffect, useState } from "react";
+import RichTextEditor from "@/components/RichTextEditor";
+import RichTextDisplay from "@/components/RichTextDisplay";
 
 export default function ComWelcomePost({ slug, isOwner, initialText, themeColor = "#ec4899" }) {
   const [text, setText] = useState(initialText || "");
@@ -46,16 +48,13 @@ export default function ComWelcomePost({ slug, isOwner, initialText, themeColor 
           fontSize: 11, fontWeight: 800, color: themeColor,
           letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6,
         }}>✿ Willkommens-Post bearbeiten</div>
-        <textarea
+        <RichTextEditor
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={setDraft}
           placeholder="Schreib was Neuen zur Begrüßung — was ist diese Com, was machen wir hier, Regeln in kurz…"
           maxLength={4000}
-          style={{
-            width: "100%", minHeight: 120, padding: "9px 11px",
-            borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
-            fontSize: 14, fontFamily: "inherit", resize: "vertical",
-          }}
+          minHeight={140}
+          themeColor={themeColor}
         />
         <div style={{ display: "flex", alignItems: "center", marginTop: 8, gap: 8 }}>
           <div style={{ fontSize: 11, color: "#94a3b8" }}>{draft.length}/4000</div>
@@ -130,10 +129,7 @@ export default function ComWelcomePost({ slug, isOwner, initialText, themeColor 
           </>
         )}
       </div>
-      <div style={{
-        fontSize: 14, lineHeight: 1.55, color: "#1f2937",
-        whiteSpace: "pre-wrap", wordBreak: "break-word",
-      }}>{text}</div>
+      <RichTextDisplay text={text} />
     </div>
   );
 }
