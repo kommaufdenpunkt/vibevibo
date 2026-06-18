@@ -469,7 +469,7 @@ export default function Landing() {
             <span style={{ display: "inline-block", padding: "3px 10px", background: "#ff3e9d", color: "#fff", borderRadius: 12, fontSize: 11, fontWeight: "bold", letterSpacing: 1 }}>VOR FACEBOOK</span>
           </div>
           <h2 style={{ textAlign: "center", margin: "8px 0 2px", color: "#222", fontFamily: "Arial, sans-serif" }}>📼 Alles, was wir vermisst haben</h2>
-          <p style={{ textAlign: "center", color: "#666", fontSize: 13, marginTop: 0, marginBottom: 16 }}>Kein Algorithmus. Keine Werbung. Nur Menschen.</p>
+          <p style={{ textAlign: "center", color: "#666", fontSize: 13, marginTop: 0, marginBottom: 16 }}>Kein Algorithmus. Echte Menschen. Werbung nur mit deiner Zustimmung.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
             {[
               ["📌", "Pinnwand", "Glitzer-Smileys & Memories"],
