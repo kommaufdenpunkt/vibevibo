@@ -16,6 +16,8 @@ import ComForum from "@/components/ComForum";
 import ComWelcomePost from "@/components/ComWelcomePost";
 import ComActivityStrip from "@/components/ComActivityStrip";
 import ComOfficerPanel from "@/components/ComOfficerPanel";
+import ComFeatureShop from "@/components/ComFeatureShop";
+import ComAnimatedBg from "@/components/ComAnimatedBg";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichTextDisplay from "@/components/RichTextDisplay";
 
@@ -34,8 +36,22 @@ export default function ComsPage() {
   const [text, setText] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [showModPanel, setShowModPanel] = useState(false);
-  const [activeTab, setActiveTab] = useState("wall"); // "wall" | "forum"
+  const [activeTab, setActiveTab] = useState("wall"); // "wall" | "forum" | "members" | "features" | "info"
   const [flash, setFlash] = useState("");
+  const [unlockedFeatures, setUnlockedFeatures] = useState({}); // featureKey -> { payload, ... }
+
+  const reloadFeatures = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/groups/${encodeURIComponent(slug)}/features`, { credentials: "include" });
+      if (r.ok) {
+        const d = await r.json();
+        const map = {};
+        for (const u of d.unlocked || []) map[u.featureKey] = u;
+        setUnlockedFeatures(map);
+      }
+    } catch {}
+  }, [slug]);
+  useEffect(() => { reloadFeatures(); }, [reloadFeatures]);
 
   const reload = useCallback(async () => {
     try {
@@ -110,9 +126,12 @@ export default function ComsPage() {
     catch (err) { alert(err.message); }
   }
 
+  const animatedTheme = unlockedFeatures.animated_theme?.payload?.theme || null;
+
   return (
-    <div style={{ background: "transparent", paddingBottom: 100 }}>
-      <div style={{ maxWidth: 920, margin: "0 auto", padding: "10px 12px 0" }}>
+    <div style={{ background: "transparent", paddingBottom: 100, position: "relative", zIndex: 1 }}>
+      {animatedTheme && <ComAnimatedBg theme={animatedTheme} />}
+      <div style={{ maxWidth: 920, margin: "0 auto", padding: "10px 12px 0", position: "relative", zIndex: 2 }}>
 
         {/* ✨ HERO mit Glitter ✨ */}
         <div style={{
@@ -232,6 +251,11 @@ export default function ComsPage() {
               <TabBtn active={activeTab === "members"} onClick={() => setActiveTab("members")} themeColor={themeColor}>
                 👥 {(meta?.members || members).length}
               </TabBtn>
+              {isOwner && (
+                <TabBtn active={activeTab === "features"} onClick={() => setActiveTab("features")} themeColor={themeColor}>
+                  🔓
+                </TabBtn>
+              )}
               <TabBtn active={activeTab === "info"} onClick={() => setActiveTab("info")} themeColor={themeColor}>
                 ℹ
               </TabBtn>
@@ -267,6 +291,13 @@ export default function ComsPage() {
                 isOwner={meta?.myRole === "owner"}
                 isMod={meta?.myRole === "mod"}
                 themeColor={themeColor}
+              />
+            ) : activeTab === "features" ? (
+              <ComFeatureShop
+                slug={slug}
+                isOwner={isOwner}
+                themeColor={themeColor}
+                onChange={reloadFeatures}
               />
             ) : activeTab === "members" ? (
               <>
