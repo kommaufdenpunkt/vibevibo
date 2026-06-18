@@ -22,6 +22,8 @@ import ComHeroSeasonalFrame from "@/components/ComHeroSeasonalFrame";
 import ComSoundFX from "@/components/ComSoundFX";
 import ComPolls from "@/components/ComPolls";
 import ComThrowback from "@/components/ComThrowback";
+import ComBirthdayCalendar from "@/components/ComBirthdayCalendar";
+import ComQuizzes from "@/components/ComQuizzes";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichTextDisplay from "@/components/RichTextDisplay";
 
@@ -346,6 +348,16 @@ export default function ComsPage() {
             {/* 📼 Throwback — wenn freigeschaltet */}
             {unlockedFeatures.throwback && (
               <ComThrowback slug={slug} themeColor={themeColor} />
+            )}
+
+            {/* 🎂 Geburtstags-Kalender — wenn freigeschaltet */}
+            {unlockedFeatures.birthday_calendar && (
+              <ComBirthdayCalendar slug={slug} themeColor={themeColor} />
+            )}
+
+            {/* 🧠 Quiz-Night — wenn freigeschaltet */}
+            {unlockedFeatures.quiz_night && (
+              <ComQuizzes slug={slug} isMember={isMember} isOwner={isOwner} themeColor={themeColor} />
             )}
 
             {/* POST-FORM */}
