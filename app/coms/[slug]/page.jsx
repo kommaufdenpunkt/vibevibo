@@ -18,6 +18,9 @@ import ComActivityStrip from "@/components/ComActivityStrip";
 import ComOfficerPanel from "@/components/ComOfficerPanel";
 import ComFeatureShop from "@/components/ComFeatureShop";
 import ComAnimatedBg from "@/components/ComAnimatedBg";
+import ComHeroSeasonalFrame from "@/components/ComHeroSeasonalFrame";
+import ComSoundFX from "@/components/ComSoundFX";
+import ComPolls from "@/components/ComPolls";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichTextDisplay from "@/components/RichTextDisplay";
 
@@ -127,10 +130,13 @@ export default function ComsPage() {
   }
 
   const animatedTheme = unlockedFeatures.animated_theme?.payload?.theme || null;
+  const heroSeason = unlockedFeatures.hero_seasonal?.payload?.season || null;
+  const joinSound = unlockedFeatures.sound_fx?.payload?.sound || null;
 
   return (
     <div style={{ background: "transparent", paddingBottom: 100, position: "relative", zIndex: 1 }}>
       {animatedTheme && <ComAnimatedBg theme={animatedTheme} />}
+      {joinSound && <ComSoundFX sound={joinSound} slug={slug} />}
       <div style={{ maxWidth: 920, margin: "0 auto", padding: "10px 12px 0", position: "relative", zIndex: 2 }}>
 
         {/* ✨ HERO mit Glitter ✨ */}
@@ -141,6 +147,7 @@ export default function ComsPage() {
           marginBottom: 14, color: "#fff",
           boxShadow: `0 10px 30px ${themeColor}66`,
         }}>
+          {heroSeason && <ComHeroSeasonalFrame season={heroSeason} />}
           {/* Sparkle-Deco */}
           <div style={{ position: "absolute", top: 10, right: 14, fontSize: 28, opacity: 0.7, pointerEvents: "none" }}>✨</div>
           <div style={{ position: "absolute", bottom: 8, left: 16, fontSize: 22, opacity: 0.55, pointerEvents: "none" }}>★</div>
@@ -326,6 +333,14 @@ export default function ComsPage() {
               themeColor={themeColor}
             />
             <ComActivityStrip slug={slug} themeColor={themeColor} />
+
+            {/* 📊 Live-Polls — wenn freigeschaltet */}
+            {unlockedFeatures.live_polls && (
+              <ComPolls
+                slug={slug} isMember={isMember} isOwner={isOwner}
+                themeColor={themeColor}
+              />
+            )}
 
             {/* POST-FORM */}
             {isMember && (
