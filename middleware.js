@@ -16,10 +16,14 @@ const PUBLIC_EXACT = new Set([
   "/login",
   "/datenschutz",
   "/impressum",
+  "/about",
+  "/faq",
+  "/hilfe",
   "/favicon.ico",
   "/sw.js",
   "/manifest.webmanifest",
   "/robots.txt",
+  "/sitemap.xml",
   "/icon-192.png",
   "/icon-512.png",
   "/apple-icon.png",
@@ -35,6 +39,7 @@ const PUBLIC_PREFIX = [
   "/api/admin/",
   "/api/_internal/",
   "/api/welcome-bonus",
+  "/ads.txt",
 ];
 
 export function middleware(req) {

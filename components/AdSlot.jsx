@@ -42,7 +42,19 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
 
   useEffect(() => {
     if (!display?.enabled || !ref.current || pushed) return;
-    if (display.provider === "ezoic" && display.siteId) {
+    if (display.provider === "adsense" && display.pubId) {
+      // AdSense loader script (idempotent: idempotent guard im loadOnce)
+      loadOnce(
+        `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(display.pubId)}`,
+        "vv-adsense-script",
+        { "crossorigin": "anonymous" },
+      );
+      // adsbygoogle.push für manuelle Slots
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        setPushed(true);
+      } catch {}
+    } else if (display.provider === "ezoic" && display.siteId) {
       loadOnce(`https://www.ezojs.com/ezoic/sa.min.js?id=${display.siteId}`, "vv-ezoic-script");
       setPushed(true);
     } else if (display.provider === "adsterra" && display.zoneId) {
@@ -77,6 +89,17 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
       <div style={{ fontSize: 10, color: "var(--vv-muted, #888)", textAlign: "right", marginBottom: 2 }}>
         {label}
       </div>
+      {display.provider === "adsense" && (
+        <ins
+          ref={ref}
+          className="adsbygoogle"
+          style={{ display: "block", minHeight: 90 }}
+          data-ad-client={display.pubId}
+          data-ad-slot={slot}
+          data-ad-format={format}
+          data-full-width-responsive="true"
+        />
+      )}
       {display.provider === "ezoic" && (
         <div ref={ref} id={`ezoic-pub-ad-placeholder-${slot}`} style={{ minHeight: 90 }} />
       )}

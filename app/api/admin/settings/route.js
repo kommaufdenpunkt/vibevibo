@@ -9,7 +9,9 @@ const ALLOWED_KEYS = new Set([
   "marquee_text",
 
   // Display-Werbung (Banner)
-  "DISPLAY_PROVIDER",        // off|ezoic|adsterra
+  "DISPLAY_PROVIDER",        // off|adsense|ezoic|adsterra
+  "ADSENSE_PUB_ID",          // ca-pub-1234567890123456
+  "ADSENSE_AUTO_ADS",        // "1"|"0" — Auto-Ads global einblenden
   "EZOIC_SITE_ID",
   "ADSTERRA_ZONE_ID",
 
@@ -53,7 +55,8 @@ export async function GET(req) {
 
   // Sources fuer alle relevanten Keys
   const sourceKeys = [
-    "DISPLAY_PROVIDER", "EZOIC_SITE_ID", "ADSTERRA_ZONE_ID",
+    "DISPLAY_PROVIDER", "ADSENSE_PUB_ID", "ADSENSE_AUTO_ADS",
+    "EZOIC_SITE_ID", "ADSTERRA_ZONE_ID",
     "EARNING_PROVIDERS_ACTIVE",
     ...PROVIDER_IDS.map((id) => `ADS_SECRET_${id.toUpperCase()}`),
   ];
