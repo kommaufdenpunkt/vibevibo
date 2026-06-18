@@ -8,6 +8,7 @@ import { getSessionUser } from "@/lib/auth";
 import {
   addBuschfunkComment, listBuschfunkComments,
   deleteBuschfunkComment, notifyMentions, bumpXP,
+  getBuschfunkPostOwner,
 } from "@/lib/db";
 import { checkTextPost, checkVoicePost, isMuted } from "@/lib/moderate";
 
@@ -48,9 +49,18 @@ export async function POST(req, { params }) {
   if (!text && !audioUrl) return NextResponse.json({ error: "Kommentar leer." }, { status: 400 });
   if (text.length > 500) return NextResponse.json({ error: "Kommentar zu lang (max 500 Zeichen)." }, { status: 400 });
 
+  // 🛡 Wer ist Autor des Original-Posts? Bestimmt ob Frauen-Schutz greift.
+  let recipientGender = "";
+  try {
+    const owner = typeof getBuschfunkPostOwner === "function"
+      ? getBuschfunkPostOwner(type, postId) : null;
+    if (owner && owner.userId !== me.id) recipientGender = owner.gender || "";
+  } catch {}
+  const senderGender = me.gender || "";
+
   // Text-Moderation
   if (text) {
-    const verdict = await checkTextPost(me.id, "buschfunk_comment", text);
+    const verdict = await checkTextPost(me.id, "buschfunk_comment", text, { senderGender, recipientGender });
     if (!verdict.ok) {
       return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
     }
@@ -64,7 +74,7 @@ export async function POST(req, { params }) {
     if (audioUrl.length > 1_200_000) {
       return NextResponse.json({ error: "Sprachnachricht zu lang (max ~60 Sek)." }, { status: 413 });
     }
-    const vv = await checkVoicePost(me.id, "buschfunk_voice", audioUrl);
+    const vv = await checkVoicePost(me.id, "buschfunk_voice", audioUrl, { senderGender, recipientGender });
     if (!vv.ok) {
       return NextResponse.json({
         error: `Fidolin hat die Sprachnachricht abgelehnt: ${vv.reason}`,

@@ -224,6 +224,42 @@ export default function PrivacyPage() {
             description="Auch leicht anzügliche, distanzlose oder anbaggernde Erst-Nachrichten werden blockiert. Du bekommst die Nachricht gar nicht erst zu sehen. Bei späteren Nachrichten gilt der normale Filter." />
         </SettingBlock>
 
+        {/* === 🛡 FRAUEN-SCHUTZ — Verified-Only DM + Live-Strict === */}
+        <SettingBlock
+          icon="🛡" title="Frauen-Schutz (empfohlen für weibliche Accounts)">
+          <ToggleRow current={privacy.verifiedOnlyDm} disabled={busy}
+            onChange={(v) => update({ verifiedOnlyDm: v })}
+            label="Nur stimm-verifizierte User dürfen mir schreiben"
+            description="Verhindert dass Männer sich als Frau tarnen, um dich anzuschreiben. Verifizierung passiert per kurzer Sprachprobe — Gemini-KI bestätigt das Geschlecht. Verifizierte tragen ein ✓-Badge." />
+
+          <div style={{ height: 10 }} />
+
+          <ToggleRow current={privacy.liveStrictMode} disabled={busy}
+            onChange={(v) => update({ liveStrictMode: v })}
+            label="Strict-Modus für Live-Streams (Streamer-Schutz)"
+            description="In deinen Live-Streams werden Sprachnachrichten + Kommentare strenger gefiltert: Anmache, Komplikomplimente, Date-Anfragen werden automatisch blockiert." />
+
+          <div style={{
+            marginTop: 12, padding: 10, borderRadius: 10,
+            background: "linear-gradient(135deg, #fdf2f8, #fce7f3)",
+            border: "1px solid #f9a8d4",
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#831843", marginBottom: 6 }}>
+              🎤 Stimm-Verifikation
+            </div>
+            <div style={{ fontSize: 12, color: "#9d174d", marginBottom: 8, lineHeight: 1.4 }}>
+              Reiche eine 5-15-Sekunden-Sprachprobe ein. Fidolin schätzt das Geschlecht
+              deiner Stimme. Bei Match kriegst du das ✓-Verifiziert-Badge — andere können dich
+              dann priorisieren und du kannst „Nur Verifizierte dürfen mir schreiben" aktivieren.
+            </div>
+            <Link href="/profile/verify" style={{
+              display: "inline-block", padding: "8px 14px", borderRadius: 999,
+              background: "linear-gradient(135deg, #ec4899, #be185d)", color: "#fff",
+              textDecoration: "none", fontWeight: 800, fontSize: 12,
+            }}>🛡 Jetzt verifizieren →</Link>
+          </div>
+        </SettingBlock>
+
         {/* === Block-Liste & Stummschaltungen — Verweis === */}
         <div style={{
           background: "rgba(255,255,255,0.85)",

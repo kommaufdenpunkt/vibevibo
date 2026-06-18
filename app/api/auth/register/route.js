@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   createUser, isIpBlocked, countRecentRegistrationsByIp, isDeviceBanned, recordDevice,
-  addProfilePic, MAX_PROFILE_PICS, audit,
+  addProfilePic, MAX_PROFILE_PICS, audit, applyWomenShieldDefaults,
 } from "@/lib/db";
 import { getClientIp } from "@/lib/ip";
 import { getOrCreateDeviceId } from "@/lib/device";
@@ -73,6 +73,13 @@ export async function POST(req) {
     const user = createUser({ username, displayName, password, emoji, regIp: ip, gender, birthdate });
     recordDevice(deviceId, { userId: user.id, username: user.username, userAgent: ua, ip });
     audit({ userId: user.id, action: "register", ip, ua, detail: `username=${user.username}` });
+
+    // 🛡 Women-Shield: Bei weiblicher Registrierung Default-Strict-Modi setzen.
+    // strict_first_msg + shield_mode + dm_policy=friends + live_strict_mode
+    // (Idempotent via applyWomenShieldDefaults — überschreibt keine Custom-Settings.)
+    if (gender === "w" && typeof applyWomenShieldDefaults === "function") {
+      try { applyWomenShieldDefaults(user.id); } catch {}
+    }
 
     if (Array.isArray(images)) {
       let n = 0;

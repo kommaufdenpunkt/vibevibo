@@ -8,13 +8,19 @@ export const dynamic = "force-dynamic";
 // userRow() filtert Privacy-Spalten weg. Daher lesen wir die Privacy-Felder
 // direkt ueber die Patch-Helpers — sonst zeigt das UI immer Defaults.
 function readPrivacyRaw(userId) {
+  let base = null;
   if (typeof DB.getUserPrivacyFieldsV2 === "function") {
-    return DB.getUserPrivacyFieldsV2(userId);
+    base = DB.getUserPrivacyFieldsV2(userId);
+  } else if (typeof DB.getUserPrivacyFields === "function") {
+    base = DB.getUserPrivacyFields(userId);
   }
-  if (typeof DB.getUserPrivacyFields === "function") {
-    return DB.getUserPrivacyFields(userId);
+  if (!base) return null;
+  // 🛡 Women-Shield Felder hinzufügen falls vorhanden
+  if (typeof DB.getWomenShieldFields === "function") {
+    const ws = DB.getWomenShieldFields(userId);
+    if (ws) Object.assign(base, ws);
   }
-  return null;
+  return base;
 }
 
 // GET = aktueller Stand
@@ -62,11 +68,23 @@ export async function POST(req) {
   }
   if (typeof body.strictFirstMsg === "boolean") patch.strict_first_msg = body.strictFirstMsg ? 1 : 0;
 
-  if (Object.keys(patch).length === 0) {
+  // 🛡 Women-Shield separat speichern (nicht im V2-Whitelist)
+  let touchedWS = false;
+  if (typeof DB.setWomenShieldFields === "function") {
+    const wsPatch = {};
+    if (typeof body.verifiedOnlyDm === "boolean") wsPatch.verified_only_dm = body.verifiedOnlyDm;
+    if (typeof body.liveStrictMode === "boolean") wsPatch.live_strict_mode = body.liveStrictMode;
+    if (Object.keys(wsPatch).length > 0) {
+      DB.setWomenShieldFields(me.id, wsPatch);
+      touchedWS = true;
+    }
+  }
+
+  if (Object.keys(patch).length === 0 && !touchedWS) {
     return NextResponse.json({ error: "Keine gültigen Felder" }, { status: 400 });
   }
 
-  updateFn(me.id, patch);
+  if (Object.keys(patch).length > 0) updateFn(me.id, patch);
   // Lese ueber Patch-Helper, nicht ueber userRow (Bug-Fix: userRow filtert Privacy-Spalten weg)
   const raw = readPrivacyRaw(me.id);
   return NextResponse.json({ ok: true, privacy: privacyStatusForUser(raw) });

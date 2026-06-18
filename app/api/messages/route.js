@@ -53,7 +53,10 @@ export async function POST(req) {
       return NextResponse.json({ error: "audio too long (max ~60s)" }, { status: 413 });
     }
     // 🤖 Fidolin transkribiert + prüft auf Beleidigungen/Hass/etc.
-    const vv = await checkVoicePost(me.id, "nachricht_voice", audioUrl);
+    // 🛡 Frauen-Schutz: Bei Mann→Frau-Konstellation kommt der Strict-Prompt zum Einsatz.
+    const vv = await checkVoicePost(me.id, "nachricht_voice", audioUrl, {
+      senderGender: me.gender, recipientGender: target.gender,
+    });
     if (!vv.ok) {
       return NextResponse.json({
         error: `Fidolin hat die Sprachnachricht abgelehnt: ${vv.reason}`,
@@ -84,7 +87,10 @@ export async function POST(req) {
   if (!cleaned && !rawImage) return NextResponse.json({ error: "empty" }, { status: 400 });
 
   if (cleaned) {
-    const verdict = await checkTextPost(me.id, "nachricht", cleaned, { strict: strictFlag });
+    const verdict = await checkTextPost(me.id, "nachricht", cleaned, {
+      strict: strictFlag,
+      senderGender: me.gender, recipientGender: target.gender,
+    });
     if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
   }
 
