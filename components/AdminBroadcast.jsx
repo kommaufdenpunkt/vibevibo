@@ -7,6 +7,10 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 
 const PRESETS = [
+  "🚀 GROSSES UPDATE! Frauen-Schutz mit Stimm-Verifikation, KI-moderierte Sprachnachrichten überall, 8 neue Com-Funktionen (Live-Polls, Quiz, Throwback, Geburtstage, Meetups uvm.). Details unter /neu — viel Spaß beim Stöbern! ✨",
+  "🛡 Neu: Stimm-Verifikation! Mit einer kurzen Sprachprobe holst du dir das ✓-Verifiziert-Badge. Frauen können „nur verifizierte schreiben mir" aktivieren. Mehr in den Privatsphäre-Einstellungen.",
+  "🎤 Sprachnachrichten überall — und Fidolin hört zu! Beleidigung in Voice-Comments? Wird automatisch geblockt. Danke an alle die uns ein freundlicheres VibeVibo gewünscht haben.",
+  "🔓 Coms-Tipp: Im 🔓-Tab kannst du als Owner jetzt 8 Funktionen freischalten — von Schnee-Theme über Quiz-Night bis Meetup-Planer. Mit Vibes aus eurer Com-Kasse.",
   "🎉 Neues Feature live! Schaut mal rein — wir haben gerade etwas eingebaut.",
   "🔧 Kurze Wartung steht an. Alles bleibt erhalten, manchmal ist die Seite ein paar Minuten weg.",
   "📜 Erinnerung: Bitte respektiert die Chatiquette. Wer pöbelt, fliegt — wer nett ist, hat mehr Spaß.",
