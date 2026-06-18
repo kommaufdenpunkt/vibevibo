@@ -23,6 +23,8 @@ import ComSoundFX from "@/components/ComSoundFX";
 import ComPolls from "@/components/ComPolls";
 import ComThrowback from "@/components/ComThrowback";
 import ComBirthdayCalendar from "@/components/ComBirthdayCalendar";
+import ComQuizzes from "@/components/ComQuizzes";
+import ComMeetups from "@/components/ComMeetups";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichTextDisplay from "@/components/RichTextDisplay";
 
@@ -352,6 +354,16 @@ export default function ComsPage() {
             {/* 🎂 Geburtstags-Kalender — wenn freigeschaltet */}
             {unlockedFeatures.birthday_calendar && (
               <ComBirthdayCalendar slug={slug} themeColor={themeColor} />
+            )}
+
+            {/* 🧠 Quiz-Night — wenn freigeschaltet */}
+            {unlockedFeatures.quiz_night && (
+              <ComQuizzes slug={slug} isMember={isMember} isOwner={isOwner} themeColor={themeColor} />
+            )}
+
+            {/* 🤝 Meetups — wenn freigeschaltet */}
+            {unlockedFeatures.meetups && (
+              <ComMeetups slug={slug} isMember={isMember} isOwner={isOwner} themeColor={themeColor} />
             )}
 
             {/* POST-FORM */}
