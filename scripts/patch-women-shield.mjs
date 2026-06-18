@@ -23,44 +23,32 @@ const MARK_FN = "// 🛡 WOMEN_SHIELD_FN_V1";
 let src = readFileSync(DB_PATH, "utf-8");
 let changed = false;
 
-// 1) Schema-Repair-Block: neue Spalten ergänzen (idempotent über _ensureCol)
+// 1) Schema-Repair-Block: neue Spalten direkt in den existierenden _ensureCol-Block
+//    einhängen (gleicher Scope wie die Arrow-Funktion `_ensureCol`).
 if (!src.includes(MARK_REPAIR)) {
-  const ANCHOR = "function _ensureCol(";
-  if (!src.includes(ANCHOR)) {
-    console.error("✗ _ensureCol nicht gefunden — patch-schema-repair muss zuerst gelaufen sein.");
+  // Anker: die letzte Zeile des bestehenden Schema-Repair-Blocks aus patch-schema-repair.mjs
+  const ANCHORS = [
+    `_ensureCol("group_posts", "fidolin_action", "TEXT DEFAULT 'none'");`,
+    `_ensureCol('group_posts', 'fidolin_action', "TEXT DEFAULT 'none'");`,
+  ];
+  let anchor = null;
+  for (const a of ANCHORS) { if (src.includes(a)) { anchor = a; break; } }
+  if (!anchor) {
+    console.error("✗ Schema-Repair-Block nicht gefunden — bitte 'vv vv_repair' (patch-schema-repair) zuerst laufen lassen.");
     process.exit(1);
   }
-  // Eintrag vor function _ensureCol → wird beim db()-Init aufgerufen
-  const INJECT = `${MARK_REPAIR}
-function _ensureWomenShieldColumns() {
-  try { _ensureCol("users", "verification_status", "TEXT DEFAULT 'none'"); } catch {}
-  try { _ensureCol("users", "verified_gender", "INTEGER DEFAULT 0"); } catch {}
-  try { _ensureCol("users", "verification_voice_score", "INTEGER DEFAULT 0"); } catch {}
-  try { _ensureCol("users", "verification_at", "INTEGER DEFAULT 0"); } catch {}
-  try { _ensureCol("users", "verified_only_dm", "INTEGER DEFAULT 0"); } catch {}
-  try { _ensureCol("users", "live_strict_mode", "INTEGER DEFAULT 0"); } catch {}
-  try { _ensureCol("users", "women_shield_default", "INTEGER DEFAULT 0"); } catch {}
-}
-${ANCHOR}`;
-  src = src.replace(ANCHOR, INJECT);
+  const INJECT = `${anchor}
 
-  // Auto-Aufruf von _ensureWomenShieldColumns() in db()-Init nach dem _ensureCol-Block
-  const CALL_ANCHOR_OPTS = [
-    "_ensureCol(\"users\", \"strict_first_msg\"",
-    "_ensureCol('users', 'strict_first_msg'",
-    "_ensureCol(\"groups\", \"category\"",
-  ];
-  let callAnchor = null;
-  for (const a of CALL_ANCHOR_OPTS) {
-    if (src.includes(a)) { callAnchor = a; break; }
-  }
-  if (callAnchor) {
-    // Nach dem ersten existierenden _ensureCol-Aufruf einen Call zu unserer Funktion einfügen
-    const line = src.split("\n").find((l) => l.includes(callAnchor));
-    if (line && !src.includes("_ensureWomenShieldColumns()")) {
-      src = src.replace(line, `${line}\n  _ensureWomenShieldColumns();`);
-    }
-  }
+  ${MARK_REPAIR}
+  // 🛡 Women-Shield Spalten — durch Schema-Repair-Block geschützt (idempotent).
+  _ensureCol("users", "verification_status", "TEXT DEFAULT 'none'");
+  _ensureCol("users", "verified_gender", "INTEGER DEFAULT 0");
+  _ensureCol("users", "verification_voice_score", "INTEGER DEFAULT 0");
+  _ensureCol("users", "verification_at", "INTEGER DEFAULT 0");
+  _ensureCol("users", "verified_only_dm", "INTEGER DEFAULT 0");
+  _ensureCol("users", "live_strict_mode", "INTEGER DEFAULT 0");
+  _ensureCol("users", "women_shield_default", "INTEGER DEFAULT 0");`;
+  src = src.replace(anchor, INJECT);
   changed = true;
   console.log("✓ Women-Shield Spalten-Repair eingefügt.");
 }
@@ -290,6 +278,10 @@ export function migrateExistingWomenAccounts() {
   }
   return { totalExamined: targets.length, applied: count };
 }
+
+// Admin-Helpers (listVerificationCandidates, adminSetVerification) sind
+// in patch-women-shield-admin.mjs ausgelagert — separater MARK_FN damit
+// auch nach erstem Patch noch nachgereicht werden kann.
 `;
   src += FN;
   changed = true;
