@@ -33,15 +33,20 @@ export async function POST(req, { params }) {
 
   // Whitelist: Payload-Werte müssen aus Katalog-Optionen stammen
   const safePayload = {};
+  const allowed = new Set((feat.options || []).map((o) => o.id));
   if (feat.key === "animated_theme") {
-    const allowed = new Set((feat.options || []).map((o) => o.id));
     const theme = String(inputPayload.theme || "");
-    if (!allowed.has(theme)) {
-      return NextResponse.json({ error: "Ungültiger Theme-Wert." }, { status: 400 });
-    }
+    if (!allowed.has(theme)) return NextResponse.json({ error: "Ungültiger Theme-Wert." }, { status: 400 });
     safePayload.theme = theme;
+  } else if (feat.key === "hero_seasonal") {
+    const season = String(inputPayload.season || "");
+    if (!allowed.has(season)) return NextResponse.json({ error: "Ungültiger Season-Wert." }, { status: 400 });
+    safePayload.season = season;
+  } else if (feat.key === "sound_fx") {
+    const sound = String(inputPayload.sound || "");
+    if (!allowed.has(sound)) return NextResponse.json({ error: "Ungültiger Sound-Wert." }, { status: 400 });
+    safePayload.sound = sound;
   } else {
-    // Für künftige konfigurierbare Features hier whitelisten
     return NextResponse.json({ error: "Konfiguration für diese Funktion noch nicht freigegeben." }, { status: 400 });
   }
 

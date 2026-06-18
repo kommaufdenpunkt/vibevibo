@@ -161,17 +161,27 @@ export default function ComFeatureShop({ slug, isOwner, onChange, themeColor = "
                       </div>
                     </div>
 
-                    {/* Konfigurations-Panel */}
-                    {isUnlocked && f.configurable && f.key === "animated_theme" && (
-                      <AnimatedThemePicker
-                        current={u.payload?.theme}
-                        options={f.options}
-                        themeColor={themeColor}
-                        canEdit={isOwner}
-                        busy={busy === f.key}
-                        onPick={(theme) => reconfigure(f.key, { theme })}
-                      />
-                    )}
+                    {/* Konfigurations-Panel — Single-Value-Payload-Picker */}
+                    {isUnlocked && f.configurable && (() => {
+                      // Welche Property im Payload entspricht dieser Funktion?
+                      const payloadKey =
+                        f.key === "animated_theme" ? "theme"
+                        : f.key === "hero_seasonal" ? "season"
+                        : f.key === "sound_fx" ? "sound"
+                        : null;
+                      if (!payloadKey) return null;
+                      return (
+                        <OptionPicker
+                          title="🎨 EFFEKT WÄHLEN"
+                          current={u.payload?.[payloadKey]}
+                          options={f.options}
+                          themeColor={themeColor}
+                          canEdit={isOwner}
+                          busy={busy === f.key}
+                          onPick={(val) => reconfigure(f.key, { [payloadKey]: val })}
+                        />
+                      );
+                    })()}
 
                     {/* Freischalten / Statushinweis */}
                     {!isUnlocked && f.available && (
@@ -213,11 +223,11 @@ export default function ComFeatureShop({ slug, isOwner, onChange, themeColor = "
   );
 }
 
-function AnimatedThemePicker({ current, options, themeColor, canEdit, busy, onPick }) {
+function OptionPicker({ title, current, options, themeColor, canEdit, busy, onPick }) {
   return (
     <div style={{ marginTop: 10, padding: 8, background: "rgba(255,255,255,0.7)", borderRadius: 8 }}>
       <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b", marginBottom: 6 }}>
-        🎨 EFFEKT WÄHLEN
+        {title}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {(options || []).map((o) => {
