@@ -13,12 +13,15 @@ import { detectAttack, getClientIp, isWhitelisted } from "@/lib/hackerguard";
 const COOKIE = "vv_session";
 
 const PUBLIC_EXACT = new Set([
+  "/",
   "/login",
+  "/register",
   "/datenschutz",
   "/impressum",
   "/about",
   "/faq",
   "/hilfe",
+  "/neu",
   "/favicon.ico",
   "/sw.js",
   "/manifest.webmanifest",
