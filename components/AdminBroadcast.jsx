@@ -28,7 +28,7 @@ export default function AdminBroadcast({ pw }) {
     const t = text.trim();
     if (!t) { setError("Text fehlt."); return; }
     if (t.length > 1000) { setError("Max. 1000 Zeichen."); return; }
-    if (!confirm(`Wirklich an ALLE aktiven User schicken?\n\n„${t.slice(0, 200)}${t.length > 200 ? “…" : ""}"`)) return;
+    if (!confirm(`Wirklich an ALLE aktiven User schicken?\n\n„${t.slice(0, 200)}${t.length > 200 ? "…" : ""}“`)) return;
     setError(""); setBusy(true);
     try {
       const r = await api.adminBroadcast(pw, t);
@@ -83,7 +83,7 @@ export default function AdminBroadcast({ pw }) {
           }}>
             ✅ Versandt an <b>{result.recipients}</b> Empfänger
             <div style={{ fontSize: 11, color: "#0d8a3f", marginTop: 4, fontStyle: "italic" }}>
-              „{result.text.slice(0, 200)}{result.text.length > 200 ? “…" : ""}"
+              „{result.text.slice(0, 200)}{result.text.length > 200 ? "…" : ""}“
             </div>
           </div>
         )}
