@@ -10,23 +10,23 @@ const FAQS = [
   },
   {
     q: "Ist VibeVibo kostenlos?",
-    a: "Ja, die Nutzung ist grundsätzlich kostenlos. Die Plattform finanziert sich über dezent eingeblendete Werbung (Google AdSense), optionale Premium-Pässe und den Kauf der virtuellen Währung „Vibes" für Geschenke und Funktionen.",
+    a: "Ja, die Nutzung ist grundsätzlich kostenlos. Die Plattform finanziert sich über dezent eingeblendete Werbung (Google AdSense), optionale Premium-Pässe und den Kauf der virtuellen Währung „Vibes“ für Geschenke und Funktionen.",
   },
   {
     q: "Wie alt muss ich sein um VibeVibo zu nutzen?",
     a: "Das Mindestalter beträgt 14 Jahre. Wir prüfen das per Geburtsdatum-Angabe bei der Registrierung. Profile mit erkennbar falschen Altersangaben werden gesperrt.",
   },
   {
-    q: "Was sind „Vibes" (✨)?",
+    q: "Was sind „Vibes“ (✨)?",
     a: "Vibes sind die virtuelle Plattform-Währung von VibeVibo. Du verdienst sie automatisch durch tägliches Einloggen, durch Aktivität (Posts, Reaktionen, Profil-Besuche), durch Achievements oder optional durch das Anschauen von Werbevideos. Du kannst Vibes für Geschenke, Profil-Boosts, Com-Funktionen oder Premium-Features ausgeben.",
   },
   {
-    q: "Was sind „Coms"?",
+    q: "Was sind „Coms“?",
     a: "Coms sind Communities/Gruppen — vergleichbar mit den Gruppen bei SchülerVZ oder den Foren bei Jappy. Jede Com hat einen Owner, optional Officers (Moderatoren), eine Pinnwand, ein Forum, News-Posts und ein eigenes Theme. Owner können besondere Funktionen mit Vibes freischalten (Live-Polls, Quiz-Night, Meetup-Planer, Throwback-Feed u.v.m.).",
   },
   {
     q: "Wie funktioniert der Frauen-Schutz?",
-    a: "Bei VibeVibo werden weibliche Accounts standardmäßig strenger geschützt: Nachrichten von Fremden werden auf Anbaggern, Übergriffigkeiten und sexuelle Anspielungen vorgefiltert (Fidolin-KI). Sprachnachrichten werden transkribiert und mitgeprüft. Zusätzlich gibt es eine freiwillige Stimm-Verifikation: Mit einer kurzen Sprachprobe bestätigst du dein angegebenes Geschlecht, bekommst ein ✓-Badge und kannst einstellen „nur verifizierte Accounts dürfen mir schreiben". Männliche Accounts, die sich als weiblich ausgeben, werden über Voice-Analysen erkannt.",
+    a: "Bei VibeVibo werden weibliche Accounts standardmäßig strenger geschützt: Nachrichten von Fremden werden auf Anbaggern, Übergriffigkeiten und sexuelle Anspielungen vorgefiltert (Fidolin-KI). Sprachnachrichten werden transkribiert und mitgeprüft. Zusätzlich gibt es eine freiwillige Stimm-Verifikation: Mit einer kurzen Sprachprobe bestätigst du dein angegebenes Geschlecht, bekommst ein ✓-Badge und kannst einstellen „nur verifizierte Accounts dürfen mir schreiben“. Männliche Accounts, die sich als weiblich ausgeben, werden über Voice-Analysen erkannt.",
   },
   {
     q: "Wer ist Fidolin?",
@@ -38,11 +38,11 @@ const FAQS = [
   },
   {
     q: "Wie kann ich live streamen?",
-    a: "Über den 🎥-Button kannst du einen Solo-Stream starten oder als „Multi-Couch" bis zu 16 Hosts gleichzeitig auf die Bühne holen. Zuschauer können per Sprach- oder Text-Chat kommentieren, Reaktionen senden und mit Vibes Geschenke verschenken. Du brauchst einen modernen Browser (Chrome, Edge, Safari) und musst Kamera/Mikrofon erlauben.",
+    a: "Über den 🎥-Button kannst du einen Solo-Stream starten oder als „Multi-Couch“ bis zu 16 Hosts gleichzeitig auf die Bühne holen. Zuschauer können per Sprach- oder Text-Chat kommentieren, Reaktionen senden und mit Vibes Geschenke verschenken. Du brauchst einen modernen Browser (Chrome, Edge, Safari) und musst Kamera/Mikrofon erlauben.",
   },
   {
     q: "Kann ich mein Konto löschen?",
-    a: "Ja, jederzeit. Im Profil unter „Einstellungen → Konto löschen". Deine Daten werden dabei vollständig entfernt — bis auf einige aggregierte Statistiken die nicht mehr auf dich zurückführbar sind.",
+    a: "Ja, jederzeit. Im Profil unter „Einstellungen → Konto löschen“. Deine Daten werden dabei vollständig entfernt — bis auf einige aggregierte Statistiken die nicht mehr auf dich zurückführbar sind.",
   },
   {
     q: "Welche Daten speichert VibeVibo über mich?",
@@ -50,7 +50,7 @@ const FAQS = [
   },
   {
     q: "Wie funktioniert Werbung bei VibeVibo?",
-    a: "Werbung läuft über Google AdSense und nur, wenn du im Cookie-Banner zugestimmt hast. Du kannst zwischen „Generischer Werbung" (keine Personalisierung) und „Personalisierter Werbung" wählen, oder Werbung komplett ablehnen („Nur essenziell"). Bei Premium-Mitgliedern wird keine Werbung angezeigt. In intimen Bereichen (Messenger, Vibo-Pet, Editor) ist Werbung grundsätzlich aus.",
+    a: "Werbung läuft über Google AdSense und nur, wenn du im Cookie-Banner zugestimmt hast. Du kannst zwischen „Generischer Werbung“ (keine Personalisierung) und „Personalisierter Werbung“ wählen, oder Werbung komplett ablehnen („Nur essenziell“). Bei Premium-Mitgliedern wird keine Werbung angezeigt. In intimen Bereichen (Messenger, Vibo-Pet, Editor) ist Werbung grundsätzlich aus.",
   },
   {
     q: "Was passiert wenn ich gemeldet werde?",

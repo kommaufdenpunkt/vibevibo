@@ -27,7 +27,7 @@ export default function AboutPage() {
       <ul>
         <li><strong>Profile mit Persönlichkeit</strong> — eigene Hintergrundfarben, Musik, Hobbys-Liste, persönlicher Status.</li>
         <li><strong>Pinnwand statt Algorithmus</strong> — was deine Freunde schreiben, siehst du in der Reihenfolge in der sie es geschrieben haben.</li>
-        <li><strong>Gruscheln, Geschenke, Smileys</strong> — kleine Gesten die zeigen „ich denk an dich", ohne gleich tippen zu müssen.</li>
+        <li><strong>Gruscheln, Geschenke, Smileys</strong> — kleine Gesten die zeigen „ich denk an dich“, ohne gleich tippen zu müssen.</li>
         <li><strong>Coms (Gruppen)</strong> — eigene Communities mit Owner, Officers, Forum, News, Custom-Theme.</li>
         <li><strong>Live-Streams</strong> — solo oder Multi-Couch mit bis zu 16 Hosts, mit Sprach-Chat, Reaktionen, Geschenken.</li>
       </ul>
@@ -53,7 +53,7 @@ export default function AboutPage() {
         Zusätzlich gibt es die freiwillige <strong>Stimm-Verifikation</strong>:
         Mit einer kurzen Sprachprobe bestätigst du dein angegebenes
         Geschlecht und bekommst dafür ein ✓-Verifiziert-Badge. Frauen können
-        dann einstellen „nur verifizierte Accounts dürfen mir schreiben" —
+        dann einstellen „nur verifizierte Accounts dürfen mir schreiben“ —
         das verhindert, dass Männer sich als Frau ausgeben um Frauen anzuschreiben.
       </p>
 
@@ -68,7 +68,7 @@ export default function AboutPage() {
 
       <h3>✨ Vibes — die Plattform-Währung</h3>
       <p>
-        VibeVibo nutzt eine virtuelle Währung namens „Vibes" (✨). Du
+        VibeVibo nutzt eine virtuelle Währung namens „Vibes“ (✨). Du
         verdienst sie durch tägliches Einloggen, Aktivitäten in der Community,
         Achievements oder optional durch Anschauen von Werbevideos. Mit Vibes
         kannst du Geschenke verschenken, Profile boosten, in deiner Com
@@ -88,7 +88,7 @@ export default function AboutPage() {
       <p>
         VibeVibo richtet sich an alle, die in den 2000er Jahren online aktiv
         waren und sich nach dieser Zeit zurücksehnen — aber auch an alle, die
-        diese Ära nie erlebt haben und neugierig sind, wie sich „echte"
+        diese Ära nie erlebt haben und neugierig sind, wie sich „echte“
         Online-Community angefühlt hat, bevor TikTok-Algorithmen den
         Newsfeed übernahmen.
       </p>
@@ -115,7 +115,7 @@ export default function AboutPage() {
       <p>
         VibeVibo wird kontinuierlich weiterentwickelt. Was zuletzt neu
         dazugekommen ist, siehst du auf der{" "}
-        <a href="/neu">„Was ist neu?"-Seite</a>. Fragen, Anregungen,
+        <a href="/neu">„Was ist neu?“-Seite</a>. Fragen, Anregungen,
         Bug-Reports? Schreib uns an{" "}
         <a href="mailto:ginoheidrich@outlook.com">ginoheidrich@outlook.com</a>.
       </p>

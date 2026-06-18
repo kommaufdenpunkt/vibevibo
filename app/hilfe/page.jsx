@@ -16,24 +16,24 @@ export default function HilfePage() {
       <h2>🚀 Erster Start</h2>
       <h3>Anmelden und Profil einrichten</h3>
       <ol>
-        <li>Auf der Startseite klickst du auf <strong>„Mitmachen"</strong>.</li>
+        <li>Auf der Startseite klickst du auf <strong>„Mitmachen“</strong>.</li>
         <li>Wähle einen Username (eindeutig, wird in URLs verwendet) und einen Anzeigenamen (kann später geändert werden).</li>
         <li>Trage dein Geburtsdatum und Geschlecht ein — wichtig für den Frauen-Schutz und Altersfilter.</li>
         <li>Optional: lade ein Profilbild hoch. Fidolin prüft es automatisch (bei Auffälligkeiten wird es abgelehnt).</li>
-        <li>Nach Login landest du auf der „Heute"-Seite mit deiner persönlichen Übersicht.</li>
+        <li>Nach Login landest du auf der „Heute“-Seite mit deiner persönlichen Übersicht.</li>
       </ol>
 
       <h3>Profil personalisieren</h3>
       <ul>
-        <li><strong>Hintergrund-Skin</strong>: Im Profil unter „Skin bearbeiten" wählst du eine eigene Farb- oder Foto-Atmosphäre.</li>
+        <li><strong>Hintergrund-Skin</strong>: Im Profil unter „Skin bearbeiten“ wählst du eine eigene Farb- oder Foto-Atmosphäre.</li>
         <li><strong>Begrüßungstext</strong>: Direkt am Profil klicken und bearbeiten — wird sichtbar wenn Freunde dich besuchen.</li>
         <li><strong>Profil-Musik</strong>: Lade eine MP3 hoch oder verlinke eine YouTube-URL. Spielt beim Besuch automatisch.</li>
-        <li><strong>Hobbys, Beruf, Familienstand</strong>: Alles optional im Profil unter „Bearbeiten".</li>
+        <li><strong>Hobbys, Beruf, Familienstand</strong>: Alles optional im Profil unter „Bearbeiten“.</li>
       </ul>
 
       <h2>👥 Freunde finden</h2>
       <p>
-        Klick auf <strong>„Mitglieder"</strong> in der Bottom-Nav. Filtere
+        Klick auf <strong>„Mitglieder“</strong> in der Bottom-Nav. Filtere
         nach Geschlecht, Alter, Online-Status oder Standort. Auf jedem Profil
         kannst du:
       </p>
@@ -49,13 +49,13 @@ export default function HilfePage() {
       <p>
         Unter <a href="/coms">/coms</a> findest du alle offenen Communities.
         Filter nach Kategorie (Musik, Sport, Gaming, Kunst, Lokal, …),
-        Trending, Größte oder Neueste. Klick auf eine Com → „Beitreten".
+        Trending, Größte oder Neueste. Klick auf eine Com → „Beitreten“.
         Manche Coms sind privat — dann brauchst du eine Einladung.
       </p>
 
       <h3>Eine eigene Com gründen</h3>
       <ol>
-        <li>Auf <a href="/coms">/coms</a> oben rechts „+ Com gründen".</li>
+        <li>Auf <a href="/coms">/coms</a> oben rechts „+ Com gründen“.</li>
         <li>Kostet einmalig <strong>500 ✨</strong> — dafür gehört sie dir komplett.</li>
         <li>Wähle einen Namen, Slug (URL), Cover-Emoji, Motto und Theme-Farbe.</li>
         <li>Als Owner kannst du Officers ernennen (Moderatoren mit 8 einzelnen Rechten), das Forum verwalten, News posten und besondere Funktionen freischalten.</li>
@@ -94,7 +94,7 @@ export default function HilfePage() {
 
       <h3>Live zugucken</h3>
       <p>
-        Aktive Streams findest du unter „Live" in der Bottom-Nav. Beim
+        Aktive Streams findest du unter „Live“ in der Bottom-Nav. Beim
         Beitritt fragt der Browser nach Mikrofon (für Voice-Chat) — du kannst
         auch lautlos zuschauen. Reaktionen sendest du per Emoji-Knöpfe,
         Geschenke kosten Vibes.
@@ -102,7 +102,7 @@ export default function HilfePage() {
 
       <h2>🛡 Privatsphäre einstellen</h2>
       <p>
-        Im Profil unter <strong>„Privatsphäre"</strong> kannst du fein granular
+        Im Profil unter <strong>„Privatsphäre“</strong> kannst du fein granular
         einstellen, wer dich kontaktieren darf:
       </p>
       <ul>
@@ -146,8 +146,8 @@ export default function HilfePage() {
         Falls etwas nicht funktioniert oder du dich belästigt fühlst:
       </p>
       <ul>
-        <li><strong>Beleidigung/Spam in einem Beitrag</strong>: Klick neben dem Beitrag auf „⋯ → Melden". Wir reagieren in der Regel innerhalb von 24 Stunden.</li>
-        <li><strong>Belästigung per DM</strong>: Im Messenger neben dem Namen auf „⋯ → Blockieren" oder „Stummschalten". Bei akuten Drohungen: melde es bitte direkt per E-Mail.</li>
+        <li><strong>Beleidigung/Spam in einem Beitrag</strong>: Klick neben dem Beitrag auf „⋯ → Melden“. Wir reagieren in der Regel innerhalb von 24 Stunden.</li>
+        <li><strong>Belästigung per DM</strong>: Im Messenger neben dem Namen auf „⋯ → Blockieren“ oder „Stummschalten“. Bei akuten Drohungen: melde es bitte direkt per E-Mail.</li>
         <li><strong>Hacking-Verdacht</strong>: Sofort Passwort ändern und an <a href="mailto:ginoheidrich@outlook.com">ginoheidrich@outlook.com</a> melden.</li>
         <li><strong>Bug / Feature-Wunsch</strong>: Auch per E-Mail — beschreib was passiert ist und im Idealfall einen Screenshot.</li>
       </ul>

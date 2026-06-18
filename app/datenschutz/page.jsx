@@ -58,10 +58,10 @@ export default function DatenschutzPage() {
         jeweils berechtigten Empfänger sichtbar (je nach Privacy-Einstellung).
       </p>
 
-      <h2>3. KI-Moderation („Fidolin")</h2>
+      <h2>3. KI-Moderation („Fidolin“)</h2>
       <p>
         Zum Schutz unserer Community nutzen wir eine KI-gestützte
-        Inhalts-Moderation („Fidolin", basiert auf <b>Google Gemini</b>):
+        Inhalts-Moderation („Fidolin“, basiert auf <b>Google Gemini</b>):
       </p>
       <ul>
         <li>Profilbild- und Foto-Prüfung (NSFW-Erkennung)</li>
@@ -82,7 +82,7 @@ export default function DatenschutzPage() {
       <h2>4. Werbung — Google AdSense</h2>
       <p>
         Diese Website nutzt <b>Google AdSense</b>, einen Dienst zum Einbinden
-        von Werbeanzeigen der Google Ireland Limited („Google"), Gordon House,
+        von Werbeanzeigen der Google Ireland Limited („Google“), Gordon House,
         Barrow Street, Dublin 4, Irland.
       </p>
       <p>
@@ -116,7 +116,7 @@ export default function DatenschutzPage() {
       </ul>
       <p>
         <b>Consent:</b> Anzeigen werden erst geladen wenn du im Cookie-Banner
-        zugestimmt hast. Bei „Generische Werbung" bekommst du nicht
+        zugestimmt hast. Bei „Generische Werbung“ bekommst du nicht
         personalisierte Anzeigen. Du kannst deine Einwilligung jederzeit in
         den Profil-Einstellungen widerrufen.
       </p>
@@ -127,7 +127,7 @@ export default function DatenschutzPage() {
       <h2>5. Rewarded Ads (Vibes verdienen)</h2>
       <p>
         Optional kannst du Werbevideos anschauen und dafür unsere virtuelle
-        Plattform-Währung „Vibes" erhalten. Dabei verwenden wir je nach
+        Plattform-Währung „Vibes“ erhalten. Dabei verwenden wir je nach
         Konfiguration verschiedene Drittanbieter. Server-zu-Server-Callbacks
         verifizieren erfolgreich angeschaute Anzeigen, ohne dass wir
         personenbezogene Daten aus der Werbung selbst sehen.
@@ -155,7 +155,7 @@ export default function DatenschutzPage() {
       <ul>
         <li>Auskunft über die zu deiner Person gespeicherten Daten (Art. 15 DSGVO)</li>
         <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
-        <li>Löschung deiner Daten („Recht auf Vergessenwerden", Art. 17 DSGVO)</li>
+        <li>Löschung deiner Daten („Recht auf Vergessenwerden“, Art. 17 DSGVO)</li>
         <li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
         <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
         <li>Widerruf einer erteilten Einwilligung (Art. 7 Abs. 3 DSGVO)</li>
@@ -166,7 +166,7 @@ export default function DatenschutzPage() {
       <p>
         Wende dich an{" "}
         <a href="mailto:ginoheidrich@outlook.com">ginoheidrich@outlook.com</a>
-        {" "}oder lösche dein Konto direkt im Profil unter „Einstellungen → Konto löschen".
+        {" "}oder lösche dein Konto direkt im Profil unter „Einstellungen → Konto löschen“.
       </p>
 
       <h2>8. Hosting</h2>

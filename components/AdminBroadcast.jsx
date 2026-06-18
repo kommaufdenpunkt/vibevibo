@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 
 const PRESETS = [
   "🚀 GROSSES UPDATE! Frauen-Schutz mit Stimm-Verifikation, KI-moderierte Sprachnachrichten überall, 8 neue Com-Funktionen (Live-Polls, Quiz, Throwback, Geburtstage, Meetups uvm.). Details unter /neu — viel Spaß beim Stöbern! ✨",
-  "🛡 Neu: Stimm-Verifikation! Mit einer kurzen Sprachprobe holst du dir das ✓-Verifiziert-Badge. Frauen können „nur verifizierte schreiben mir" aktivieren. Mehr in den Privatsphäre-Einstellungen.",
+  "🛡 Neu: Stimm-Verifikation! Mit einer kurzen Sprachprobe holst du dir das ✓-Verifiziert-Badge. Frauen können „nur verifizierte schreiben mir“ aktivieren. Mehr in den Privatsphäre-Einstellungen.",
   "🎤 Sprachnachrichten überall — und Fidolin hört zu! Beleidigung in Voice-Comments? Wird automatisch geblockt. Danke an alle die uns ein freundlicheres VibeVibo gewünscht haben.",
   "🔓 Coms-Tipp: Im 🔓-Tab kannst du als Owner jetzt 8 Funktionen freischalten — von Schnee-Theme über Quiz-Night bis Meetup-Planer. Mit Vibes aus eurer Com-Kasse.",
   "🎉 Neues Feature live! Schaut mal rein — wir haben gerade etwas eingebaut.",
@@ -28,7 +28,7 @@ export default function AdminBroadcast({ pw }) {
     const t = text.trim();
     if (!t) { setError("Text fehlt."); return; }
     if (t.length > 1000) { setError("Max. 1000 Zeichen."); return; }
-    if (!confirm(`Wirklich an ALLE aktiven User schicken?\n\n„${t.slice(0, 200)}${t.length > 200 ? "…" : ""}"`)) return;
+    if (!confirm(`Wirklich an ALLE aktiven User schicken?\n\n„${t.slice(0, 200)}${t.length > 200 ? “…" : ""}"`)) return;
     setError(""); setBusy(true);
     try {
       const r = await api.adminBroadcast(pw, t);
@@ -44,7 +44,7 @@ export default function AdminBroadcast({ pw }) {
       <div className="vv-card">
         <h3>📢 System-Broadcast verschicken</h3>
         <p className="vv-muted" style={{ fontSize: 12, lineHeight: 1.5 }}>
-          Der Text geht als anonyme <b>DM von „VibeVibo" (system)</b> an
+          Der Text geht als anonyme <b>DM von „VibeVibo“ (system)</b> an
           jeden aktiven User. Push-Benachrichtigungen werden parallel
           rausgeschickt (sofern abonniert). Empfänger sehen den Chat im
           Messenger neben den anderen — sie können dir nicht antworten
@@ -83,7 +83,7 @@ export default function AdminBroadcast({ pw }) {
           }}>
             ✅ Versandt an <b>{result.recipients}</b> Empfänger
             <div style={{ fontSize: 11, color: "#0d8a3f", marginTop: 4, fontStyle: "italic" }}>
-              „{result.text.slice(0, 200)}{result.text.length > 200 ? "…" : ""}"
+              „{result.text.slice(0, 200)}{result.text.length > 200 ? “…" : ""}"
             </div>
           </div>
         )}
