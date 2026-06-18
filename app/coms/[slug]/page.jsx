@@ -21,6 +21,7 @@ import ComAnimatedBg from "@/components/ComAnimatedBg";
 import ComHeroSeasonalFrame from "@/components/ComHeroSeasonalFrame";
 import ComSoundFX from "@/components/ComSoundFX";
 import ComPolls from "@/components/ComPolls";
+import ComThrowback from "@/components/ComThrowback";
 import RichTextEditor from "@/components/RichTextEditor";
 import RichTextDisplay from "@/components/RichTextDisplay";
 
@@ -340,6 +341,11 @@ export default function ComsPage() {
                 slug={slug} isMember={isMember} isOwner={isOwner}
                 themeColor={themeColor}
               />
+            )}
+
+            {/* 📼 Throwback — wenn freigeschaltet */}
+            {unlockedFeatures.throwback && (
+              <ComThrowback slug={slug} themeColor={themeColor} />
             )}
 
             {/* POST-FORM */}
