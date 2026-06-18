@@ -47,6 +47,8 @@ export const metadata = {
     "apple-mobile-web-app-title": "VibeVibo",
     "msapplication-TileColor": "#ff3e9d",
     "msapplication-tap-highlight": "no",
+    // 📢 Google AdSense Site-Verification — Publisher-ID hard-codiert
+    "google-adsense-account": "ca-pub-5836349081678756",
   },
 };
 
