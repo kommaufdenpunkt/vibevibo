@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification, bumpQuestProgress } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
-import { checkTextPost, isMuted } from "@/lib/moderate";
+import { checkTextPost, checkVoicePost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
 import { sendPushToUser } from "@/lib/push";
 import { canMessage } from "@/lib/privacy";
@@ -51,6 +51,13 @@ export async function POST(req) {
     }
     if (audioUrl.length > MAX_AUDIO_BYTES) {
       return NextResponse.json({ error: "audio too long (max ~60s)" }, { status: 413 });
+    }
+    // 🤖 Fidolin transkribiert + prüft auf Beleidigungen/Hass/etc.
+    const vv = await checkVoicePost(me.id, "nachricht_voice", audioUrl);
+    if (!vv.ok) {
+      return NextResponse.json({
+        error: `Fidolin hat die Sprachnachricht abgelehnt: ${vv.reason}`,
+      }, { status: 422 });
     }
     const row = sendMessage(me.id, target.id, "", {
       kind: "voice",

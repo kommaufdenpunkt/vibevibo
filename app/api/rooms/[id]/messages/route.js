@@ -4,7 +4,7 @@ import {
   getChatRoom, getRoomMessages, sendRoomMessage, isRoomMember,
   listChatRoomMemberIds, publishRoomMessage, getUserById, markRoomRead,
 } from "@/lib/db";
-import { checkTextPost, isMuted } from "@/lib/moderate";
+import { checkTextPost, checkVoicePost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
 import { sendPushToUser } from "@/lib/push";
 
@@ -39,6 +39,13 @@ export async function POST(req, { params }) {
     const audioUrl = String(body.audioUrl || "");
     if (!audioUrl.startsWith("data:audio/")) return NextResponse.json({ error: "invalid audio" }, { status: 400 });
     if (audioUrl.length > MAX_AUDIO_BYTES) return NextResponse.json({ error: "audio too long" }, { status: 413 });
+    // 🤖 Fidolin transkribiert + prüft Sprachnachricht
+    const vv = await checkVoicePost(me.id, "gruppenchat_voice", audioUrl);
+    if (!vv.ok) {
+      return NextResponse.json({
+        error: `Fidolin hat die Sprachnachricht abgelehnt: ${vv.reason}`,
+      }, { status: 422 });
+    }
     const msg = sendRoomMessage(roomId, me.id, "", { kind: "voice", audioUrl });
     const memberIds = listChatRoomMemberIds(roomId);
     publishRoomMessage(roomId, msg, memberIds);

@@ -9,7 +9,7 @@ import {
   addBuschfunkComment, listBuschfunkComments,
   deleteBuschfunkComment, notifyMentions, bumpXP,
 } from "@/lib/db";
-import { checkTextPost, isMuted } from "@/lib/moderate";
+import { checkTextPost, checkVoicePost, isMuted } from "@/lib/moderate";
 
 const ALLOWED_TYPES = new Set(["status", "pinnwand", "gift", "grouppost", "newpic"]);
 
@@ -48,11 +48,27 @@ export async function POST(req, { params }) {
   if (!text && !audioUrl) return NextResponse.json({ error: "Kommentar leer." }, { status: 400 });
   if (text.length > 500) return NextResponse.json({ error: "Kommentar zu lang (max 500 Zeichen)." }, { status: 400 });
 
-  // Text-Moderation (Voice wird hier nicht moderiert — Audio-Moderation ist separat)
+  // Text-Moderation
   if (text) {
     const verdict = await checkTextPost(me.id, "buschfunk_comment", text);
     if (!verdict.ok) {
       return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
+    }
+  }
+
+  // 🤖 Voice-Moderation: Audio wird transkribiert + auf Beleidigungen geprüft
+  if (audioUrl) {
+    if (!audioUrl.startsWith("data:audio/")) {
+      return NextResponse.json({ error: "Ungültiges Audio-Format." }, { status: 400 });
+    }
+    if (audioUrl.length > 1_200_000) {
+      return NextResponse.json({ error: "Sprachnachricht zu lang (max ~60 Sek)." }, { status: 413 });
+    }
+    const vv = await checkVoicePost(me.id, "buschfunk_voice", audioUrl);
+    if (!vv.ok) {
+      return NextResponse.json({
+        error: `Fidolin hat die Sprachnachricht abgelehnt: ${vv.reason}`,
+      }, { status: 422 });
     }
   }
 
