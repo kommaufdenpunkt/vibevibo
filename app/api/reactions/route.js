@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { toggleReaction, countReaction, addNotification, getPinnwandAuthorId } from "@/lib/db";
+import { toggleReaction, countReaction, addNotification, getPinnwandAuthorId, canReactToContent } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
 
 const ALLOWED_TARGETS = new Set(["pinnwand", "status", "grouppost", "buschfunk_comment"]);
@@ -15,6 +15,12 @@ export async function POST(req) {
   }
   const tid = Number(targetId);
   if (!tid) return NextResponse.json({ error: "invalid id" }, { status: 400 });
+
+  // 🕵 Anti-Cheat: Self-Reaction blockieren
+  if (typeof canReactToContent === "function" && !canReactToContent({ targetType, targetId: tid, userId: me.id })) {
+    return NextResponse.json({ error: "Du kannst nicht auf deinen eigenen Beitrag reagieren." }, { status: 403 });
+  }
+
   const REACTION_EMOJI = { like: "👍", love: "❤️", haha: "😂", wow: "😍", fire: "🔥", sad: "😢" };
   const REACTION_VERB  = { like: "gefällt", love: "liebt", haha: "lacht über", wow: "ist begeistert von", fire: "feiert", sad: "trauert um" };
 

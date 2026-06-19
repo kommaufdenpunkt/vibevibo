@@ -12,10 +12,12 @@ const ITEMS_ALL = [
   { href: "/mcp/neuigkeiten", emoji: "📰", label: "Was gibt es Neues" },
   { href: "/mcp/team", emoji: "👥", label: "Team-Übersicht" },
   { href: "/mcp/akte", emoji: "📋", label: "Akte & Audit" },
+  { href: "/mcp/2fa", emoji: "🔐", label: "2-Faktor-Authentifizierung" },
 ];
 
 const ITEMS_TEAMLEITUNG = [
-  { href: "/mcp/sicherheit", emoji: "🛡", label: "Sicherheits-Analyse", lead: true },
+  { href: "/mcp/sicherheit",     emoji: "🛡", label: "Sicherheits-Analyse", lead: true },
+  { href: "/mcp/multi-accounts", emoji: "🕵", label: "Multi-Account-Detektor", lead: true },
 ];
 
 export default async function McpMehrPage() {
