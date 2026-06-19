@@ -145,6 +145,16 @@ export default async function AdminPage({ searchParams }) {
             { label: "🆕 Neuigkeiten", href: `/admin/neu?${pwQ}` },
           ]}
         />
+        <Card
+          icon="🎁" title="Geschenke"
+          desc="Eigene Geschenke hochladen, Limitierte + Saison-Editionen anlegen, Kategorien verwalten."
+          actions={[
+            { label: "🎁 Alle Geschenke", href: `/admin/geschenke?${pwQ}&tab=all` },
+            { label: "✨ Limitierte", href: `/admin/geschenke?${pwQ}&tab=limited` },
+            { label: "🎄 Saison", href: `/admin/geschenke?${pwQ}&tab=seasonal` },
+            { label: "🏷 Kategorien", href: `/admin/geschenke?${pwQ}&tab=categories` },
+          ]}
+        />
       </div>
 
       {/* MCP-LINK */}
