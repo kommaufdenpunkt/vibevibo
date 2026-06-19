@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
+import { readAnonConsent, effectiveAdsConsent, effectiveVip } from "@/lib/anonConsent";
 
 const SCRIPT_ID = "vv-display-script";
 
@@ -30,16 +31,30 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
   const ref = useRef(null);
   const [pushed, setPushed] = useState(false);
   const [display, setDisplay] = useState(null);
+  const [anonConsent, setAnonConsent] = useState(0);
+
+  // Anon-Cookie nach Mount lesen + bei Änderungen pollen
+  useEffect(() => {
+    setAnonConsent(readAnonConsent());
+    if (me) return;
+    const iv = setInterval(() => {
+      const v = readAnonConsent();
+      setAnonConsent((prev) => (prev !== v ? v : prev));
+    }, 1500);
+    return () => clearInterval(iv);
+  }, [me]);
 
   useEffect(() => {
-    if (!me) return;
-    if ((me.adsConsent || 0) <= 0) return;
-    if (me.vip) return;
-    fetch("/api/ads/status")
+    const consent = effectiveAdsConsent(me);
+    if (consent <= 0) return;
+    if (effectiveVip(me)) return;
+    // Anonyme User: public-status (kein Auth), eingeloggte: normales status
+    const endpoint = me ? "/api/ads/status" : "/api/ads/public-status";
+    fetch(endpoint)
       .then((r) => r.json())
       .then((d) => setDisplay(d?.config?.display || null))
       .catch(() => {});
-  }, [me]);
+  }, [me, anonConsent]);
 
   useEffect(() => {
     if (!display?.enabled || !ref.current || pushed) return;
@@ -68,8 +83,10 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
     }
   }, [display, pushed]);
 
-  // Nichts rendern wenn kein Consent / VIP / kein Account
-  if (!me || (me.adsConsent || 0) <= 0 || me.vip) return null;
+  // Nichts rendern wenn kein Consent oder VIP
+  // (Anonyme Besucher dürfen sehen, wenn Cookie-Consent gesetzt)
+  if (effectiveAdsConsent(me) <= 0) return null;
+  if (effectiveVip(me)) return null;
 
   // Provider noch nicht konfiguriert -> Hinweis-Platzhalter
   if (!display || !display.enabled) {

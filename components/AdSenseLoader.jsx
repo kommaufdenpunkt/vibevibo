@@ -4,13 +4,15 @@
 // Lädt das adsbygoogle.js-Script EINMAL, sobald folgende Bedingungen erfüllt sind:
 //   • DISPLAY_PROVIDER = "adsense"
 //   • ADSENSE_PUB_ID gesetzt
-//   • User hat Consent gegeben (ads_consent > 0)
+//   • User hat Consent gegeben (ads_consent > 0  ODER  anon-cookie > 0)
 //   • User ist KEIN VIP
 //
 // Setzt zusätzlich Google Consent Mode v2 Defaults entsprechend der Wahl.
+// Funktioniert auch für ANONYME Besucher (Public-Pages) via Cookie-Consent.
 
 import { useEffect, useState } from "react";
 import { useMe } from "@/lib/useMe";
+import { readAnonConsent, effectiveAdsConsent, effectiveVip } from "@/lib/anonConsent";
 
 const SCRIPT_ID = "vv-adsense-script";
 
@@ -31,7 +33,6 @@ function applyConsentMode(consent) {
   window.dataLayer = window.dataLayer || [];
   function gtag(){ window.dataLayer.push(arguments); }
   window.gtag = window.gtag || gtag;
-  // Defaults setzen falls noch nicht passiert
   const denied = "denied", granted = "granted";
   // 1 = personalisiert, 2 = generisch, -1 = nur essenziell
   const adStorage      = consent === 1 ? granted : denied;
@@ -47,23 +48,45 @@ function applyConsentMode(consent) {
 }
 
 export default function AdSenseLoader() {
-  const { me } = useMe();
+  const { me, loading } = useMe();
   const [config, setConfig] = useState(null);
+  const [anonConsent, setAnonConsent] = useState(0);
 
-  // 1) Config holen sobald User da
+  // Anon-Cookie nach Mount lesen
   useEffect(() => {
-    if (!me) return;
-    if ((me.adsConsent || 0) <= 0) return;
-    if (me.vip) return;
-    fetch("/api/ads/status").then((r) => r.json()).then((d) => {
+    setAnonConsent(readAnonConsent());
+  }, []);
+
+  // Watch für Anon-Cookie-Änderungen (z.B. wenn Banner gerade akzeptiert wurde)
+  useEffect(() => {
+    if (me) return;
+    const iv = setInterval(() => {
+      const v = readAnonConsent();
+      if (v !== anonConsent) setAnonConsent(v);
+    }, 1500);
+    return () => clearInterval(iv);
+  }, [me, anonConsent]);
+
+  // 1) Config holen sobald Consent steht
+  useEffect(() => {
+    const consent = me ? (me.adsConsent || 0) : anonConsent;
+    if (consent <= 0) return;
+    if (effectiveVip(me)) return;
+    // Anonyme User: status-Endpoint ist auth-pflichtig → eigene Public-Variante
+    const endpoint = me ? "/api/ads/status" : "/api/ads/public-status";
+    fetch(endpoint).then((r) => r.json()).then((d) => {
       setConfig(d?.config?.display || null);
     }).catch(() => {});
-  }, [me]);
+  }, [me, anonConsent]);
 
   // 2) Consent Mode + AdSense laden
   useEffect(() => {
-    if (!me) return;
-    applyConsentMode(me.adsConsent);
+    if (loading) return;
+    const consent = me ? (me.adsConsent || 0) : anonConsent;
+    if (consent === 0) return; // noch nicht entschieden → kein Consent-Mode-Update
+    applyConsentMode(consent);
+    if (consent <= 0) return;
+    if (effectiveVip(me)) return;
     if (!config?.enabled) return;
     if (config.provider !== "adsense" || !config.pubId) return;
     loadOnce(
@@ -72,7 +95,6 @@ export default function AdSenseLoader() {
       { "crossorigin": "anonymous" },
     );
     if (config.autoAds) {
-      // Auto-Ads aktivieren — Google entscheidet selbst wo Anzeigen sinnvoll sind
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({
           google_ad_client: config.pubId,
@@ -80,7 +102,7 @@ export default function AdSenseLoader() {
         });
       } catch {}
     }
-  }, [me, config]);
+  }, [loading, me, anonConsent, config]);
 
   return null;
 }

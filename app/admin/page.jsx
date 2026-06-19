@@ -101,8 +101,9 @@ const SIDEBAR_GROUPS = [
   {
     id: "marketing", label: "Marketing", emoji: "📣",
     items: [
-      ["broadcast", "📢", "Broadcast"],
-      ["settings",  "⚙️", "Einstellungen + Werbung"],
+      ["broadcast",    "📢", "Broadcast"],
+      ["settings",     "⚙️", "Einstellungen + Werbung"],
+      ["__werbung__",  "📊", "Werbe-Diagnose"], // Externe Route → /admin/werbung
     ],
   },
   {
@@ -277,8 +278,12 @@ export default async function AdminPage({ searchParams }) {
                 <span>{group.emoji}</span> {group.label}
               </div>
               {group.items.map(([id, emoji, label, badgeKey]) => {
-                const isExternal = id === "__neu__";
-                const href = isExternal ? `/admin/neu?pw=${encodeURIComponent(pw)}` : `/admin?${q}&tab=${id}`;
+                const isExternal = id === "__neu__" || id === "__werbung__";
+                const externalMap = {
+                  __neu__:     `/admin/neu?pw=${encodeURIComponent(pw)}`,
+                  __werbung__: `/admin/werbung?pw=${encodeURIComponent(pw)}`,
+                };
+                const href = isExternal ? externalMap[id] : `/admin?${q}&tab=${id}`;
                 const active = !isExternal && id === tab;
                 const badge = badgeKey && stats[badgeKey] ? stats[badgeKey] : 0;
                 return (

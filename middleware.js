@@ -45,6 +45,7 @@ const PUBLIC_PREFIX = [
   "/api/admin/",
   "/api/_internal/",
   "/api/welcome-bonus",
+  "/api/ads/public-",  // 🍪 Public-Ad-Config für anonyme Besucher
   "/ads.txt",
 ];
 

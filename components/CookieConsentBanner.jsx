@@ -1,35 +1,48 @@
 "use client";
 
-// DSGVO-Cookie-Banner. Erstmals sichtbar wenn user.adsConsent === 0 (unbestimmt).
-// 3 Optionen: Alle akzeptieren / Nur essenzielle / Nicht-personalisierte Werbung.
-//
-// Speichert die Wahl im User-Konto (ads_consent) - damit Fidolin + Audit
-// nachvollziehen koennen, wann ein User wozu eingewilligt hat.
+// DSGVO-Cookie-Banner.
+// Eingeloggte User: Wahl wird in users.ads_consent gespeichert (DB).
+// Anonyme Besucher: Wahl im Browser-Cookie vv_anon_consent (Client).
+// Beide Varianten benutzen die gleiche Skala: 1 / 2 / -1.
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
+import { readAnonConsent, writeAnonConsent } from "@/lib/anonConsent";
 
 export default function CookieConsentBanner() {
   const { me, refresh } = useMe();
   const [busy, setBusy] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
+  const [anonConsent, setAnonConsent] = useState(0);
 
-  // Erst nach Hydration anzeigen, sonst SSR-Mismatch
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    setAnonConsent(readAnonConsent());
+  }, []);
 
-  if (!mounted || !me) return null;
-  if ((me.adsConsent || 0) !== 0) return null; // schon entschieden
+  if (!mounted) return null;
+
+  // Wer hat schon entschieden?
+  if (me && (me.adsConsent || 0) !== 0) return null;        // eingeloggt: DB-Wert
+  if (!me && anonConsent !== 0) return null;                // anon: Cookie-Wert
 
   async function set(consent) {
     setBusy(true);
     try {
-      await fetch("/api/ads/consent", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consent }),
-      });
-      await refresh?.();
+      if (me) {
+        await fetch("/api/ads/consent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ consent }),
+        });
+        await refresh?.();
+      } else {
+        // Anonym: nur Browser-Cookie setzen
+        writeAnonConsent(consent);
+        setAnonConsent(consent);
+      }
     } finally { setBusy(false); }
   }
 
@@ -47,17 +60,17 @@ export default function CookieConsentBanner() {
         <strong style={{ fontSize: 14 }}>Cookies &amp; Werbung</strong>
       </div>
       <p style={{ margin: "0 0 8px" }}>
-        VibeVibo ist gratis — wir refinanzieren das über <b>Werbung</b> und
-        deine Käufe im Shop. Damit Werbung halbwegs relevant ist, brauchen wir
-        eine Einwilligung von dir (DSGVO).
+        VibeVibo ist gratis — wir refinanzieren das über <b>Werbung</b>
+        {me ? " und deine Käufe im Shop" : ""}. Damit Werbung halbwegs
+        relevant ist, brauchen wir eine Einwilligung von dir (DSGVO).
       </p>
       {openDetails && (
         <div style={{ background: "var(--vv-surface, #f5f5f7)", padding: 10, borderRadius: 8, marginBottom: 8, fontSize: 12 }}>
           <strong>Was passiert wann?</strong>
           <ul style={{ margin: "6px 0 0 18px", padding: 0 }}>
-            <li><b>Alle Cookies</b> — du siehst zielgerichtete Werbung (Höchster Auszahl-Wert für uns; du kannst mehr Vibes mit „Video gucken" verdienen).</li>
-            <li><b>Nur essenziell</b> — keine Werbung, kein Tracking. Wir verdienen nichts an dir. „Video gucken" für Vibes ist deaktiviert.</li>
-            <li><b>Nicht-personalisierte Werbung</b> — Mittelweg: Werbung ja, aber generisch (z.B. Brot statt deinen Lieblingsschuhen). Du kannst Vibes verdienen.</li>
+            <li><b>Alle Cookies</b> — du siehst zielgerichtete Werbung (höchster Auszahl-Wert für uns).</li>
+            <li><b>Nur essenziell</b> — keine Werbung, kein Tracking. Wir verdienen nichts an dir.</li>
+            <li><b>Generische Werbung</b> — Mittelweg: Werbung ja, aber nicht-personalisiert.</li>
           </ul>
           <div style={{ marginTop: 6 }}>
             Mehr in unserer{" "}
