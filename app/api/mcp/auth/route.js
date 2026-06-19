@@ -7,6 +7,7 @@ import {
   verifyPassword, sanctionTypes, isDeviceBanned,
   createMcpSession, deleteMcpSession, isModeratorRole, getUserRole,
   recordMcpLoginAttempt, countMcpFailsByUsername, countMcpFailsByIp, clearMcpFails,
+  isMcpTotpEnabled, verifyMcpTotpCode,
 } from "@/lib/db";
 import { setMcpSessionCookie, clearMcpSessionCookie, audit } from "@/lib/modAuth";
 import { getClientIp } from "@/lib/ip";
@@ -116,6 +117,18 @@ export async function POST(req) {
       recordMcpLoginAttempt({ username, userId: user.id, ip, ua, success: false, reason: "no_mod_role" });
       // Trotzdem 401 (nicht 403), um Username-Existenz nicht zu verraten.
       return respond(401, { error: "Falscher Benutzername oder Passwort." });
+    }
+
+    // 9) 🔐 2FA-Challenge falls aktiv
+    if (typeof isMcpTotpEnabled === "function" && isMcpTotpEnabled(user.id)) {
+      const totpCode = String(body?.totp || "").replace(/\D/g, "");
+      if (!totpCode) {
+        return respond(200, { needsTotp: true });
+      }
+      if (!verifyMcpTotpCode(user.id, totpCode)) {
+        recordMcpLoginAttempt({ username, userId: user.id, ip, ua, success: false, reason: "totp_fail" });
+        return respond(401, { error: "2FA-Code ist ungültig.", needsTotp: true });
+      }
     }
 
     // ─── Erfolg ───
