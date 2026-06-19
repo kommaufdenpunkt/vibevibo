@@ -56,10 +56,10 @@ export default async function GeschenkeAdminPage({ searchParams }) {
       }}>
         ← 👑 Zurück zum Cockpit
       </Link>
-      <h1 style={{ margin: "14px 0 4px", fontSize: 28, fontWeight: 900, letterSpacing: -0.5 }}>
+      <h1 style={{ margin: "14px 0 4px", fontSize: 28, fontWeight: 900, letterSpacing: -0.5, color: "#fff", textShadow: "0 2px 4px rgba(0,0,0,0.4)" }}>
         🎁 Geschenke verwalten
       </h1>
-      <p style={{ fontSize: 13, color: "#64748b", marginTop: 0, marginBottom: 18 }}>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 0, marginBottom: 18, textShadow: "0 1px 2px rgba(0,0,0,0.3)" }}>
         Eigene Geschenke hochladen (1× 512×512 PNG/WebP — wird überall passend skaliert).
         Limitiert oder saisonal markieren, Kategorien anlegen.
       </p>

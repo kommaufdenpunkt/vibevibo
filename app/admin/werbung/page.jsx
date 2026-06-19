@@ -154,7 +154,7 @@ export default async function AdsenseAdminPage({ searchParams }) {
       )}
 
       {/* Settings-Editor */}
-      <h2 style={{ fontSize: 18, marginTop: 18, marginBottom: 10 }}>🛠 Provider-Konfiguration</h2>
+      <h2 style={{ fontSize: 18, marginTop: 18, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>🛠 Provider-Konfiguration</h2>
       <form method="GET" action="/admin/werbung" style={{
         background: "#fff", border: "1px solid #e5e5e7", borderRadius: 14, padding: 18,
         display: "grid", gap: 14,
@@ -203,7 +203,7 @@ export default async function AdsenseAdminPage({ searchParams }) {
       </form>
 
       {/* Server-Check */}
-      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10 }}>🔧 Server-Konfiguration</h2>
+      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>🔧 Server-Konfiguration</h2>
       <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e5e5e7" }}>
         {checks.map((c, i) => (
           <div key={c.key} style={{
@@ -234,7 +234,7 @@ export default async function AdsenseAdminPage({ searchParams }) {
       </div>
 
       {/* External-Checks (Links) */}
-      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10 }}>🌐 Externe Prüfungen</h2>
+      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>🌐 Externe Prüfungen</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 10 }}>
         <a href="/ads.txt" target="_blank" style={cardLink()}>
           <div style={{ fontWeight: 800, fontSize: 14 }}>📄 ads.txt prüfen</div>
@@ -263,14 +263,14 @@ export default async function AdsenseAdminPage({ searchParams }) {
       </div>
 
       {/* Browser-Live-Check */}
-      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10 }}>🔬 Live-Browser-Check</h2>
+      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>🔬 Live-Browser-Check</h2>
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>
         Hier prüfen wir was im aktuellen Browser tatsächlich passiert: lädt das Script? Ist Consent gegeben? Bist du VIP?
       </div>
       <AdSenseLiveCheck pubId={pubId} />
 
       {/* Tipps */}
-      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10 }}>💡 Wichtigste AdSense-Tipps</h2>
+      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>💡 Wichtigste AdSense-Tipps</h2>
       <ul style={{ background: "#fff", padding: "16px 32px", borderRadius: 14, border: "1px solid #e5e5e7", lineHeight: 1.7, fontSize: 13 }}>
         <li><b>Status „Wird vorbereitet":</b> Normal. Google prüft 1–7 Tage, dann „Bereit".</li>
         <li><b>Status „Maßnahme erforderlich":</b> ads.txt-Fehler oder Policy-Verstoß — Detail-Mail von Google checken.</li>

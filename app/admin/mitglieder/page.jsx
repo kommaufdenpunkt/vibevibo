@@ -77,10 +77,10 @@ export default async function MitgliederPage({ searchParams }) {
         }}>
           ← 👑 Zurück zum Cockpit
         </Link>
-        <h1 style={{ margin: "14px 0 0", fontSize: 28, fontWeight: 900, letterSpacing: -0.5 }}>
+        <h1 style={{ margin: "14px 0 0", fontSize: 28, fontWeight: 900, letterSpacing: -0.5, color: "#fff", textShadow: "0 2px 4px rgba(0,0,0,0.4)" }}>
           👥 Mitglieder
         </h1>
-        <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 4, textShadow: "0 1px 2px rgba(0,0,0,0.3)" }}>
           Owner-Sicht auf alle Konten. Klick auf einen User öffnet die volle Userakte.
         </div>
       </div>
@@ -99,7 +99,7 @@ export default async function MitgliederPage({ searchParams }) {
               style={{
                 padding: "10px 18px", borderRadius: "12px 12px 0 0",
                 background: active ? "linear-gradient(135deg, #ec4899, #a855f7)" : "transparent",
-                color: active ? "#fff" : "#64748b",
+                color: active ? "#fff" : "rgba(255,255,255,0.6)",
                 textDecoration: "none", fontSize: 13, fontWeight: 800,
                 whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6,
                 borderBottom: active ? "none" : "2px solid transparent",
@@ -107,8 +107,8 @@ export default async function MitgliederPage({ searchParams }) {
             >
               {t.label}
               <span style={{
-                background: active ? "rgba(255,255,255,0.25)" : "#f1f5f9",
-                color: active ? "#fff" : "#64748b",
+                background: active ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.15)",
+                color: active ? "#fff" : "rgba(255,255,255,0.85)",
                 padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 800,
               }}>
                 {counts[t.badgeKey] || 0}
@@ -219,7 +219,7 @@ export default async function MitgliederPage({ searchParams }) {
         })}
       </div>
 
-      <div style={{ marginTop: 20, fontSize: 11.5, color: "#94a3b8", textAlign: "center" }}>
+      <div style={{ marginTop: 20, fontSize: 11.5, color: "rgba(255,255,255,0.6)", textAlign: "center", textShadow: "0 1px 2px rgba(0,0,0,0.3)" }}>
         {users.length} von {counts[tab === "all" ? "all" : tab] || 0} angezeigt
         {users.length >= 200 && " · Max-Limit erreicht — bitte Suche eingrenzen"}
       </div>

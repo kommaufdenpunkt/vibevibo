@@ -49,7 +49,7 @@ export default function GeschenkeManager({ pw, tab: initialTab, search: initialS
               style={{
                 padding: "10px 18px", borderRadius: "12px 12px 0 0",
                 background: active ? "linear-gradient(135deg, #ec4899, #a855f7)" : "transparent",
-                color: active ? "#fff" : "#64748b",
+                color: active ? "#fff" : "rgba(255,255,255,0.6)",
                 fontSize: 13, fontWeight: 800, whiteSpace: "nowrap",
                 border: "none", cursor: "pointer", fontFamily: "inherit",
                 display: "flex", alignItems: "center", gap: 6,
@@ -58,8 +58,8 @@ export default function GeschenkeManager({ pw, tab: initialTab, search: initialS
               {t.label}
               {t.badgeKey && (
                 <span style={{
-                  background: active ? "rgba(255,255,255,0.25)" : "#f1f5f9",
-                  color: active ? "#fff" : "#64748b",
+                  background: active ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.15)",
+                  color: active ? "#fff" : "rgba(255,255,255,0.85)",
                   padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 800,
                 }}>{counts[t.badgeKey] || 0}</span>
               )}
