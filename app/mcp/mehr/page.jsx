@@ -1,35 +1,45 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getMcpUser } from "@/lib/modAuth";
-import { getMcpDashboardStats } from "@/lib/db";
+import { getMcpDashboardStats, isTeamleitungRole } from "@/lib/db";
 import McpHeader from "@/components/mcp/McpHeader";
 import McpBottomNav from "@/components/mcp/McpBottomNav";
 import McpLogoutButton from "@/components/mcp/McpLogoutButton";
 
 export const dynamic = "force-dynamic";
 
-const ITEMS = [
+const ITEMS_ALL = [
   { href: "/mcp/neuigkeiten", emoji: "📰", label: "Was gibt es Neues" },
   { href: "/mcp/team", emoji: "👥", label: "Team-Übersicht" },
   { href: "/mcp/akte", emoji: "📋", label: "Akte & Audit" },
+];
+
+const ITEMS_TEAMLEITUNG = [
+  { href: "/mcp/sicherheit", emoji: "🛡", label: "Sicherheits-Analyse", lead: true },
 ];
 
 export default async function McpMehrPage() {
   const me = await getMcpUser();
   if (!me) redirect("/mcp/login");
   const stats = getMcpDashboardStats();
+  const items = isTeamleitungRole(me.id)
+    ? [...ITEMS_ALL, ...ITEMS_TEAMLEITUNG]
+    : ITEMS_ALL;
   return (
     <div className="mcp-app">
       <McpHeader user={me} showGreeting={false} />
       <div className="mcp-content">
         <div className="mcp-section-label">⋯ Mehr</div>
-        {ITEMS.map((it) => (
+        {items.map((it) => (
           <Link key={it.href} href={it.href} className="mcp-report-item" style={{ marginTop: 10 }}>
             <div className="mcp-report-row-1">
               <div className="mcp-report-avatar">{it.emoji}</div>
               <div className="mcp-report-info">
                 <div className="mcp-report-title">{it.label}</div>
               </div>
+              {it.lead && (
+                <span className="mcp-role-pill teamleitung" style={{ marginRight: 8 }}>LEAD</span>
+              )}
               <div style={{ color: "var(--mcp-text-faint)", fontSize: 18 }}>→</div>
             </div>
           </Link>

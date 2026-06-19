@@ -9,6 +9,8 @@
 
 import { NextResponse } from "next/server";
 import { detectAttack, getClientIp, isWhitelisted } from "@/lib/hackerguard";
+import { applySecurityHeaders } from "@/lib/securityHeaders";
+import { ensureCsrfCookie } from "@/lib/csrf";
 
 const COOKIE = "vv_session";
 
@@ -54,28 +56,41 @@ function isMcpHost(hostname) {
   return h === "mcp.vibevibo.de" || h.startsWith("mcp.vibevibo.de:");
 }
 
+// 🛡 Wrapper: liefert NextResponse mit Security-Headers + CSRF-Cookie
+function harden(req, res, { isMcp, isApi }) {
+  applySecurityHeaders(res, { isMcp, isApi });
+  // CSRF-Cookie nur auf Nicht-API-Responses ausstellen (für HTML-Seiten),
+  // damit das Token im Browser landet bevor das Frontend POSTen will.
+  if (!isApi) {
+    try { ensureCsrfCookie(req, res); } catch {}
+  }
+  return res;
+}
+
 export function middleware(req) {
   const { pathname } = req.nextUrl;
   const hostname = req.headers.get("host") || "";
+  const isMcp = isMcpHost(hostname) || pathname === "/mcp" || pathname.startsWith("/mcp/");
+  const isApi = pathname.startsWith("/api/");
 
   // === ⚡ MCP-Hostname-Routing ===
   if (isMcpHost(hostname)) {
-    // API + Next-Assets durchreichen ohne Rewrite
+    // API + Next-Assets durchreichen ohne Rewrite (aber mit Security-Headers)
     if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") ||
         pathname === "/favicon.ico" || pathname === "/robots.txt" ||
         pathname === "/sitemap.xml" || pathname === "/ads.txt" ||
         pathname.startsWith("/icon-") || pathname === "/apple-icon.png" ||
         pathname === "/manifest.webmanifest") {
-      return NextResponse.next();
+      return harden(req, NextResponse.next(), { isMcp: true, isApi });
     }
     // Schon unter /mcp? Dann nicht doppelt rewriten
     if (pathname === "/mcp" || pathname.startsWith("/mcp/")) {
-      return NextResponse.next();
+      return harden(req, NextResponse.next(), { isMcp: true, isApi: false });
     }
     // Rewrite zu /mcp + originaler Pfad
     const url = req.nextUrl.clone();
     url.pathname = pathname === "/" ? "/mcp" : `/mcp${pathname}`;
-    return NextResponse.rewrite(url);
+    return harden(req, NextResponse.rewrite(url), { isMcp: true, isApi: false });
   }
 
   // === 🛡 HACKER-GUARD (vor allem anderen) ===
@@ -111,25 +126,25 @@ export function middleware(req) {
   }
 
   // === Session/Public-Check ===
-  if (PUBLIC_EXACT.has(pathname)) return NextResponse.next();
+  if (PUBLIC_EXACT.has(pathname)) return harden(req, NextResponse.next(), { isMcp, isApi });
   for (const p of PUBLIC_PREFIX) {
-    if (pathname.startsWith(p)) return NextResponse.next();
+    if (pathname.startsWith(p)) return harden(req, NextResponse.next(), { isMcp, isApi });
   }
-  if (pathname.endsWith("/manifest.webmanifest")) return NextResponse.next();
+  if (pathname.endsWith("/manifest.webmanifest")) return harden(req, NextResponse.next(), { isMcp, isApi });
   // ⚡ MCP-Routen: Auth-Check macht das MCP-Layout selbst
-  if (pathname === "/mcp" || pathname.startsWith("/mcp/")) return NextResponse.next();
+  if (pathname === "/mcp" || pathname.startsWith("/mcp/")) return harden(req, NextResponse.next(), { isMcp: true, isApi });
 
   const session = req.cookies.get(COOKIE)?.value;
-  if (session) return NextResponse.next();
+  if (session) return harden(req, NextResponse.next(), { isMcp, isApi });
 
   if (pathname.startsWith("/api/")) {
-    return NextResponse.json({ error: "auth required" }, { status: 401 });
+    return harden(req, NextResponse.json({ error: "auth required" }, { status: 401 }), { isMcp, isApi: true });
   }
 
   const url = req.nextUrl.clone();
   url.pathname = "/login";
   url.searchParams.set("next", pathname);
-  return NextResponse.redirect(url);
+  return harden(req, NextResponse.redirect(url), { isMcp, isApi });
 }
 
 export const config = {
