@@ -167,10 +167,27 @@ export default async function UserAktePage({ params, searchParams }) {
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "20px 16px 60px", fontFamily: "system-ui, sans-serif" }}>
 
-      {/* Breadcrumb */}
-      <div style={{ marginBottom: 12 }}>
-        <Link href={`/admin/mitglieder?${pwQ}`} style={{ fontSize: 12, color: "#94a3b8", textDecoration: "none" }}>
-          ← Mitglieder-Liste
+      {/* Breadcrumb mit 2 Back-Buttons */}
+      <div style={{ marginBottom: 14, display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <Link href={`/admin?${pwQ}`} style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "8px 16px", borderRadius: 999,
+          background: "#1c1c1e", color: "#fff",
+          fontSize: 12.5, fontWeight: 700,
+          textDecoration: "none",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        }}>
+          ← 👑 Cockpit
+        </Link>
+        <Link href={`/admin/mitglieder?${pwQ}`} style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "8px 16px", borderRadius: 999,
+          background: "#f5f5f7", color: "#1c1c1e",
+          fontSize: 12.5, fontWeight: 700,
+          textDecoration: "none",
+          border: "1px solid #e5e5e7",
+        }}>
+          ← 👥 Mitglieder-Liste
         </Link>
       </div>
 

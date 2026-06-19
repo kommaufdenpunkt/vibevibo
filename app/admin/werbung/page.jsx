@@ -100,6 +100,19 @@ export default async function AdsenseAdminPage({ searchParams }) {
   return (
     <div style={{ padding: 20, maxWidth: 980, margin: "0 auto", fontFamily: "system-ui, sans-serif" }}>
 
+      {/* Back-Button */}
+      <Link href={`/admin?${pwQ}`} style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "8px 16px", borderRadius: 999,
+        background: "#1c1c1e", color: "#fff",
+        fontSize: 12.5, fontWeight: 700,
+        textDecoration: "none",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        marginBottom: 14,
+      }}>
+        ← 👑 Zurück zum Cockpit
+      </Link>
+
       {/* Header */}
       <div style={{
         background: "linear-gradient(135deg, #4285f4, #1a73e8)",

@@ -67,10 +67,17 @@ export default async function MitgliederPage({ searchParams }) {
 
       {/* Breadcrumb + Header */}
       <div style={{ marginBottom: 14 }}>
-        <Link href={`/admin?${pwQ}`} style={{ fontSize: 12, color: "#94a3b8", textDecoration: "none" }}>
-          ← Zurück zum Cockpit
+        <Link href={`/admin?${pwQ}`} style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "8px 16px", borderRadius: 999,
+          background: "#1c1c1e", color: "#fff",
+          fontSize: 12.5, fontWeight: 700,
+          textDecoration: "none",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        }}>
+          ← 👑 Zurück zum Cockpit
         </Link>
-        <h1 style={{ margin: "8px 0 0", fontSize: 28, fontWeight: 900, letterSpacing: -0.5 }}>
+        <h1 style={{ margin: "14px 0 0", fontSize: 28, fontWeight: 900, letterSpacing: -0.5 }}>
           👥 Mitglieder
         </h1>
         <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
