@@ -1,14 +1,16 @@
-// 👑 VibeVibo Admin — Owner-Cockpit.
+// 👑 VibeVibo Admin — Owner-Cockpit (minimal).
 //
-// Ziel: SAUBER. Nur was du als Owner brauchst. Moderation läuft im MCP.
-// Vier Karten — Werbung, System, Notfall, Kommunikation. Alles Weitere ist
-// unter "Legacy" erreichbar (das alte 17-Tab-Menü).
+// Radikal aufgeräumt: nur 3 Bereiche.
+//   1. Mitglieder mit Userakte
+//   2. Werbe-Diagnose + AdSense-Settings
+//   3. Geschenke
+//
+// Alles Moderative läuft im MCP (mcp.vibevibo.de).
 
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { checkAdminPassword, adminEnabled } from "@/lib/admin";
-import { adminStats, getDisplayConfig } from "@/lib/db";
-import { getDisplayProvider } from "@/lib/ads";
+import { adminStats } from "@/lib/db";
+import { getDisplayConfig } from "@/lib/ads";
 
 export const dynamic = "force-dynamic";
 
@@ -40,20 +42,14 @@ export default async function AdminPage({ searchParams }) {
             style={inputStyle()}
           />
           {pw && <div style={{ color: "#ef4444", fontWeight: 700, fontSize: 12, marginTop: 8 }}>⚠ Falsches Passwort</div>}
-          <button type="submit" style={btnPrimary({ marginTop: 14, width: "100%" })}>
-            ▶ Anmelden
-          </button>
+          <button type="submit" style={btnPrimary({ marginTop: 14, width: "100%" })}>▶ Anmelden</button>
         </form>
       </div>
     );
   }
 
-  // === EINGELOGGT ===
-
   let stats = {};
   try { stats = adminStats() || {}; } catch {}
-
-  // Display-Config — für schnellen Status oben
   let display = {};
   try { display = getDisplayConfig() || {}; } catch {}
   const adsLive = display.enabled && display.provider === "adsense" && display.pubId;
@@ -62,7 +58,7 @@ export default async function AdminPage({ searchParams }) {
 
   return (
     <div style={{
-      maxWidth: 1080, margin: "0 auto", padding: "20px 16px 60px",
+      maxWidth: 980, margin: "0 auto", padding: "20px 16px 60px",
       fontFamily: "system-ui, -apple-system, sans-serif",
     }}>
 
@@ -70,7 +66,7 @@ export default async function AdminPage({ searchParams }) {
       <div style={{
         background: "linear-gradient(135deg, #1c1c1e 0%, #2d2d30 100%)",
         color: "#fff", padding: "22px 24px", borderRadius: 20,
-        marginBottom: 20,
+        marginBottom: 22,
         boxShadow: "0 10px 40px rgba(0,0,0,0.25)",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         flexWrap: "wrap", gap: 14,
@@ -90,19 +86,18 @@ export default async function AdminPage({ searchParams }) {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Pill ok={adsLive} label={adsLive ? "AdSense aktiv" : "AdSense aus"} />
           <Pill ok={stats.users > 0} label={`${stats.users || 0} User`} />
-          <Pill ok={(stats.openReports || 0) === 0} label={`${stats.openReports || 0} offene Meldungen`} />
         </div>
       </div>
 
-      {/* 5 HAUPTKARTEN */}
+      {/* 3 HAUPTKARTEN */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-        gap: 14,
+        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+        gap: 16,
       }}>
         <Card
           icon="👥" title="Mitglieder"
-          desc="Alle User, Admins, Teamleitung, Moderatoren — komplette Userakte einsehen + verwalten."
+          desc="Alle User, Admins, Teamleitung, Moderatoren — komplette Userakte einsehen + verwalten (Anschrift, Ausweis, Sanktionen, Rollen)."
           actions={[
             { label: "👥 Alle Mitglieder", href: `/admin/mitglieder?${pwQ}&tab=all` },
             { label: "👑 Admins", href: `/admin/mitglieder?${pwQ}&tab=admin` },
@@ -111,38 +106,10 @@ export default async function AdminPage({ searchParams }) {
           ]}
         />
         <Card
-          icon="💰" title="Werbung & Geld"
-          desc="AdSense konfigurieren, Live-Diagnose laufen lassen, Premium-Status checken."
+          icon="📊" title="Werbe-Diagnose"
+          desc="AdSense-Status, Provider-Settings, Auto-Ads-Konfig, Live-Browser-Check, Konsole-Übersicht."
           actions={[
-            { label: "📊 Werbe-Diagnose", href: `/admin/werbung?${pwQ}` },
-            { label: "⚙️ Provider-Settings", href: `/admin/legacy?${pwQ}&tab=settings` },
-          ]}
-        />
-        <Card
-          icon="⚙️" title="System"
-          desc="App-Settings, Audit-Log, DB-Inspector, Wartungsmodus."
-          actions={[
-            { label: "📜 Audit-Log", href: `/admin/legacy?${pwQ}&tab=audit` },
-            { label: "🔍 DB-Inspector", href: `/admin/inspector?${pwQ}` },
-            { label: "🛠 Wartung", href: `/admin/wartung?${pwQ}` },
-          ]}
-        />
-        <Card
-          icon="🚨" title="Notfall"
-          desc="User suchen, Hard-Ban, IP-Sperre, Geräte-Bann — wenn schnell gehandelt werden muss."
-          actions={[
-            { label: "👤 Mitglieder", href: `/admin/legacy?${pwQ}&tab=mitglieder` },
-            { label: "🔨 Banns", href: `/admin/legacy?${pwQ}&tab=banns` },
-            { label: "⛔ IP-Sperren", href: `/admin/legacy?${pwQ}&tab=ips` },
-          ]}
-        />
-        <Card
-          icon="📣" title="Kommunikation"
-          desc="App-weite Nachrichten posten, Saison-Events planen, interne Neuigkeiten."
-          actions={[
-            { label: "📢 Broadcast", href: `/admin/legacy?${pwQ}&tab=broadcast` },
-            { label: "🎉 Saison-Events", href: `/admin/legacy?${pwQ}&tab=events` },
-            { label: "🆕 Neuigkeiten", href: `/admin/neu?${pwQ}` },
+            { label: "📊 Diagnose öffnen", href: `/admin/werbung?${pwQ}` },
           ]}
         />
         <Card
@@ -157,18 +124,18 @@ export default async function AdminPage({ searchParams }) {
         />
       </div>
 
-      {/* MCP-LINK */}
+      {/* MCP-Hinweis */}
       <div style={{
-        marginTop: 22, padding: 18, borderRadius: 16,
+        marginTop: 24, padding: 18, borderRadius: 16,
         background: "linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.05))",
         border: "1px solid rgba(236,72,153,0.2)",
         display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap",
       }}>
         <div style={{ fontSize: 32 }}>⚡</div>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontWeight: 800, fontSize: 15 }}>Moderation läuft jetzt im MCP</div>
+          <div style={{ fontWeight: 800, fontSize: 15 }}>Moderation läuft im MCP</div>
           <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
-            Meldungen, Profilbilder, Fotos, Tickets, Team-Chat — alles auf{" "}
+            Meldungen, Profilbilder, Fotos, Tickets, Team-Chat, Sicherheits-Analyse — alles auf{" "}
             <code style={{ fontSize: 12 }}>mcp.vibevibo.de</code>
           </div>
         </div>
@@ -177,41 +144,33 @@ export default async function AdminPage({ searchParams }) {
         </a>
       </div>
 
-      {/* LEGACY-LINK (versteckter Notausstieg) */}
-      <div style={{ marginTop: 28, textAlign: "center" }}>
-        <Link href={`/admin/legacy?${pwQ}`} style={{
-          fontSize: 12, color: "#94a3b8", textDecoration: "none",
-        }}>
-          📦 Klassisches Admin-Menü (alte 17 Tabs)
-        </Link>
-      </div>
     </div>
   );
 }
 
-// ─── Helpers / Komponenten ─────────────────────────────────────
+// ─── Komponenten ──────────────────────────────────────────────
 
 function Card({ icon, title, desc, actions = [] }) {
   return (
     <div style={{
-      background: "#fff", borderRadius: 18, padding: 20,
+      background: "#fff", borderRadius: 18, padding: 22,
       border: "1px solid #e5e5e7",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+      boxShadow: "0 2px 14px rgba(0,0,0,0.04)",
       display: "flex", flexDirection: "column",
     }}>
-      <div style={{ fontSize: 36, marginBottom: 6 }}>{icon}</div>
-      <div style={{ fontSize: 17, fontWeight: 800, color: "#1c1c1e" }}>{title}</div>
-      <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 6, lineHeight: 1.45, flex: 1 }}>
+      <div style={{ fontSize: 42, marginBottom: 8 }}>{icon}</div>
+      <div style={{ fontSize: 18, fontWeight: 900, color: "#1c1c1e" }}>{title}</div>
+      <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 8, lineHeight: 1.5, flex: 1 }}>
         {desc}
       </div>
-      <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6 }}>
         {actions.map((a) => (
           <Link
             key={a.href}
             href={a.href}
             style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "9px 12px", borderRadius: 10,
+              padding: "10px 14px", borderRadius: 10,
               background: "#f5f5f7",
               color: "#1c1c1e",
               fontWeight: 700, fontSize: 13,
@@ -251,7 +210,6 @@ function cardCenter() {
     fontFamily: "system-ui, sans-serif",
   };
 }
-
 function inputStyle() {
   return {
     width: "100%", padding: "12px 14px", borderRadius: 10,
@@ -259,7 +217,6 @@ function inputStyle() {
     fontFamily: "inherit", outline: "none",
   };
 }
-
 function btnPrimary(extra = {}) {
   return {
     padding: "10px 18px", borderRadius: 10,

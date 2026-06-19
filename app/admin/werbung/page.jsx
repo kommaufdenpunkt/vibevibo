@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { checkAdminPassword, adminEnabled } from "@/lib/admin";
 import { getProviderConfig, getDisplayProvider } from "@/lib/ads";
-import { getSetting } from "@/lib/db";
+import { getSetting, setSetting } from "@/lib/db";
 import AdSenseLiveCheck from "@/components/admin/AdSenseLiveCheck";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,28 @@ export default async function AdsenseAdminPage({ searchParams }) {
       </div>
     );
   }
+
+  // ─── Settings-Actions (GET-basiert wie Legacy-Admin) ───
+  const action = typeof sp?.do === "string" ? sp.do : "";
+  const pwQ = `pw=${encodeURIComponent(pw)}`;
+  const backUrl = `/admin/werbung?${pwQ}`;
+
+  if (action === "save_settings") {
+    try {
+      const newProvider = String(sp?.provider || "off").toLowerCase();
+      if (["off","adsense","ezoic","adsterra"].includes(newProvider)) {
+        setSetting("DISPLAY_PROVIDER", newProvider);
+      }
+      if (typeof sp?.pubid === "string") {
+        setSetting("ADSENSE_PUB_ID", String(sp.pubid).trim());
+      }
+      const newAutoAds = sp?.autoads === "1" ? "1" : "0";
+      setSetting("ADSENSE_AUTO_ADS", newAutoAds);
+    } catch {}
+    redirect(`${backUrl}&flash=saved`);
+  }
+
+  const flash = sp?.flash || "";
 
   // Konfig auslesen
   const provider = getDisplayProvider();
@@ -109,8 +132,65 @@ export default async function AdsenseAdminPage({ searchParams }) {
         </div>
       </div>
 
+      {flash === "saved" && (
+        <div style={{
+          padding: "10px 14px", borderRadius: 10, marginBottom: 14,
+          background: "rgba(16,185,129,0.12)", color: "#065f46",
+          fontWeight: 700, fontSize: 13,
+        }}>✓ Settings gespeichert. Coolify lädt in ~2 Min neu, dann greifen die Werte.</div>
+      )}
+
+      {/* Settings-Editor */}
+      <h2 style={{ fontSize: 18, marginTop: 18, marginBottom: 10 }}>🛠 Provider-Konfiguration</h2>
+      <form method="GET" action="/admin/werbung" style={{
+        background: "#fff", border: "1px solid #e5e5e7", borderRadius: 14, padding: 18,
+        display: "grid", gap: 14,
+      }}>
+        <input type="hidden" name="pw" value={pw} />
+        <input type="hidden" name="do" value="save_settings" />
+
+        <div>
+          <label style={fieldLabel()}>Display-Provider</label>
+          <select name="provider" defaultValue={provider} style={fieldInput()}>
+            <option value="off">— Aus —</option>
+            <option value="adsense">Google AdSense</option>
+            <option value="ezoic">Ezoic</option>
+            <option value="adsterra">Adsterra</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={fieldLabel()}>ADSENSE_PUB_ID</label>
+          <input
+            name="pubid" type="text" defaultValue={pubId}
+            placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+            style={{ ...fieldInput(), fontFamily: "monospace" }}
+          />
+          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
+            Format „ca-pub-…". Findest du in AdSense → Konto → Kontoinformationen.
+          </div>
+        </div>
+
+        <div>
+          <label style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 12px", background: "#fafafa", borderRadius: 10,
+            fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}>
+            <input type="checkbox" name="autoads" value="1" defaultChecked={autoAds} />
+            <span>Auto-Ads aktiv (Google entscheidet automatisch wo Anzeigen erscheinen)</span>
+          </label>
+        </div>
+
+        <button type="submit" style={{
+          padding: "11px 22px", borderRadius: 10, justifySelf: "start",
+          background: "linear-gradient(135deg, #10b981, #059669)", color: "#fff",
+          border: "none", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+        }}>💾 Einstellungen speichern</button>
+      </form>
+
       {/* Server-Check */}
-      <h2 style={{ fontSize: 18, marginTop: 18, marginBottom: 10 }}>🔧 Server-Konfiguration</h2>
+      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10 }}>🔧 Server-Konfiguration</h2>
       <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e5e5e7" }}>
         {checks.map((c, i) => (
           <div key={c.key} style={{
@@ -204,5 +284,20 @@ function cardLink() {
     padding: 14,
     textDecoration: "none",
     color: "#1c1c1e",
+  };
+}
+
+function fieldLabel() {
+  return {
+    display: "block",
+    fontSize: 10, letterSpacing: 1, color: "#64748b",
+    fontWeight: 800, textTransform: "uppercase", marginBottom: 4,
+  };
+}
+function fieldInput() {
+  return {
+    width: "100%", padding: "10px 12px", borderRadius: 8,
+    border: "1px solid #cbd5e1", fontSize: 13,
+    fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   };
 }
