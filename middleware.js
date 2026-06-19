@@ -22,6 +22,7 @@ const PUBLIC_EXACT = new Set([
   "/faq",
   "/hilfe",
   "/neu",
+  "/agb",
   "/favicon.ico",
   "/sw.js",
   "/manifest.webmanifest",
@@ -45,8 +46,37 @@ const PUBLIC_PREFIX = [
   "/ads.txt",
 ];
 
+// ⚡ MCP — wenn Host = mcp.vibevibo.de, alle Pfade nach /mcp/* umleiten
+// (außer /api/ und _next-Assets, die normal durchgereicht werden).
+function isMcpHost(hostname) {
+  if (!hostname) return false;
+  const h = hostname.toLowerCase();
+  return h === "mcp.vibevibo.de" || h.startsWith("mcp.vibevibo.de:");
+}
+
 export function middleware(req) {
   const { pathname } = req.nextUrl;
+  const hostname = req.headers.get("host") || "";
+
+  // === ⚡ MCP-Hostname-Routing ===
+  if (isMcpHost(hostname)) {
+    // API + Next-Assets durchreichen ohne Rewrite
+    if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") ||
+        pathname === "/favicon.ico" || pathname === "/robots.txt" ||
+        pathname === "/sitemap.xml" || pathname === "/ads.txt" ||
+        pathname.startsWith("/icon-") || pathname === "/apple-icon.png" ||
+        pathname === "/manifest.webmanifest") {
+      return NextResponse.next();
+    }
+    // Schon unter /mcp? Dann nicht doppelt rewriten
+    if (pathname === "/mcp" || pathname.startsWith("/mcp/")) {
+      return NextResponse.next();
+    }
+    // Rewrite zu /mcp + originaler Pfad
+    const url = req.nextUrl.clone();
+    url.pathname = pathname === "/" ? "/mcp" : `/mcp${pathname}`;
+    return NextResponse.rewrite(url);
+  }
 
   // === 🛡 HACKER-GUARD (vor allem anderen) ===
   const ip = getClientIp(req);
@@ -86,6 +116,8 @@ export function middleware(req) {
     if (pathname.startsWith(p)) return NextResponse.next();
   }
   if (pathname.endsWith("/manifest.webmanifest")) return NextResponse.next();
+  // ⚡ MCP-Routen: Auth-Check macht das MCP-Layout selbst
+  if (pathname === "/mcp" || pathname.startsWith("/mcp/")) return NextResponse.next();
 
   const session = req.cookies.get(COOKIE)?.value;
   if (session) return NextResponse.next();
