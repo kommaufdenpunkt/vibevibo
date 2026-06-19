@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import PremiumHero from "@/components/PremiumHero";
+import CookieConsentReset from "@/components/CookieConsentReset";
 
 export default function PrivacyPage() {
   const { me, loading } = useMe();
@@ -305,6 +306,9 @@ export default function PrivacyPage() {
             </div>
           </div>
         </div>
+
+        {/* 🍪 Cookie/Werbe-Einstellungen zurücksetzen — DSGVO-Pflicht */}
+        <CookieConsentReset />
 
       </div>
     </div>

@@ -9,6 +9,7 @@
 //   - Im Admin ein Display-Provider konfiguriert ist
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 
 const SCRIPT_ID = "vv-display-script";
@@ -108,6 +109,30 @@ export default function AdSlot({ slot, format = "auto", style, label = "Werbung"
           <div id={`adsterra-${display.zoneId}`} />
         </div>
       )}
+
+      {/* 🌟 Premium-CTA — dezenter Hinweis "Werbefrei werden".
+          Konvertiert Free → Premium ohne aufdringliche Banner. */}
+      <div style={{
+        marginTop: 4,
+        textAlign: "right",
+        fontSize: 10,
+        color: "var(--vv-muted, #999)",
+        lineHeight: 1.3,
+      }}>
+        <Link
+          href="/shop"
+          style={{
+            color: "var(--vv-muted, #999)",
+            textDecoration: "none",
+            opacity: 0.65,
+            transition: "opacity 0.15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.65)}
+        >
+          🌟 <u>Werbefrei mit Premium</u> · ab 2,99 €/Monat
+        </Link>
+      </div>
     </div>
   );
 }
