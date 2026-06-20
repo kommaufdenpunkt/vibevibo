@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits, userRow, getUserById, bumpXP } from "@/lib/db";
+import { getUserByUsername, addPinnwand, getPinnwand, addNotification, notifyMentions, awardCredits, userRow, getUserById, bumpXP, logUserAction, checkBurstSpam } from "@/lib/db";
 import { EARN } from "@/lib/credits";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
@@ -17,6 +17,16 @@ export async function POST(req, { params }) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
   if (isMuted(me.id)) return NextResponse.json({ error: "Du hast aktuell einen Kommunikationsbann und kannst nichts posten." }, { status: 403 });
+
+  // 🔨 Defense-B: Burst-Spam-Limiter
+  const burst = checkBurstSpam(me.id, "post");
+  if (burst.burst) {
+    return NextResponse.json({
+      error: `⚡ Zu schnell! Du hast in ${Math.round(burst.windowMs / 1000)}s schon ${burst.count} Posts geschrieben. Kurz Luft holen.`,
+    }, { status: 429 });
+  }
+  logUserAction(me.id, "post");
+
   const { username } = await params;
   const target = getUserByUsername(username);
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification, bumpQuestProgress } from "@/lib/db";
+import { getConversationsForUser, getUserByUsername, sendMessage, publishMessage, addNotification, bumpQuestProgress, logUserAction, checkBurstSpam } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, checkVoicePost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
@@ -34,6 +34,16 @@ export async function POST(req) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
   if (isMuted(me.id)) return NextResponse.json({ error: "Du hast aktuell einen Kommunikationsbann und kannst nicht schreiben." }, { status: 403 });
+
+  // 🔨 Defense-B: Burst-Spam-Limiter
+  const burst = checkBurstSpam(me.id, "dm");
+  if (burst.burst) {
+    return NextResponse.json({
+      error: `⚡ Zu schnell! Du hast in ${Math.round(burst.windowMs / 1000)}s schon ${burst.count} Nachrichten geschrieben. Kurz Luft holen.`,
+    }, { status: 429 });
+  }
+  logUserAction(me.id, "dm");
+
   const body = await req.json();
   const target = getUserByUsername(body.to);
   if (!target) return NextResponse.json({ error: "not found" }, { status: 404 });

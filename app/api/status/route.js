@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { updateUser, addStatusUpdate, notifyMentions, consumeBuschfunkBoost } from "@/lib/db";
+import { updateUser, addStatusUpdate, notifyMentions, consumeBuschfunkBoost, logUserAction, checkBurstSpam } from "@/lib/db";
 import { moderateImage, moderateAudio } from "@/lib/fidolin";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { STATUS_CATS } from "@/lib/status";
@@ -26,6 +26,17 @@ export async function POST(req) {
   const body = await req.json();
   const text = String(body.text || "").trim().slice(0, 280);
   const wantsPublic = !!body.public;
+
+  // 🔨 Defense-B: Burst-Spam nur bei Buschfunk-Posts (öffentliches Status-Setzen ist Mood, kein Spam)
+  if (wantsPublic) {
+    const burst = checkBurstSpam(me.id, "post");
+    if (burst.burst) {
+      return NextResponse.json({
+        error: `⚡ Zu schnell! Du hast in ${Math.round(burst.windowMs / 1000)}s schon ${burst.count} Posts geschrieben. Kurz Luft holen.`,
+      }, { status: 429 });
+    }
+    logUserAction(me.id, "post");
+  }
   const rawImage = body.image ? String(body.image) : "";
   const rawAudio = body.audio ? String(body.audio) : "";
   const musicUrl = body.musicUrl ? String(body.musicUrl) : "";

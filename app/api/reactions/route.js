@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { toggleReaction, countReaction, addNotification, getPinnwandAuthorId, canReactToContent } from "@/lib/db";
+import { toggleReaction, countReaction, addNotification, getPinnwandAuthorId, canReactToContent, logUserAction, checkBurstSpam } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
 
 const ALLOWED_TARGETS = new Set(["pinnwand", "status", "grouppost", "buschfunk_comment"]);
@@ -9,6 +9,16 @@ const ALLOWED_KINDS = new Set(["like", "love", "haha", "wow", "fire", "sad"]);
 export async function POST(req) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
+
+  // 🔨 Defense-B: Burst-Spam-Limiter
+  const burst = checkBurstSpam(me.id, "reaction");
+  if (burst.burst) {
+    return NextResponse.json({
+      error: `⚡ Zu schnell! Du hast in ${Math.round(burst.windowMs / 1000)}s schon ${burst.count} Reaktionen gegeben. Kurz Luft holen.`,
+    }, { status: 429 });
+  }
+  logUserAction(me.id, "reaction");
+
   const { targetType, targetId, kind = "like" } = await req.json();
   if (!ALLOWED_TARGETS.has(targetType) || !ALLOWED_KINDS.has(kind)) {
     return NextResponse.json({ error: "invalid target" }, { status: 400 });

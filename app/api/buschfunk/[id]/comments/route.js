@@ -8,7 +8,7 @@ import { getSessionUser } from "@/lib/auth";
 import {
   addBuschfunkComment, listBuschfunkComments,
   deleteBuschfunkComment, notifyMentions, bumpXP,
-  getBuschfunkPostOwner,
+  getBuschfunkPostOwner, logUserAction, checkBurstSpam,
 } from "@/lib/db";
 import { checkTextPost, checkVoicePost, isMuted } from "@/lib/moderate";
 
@@ -37,6 +37,16 @@ export async function POST(req, { params }) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
   if (isMuted(me.id)) return NextResponse.json({ error: "Du hast aktuell einen Kommunikationsbann." }, { status: 403 });
+
+  // 🔨 Defense-B: Burst-Spam-Limiter
+  const burst = checkBurstSpam(me.id, "comment");
+  if (burst.burst) {
+    return NextResponse.json({
+      error: `⚡ Zu schnell! Du hast in ${Math.round(burst.windowMs / 1000)}s schon ${burst.count} Kommentare geschrieben. Kurz Luft holen.`,
+    }, { status: 429 });
+  }
+  logUserAction(me.id, "comment");
+
   const { id } = await params;
   const postId = Number(id);
   if (!postId) return NextResponse.json({ error: "invalid id" }, { status: 400 });
