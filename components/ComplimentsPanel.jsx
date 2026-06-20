@@ -25,8 +25,7 @@ export default function ComplimentsPanel({ username }) {
 
   if (!data) return null;
   const { compliments, isOwner } = data;
-  const visible = compliments.filter((c) => !c.hidden);
-  const hidden  = compliments.filter((c) => c.hidden);
+  const visible = compliments; // Hide-Feature deaktiviert (bestehendes System hat's nicht)
   const canSend = me && me.username !== username;
 
   return (
@@ -57,21 +56,9 @@ export default function ComplimentsPanel({ username }) {
       ) : (
         <div style={{ display: "grid", gap: 8 }}>
           {visible.map((c) => (
-            <ComplimentCard key={c.id} c={c} isOwner={isOwner} onAction={refresh} />
+            <ComplimentCard key={c.id} c={c} />
           ))}
         </div>
-      )}
-
-      {/* Versteckte (nur Owner sieht's) */}
-      {isOwner && hidden.length > 0 && (
-        <details style={{ marginTop: 12 }}>
-          <summary style={{ cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 700 }}>
-            {hidden.length} ausgeblendete Komplimente
-          </summary>
-          <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
-            {hidden.map((c) => <ComplimentCard key={c.id} c={c} isOwner={isOwner} onAction={refresh} />)}
-          </div>
-        </details>
       )}
 
       {showSend && <SendModal username={username} onClose={() => setShowSend(false)} onSent={() => { setShowSend(false); refresh(); }} />}
@@ -79,20 +66,12 @@ export default function ComplimentsPanel({ username }) {
   );
 }
 
-function ComplimentCard({ c, isOwner, onAction }) {
-  async function toggle() {
-    await fetch(`/api/compliments/${c.id}`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: c.hidden ? "unhide" : "hide" }),
-    });
-    onAction();
-  }
+function ComplimentCard({ c }) {
   return (
     <div style={{
       padding: 12, borderRadius: 10, position: "relative",
-      background: c.hidden ? "#f5f5f7" : "linear-gradient(135deg, rgba(236,72,153,0.06), rgba(168,85,247,0.04))",
-      border: c.hidden ? "1px dashed #cbd5e1" : "1px solid rgba(236,72,153,0.15)",
-      opacity: c.hidden ? 0.5 : 1,
+      background: "linear-gradient(135deg, rgba(236,72,153,0.06), rgba(168,85,247,0.04))",
+      border: "1px solid rgba(236,72,153,0.15)",
     }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
         <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{c.emoji}</span>
@@ -104,14 +83,6 @@ function ComplimentCard({ c, isOwner, onAction }) {
             anonym · {new Date(c.createdAt).toLocaleDateString("de-DE")}
           </div>
         </div>
-        {isOwner && (
-          <button onClick={toggle} style={{
-            background: "transparent", border: "none", color: "#94a3b8",
-            cursor: "pointer", fontSize: 14, padding: 4,
-          }} title={c.hidden ? "Wieder zeigen" : "Ausblenden"}>
-            {c.hidden ? "👁" : "🙈"}
-          </button>
-        )}
       </div>
     </div>
   );

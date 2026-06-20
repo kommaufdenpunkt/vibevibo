@@ -245,9 +245,9 @@ export default async function UserAktePage({ params, searchParams }) {
       <Section title="⚡ Schnell-Aktionen">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
           {u.status === "blocked" ? (
-            <ActionLink href={`${backUrl}&do=unblock`} color="#10b981" label="✓ Entsperren" confirm="Wirklich entsperren?" />
+            <ActionLink href={`${backUrl}&do=unblock`} color="#10b981" label="✓ Entsperren" />
           ) : (
-            <ActionLink href={`${backUrl}&do=block`} color="#ef4444" label="⛔ Hard-Ban" confirm="Account WIRKLICH sperren?" />
+            <ActionLink href={`${backUrl}&do=block`} color="#ef4444" label="⛔ Hard-Ban" />
           )}
           {u.status === "pending" && (
             <ActionLink href={`${backUrl}&do=approve_waitlist`} color="#06b6d4" label="✓ Aus Warteliste freigeben" />
@@ -255,6 +255,7 @@ export default async function UserAktePage({ params, searchParams }) {
           {akte.sanctions.length > 0 && (
             <ActionLink href={`${backUrl}&do=lift_all`} color="#a855f7" label="🔓 Alle Sanktionen aufheben" />
           )}
+          <ActionLink href={`/admin/forensik/${encodeURIComponent(username)}?${pwQ}`} color="#1c1c1e" label="🔒 Forensik-Export (Polizei)" />
         </div>
       </Section>
 
