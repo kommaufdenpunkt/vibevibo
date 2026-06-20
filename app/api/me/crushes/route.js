@@ -47,35 +47,36 @@ export async function POST(req) {
 
   // 💥 Match — beide Seiten benachrichtigen
   if (result.matched && result.partner) {
+    const partnerDn = result.partner.displayName || result.partner.username;
+    const myDn = me.displayName || me.username;
+
     try {
       addNotification({
         userId: me.id, actorId: target.id, type: "crush_match",
         targetType: "user", targetId: target.id,
-        preview: \`💥 Es hat gefunkt mit \${result.partner.displayName}!\`,
+        preview: `💥 Es hat gefunkt mit ${partnerDn}!`,
       });
     } catch {}
     try {
       addNotification({
         userId: target.id, actorId: me.id, type: "crush_match",
         targetType: "user", targetId: me.id,
-        preview: \`💥 Es hat gefunkt mit \${me.displayName}!\`,
+        preview: `💥 Es hat gefunkt mit ${myDn}!`,
       });
     } catch {}
-    // Push an beide
-    const myDn = me.displayName || me.username;
-    const partnerDn = result.partner.displayName || result.partner.username;
+
     sendPushToUser(me.id, {
       title: "💥 Es hat gefunkt!",
-      body: \`Du und @\${result.partner.username} habt euch gegenseitig als geheimen Schwarm eingetragen.\`,
+      body: `Du und @${result.partner.username} habt euch gegenseitig als geheimen Schwarm eingetragen.`,
       url: "/crushes",
-      tag: \`crush-match-\${result.partner.username}\`,
+      tag: `crush-match-${result.partner.username}`,
       kind: "message",
     }).catch(() => {});
     sendPushToUser(target.id, {
       title: "💥 Es hat gefunkt!",
-      body: \`Du und @\${me.username} habt euch gegenseitig als geheimen Schwarm eingetragen.\`,
+      body: `Du und @${me.username} habt euch gegenseitig als geheimen Schwarm eingetragen.`,
       url: "/crushes",
-      tag: \`crush-match-\${me.username}\`,
+      tag: `crush-match-${me.username}`,
       kind: "message",
       fromUsername: me.username,
       fromDisplayName: myDn,
