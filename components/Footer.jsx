@@ -17,6 +17,8 @@ export default function Footer() {
         <Link href="/faq">FAQ</Link>
         <Link href="/hilfe">Hilfe</Link>
         <Link href="/neu">Was ist neu?</Link>
+        <Link href="/wuensche">💡 Wunschseite</Link>
+        <Link href="/agb">AGB</Link>
         <Link href="/datenschutz">Datenschutz</Link>
         <Link href="/impressum">Impressum</Link>
       </nav>

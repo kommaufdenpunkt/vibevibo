@@ -129,6 +129,14 @@ export default async function AdminPage({ searchParams }) {
             { label: "🚀 Diagnose öffnen", href: `/admin/performance?${pwQ}` },
           ]}
         />
+        <Card
+          icon="💡" title="Wünsche & Feedback"
+          desc="User reichen Feature-Wünsche + Bug-Meldungen ein, andere voten. Setze Status, antworte öffentlich."
+          actions={[
+            { label: "💡 Wunschliste verwalten", href: `/admin/wuensche?${pwQ}&status=open` },
+            { label: "📌 Geplante Wünsche", href: `/admin/wuensche?${pwQ}&status=planned` },
+          ]}
+        />
       </div>
 
       {/* MCP-Hinweis */}
