@@ -222,6 +222,10 @@ export default function EdgePanels() {
             <span className="vv-edge-quick-emoji">💕</span>
             <span className="vv-edge-quick-label">Geheimer Schwarm</span>
           </Link>
+          <Link href="/erinnerungen" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}>
+            <span className="vv-edge-quick-emoji">📅</span>
+            <span className="vv-edge-quick-label">Heute vor X Jahren</span>
+          </Link>
         </div>
       </aside>
     </>
