@@ -5,6 +5,7 @@ import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import Landing from "@/components/Landing";
 import Buschfunk from "@/components/Buschfunk";
+import HomeBuschfunkSmart from "@/components/HomeBuschfunkSmart";
 import WallComposer from "@/components/WallComposer";
 import { FortuneCookie, TodaysBirthdays, MemberSince } from "@/components/HomeNostalgia";
 import PwaInfo from "@/components/PwaInfo";
@@ -108,7 +109,7 @@ export default function HomePage() {
         </Link>
         <Link href="/coms" className="vv-home-tile" data-tone="violet">
           <span className="vv-home-tile-emoji">🏘️</span>
-          <span>Gruppen</span>
+          <span>Coms</span>
           <span className="vv-home-tile-sub">Forum</span>
         </Link>
         <Link href="/geschenke" className="vv-home-tile" data-tone="red">
@@ -220,9 +221,9 @@ export default function HomePage() {
           </div>
 
           <div className="vv-home-card" data-tone="violet">
-            <div className="vv-home-card-title">📣 BUSCHFUNK</div>
+            <div className="vv-home-card-title">📣 BUSCHFUNK · LIVE</div>
             <div className="vv-home-card-body">
-              <Buschfunk key={feedTick} />
+              <HomeBuschfunkSmart key={feedTick} />
             </div>
           </div>
         </div>
