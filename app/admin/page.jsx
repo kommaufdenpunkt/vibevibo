@@ -124,7 +124,7 @@ export default async function AdminPage({ searchParams }) {
         />
         <Card
           icon="🚀" title="Performance"
-          desc="SQLite-Pragmas, Cache + WAL analysieren. Ein Klick auf „Update" optimiert automatisch alles."
+          desc='SQLite-Pragmas, Cache + WAL analysieren. Ein Klick auf "Update" optimiert automatisch alles.'
           actions={[
             { label: "🚀 Diagnose öffnen", href: `/admin/performance?${pwQ}` },
           ]}

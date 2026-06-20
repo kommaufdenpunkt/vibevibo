@@ -64,9 +64,9 @@ export default function PerformanceDashboard({ pw }) {
             </div>
             <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
               {scanning ? `Scan-Layer ${Math.min(scanStep, 6)} / 6` :
-               !data ? "Klick „Analysieren" für vollständigen Status." :
+               !data ? 'Klick "Analysieren" für vollständigen Status.' :
                allOk ? "SQLite-Pragmas, Cache + WAL alle perfekt." :
-               "Klick „Update" um automatisch zu optimieren."}
+               'Klick "Update" um automatisch zu optimieren.'}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>

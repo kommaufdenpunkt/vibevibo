@@ -94,7 +94,7 @@ export default function GiftBeschenkenFlow({ gift, onClose }) {
             <Label>Nachricht an {recipient} (optional)</Label>
             <textarea
               value={message} onChange={(e) => setMessage(e.target.value)}
-              placeholder="z.B. „Auf das du immer lächelst! 😊"
+              placeholder='z.B. "Auf das du immer lächelst! 😊'
               rows={4} maxLength={400}
               style={{ ...inp(), resize: "vertical" }}
             />

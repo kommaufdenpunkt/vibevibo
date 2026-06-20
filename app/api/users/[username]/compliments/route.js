@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
-  getUserByUsername, sendCompliment, listCompliments,
+  getUserByUsername, sendComplimentNew, listCompliments,
   addNotification,
 } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
@@ -34,7 +34,7 @@ export async function POST(req, { params }) {
   let body = {};
   try { body = await req.json(); } catch {}
   try {
-    const id = sendCompliment({
+    const id = sendComplimentNew({
       toUserId: target.id, fromUserId: me.id,
       body: String(body?.body || ""), emoji: String(body?.emoji || "💌"),
     });
