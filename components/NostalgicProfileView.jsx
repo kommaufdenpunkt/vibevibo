@@ -22,6 +22,9 @@ import PremiumBadges from "@/components/PremiumBadges";
 import ComplimentModal from "@/components/ComplimentModal";
 import ViboProfileWidget from "@/components/ViboProfileWidget";
 import Marquee from "@/components/Marquee";
+import FriendButton from "@/components/FriendButton";
+import SosButton from "@/components/SosButton";
+import KnowMeBestQuiz from "@/components/KnowMeBestQuiz";
 import AmazonShelf from "@/components/AmazonShelf";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
@@ -142,6 +145,17 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
             </Link>
           </div>
         )}
+
+        {/* 🤝 Friend-Request + 💛 SOS-Button — neben Standard-Aktionen */}
+        {me && !isOwner && (
+          <div style={{
+            display: "flex", gap: 10, justifyContent: "center",
+            marginTop: 10, flexWrap: "wrap",
+          }}>
+            <FriendButton username={profile.username} />
+            <SosButton username={profile.username} />
+          </div>
+        )}
         {!me && (
           <div className="vv-nost-actions">
             <Link href={`/login?next=/u/${profile.username}`} className="vv-nost-action">
@@ -233,6 +247,11 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
               )}
               {wallTab === "guestbook" && (
                 <Gaestebuch profile={profile} initialEntries={guestbook} />
+
+                {/* ❓ Wer kennt mich am besten? Quiz */}
+                <div style={{ marginTop: 16 }}>
+                  <KnowMeBestQuiz username={profile.username} />
+                </div>
               )}
             </Card>
           </main>
