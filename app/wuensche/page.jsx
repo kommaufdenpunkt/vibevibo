@@ -237,7 +237,7 @@ function SubmitModal({ onClose, onCreated }) {
 
         <label style={lbl()}>Titel (kurz + knackig)</label>
         <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={160}
-          placeholder="z.B. „Dark-Mode-Schalter im Profil""
+          placeholder='z.B. "Dark-Mode-Schalter im Profil"'
           style={inp()} autoFocus />
 
         <label style={{ ...lbl(), marginTop: 10 }}>Details (optional)</label>
