@@ -1,21 +1,20 @@
 "use client";
 
-// 📣 Buschfunk auf Startseite — wie FB/IG-Feed: volle Post-Karten zum Scrollen.
+// 📣 Buschfunk Startseite — 2006er SchülerVZ/Jappy-Style.
 //
-// Features:
-//   • 🟢 Live-Header mit Tick-Counter
-//   • 👯 Friend-Posts mit Glow-Highlight
-//   • 🆕 „NEU"-Pulse auf Posts <5 Min
-//   • Volle Bildanzeige + Sprachnachrichten + Reaktionen
-//   • Auto-Refresh alle 60 Sek
-//   • Empty-State mit Compose-CTA
-//   • Scrollt mit der Seite, kein max-height
+// Nostalgie-Elemente:
+//   • Ridge-Borders (3px), Glitzer-Decorations
+//   • Word-Art-Style Names mit Schatten
+//   • Pink/Cyan/Violett Gradient-Header
+//   • Marquee-Live-Ticker
+//   • ✿ ❀ ★ ♥ Trenner
+//   • Comic-Bubble-Layout je Post
+//   • Friend-Bling mit Stern-Border
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import Avatar from "@/components/Avatar";
-import { relTime } from "@/lib/format";
 import { useMe } from "@/lib/useMe";
 
 const MAX_POSTS = 30;
@@ -23,14 +22,35 @@ const REFRESH_INTERVAL_MS = 60_000;
 const NEU_THRESHOLD_MS = 5 * 60_000;
 
 const POST_TYPE_BADGE = {
-  quote:        { label: "🌹 Zitat",        color: "#ec4899" },
-  feeling:      { label: "💭 Gefühl",       color: "#a855f7" },
-  mention:      { label: "👯 Mit-@",        color: "#06b6d4" },
-  memory:       { label: "📅 Erinnerung",   color: "#f97316" },
-  gift_show:    { label: "🎁 Geschenk",     color: "#fb923c" },
-  now_playing:  { label: "🎵 Now-Playing",  color: "#10b981" },
-  never_forget: { label: "💔 Nie vergessen", color: "#475569" },
+  quote:        { label: "✦ ZITAT ✦",        color: "#ec4899" },
+  feeling:      { label: "♥ GEFÜHL ♥",       color: "#a855f7" },
+  mention:      { label: "✿ MIT-@ ✿",        color: "#06b6d4" },
+  memory:       { label: "★ ERINNERUNG ★",   color: "#f97316" },
+  gift_show:    { label: "❀ GESCHENK ❀",     color: "#fb923c" },
+  now_playing:  { label: "♪ MUSIK ♪",        color: "#10b981" },
+  never_forget: { label: "✧ NIE VERGESSEN ✧", color: "#475569" },
 };
+
+// Farb-Rotation pro Post (Pink/Cyan/Violet/Gold) — wie wkw/Jappy mit bunten Boxen
+const POST_TONES = [
+  { border: "#ec4899", titleBg: "linear-gradient(135deg,#ec4899,#db2777)", body: "linear-gradient(180deg,#fff,#fdf2f8)" },
+  { border: "#a855f7", titleBg: "linear-gradient(135deg,#a855f7,#9333ea)", body: "linear-gradient(180deg,#fff,#faf5ff)" },
+  { border: "#06b6d4", titleBg: "linear-gradient(135deg,#06b6d4,#0891b2)", body: "linear-gradient(180deg,#fff,#ecfeff)" },
+  { border: "#f59e0b", titleBg: "linear-gradient(135deg,#f59e0b,#d97706)", body: "linear-gradient(180deg,#fff,#fffbeb)" },
+];
+
+function timeAgoDe(ms) {
+  const diff = Math.max(0, Date.now() - ms);
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return "gerade eben";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `vor ${m} Min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `vor ${h} Std`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `vor ${d} Tagen`;
+  return new Date(ms).toLocaleDateString("de-DE");
+}
 
 export default function HomeBuschfunkSmart() {
   const { me } = useMe();
@@ -53,9 +73,7 @@ export default function HomeBuschfunkSmart() {
       setEvents(next);
       setLastFetch(Date.now());
     } catch {}
-    finally {
-      setTimeout(() => setRefreshing(false), 400);
-    }
+    finally { setTimeout(() => setRefreshing(false), 400); }
   }, []);
 
   useEffect(() => {
@@ -73,7 +91,6 @@ export default function HomeBuschfunkSmart() {
     if (events.length > 0) lastSeenAtRef.current = events[0].at;
   }, [events]);
 
-  // Smart-Sorting: Freunde zuerst, dann nach Datum
   const sorted = useMemo(() => {
     const arr = [...events];
     arr.sort((a, b) => {
@@ -88,219 +105,300 @@ export default function HomeBuschfunkSmart() {
 
   return (
     <div>
-      {/* Live-Header */}
+      {/* Live-Ticker — wie damals: blinkender Punkt + Marquee-Style */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 10, marginBottom: 12,
-        padding: "8px 12px", borderRadius: 10,
-        background: "linear-gradient(135deg, rgba(168,85,247,0.12), rgba(236,72,153,0.08))",
-        border: "1px solid rgba(168,85,247,0.2)",
+        background: "linear-gradient(135deg, #fce7f3, #f5d0fe, #ddd6fe)",
+        border: "3px ridge #ec4899",
+        borderRadius: 10, padding: "8px 12px", marginBottom: 14,
+        display: "flex", alignItems: "center", gap: 8,
       }}>
         <span style={{
-          width: 10, height: 10, borderRadius: "50%",
-          background: refreshing ? "#fbbf24" : "#10b981",
-          boxShadow: refreshing ? "0 0 8px #fbbf24" : "0 0 6px rgba(16,185,129,0.6)",
-          animation: refreshing ? "vv-bf-pulse 0.6s infinite" : "vv-bf-pulse 2s infinite",
+          width: 12, height: 12, borderRadius: "50%",
+          background: refreshing ? "#fbbf24" : "#22c55e",
+          boxShadow: refreshing ? "0 0 10px #fbbf24" : "0 0 8px #22c55e",
+          animation: "vv-nost-blink 1s steps(2, end) infinite",
+          flexShrink: 0,
         }} />
-        <div style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#475569" }}>
-          {refreshing ? "Lade neueste Posts…" : `Live · vor ${secsSinceFetch}s aktualisiert`}
-        </div>
+        <span style={{
+          fontSize: 12, fontWeight: 900, color: "#831843",
+          letterSpacing: 1, textShadow: "0 1px 0 #fff",
+          flex: 1,
+        }}>
+          ✿ LIVE-BUSCHFUNK · vor {secsSinceFetch}s aktualisiert ✿
+        </span>
         {newCount > 0 && (
-          <button
-            onClick={() => { setNewCount(0); load(); }}
-            style={{
-              padding: "4px 10px", borderRadius: 999,
-              background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
-              border: "none", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
-              animation: "vv-bf-pulse 1.4s infinite",
-            }}
-          >🆕 {newCount} NEU</button>
+          <button onClick={() => { setNewCount(0); load(); }} style={{
+            padding: "4px 10px", borderRadius: 999,
+            background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
+            border: "2px ridge #fff", fontSize: 11, fontWeight: 900,
+            cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5,
+            animation: "vv-nost-pulse 1.2s infinite",
+          }}>★ {newCount} NEU ★</button>
         )}
-        <button
-          onClick={load}
-          disabled={refreshing}
-          title="Aktualisieren"
-          style={{
-            width: 28, height: 28, borderRadius: "50%",
-            background: "rgba(168,85,247,0.15)", border: "none", color: "#7e22ce",
-            cursor: refreshing ? "wait" : "pointer", fontSize: 14, fontFamily: "inherit",
-            transition: "transform 0.3s",
-            transform: refreshing ? "rotate(360deg)" : "rotate(0deg)",
-          }}
-        >↻</button>
+        <button onClick={load} disabled={refreshing} title="Neu laden" style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "linear-gradient(135deg, #fff, #fce7f3)",
+          border: "2px ridge #ec4899", color: "#831843",
+          cursor: refreshing ? "wait" : "pointer", fontSize: 14, fontFamily: "inherit",
+          transition: "transform 0.3s",
+          transform: refreshing ? "rotate(360deg)" : "rotate(0deg)",
+        }}>↻</button>
       </div>
 
-      {/* Feed — volle Post-Karten zum Scrollen */}
+      {/* Feed */}
       {sorted.length === 0 ? (
         <EmptyState />
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
-          {sorted.map((ev) => (
-            <PostCard key={`${ev.type}-${ev.postId || ev.actor?.username}-${ev.at}`} ev={ev} />
+        <div style={{ display: "grid", gap: 14 }}>
+          {sorted.map((ev, i) => (
+            <NostalgicPostCard
+              key={`${ev.type}-${ev.postId || ev.actor?.username}-${ev.at}`}
+              ev={ev}
+              tone={POST_TONES[i % POST_TONES.length]}
+            />
           ))}
         </div>
       )}
 
-      {/* Footer-CTA — runter zur Vollversion */}
       {sorted.length >= MAX_POSTS && (
-        <div style={{ textAlign: "center", marginTop: 16 }}>
+        <div style={{ textAlign: "center", marginTop: 18 }}>
           <Link href="/buschfunk" style={{
-            display: "inline-block", padding: "10px 22px", borderRadius: 999,
-            background: "linear-gradient(135deg, rgba(168,85,247,0.15), rgba(236,72,153,0.12))",
-            color: "#7e22ce", textDecoration: "none", fontSize: 13, fontWeight: 800,
-            border: "1px solid rgba(168,85,247,0.3)",
-          }}>📣 Noch mehr im Buschfunk →</Link>
+            display: "inline-block", padding: "10px 22px", borderRadius: 10,
+            background: "linear-gradient(135deg, #ec4899, #a855f7, #06b6d4)",
+            backgroundSize: "200% 100%",
+            color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 900,
+            border: "3px ridge #fff", letterSpacing: 1,
+            textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+            animation: "vv-nost-wave 4s ease-in-out infinite",
+          }}>✿ Noch mehr im Buschfunk ✿</Link>
         </div>
       )}
 
       <style>{`
-        @keyframes vv-bf-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%      { opacity: 0.7; transform: scale(1.06); }
+        @keyframes vv-nost-blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0.3; }
         }
-        @keyframes vv-bf-neu-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.6); }
-          50%      { box-shadow: 0 0 0 8px rgba(236,72,153,0); }
+        @keyframes vv-nost-pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
         }
-        @keyframes vv-bf-slide-in {
-          from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
+        @keyframes vv-nost-wave {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        @keyframes vv-nost-sparkle {
+          0%, 100% { opacity: 0.6; transform: rotate(0deg); }
+          50% { opacity: 1; transform: rotate(180deg); }
+        }
+        @keyframes vv-nost-slide-in {
+          from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes vv-nost-neu-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.6); transform: rotate(-3deg); }
+          50%      { box-shadow: 0 0 0 10px rgba(236,72,153,0); transform: rotate(3deg); }
         }
       `}</style>
     </div>
   );
 }
 
-function PostCard({ ev }) {
+function NostalgicPostCard({ ev, tone }) {
   const ageMs = Date.now() - ev.at;
   const isNew = ageMs < NEU_THRESHOLD_MS;
   const isFriend = !!ev.isFriend;
   const badge = ev.type === "status" && ev.postType && POST_TYPE_BADGE[ev.postType];
   const actor = ev.actor || {};
   const target = ev.target || {};
-
-  // Aktivität bei Nicht-Text-Events (gift, newpic, newuser)
   const activityLine = activitySummary(ev);
+
+  const typeLabel = typeLabelOf(ev);
 
   return (
     <div style={{
-      background: isFriend
-        ? "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(252,231,243,0.6))"
-        : "rgba(255,255,255,0.96)",
-      borderRadius: 14, padding: "12px 14px",
-      border: isFriend ? "2px solid rgba(236,72,153,0.35)" : "1px solid rgba(0,0,0,0.07)",
+      borderRadius: 14, overflow: "hidden",
+      border: isFriend ? "4px ridge #ec4899" : `3px ridge ${tone.border}`,
       boxShadow: isFriend
-        ? "0 4px 14px rgba(236,72,153,0.12)"
-        : "0 2px 8px rgba(0,0,0,0.04)",
+        ? "0 4px 14px rgba(236,72,153,0.25), inset 0 0 0 1px rgba(255,255,255,0.6)"
+        : "0 3px 10px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.6)",
+      background: tone.body,
       position: "relative",
-      animation: "vv-bf-slide-in 0.4s ease-out",
+      animation: "vv-nost-slide-in 0.45s ease-out",
     }}>
+      {/* NEU-Bling */}
       {isNew && (
         <span style={{
-          position: "absolute", top: -8, right: 8,
+          position: "absolute", top: -10, right: 10,
           background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
-          padding: "3px 10px", borderRadius: 999, fontSize: 10, fontWeight: 900,
-          letterSpacing: 0.5, animation: "vv-bf-neu-pulse 1.6s infinite",
-        }}>🆕 NEU</span>
+          padding: "4px 10px", borderRadius: 999, fontSize: 10, fontWeight: 900,
+          letterSpacing: 1, border: "2px ridge #fff",
+          textShadow: "0 1px 1px rgba(0,0,0,0.3)",
+          animation: "vv-nost-neu-pulse 1.6s infinite",
+          zIndex: 2,
+        }}>★ NEU ★</span>
       )}
 
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-        <Link href={`/u/${actor.username || ""}`} style={{ flexShrink: 0 }}>
-          <Avatar
-            url={actor.avatarUrl}
-            name={actor.displayName}
-            className="vv-avatar"
-            style={{ width: 40, height: 40 }}
-          />
-        </Link>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-            <Link href={`/u/${actor.username || ""}`} style={{
-              fontSize: 14, fontWeight: 800, color: "#1c1c1e", textDecoration: "none",
-            }}>{actor.displayName || "?"}</Link>
-            {isFriend && (
-              <span title="Freund" style={{ fontSize: 11, color: "#ec4899", fontWeight: 900 }}>⭐</span>
-            )}
-            {badge && (
-              <span style={{
-                fontSize: 9.5, fontWeight: 800, padding: "2px 7px", borderRadius: 4,
-                background: badge.color, color: "#fff", letterSpacing: 0.3,
-              }}>{badge.label}</span>
-            )}
-          </div>
-          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
-            @{actor.username || "?"} · {relTime(ev.at)}
-          </div>
-        </div>
+      {/* Header-Streifen — Gradient mit Typ-Label */}
+      <div style={{
+        padding: "6px 12px",
+        background: tone.titleBg,
+        color: "#fff",
+        fontSize: 11, fontWeight: 900, letterSpacing: 1,
+        textShadow: "0 1px 2px rgba(0,0,0,0.35)",
+        display: "flex", alignItems: "center", gap: 6,
+        borderBottom: "2px ridge rgba(255,255,255,0.6)",
+      }}>
+        <span style={{ animation: "vv-nost-sparkle 4s ease-in-out infinite" }}>✿</span>
+        <span style={{ flex: 1, textTransform: "uppercase" }}>{typeLabel}</span>
+        <span style={{ fontSize: 10, opacity: 0.9 }}>{timeAgoDe(ev.at)}</span>
+        <span style={{ animation: "vv-nost-sparkle 4s ease-in-out infinite reverse" }}>✿</span>
       </div>
 
       {/* Body */}
-      {ev.detail && (
-        <div style={{
-          fontSize: 14, lineHeight: 1.55, color: "#1c1c1e",
-          whiteSpace: "pre-wrap", wordBreak: "break-word", marginBottom: 8,
-        }}>
-          {ev.detail}
+      <div style={{ padding: "12px 14px" }}>
+        {/* Author-Zeile */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+          <Link href={`/u/${actor.username || ""}`} style={{
+            flexShrink: 0, display: "inline-block",
+            border: `3px ridge ${tone.border}`, borderRadius: 8, padding: 2,
+            background: "#fff",
+          }}>
+            <Avatar
+              url={actor.avatarUrl}
+              name={actor.displayName}
+              className="vv-avatar"
+              style={{ width: 50, height: 50, borderRadius: 6 }}
+            />
+          </Link>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Link href={`/u/${actor.username || ""}`} style={{
+              fontSize: 17, fontWeight: 900,
+              color: tone.border, textDecoration: "none",
+              textShadow: "1px 1px 0 #fff, 2px 2px 0 rgba(0,0,0,0.06)",
+              letterSpacing: 0.3,
+              display: "inline-block",
+            }}>{actor.displayName || "?"}</Link>
+            {isFriend && (
+              <span title="Freund" style={{
+                marginLeft: 6, fontSize: 13, color: "#ec4899",
+                animation: "vv-nost-sparkle 3s ease-in-out infinite",
+              }}>★</span>
+            )}
+            <div style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", marginTop: 1 }}>
+              @{actor.username || "?"}
+            </div>
+          </div>
+          {badge && (
+            <span style={{
+              fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 999,
+              background: badge.color, color: "#fff", letterSpacing: 0.5,
+              border: "2px ridge rgba(255,255,255,0.5)",
+              textShadow: "0 1px 1px rgba(0,0,0,0.3)",
+              whiteSpace: "nowrap",
+            }}>{badge.label}</span>
+          )}
         </div>
-      )}
 
-      {/* Aktivität ohne Text (gift/newpic/newuser) */}
-      {!ev.detail && activityLine && (
+        {/* Trenner */}
         <div style={{
-          fontSize: 13, color: "#475569", fontStyle: "italic", marginBottom: 8,
-        }}>
-          {activityLine}
-        </div>
-      )}
+          textAlign: "center", color: tone.border, fontSize: 11, marginBottom: 8,
+          letterSpacing: 8, opacity: 0.7,
+        }}>✿✿✿</div>
 
-      {/* Bild */}
-      {ev.picUrl && (
-        <Link href={`/u/${actor.username || ""}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={ev.picUrl} alt="" style={{
-            width: "100%", maxHeight: 420, objectFit: "cover",
-            borderRadius: 10, marginBottom: 8, display: "block",
+        {/* Post-Text */}
+        {ev.detail && (
+          <div style={{
+            fontSize: 15, lineHeight: 1.55, color: "#1c1c1e",
+            whiteSpace: "pre-wrap", wordBreak: "break-word",
+            padding: "8px 4px",
+          }}>
+            {ev.detail}
+          </div>
+        )}
+
+        {!ev.detail && activityLine && (
+          <div style={{
+            fontSize: 14, color: "#475569", fontStyle: "italic", textAlign: "center",
+            padding: "10px 4px",
+          }}>
+            ♥ {activityLine} ♥
+          </div>
+        )}
+
+        {/* Bild */}
+        {ev.picUrl && (
+          <Link href={`/u/${actor.username || ""}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={ev.picUrl} alt="" style={{
+              width: "100%", maxHeight: 400, objectFit: "cover",
+              borderRadius: 8, marginTop: 8, display: "block",
+              border: `2px ridge ${tone.border}`,
+            }} />
+          </Link>
+        )}
+
+        {/* Audio */}
+        {ev.audioUrl && (
+          <audio controls src={ev.audioUrl} style={{
+            width: "100%", height: 36, marginTop: 8, borderRadius: 8,
           }} />
-        </Link>
-      )}
-
-      {/* Audio */}
-      {ev.audioUrl && (
-        <audio controls src={ev.audioUrl} style={{
-          width: "100%", height: 36, marginBottom: 8, borderRadius: 8,
-        }} />
-      )}
-
-      {/* Footer: Profil + Kommentare */}
-      <div style={{
-        display: "flex", gap: 12, alignItems: "center",
-        paddingTop: 8, borderTop: "1px dashed rgba(0,0,0,0.08)",
-        fontSize: 12, color: "#64748b",
-      }}>
-        <Link href={`/u/${actor.username || ""}`} style={{
-          color: "#7e22ce", textDecoration: "none", fontWeight: 700,
-        }}>→ Profil</Link>
-        {ev.type === "gift" && target.username && (
-          <Link href={`/u/${target.username}`} style={{
-            color: "#f97316", textDecoration: "none", fontWeight: 700,
-          }}>🎁 für @{target.username}</Link>
         )}
-        {ev.postId > 0 && ["status","pinnwand","gift"].includes(ev.type) && (
-          <Link href={`/buschfunk#${ev.type}-${ev.postId}`} style={{
-            marginLeft: "auto", color: "#475569", textDecoration: "none", fontWeight: 700,
-          }}>💬 Kommentieren</Link>
-        )}
+
+        {/* Footer-Bling */}
+        <div style={{
+          marginTop: 10, paddingTop: 8,
+          borderTop: `2px dotted ${tone.border}`,
+          display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap",
+          fontSize: 12,
+        }}>
+          <Link href={`/u/${actor.username || ""}`} style={{
+            color: tone.border, textDecoration: "none", fontWeight: 800,
+            padding: "3px 9px", borderRadius: 999,
+            background: "rgba(255,255,255,0.6)",
+            border: `1.5px solid ${tone.border}`,
+          }}>→ Profil</Link>
+          {ev.type === "gift" && target.username && (
+            <Link href={`/u/${target.username}`} style={{
+              color: "#fb923c", textDecoration: "none", fontWeight: 800,
+              padding: "3px 9px", borderRadius: 999,
+              background: "rgba(255,255,255,0.6)",
+              border: "1.5px solid #fb923c",
+            }}>🎁 für @{target.username}</Link>
+          )}
+          {ev.postId > 0 && ["status","pinnwand","gift"].includes(ev.type) && (
+            <Link href={`/buschfunk#${ev.type}-${ev.postId}`} style={{
+              marginLeft: "auto", color: "#475569", textDecoration: "none", fontWeight: 800,
+              padding: "3px 9px", borderRadius: 999,
+              background: "rgba(255,255,255,0.6)",
+              border: "1.5px solid #cbd5e1",
+            }}>♥ Kommentar</Link>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
+function typeLabelOf(ev) {
+  if (ev.type === "status") {
+    if (ev.postType && POST_TYPE_BADGE[ev.postType]) return POST_TYPE_BADGE[ev.postType].label;
+    return "STATUS-POST";
+  }
+  if (ev.type === "pinnwand") return "PINNWAND-EINTRAG";
+  if (ev.type === "gift") return "GESCHENK";
+  if (ev.type === "newpic") return "NEUES PROFILBILD";
+  if (ev.type === "newuser") return "NEU DABEI";
+  if (ev.type === "grouppost") return "GRUPPEN-POST";
+  return "AKTIVITÄT";
+}
+
 function activitySummary(ev) {
   const actor = ev.actor?.displayName || "?";
   const target = ev.target?.displayName || "?";
-  if (ev.type === "gift") return `${actor} hat ${target} ein Geschenk geschickt 🎁`;
-  if (ev.type === "newpic") return `${actor} hat ein neues Profilbild ✨`;
-  if (ev.type === "newuser") return `${actor} ist neu bei VibeVibo 👋`;
+  if (ev.type === "gift") return `${actor} hat ${target} ein Geschenk geschickt`;
+  if (ev.type === "newpic") return `${actor} hat ein neues Profilbild`;
+  if (ev.type === "newuser") return `${actor} ist neu bei VibeVibo`;
   if (ev.type === "grouppost") return `${actor} hat in einer Gruppe gepostet`;
   return null;
 }
@@ -309,23 +407,29 @@ function EmptyState() {
   return (
     <div style={{
       textAlign: "center", padding: "30px 14px",
-      background: "linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.06))",
-      borderRadius: 14, border: "2px dashed rgba(236,72,153,0.25)",
+      background: "linear-gradient(135deg, #fce7f3, #f5d0fe, #ddd6fe)",
+      borderRadius: 12, border: "3px ridge #ec4899",
+      boxShadow: "0 4px 14px rgba(236,72,153,0.15)",
     }}>
-      <div style={{ fontSize: 44, marginBottom: 8 }}>📭</div>
-      <div style={{ fontSize: 15, fontWeight: 800, color: "#831843", marginBottom: 6 }}>
-        Hier ist es noch still …
+      <div style={{ fontSize: 50, marginBottom: 8 }}>✿</div>
+      <div style={{
+        fontSize: 17, fontWeight: 900, color: "#831843", marginBottom: 6,
+        letterSpacing: 1, textShadow: "1px 1px 0 #fff",
+      }}>
+        ★ HIER IST ES NOCH STILL ★
       </div>
-      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, lineHeight: 1.5 }}>
-        Sei der/die Erste heute! Ein Status, ein Zitat, eine Erinnerung —
+      <div style={{ fontSize: 13, color: "#831843", marginBottom: 14, lineHeight: 1.5 }}>
+        Sei der/die Erste heute! Ein Status, ein Zitat, eine Erinnerung —<br/>
         was beschäftigt dich gerade?
       </div>
       <Link href="/buschfunk/neu" style={{
-        display: "inline-block", padding: "10px 20px", borderRadius: 999,
+        display: "inline-block", padding: "10px 22px", borderRadius: 10,
         background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
-        textDecoration: "none", fontWeight: 800, fontSize: 13,
+        textDecoration: "none", fontWeight: 900, fontSize: 13,
+        border: "3px ridge #fff",
         boxShadow: "0 4px 12px rgba(236,72,153,0.35)",
-      }}>📌 Jetzt was posten</Link>
+        letterSpacing: 0.5,
+      }}>✿ JETZT WAS POSTEN ✿</Link>
     </div>
   );
 }
