@@ -7,7 +7,6 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
   getUserByUsername, addNotification, listModTeam, audit,
-  sendPushToUser,
 } from "@/lib/db";
 
 export const runtime = "nodejs";
