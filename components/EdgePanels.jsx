@@ -10,6 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
 import NotificationsBell from "@/components/NotificationsBell";
+import DraggableBell from "@/components/DraggableBell";
 import ChangelogPanel from "@/components/ChangelogPanel";
 
 // 🎯 Aufgeräumte Navigation (Phase 1): nur 8 Haupt-Punkte sichtbar.
@@ -106,10 +107,8 @@ export default function EdgePanels() {
         aria-label="Schnellzugriff öffnen"
       ><span className="vv-edge-tab-icon">⚡</span></button>
 
-      {/* Floating Bell — top-right, immer erreichbar */}
-      <div className="vv-edge-bell-float">
-        <NotificationsBell />
-      </div>
+      {/* Floating Bell — verschiebbar (Drag + Snap to Corner) */}
+      <DraggableBell />
 
       {/* Overlay */}
       {(leftOpen || rightOpen) && (
