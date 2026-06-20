@@ -27,6 +27,7 @@ import SosButton from "@/components/SosButton";
 import KnowMeBestQuiz from "@/components/KnowMeBestQuiz";
 import MoodDisplay from "@/components/MoodDisplay";
 import ProfileMusicPlayer from "@/components/ProfileMusicPlayer";
+import ProfilePlaylist from "@/components/ProfilePlaylist";
 import ComplimentsPanel from "@/components/ComplimentsPanel";
 import AmazonShelf from "@/components/AmazonShelf";
 import { useMe } from "@/lib/useMe";
@@ -83,7 +84,7 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
 
           <div className="vv-nost-avatar-frame">
             <Avatar url={profile.avatarUrl} name={profile.displayName}
-              className="vv-nost-avatar" />
+              className="vv-nost-avatar" rank={profile.rank} />
           </div>
 
           <h1 className="vv-nost-wordart">
@@ -246,6 +247,10 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
                 <ProfileMusicPlayer url={profile.profileMusicUrl} ownerName={profile.username} />
               </Card>
             )}
+
+            <div style={{ marginTop: 8 }}>
+              <ProfilePlaylist username={profile.username} ownerName={profile.username} />
+            </div>
 
             <Card title="🎁 GESCHENKE-VITRINE 🎁" tone="violet">
               <GiftShelf profile={profile} gifts={gifts} onChange={onChange} />
