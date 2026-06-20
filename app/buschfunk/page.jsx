@@ -73,12 +73,18 @@ export default function BuschfunkPage() {
 
           {/* Quick-Action: Status posten */}
           <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-            <Link href={`/u/${me.username}#wall`} style={{
+            <Link href="/buschfunk/neu" style={{
               background: "rgba(255,255,255,0.95)", color: "#9a3412",
               padding: "8px 16px", borderRadius: 999,
               fontWeight: 900, fontSize: 13, textDecoration: "none",
               boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-            }}>📝 Status posten</Link>
+            }}>📌 Neuer Post</Link>
+            <Link href={`/u/${me.username}#wall`} style={{
+              background: "rgba(0,0,0,0.18)", color: "#fff",
+              padding: "8px 16px", borderRadius: 999,
+              fontWeight: 800, fontSize: 13, textDecoration: "none",
+              backdropFilter: "blur(8px)",
+            }}>📝 Pinnwand</Link>
             <Link href="/heute" style={{
               background: "rgba(0,0,0,0.18)", color: "#fff",
               padding: "8px 16px", borderRadius: 999,

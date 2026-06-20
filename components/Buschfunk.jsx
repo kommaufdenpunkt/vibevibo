@@ -337,7 +337,29 @@ function renderEvent(ev, i, isLast) {
     text = <>{actor} hat ein neues Profilbild!</>;
   } else if (ev.type === "status") {
     icon = "💬";
-    text = <>{actor}: <strong><MentionText text={ev.detail} /></strong></>;
+    const POST_TYPE_BADGE = {
+      quote:        { label: "🌹 ZITAT",         color: "#ec4899" },
+      feeling:      { label: "💭 GEFÜHL",        color: "#a855f7" },
+      mention:      { label: "👯 MIT-MARKIERT",  color: "#06b6d4" },
+      memory:       { label: "📅 ERINNERUNG",    color: "#f97316" },
+      gift_show:    { label: "🎁 GESCHENK",      color: "#fb923c" },
+      now_playing:  { label: "🎵 NOW PLAYING",   color: "#10b981" },
+      never_forget: { label: "💔 NIE VERGESSEN", color: "#475569" },
+    };
+    const badge = POST_TYPE_BADGE[ev.postType];
+    text = (
+      <>
+        {actor}: {badge && (
+          <span style={{
+            display: "inline-block", fontSize: 9.5, fontWeight: 900,
+            padding: "1px 6px", borderRadius: 4,
+            background: badge.color, color: "#fff",
+            marginRight: 5, letterSpacing: 0.4, verticalAlign: "1px",
+          }}>{badge.label}</span>
+        )}
+        <strong><MentionText text={ev.detail} /></strong>
+      </>
+    );
   }
 
   const isBoosted = ev.type === "status" && (ev.boostedUntil || 0) > Date.now();
