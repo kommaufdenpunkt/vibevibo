@@ -25,6 +25,9 @@ import Marquee from "@/components/Marquee";
 import FriendButton from "@/components/FriendButton";
 import SosButton from "@/components/SosButton";
 import KnowMeBestQuiz from "@/components/KnowMeBestQuiz";
+import MoodDisplay from "@/components/MoodDisplay";
+import ProfileMusicPlayer from "@/components/ProfileMusicPlayer";
+import ComplimentsPanel from "@/components/ComplimentsPanel";
 import AmazonShelf from "@/components/AmazonShelf";
 import { useMe } from "@/lib/useMe";
 import { api } from "@/lib/api";
@@ -119,6 +122,18 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
             <OnlineSince since={profile.onlineSince} compact />
           </div>
         </div>
+
+        {/* 🎭 Mood-Display — wenn User Mood gesetzt hat */}
+        {(profile.moodEmoji || profile.moodText) && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
+            <MoodDisplay
+              emoji={profile.moodEmoji}
+              text={profile.moodText}
+              setAt={profile.moodSetAt}
+              glitter={!!profile.glitterStatus}
+            />
+          </div>
+        )}
 
         {/* 🎯 Aktions-Bar — Gruscheln, Nachricht, Fotos, Kompliment */}
         {me && !isOwner && (
@@ -226,6 +241,12 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
               </Card>
             )}
 
+            {profile.profileMusicUrl && (
+              <Card title="🎵 NEUER PROFIL-SOUND 🎵" tone="cyan">
+                <ProfileMusicPlayer url={profile.profileMusicUrl} ownerName={profile.username} />
+              </Card>
+            )}
+
             <Card title="🎁 GESCHENKE-VITRINE 🎁" tone="violet">
               <GiftShelf profile={profile} gifts={gifts} onChange={onChange} />
             </Card>
@@ -290,6 +311,10 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
                 </div>
               )}
             </Card>
+
+            <div style={{ marginTop: 12 }}>
+              <ComplimentsPanel username={profile.username} />
+            </div>
 
             {me && !isOwner && (
               <Card title="💌 KONTAKT 💌" tone="violet" tiny>

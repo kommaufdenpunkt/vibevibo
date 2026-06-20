@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors, getGuestbookEntries, isBlockedBetween, hasUserBlocked } from "@/lib/db";
+import { getUserByUsername, getPinnwand, getGifts, isOnline, updateUser, getVisitCount, getRecentVisitors, getGuestbookEntries, getProfileCustomization } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sanitizeCustomCss } from "@/lib/sanitizeCss";
 import { sanitizeHtml, sanitizeMarquee } from "@/lib/sanitizeHtml";
@@ -9,19 +9,17 @@ export async function GET(_req, { params }) {
   const user = getUserByUsername(username);
   if (!user) return NextResponse.json({ error: "not found" }, { status: 404 });
   const me = await getSessionUser();
-  // 🚫 Block-Check: wenn Block in irgendeiner Richtung, keine Inhalte zeigen
-  if (me && me.id !== user.id && isBlockedBetween(me.id, user.id)) {
-    return NextResponse.json({
-      blocked: true,
-      block: {
-        username: user.username,
-        // Eigene Sperrung sichtbar machen damit User entsperren kann
-        byMe: hasUserBlocked(me.id, user.id),
-      },
-    });
-  }
+  const customization = getProfileCustomization(user.id) || {};
   return NextResponse.json({
-    user: { ...user, online: isOnline(user.lastSeen) },
+    user: {
+      ...user,
+      online: isOnline(user.lastSeen),
+      moodEmoji: customization.moodEmoji || "",
+      moodText: customization.moodText || "",
+      moodSetAt: customization.moodSetAt || 0,
+      profileMusicUrl: customization.profileMusicUrl || "",
+      glitterStatus: customization.glitterStatus || 0,
+    },
     pinnwand: getPinnwand(user.id, { byUserId: me?.id }),
     guestbook: getGuestbookEntries(user.id),
     gifts: getGifts(user.id),
