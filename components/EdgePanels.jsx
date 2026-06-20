@@ -218,6 +218,10 @@ export default function EdgePanels() {
             <span className="vv-edge-quick-emoji">🥚</span>
             <span className="vv-edge-quick-label">Mein VIBO</span>
           </Link>
+          <Link href="/crushes" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #f43f5e, #e11d48)" }}>
+            <span className="vv-edge-quick-emoji">💕</span>
+            <span className="vv-edge-quick-label">Geheimer Schwarm</span>
+          </Link>
         </div>
       </aside>
     </>
