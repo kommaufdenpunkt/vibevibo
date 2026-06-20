@@ -17,6 +17,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import AdSenseLoader from "@/components/AdSenseLoader";
 import NewsToast from "@/components/NewsToast";
 import AchievementToast from "@/components/AchievementToast";
+import DeleteCountdownBanner from "@/components/DeleteCountdownBanner";
 import { MeProvider } from "@/lib/useMe";
 import { THEME_BOOTSTRAP } from "@/lib/useTheme";
 
@@ -128,6 +129,7 @@ export default function RootLayout({ children }) {
           <AdSenseLoader />
           <NewsToast />
           <AchievementToast />
+          <DeleteCountdownBanner />
         </MeProvider>
       </body>
     </html>

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useMe } from "@/lib/useMe";
 import PremiumHero from "@/components/PremiumHero";
 import CookieConsentReset from "@/components/CookieConsentReset";
+import AccountDeleteButton from "@/components/AccountDeleteButton";
 
 export default function PrivacyPage() {
   const { me, loading } = useMe();
@@ -309,6 +310,22 @@ export default function PrivacyPage() {
 
         {/* 🍪 Cookie/Werbe-Einstellungen zurücksetzen — DSGVO-Pflicht */}
         <CookieConsentReset />
+
+        {/* 🗑 Account löschen (24h Bedenkzeit) */}
+        <div style={{
+          marginTop: 22, padding: 18, borderRadius: 16,
+          background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)",
+          border: "1px solid rgba(0,0,0,0.06)",
+        }}>
+          <h3 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 800, color: "#1f2937" }}>
+            🗑 Mein Konto löschen
+          </h3>
+          <p style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.5, marginBottom: 12 }}>
+            Wenn du gehen willst: 24 Stunden Bedenkzeit. Du kannst es jederzeit zurücknehmen.
+            Posts/Kommentare bleiben anonymisiert erhalten (für mögliche forensische Auswertung bei Vorfällen).
+          </p>
+          <AccountDeleteButton />
+        </div>
 
       </div>
     </div>
