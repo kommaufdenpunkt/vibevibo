@@ -246,12 +246,12 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
                 <Pinnwand profile={profile} entries={pinnwand} onChange={onChange} />
               )}
               {wallTab === "guestbook" && (
-                <Gaestebuch profile={profile} initialEntries={guestbook} />
-
-                {/* ❓ Wer kennt mich am besten? Quiz */}
-                <div style={{ marginTop: 16 }}>
-                  <KnowMeBestQuiz username={profile.username} />
-                </div>
+                <>
+                  <Gaestebuch profile={profile} initialEntries={guestbook} />
+                  <div style={{ marginTop: 16 }}>
+                    <KnowMeBestQuiz username={profile.username} />
+                  </div>
+                </>
               )}
             </Card>
           </main>
