@@ -145,7 +145,13 @@ function MessengerInner() {
         </div>
         <div className="vv-msgapp-header-actions">
           {tab === "chats" && (
-            <button type="button" onClick={() => setCreating(true)} title="Neue Gruppe" aria-label="Neue Gruppe">+</button>
+            <>
+              <Link href="/messenger/archiv" title="Archiv" aria-label="Archiv" style={{
+                marginRight: 6, fontSize: 18, textDecoration: "none", color: "inherit",
+                padding: "0 6px",
+              }}>📂</Link>
+              <button type="button" onClick={() => setCreating(true)} title="Neue Gruppe" aria-label="Neue Gruppe">+</button>
+            </>
           )}
         </div>
       </header>
