@@ -46,6 +46,7 @@ const PUBLIC_PREFIX = [
   "/api/_internal/",
   "/api/welcome-bonus",
   "/api/ads/public-",  // 🍪 Public-Ad-Config für anonyme Besucher
+  "/api/cron/",        // ⏰ Cron-Endpoints — eigene x-cron-secret-Auth pro Route
   "/ads.txt",
 ];
 
