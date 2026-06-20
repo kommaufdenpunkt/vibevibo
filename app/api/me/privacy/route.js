@@ -20,6 +20,10 @@ function readPrivacyRaw(userId) {
     const ws = DB.getWomenShieldFields(userId);
     if (ws) Object.assign(base, ws);
   }
+  // 🩷 Frauen-Initiative
+  if (typeof DB.getWomenInitiative === "function") {
+    base.women_initiative = DB.getWomenInitiative(userId) ? 1 : 0;
+  }
   return base;
 }
 
@@ -80,7 +84,14 @@ export async function POST(req) {
     }
   }
 
-  if (Object.keys(patch).length === 0 && !touchedWS) {
+  // 🩷 Frauen-Initiative separat
+  let touchedWI = false;
+  if (typeof body.womenInitiative === "boolean" && typeof DB.setWomenInitiative === "function") {
+    DB.setWomenInitiative(me.id, body.womenInitiative);
+    touchedWI = true;
+  }
+
+  if (Object.keys(patch).length === 0 && !touchedWS && !touchedWI) {
     return NextResponse.json({ error: "Keine gültigen Felder" }, { status: 400 });
   }
 
