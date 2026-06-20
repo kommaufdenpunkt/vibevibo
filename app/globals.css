@@ -10017,3 +10017,24 @@ input[type="number"], input[type="tel"], textarea, select {
   flex-shrink: 0;
   align-self: flex-end;
 }
+
+/* ✨ 2008er-Glitter-Animation für Status-Pille */
+@keyframes vv-glitter-shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.vv-mood-glitter {
+  position: relative;
+  background: linear-gradient(120deg,
+    rgba(236,72,153,0.25), rgba(168,85,247,0.25),
+    rgba(6,182,212,0.25), rgba(251,191,36,0.25),
+    rgba(236,72,153,0.25)) !important;
+  background-size: 300% 100% !important;
+  animation: vv-glitter-shimmer 4s linear infinite;
+}
+.vv-mood-glitter::before {
+  content: "✨";
+  position: absolute; top: -2px; right: 4px; font-size: 12px;
+  animation: vv-glitter-shimmer 2s linear infinite;
+}
