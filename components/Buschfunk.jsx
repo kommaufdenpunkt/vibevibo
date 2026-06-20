@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
@@ -412,6 +412,10 @@ export default function Buschfunk() {
   const [events, setEvents] = useState([]);
   const [filter, setFilter] = useState("all");
   const [refreshing, setRefreshing] = useState(false);
+  const [lastFetch, setLastFetch] = useState(0);
+  const [tick, setTick] = useState(0);
+  const [newCount, setNewCount] = useState(0);
+  const lastSeenAtRef = useRef(0);
 
   const load = async () => {
     setRefreshing(true);
@@ -419,6 +423,12 @@ export default function Buschfunk() {
     try {
       const d = await api.buschfunk();
       const next = d.events || [];
+      // 🆕 Neue Posts seit letzter Sicht zählen
+      if (lastSeenAtRef.current > 0 && next.length > 0) {
+        const fresh = next.filter((e) => (e.at || 0) > lastSeenAtRef.current).length;
+        if (fresh > 0) setNewCount(fresh);
+      }
+      setLastFetch(Date.now());
       setEvents((prev) => {
         if (prev.length === next.length && prev[0]?.id === next[0]?.id && prev[0]?.at === next[0]?.at) return prev;
         return next;
@@ -431,9 +441,23 @@ export default function Buschfunk() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 120000);
+    const t = setInterval(load, 60000);  // 60s statt 120s — frischer Feed
     return () => clearInterval(t);
   }, []);
+
+  // ⏱ Tick alle 10s für „vor X Sek"-Anzeige
+  useEffect(() => {
+    const t = setInterval(() => setTick((x) => x + 1), 10000);
+    return () => clearInterval(t);
+  }, []);
+
+  // 👀 Wenn neue Events sichtbar → als gesehen markieren
+  useEffect(() => {
+    if (events.length > 0) lastSeenAtRef.current = events[0].at || 0;
+  }, [events]);
+
+  const secsSinceFetch = lastFetch ? Math.max(0, Math.floor((Date.now() - lastFetch) / 1000)) : 0;
+  void tick;
 
   const tab = FILTER_TABS.find((t) => t.key === filter) || FILTER_TABS[0];
   const filtered = events.filter((ev) => {
@@ -444,6 +468,51 @@ export default function Buschfunk() {
 
   return (
     <div className="vv-card">
+      {/* 👑 KING-FEATURE-BANNER — rotiert alle 8s, zeigt was VibeVibo anders macht */}
+      <KingFeatureBanner />
+
+      {/* ✿ 2006er Live-Ticker — pulsierender Punkt + „aktualisiert vor X Sek" */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "7px 12px", marginBottom: 10, borderRadius: 8,
+        background: "linear-gradient(135deg, #fce7f3, #f5d0fe, #ddd6fe)",
+        border: "2px ridge #ec4899",
+        fontSize: 11.5, fontWeight: 800, color: "#831843",
+        textShadow: "0 1px 0 #fff", letterSpacing: 0.5,
+      }}>
+        <span style={{
+          width: 10, height: 10, borderRadius: "50%",
+          background: refreshing ? "#fbbf24" : "#22c55e",
+          boxShadow: refreshing ? "0 0 8px #fbbf24" : "0 0 6px #22c55e",
+          animation: "vv-bf-blink 1s steps(2) infinite",
+          flexShrink: 0,
+        }} />
+        <span style={{ flex: 1 }}>
+          ✿ LIVE · vor {secsSinceFetch}s aktualisiert ✿
+        </span>
+        {newCount > 0 && (
+          <button onClick={() => { setNewCount(0); load(); }} style={{
+            padding: "3px 9px", borderRadius: 999,
+            background: "linear-gradient(135deg, #ec4899, #a855f7)",
+            color: "#fff", border: "2px ridge #fff",
+            fontSize: 10, fontWeight: 900, letterSpacing: 0.5,
+            cursor: "pointer", fontFamily: "inherit",
+            textShadow: "0 1px 1px rgba(0,0,0,0.3)",
+            animation: "vv-bf-pulse 1.4s infinite",
+          }}>★ {newCount} NEU ★</button>
+        )}
+        <style>{`
+          @keyframes vv-bf-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.25; }
+          }
+          @keyframes vv-bf-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+          }
+        `}</style>
+      </div>
+
       <div className="vv-bf-toolbar">
         <div className="vv-bf-filter-chips">
           {FILTER_TABS.map((t) => (
@@ -528,5 +597,101 @@ export default function Buschfunk() {
         </div>
       )}
     </div>
+  );
+}
+
+// 👑 King-Feature-Banner — rotiert alle 8s durch Killer-Features die andere
+// Netzwerke nicht haben. Schult User auf die einzigartigen VibeVibo-Tricks.
+const KING_FEATURES = [
+  { emoji: "💕", title: "GEHEIMER SCHWARM", body: "3 Slots, geheim. Wenn ihr beide → 💥 Match mit Konfetti.", href: "/crushes" },
+  { emoji: "🩷", title: "FRAUEN ENTSCHEIDEN", body: "Frauen starten Gespräche selbst. Männer kommentieren erst.", href: "/admirers" },
+  { emoji: "📅", title: "HEUTE VOR X JAHREN", body: "Deine eigenen Posts/Geschenke aus heutigem Tag in der Vergangenheit.", href: "/erinnerungen" },
+  { emoji: "🎀", title: "FIDOLIN ERZÄHLT", body: "Nostalgische Erinnerungen direkt im Feed — Mauerfall, ICQ-Sound, Negro-Kuss …", href: "/buschfunk" },
+  { emoji: "🎵", title: "PROFIL-PLAYLIST", body: "Bis zu 5 Songs auf deinem Profil. 🎲 Random-Start — nie der gleiche Anfang.", href: "/profile/playlist" },
+  { emoji: "💌", title: "ANONYME KOMPLIMENTE", body: "Sag jemandem was Nettes — niemand erfährt von wem.", href: "/profile" },
+  { emoji: "❓", title: "WER KENNT MICH AM BESTEN?", body: "Quiz für deine Freunde mit Bestenliste.", href: "/profile" },
+  { emoji: "🎁", title: "GESCHENK-EDITIONEN", body: "Sammel-Sets wie früher bei Diddl-Maus oder Tazo. Komplett = Badge.", href: "/sammlungen" },
+  { emoji: "💬", title: "CHAT-ARCHIV", body: "Wichtige Nachrichten archivieren — bleibt aus dem Verlauf raus.", href: "/messenger/archiv" },
+  { emoji: "📌", title: "POST-TYPEN-EDITOR", body: "Zitat · Gefühl · Memory · Now-Playing — 7 Typen statt nur „Status".", href: "/buschfunk/neu" },
+];
+
+function KingFeatureBanner() {
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * KING_FEATURES.length));
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setIdx((i) => (i + 1) % KING_FEATURES.length);
+    }, 8000);
+    return () => clearInterval(t);
+  }, []);
+
+  const f = KING_FEATURES[idx];
+
+  return (
+    <Link href={f.href} style={{
+      display: "block", textDecoration: "none",
+      padding: "12px 14px", marginBottom: 10, borderRadius: 12,
+      background: "linear-gradient(135deg, #fbbf24, #ec4899, #a855f7, #06b6d4)",
+      backgroundSize: "300% 100%",
+      animation: "vv-bf-king-wave 12s ease-in-out infinite",
+      color: "#fff",
+      border: "3px ridge rgba(255,255,255,0.4)",
+      boxShadow: "0 4px 14px rgba(236,72,153,0.3), inset 0 1px 0 rgba(255,255,255,0.4)",
+      position: "relative", overflow: "hidden",
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 12,
+        position: "relative", zIndex: 1,
+      }}>
+        <span style={{
+          fontSize: 32, flexShrink: 0,
+          animation: "vv-bf-king-spin 6s ease-in-out infinite",
+          textShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        }}>{f.emoji}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 10.5, fontWeight: 900, letterSpacing: 1.5, opacity: 0.95,
+            textShadow: "0 1px 1px rgba(0,0,0,0.4)",
+          }}>👑 KING-FEATURE</div>
+          <div style={{
+            fontSize: 14, fontWeight: 900, letterSpacing: 0.5, marginTop: 1,
+            textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+          }}>{f.title}</div>
+          <div style={{
+            fontSize: 11.5, fontWeight: 600, marginTop: 3, opacity: 0.95,
+            textShadow: "0 1px 1px rgba(0,0,0,0.25)", lineHeight: 1.35,
+          }}>{f.body}</div>
+        </div>
+        <span style={{
+          flexShrink: 0, fontSize: 18, opacity: 0.85,
+          textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+        }}>→</span>
+      </div>
+
+      {/* Mini-Punkte unten = welcher Slide */}
+      <div style={{
+        display: "flex", gap: 3, justifyContent: "center", marginTop: 8,
+        position: "relative", zIndex: 1,
+      }}>
+        {KING_FEATURES.map((_, i) => (
+          <span key={i} style={{
+            width: i === idx ? 14 : 4, height: 4, borderRadius: 4,
+            background: i === idx ? "#fff" : "rgba(255,255,255,0.4)",
+            transition: "width 0.3s",
+          }} />
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes vv-bf-king-wave {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        @keyframes vv-bf-king-spin {
+          0%, 100% { transform: rotate(-8deg) scale(1); }
+          50% { transform: rotate(8deg) scale(1.1); }
+        }
+      `}</style>
+    </Link>
   );
 }
