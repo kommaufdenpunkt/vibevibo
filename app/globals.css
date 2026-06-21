@@ -2929,6 +2929,26 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 .vv-messenger-desktop-frame .vv-msgapp-empty { color: #475569 !important; }
 
+/* Filter-Chips (Alle / Ungelesen / Gruppen) — auf MySpace-Blau */
+.vv-msgapp-chip {
+  background: #f0f4fa !important;
+  color: #1e3a8a !important;
+  border: 1px solid #c5d2e8 !important;
+}
+.vv-msgapp-chip.active {
+  background: linear-gradient(180deg, #1e40af, #1e3a8a) !important;
+  color: #ffffff !important;
+  border-color: #1e3a8a !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 2px 6px rgba(30,64,175,0.35) !important;
+}
+.vv-msgapp-chip:hover {
+  background: #dbeafe !important;
+  border-color: #1e40af !important;
+}
+.vv-msgapp-chip.active:hover {
+  background: linear-gradient(180deg, #2563eb, #1e40af) !important;
+}
+
 
 /* Chat-Window-Hintergrund (Nachrichtenliste) im Dark-Mode dunkel */
 [data-theme="dark"] .vv-app-fullscreen .vv-chat-window,
@@ -10247,4 +10267,187 @@ input[type="number"], input[type="tel"], textarea, select {
   content: "✨";
   position: absolute; top: -2px; right: 4px; font-size: 12px;
   animation: vv-glitter-shimmer 2s linear infinite;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   🎮 LIVE-GAMES — MySpace-Blau, Mobile-First
+   ════════════════════════════════════════════════════════════════════ */
+.vv-game-trigger {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 4px;
+  background: linear-gradient(180deg, #f97316, #ea580c);
+  color: #ffffff; border: 1px solid #c2410c;
+  font-family: "Trebuchet MS", Tahoma, sans-serif;
+  font-weight: 800; font-size: 13px; letter-spacing: 0.3px;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25); cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 0 #9a3412;
+}
+.vv-game-trigger:hover { background: linear-gradient(180deg, #fb923c, #f97316); }
+.vv-game-trigger:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 0 0 #9a3412; }
+
+.vv-game-modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 16px;
+}
+.vv-game-modal {
+  background: #ffffff; border: 2px solid #1e40af; border-radius: 6px;
+  width: 100%; max-width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px); overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(30,58,138,0.5);
+}
+.vv-game-modal-head {
+  padding: 12px 16px; font-weight: 800; font-size: 14px; letter-spacing: 1px;
+  color: #ffffff; background: linear-gradient(180deg, #1e40af, #1e3a8a);
+  border-bottom: 2px solid #f97316;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+.vv-game-pickitem {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: 4px; cursor: pointer;
+  background: #f0f4fa; border: 1px solid #c5d2e8;
+  color: #0f172a; font-family: inherit; width: 100%; text-align: left;
+}
+.vv-game-pickitem:hover { background: #dbeafe; border-color: #1e40af; }
+.vv-game-pickitem:disabled { opacity: 0.5; cursor: wait; }
+
+.vv-game-lobby, .vv-game-board {
+  background: #ffffff; border: 2px solid #1e40af; border-radius: 6px;
+  margin: 8px 0; box-shadow: 0 4px 12px rgba(30,58,138,0.25);
+  overflow: hidden;
+}
+.vv-game-lobby-head, .vv-game-board-head {
+  padding: 10px 14px; background: linear-gradient(180deg, #1e40af, #1e3a8a);
+  color: #ffffff; font-weight: 700; font-size: 13px; letter-spacing: 0.5px;
+  border-bottom: 2px solid #f97316;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  display: flex; align-items: center; gap: 4px;
+}
+.vv-game-pot {
+  margin-left: auto; padding: 2px 8px; border-radius: 999px;
+  background: rgba(251,191,36,0.25); color: #fef3c7;
+  font-size: 11px; font-weight: 800;
+}
+
+.vv-game-lobby-players {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 14px; background: #f8fafc;
+}
+.vv-game-lobby-player {
+  display: flex; align-items: center; padding: 6px 10px; border-radius: 3px;
+  background: #ffffff; border: 1px solid #c5d2e8; font-size: 13px; color: #0f172a;
+}
+.vv-game-lobby-player[data-spec="1"] { opacity: 0.65; }
+
+.vv-game-lobby-actions {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px;
+  background: #ffffff; border-top: 1px solid #e2e8f0;
+}
+.vv-game-btn-primary {
+  flex: 1; min-width: 140px; padding: 10px 14px; border-radius: 4px;
+  background: linear-gradient(180deg, #f97316, #ea580c); color: #ffffff;
+  border: 1px solid #c2410c; font-weight: 800; font-size: 13px;
+  cursor: pointer; font-family: inherit;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 0 #9a3412;
+}
+.vv-game-btn-go {
+  flex: 1; min-width: 200px; padding: 12px 14px; border-radius: 4px;
+  background: linear-gradient(180deg, #1e40af, #1e3a8a); color: #ffffff;
+  border: 1px solid #1e3a8a; font-weight: 800; font-size: 14px;
+  cursor: pointer; font-family: inherit;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 2px 0 #172554;
+}
+.vv-game-btn-go:disabled { opacity: 0.5; cursor: not-allowed; }
+.vv-game-btn-ghost {
+  padding: 9px 12px; border-radius: 4px;
+  background: #f0f4fa; color: #1e3a8a; border: 1px solid #c5d2e8;
+  font-weight: 700; font-size: 12px; cursor: pointer; font-family: inherit;
+}
+
+.vv-game-board-rows {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 12px; background: #f8fafc;
+}
+.vv-game-board-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 4px;
+  background: #ffffff; border: 1px solid #c5d2e8;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.vv-game-board-row[data-active="1"] {
+  border-color: #f97316; border-width: 2px;
+  box-shadow: 0 0 12px rgba(249,115,22,0.4);
+  background: #fff7ed;
+}
+.vv-game-board-row[data-me="1"] { font-weight: 700; }
+.vv-game-board-row[data-winner="1"] {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-color: #fbbf24; border-width: 2px;
+}
+.vv-game-board-name {
+  flex: 1; min-width: 0; font-size: 13px; color: #0f172a;
+  display: flex; align-items: center; gap: 6px;
+}
+.vv-game-turn-badge {
+  font-size: 10px; font-weight: 800; color: #ea580c; letter-spacing: 0.5px;
+  background: rgba(249,115,22,0.15); padding: 2px 6px; border-radius: 999px;
+  animation: vv-game-pulse 1.2s ease-in-out infinite;
+}
+@keyframes vv-game-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+.vv-game-board-dice { display: flex; gap: 4px; }
+.vv-game-die {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 22px; line-height: 1; border-radius: 4px;
+  background: #ffffff; border: 1px solid #c5d2e8; color: #0f172a;
+}
+.vv-game-die.empty { color: #cbd5e1; background: #f1f5f9; font-size: 14px; }
+.vv-game-die.rolling { animation: vv-die-rolling 0.7s ease-out; }
+@keyframes vv-die-rolling {
+  0%   { transform: rotate(0deg) scale(0.8); background: #fef3c7; }
+  50%  { transform: rotate(180deg) scale(1.2); background: #fbbf24; }
+  100% { transform: rotate(360deg) scale(1); background: #ffffff; }
+}
+.vv-game-board-sum {
+  min-width: 36px; text-align: right; font-weight: 800; font-size: 16px;
+  color: #1e40af; font-variant-numeric: tabular-nums;
+}
+
+.vv-game-actions {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px; background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+.vv-game-roll-btn {
+  padding: 14px 18px; border-radius: 4px;
+  background: linear-gradient(180deg, #f97316, #ea580c); color: #ffffff;
+  border: 1px solid #c2410c; font-weight: 900; font-size: 16px;
+  letter-spacing: 0.5px; cursor: pointer; font-family: inherit;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 0 #9a3412, 0 6px 16px rgba(234,88,12,0.4);
+  animation: vv-game-roll-pulse 2s ease-in-out infinite;
+}
+@keyframes vv-game-roll-pulse {
+  0%, 100% { transform: translateY(0); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 0 #9a3412, 0 6px 16px rgba(234,88,12,0.4); }
+  50%      { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 5px 0 #9a3412, 0 10px 20px rgba(234,88,12,0.55); }
+}
+.vv-game-roll-btn:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 0 0 #9a3412; animation: none; }
+.vv-game-roll-btn:disabled { opacity: 0.6; cursor: wait; animation: none; }
+.vv-game-waiting {
+  padding: 12px; text-align: center; font-size: 12.5px; color: #64748b;
+  background: #f0f4fa; border-radius: 3px; font-style: italic;
+}
+
+.vv-game-result {
+  padding: 18px; text-align: center;
+  background: linear-gradient(180deg, #fef3c7, #fde68a);
+  border-bottom: 2px solid #fbbf24;
+  color: #78350f;
+}
+.vv-game-err {
+  margin: 8px 14px; padding: 8px 10px; border-radius: 3px;
+  background: #fef2f2; border: 1px solid #dc2626; color: #991b1b;
+  font-size: 12px; font-weight: 700;
 }
