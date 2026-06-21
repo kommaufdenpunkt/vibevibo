@@ -6,10 +6,13 @@
 
 import Link from "next/link";
 import Buschfunk from "@/components/Buschfunk";
+import JappyComposer from "@/components/JappyComposer";
 import { useMe } from "@/lib/useMe";
+import { useState } from "react";
 
 export default function HomePage() {
   const { me } = useMe();
+  const [feedTick, setFeedTick] = useState(0);
 
   if (!me) {
     return (
@@ -71,20 +74,14 @@ export default function HomePage() {
             Freundes-News, Status, neue Profile, Geschenke — alles auf einem Blick.
           </div>
 
-          {/* Quick-Action */}
+          {/* Quick-Links */}
           <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-            <Link href="/buschfunk/neu" style={{
+            <Link href={`/u/${me.username}#wall`} style={{
               background: "rgba(255,255,255,0.95)", color: "#9a3412",
               padding: "8px 16px", borderRadius: 999,
               fontWeight: 900, fontSize: 13, textDecoration: "none",
               boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-            }}>📌 Neuer Post</Link>
-            <Link href={`/u/${me.username}#wall`} style={{
-              background: "rgba(0,0,0,0.18)", color: "#fff",
-              padding: "8px 16px", borderRadius: 999,
-              fontWeight: 800, fontSize: 13, textDecoration: "none",
-              backdropFilter: "blur(8px)",
-            }}>📝 Pinnwand</Link>
+            }}>📝 Meine Pinnwand</Link>
             <Link href="/heute" style={{
               background: "rgba(0,0,0,0.18)", color: "#fff",
               padding: "8px 16px", borderRadius: 999,
@@ -93,6 +90,9 @@ export default function HomePage() {
             }}>📊 Heute</Link>
           </div>
         </div>
+
+        {/* 📝 Jappy-Style Inline-Composer — direkt posten ohne Seiten-Wechsel */}
+        <JappyComposer onPosted={() => setFeedTick((t) => t + 1)} />
 
         <style>{`
           @keyframes vv-bf-hero {
@@ -110,7 +110,7 @@ export default function HomePage() {
           border: "1px solid rgba(255,255,255,0.5)",
           boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
         }}>
-          <Buschfunk />
+          <Buschfunk key={feedTick} />
         </div>
       </div>
     </div>
