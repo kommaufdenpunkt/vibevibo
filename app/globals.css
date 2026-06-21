@@ -2862,6 +2862,74 @@ input[type="number"], input[type="tel"], textarea, select {
   margin: 0 auto;
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   📨 MESSENGER LESBARKEIT — schwarz auf weiß, garantiert.
+   Direkt auf den Elementen mit !important, damit nichts (OS-Dark-Mode,
+   Page-Skin, Cascading) den Text light macht.
+   ════════════════════════════════════════════════════════════════════ */
+.vv-messenger-desktop-frame .vv-msgapp,
+.vv-messenger-desktop-frame .vv-msgapp-main,
+.vv-messenger-desktop-frame .vv-app-fullscreen {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-header {
+  background: rgba(255,255,255,0.95) !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #c5d2e8 !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-header-title,
+.vv-messenger-desktop-frame .vv-msgapp-header * {
+  color: #0f172a !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-search-input {
+  background: #f0f4fa !important;
+  color: #0f172a !important;
+  border: 1px solid #c5d2e8 !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-search-input::placeholder { color: #64748b !important; }
+
+/* Tabs (Alle / Ungelesen / Gruppen) */
+.vv-messenger-desktop-frame .vv-msgapp-pill,
+.vv-messenger-desktop-frame .vv-msgapp-tab-pill {
+  background: #f0f4fa !important;
+  color: #1e3a8a !important;
+  border: 1px solid #c5d2e8 !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-pill[data-active="true"],
+.vv-messenger-desktop-frame .vv-msgapp-tab-pill[data-active="true"] {
+  background: linear-gradient(180deg, #1e40af, #1e3a8a) !important;
+  color: #ffffff !important;
+  border-color: #1e3a8a !important;
+}
+
+/* Section / Status headers */
+.vv-messenger-desktop-frame .vv-msgapp-status,
+.vv-messenger-desktop-frame .vv-msgapp-section {
+  color: #475569 !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-status::after,
+.vv-messenger-desktop-frame .vv-msgapp-section::after {
+  background: linear-gradient(90deg, #c5d2e8, transparent) !important;
+}
+
+/* Chat-Rows */
+.vv-messenger-desktop-frame .vv-msgapp-row,
+.vv-messenger-desktop-frame .vv-msgapp-row * {
+  color: #0f172a !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-row-name { color: #0f172a !important; font-weight: 700 !important; }
+.vv-messenger-desktop-frame .vv-msgapp-row-preview { color: #475569 !important; }
+.vv-messenger-desktop-frame .vv-msgapp-row-time { color: #64748b !important; }
+.vv-messenger-desktop-frame .vv-msgapp-row:hover { background: rgba(30,64,175,0.06) !important; }
+.vv-messenger-desktop-frame .vv-msgapp-row[data-unread="1"] .vv-msgapp-row-name,
+.vv-messenger-desktop-frame .vv-msgapp-row[data-unread="1"] .vv-msgapp-row-preview {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+.vv-messenger-desktop-frame .vv-msgapp-empty { color: #475569 !important; }
+
+
 /* Chat-Window-Hintergrund (Nachrichtenliste) im Dark-Mode dunkel */
 [data-theme="dark"] .vv-app-fullscreen .vv-chat-window,
 [data-theme="dark"] .vv-app-fullscreen .vv-chat-window form {
