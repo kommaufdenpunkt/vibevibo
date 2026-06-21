@@ -2799,13 +2799,21 @@ input[type="number"], input[type="tel"], textarea, select {
   border: none;
   box-shadow: none;
   overflow: visible;
-  /* Konsistente, gut lesbare Palette auf dem lila App-Hintergrund:
-     dunkle Karten + heller Text, egal welches Theme global aktiv ist. */
-  --vv-bg: transparent;
-  --vv-card: #1f1640;
-  --vv-text: #f3eeff;
-  --vv-muted: rgba(243,238,255,0.72);
-  --vv-border: rgba(255,255,255,0.14);
+  /* MySpace-Blau-Theme: weiße Karten + dunkler Text auf hellem Seitenhintergrund.
+     !important damit OS-Dark-Mode-Auto-Detection nicht den hellen Look überschreibt. */
+  --vv-bg: transparent !important;
+  --vv-card: #ffffff !important;
+  --vv-text: #0f172a !important;
+  --vv-muted: #475569 !important;
+  --vv-border: #c5d2e8 !important;
+  --vv-input-bg: #f0f4fa !important;
+  --vv-tabbar-bg: rgba(255,255,255,0.95) !important;
+  --vv-active: rgba(30,64,175,0.06) !important;
+  --vv-accent: #1e40af !important;
+  --vv-accent-bg: rgba(30,64,175,0.12) !important;
+  --vv-bubble-in: #ffffff !important;
+  --vv-bubble-in-text: #0f172a !important;
+  --vv-bubble-in-border: #c5d2e8 !important;
 }
 .vv-messenger-desktop-frame .vv-msgapp {
   display: block;
@@ -2816,14 +2824,17 @@ input[type="number"], input[type="tel"], textarea, select {
   flex: none;
   overflow: visible;
   min-height: 42vh;
-  border-radius: 0;
+  border-radius: 8px;
   margin-top: 0;
   /* Inhalt in einer zentrierten Spalte statt randlos breit */
   max-width: 760px;
   margin-left: auto;
   margin-right: auto;
   padding: 14px 16px 24px;
-  background: transparent;
+  background: #ffffff;
+  border: 1px solid #c5d2e8;
+  box-shadow: 0 4px 18px rgba(30,58,138,0.12);
+  color: #0f172a;
 }
 /* Header zentriert + dezenter auf Desktop */
 .vv-messenger-desktop-frame .vv-msgapp-header {
