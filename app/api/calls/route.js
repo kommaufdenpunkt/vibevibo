@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import {
   createCall, getUserByUsername, getChatRoom, isRoomMember,
   listChatRoomMemberIds, publishToUser, isChatMuted,
+  isWomenInitiativeBlocking,
 } from "@/lib/db";
 import { isMuted } from "@/lib/moderate";
 import { sendPushToUser } from "@/lib/push";
@@ -24,6 +25,17 @@ export async function POST(req) {
     const partner = getUserByUsername(String(body?.partnerUsername || ""));
     if (!partner) return NextResponse.json({ error: "partner not found" }, { status: 404 });
     if (partner.id === me.id) return NextResponse.json({ error: "kein selbst-call" }, { status: 400 });
+
+    // 🩷 Frauen-Initiative: Männer dürfen Frauen mit Initiative-Schalter nicht
+    // direkt anrufen. Erst müssen sie kommentieren/reagieren — wenn sie sich
+    // für ihn interessiert, schreibt sie zuerst. Dann darf er sie anrufen.
+    if (typeof isWomenInitiativeBlocking === "function"
+        && isWomenInitiativeBlocking(me.id, partner.id)) {
+      return NextResponse.json({
+        error: "🩷 Diese Nutzerin startet Kontakte selbst. Reagiere oder kommentiere auf ihre Posts — wenn sie sich für dich interessiert, schreibt oder ruft sie dich zuerst an.",
+      }, { status: 403 });
+    }
+
     partnerId = partner.id;
     inviteeIds = [partner.id];
   } else {
