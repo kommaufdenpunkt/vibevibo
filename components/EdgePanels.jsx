@@ -19,7 +19,7 @@ const NAV_GROUPS = [
   {
     title: "👤 Persönlich",
     items: [
-      { href: "/heute", label: "Startseite", icon: "🏠" },
+      { href: "/", label: "Startseite", icon: "🏠" },
       { href: "/profile", label: "Mein Profil", icon: "🪪" },
       { href: "/messenger", label: "Messenger", icon: "💬" },
       { href: "/freunde", label: "Freunde", icon: "👯" },
@@ -28,7 +28,6 @@ const NAV_GROUPS = [
   {
     title: "🌍 Community",
     items: [
-      { href: "/buschfunk", label: "Buschfunk", icon: "📣" },
       { href: "/coms", label: "Coms", icon: "🌐" },
       { href: "/karte", label: "Karte", icon: "🗺️" },
       { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
@@ -202,17 +201,13 @@ export default function EdgePanels() {
         {/* Aufgeräumte Schnell-Aktionen — 4 wichtigste Sprungbretter */}
         <div className="vv-edge-quick">
           <div className="vv-edge-nav-grouptitle">🚀 Schnell-Aktionen</div>
-          <Link href="/heute" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #ec4899, #db2777)" }}>
+          <Link href="/" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #ec4899, #db2777)" }}>
             <span className="vv-edge-quick-emoji">🏠</span>
             <span className="vv-edge-quick-label">Startseite</span>
           </Link>
           <Link href="/messenger" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)" }}>
             <span className="vv-edge-quick-emoji">💬</span>
             <span className="vv-edge-quick-label">Messenger</span>
-          </Link>
-          <Link href="/buschfunk" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #fb923c, #ea580c)" }}>
-            <span className="vv-edge-quick-emoji">📣</span>
-            <span className="vv-edge-quick-label">Buschfunk</span>
           </Link>
           <Link href="/vibo" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)" }}>
             <span className="vv-edge-quick-emoji">🥚</span>
