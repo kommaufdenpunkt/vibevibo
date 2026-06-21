@@ -1,14 +1,12 @@
 "use client";
 
 // 🔑 LOGIN — komplett im 2007er-Style mit WordArt, Glitzer-Avatar und neon Vibes.
-// Tabs für Login/Registrieren, 2FA, Emoji-Picker mit Animation, Mobile-First.
+// Tabs für Login/Registrieren, 2FA, Profilfoto-Upload (Fidolin-moderiert), Mobile-First.
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/useMe";
-
-const EMOJIS = ["🙂","😎","🌸","🛹","👑","🎮","💅","🎧","🦄","🌈","🔥","🌟","💖","🎀","🍀","⚡","🦋","☕"];
 
 export default function LoginPageWrapper() {
   return <Suspense fallback={null}><LoginPage /></Suspense>;
@@ -24,15 +22,31 @@ function LoginPage() {
   const [error, setError] = useState(oauthError);
   const [needsTotp, setNeedsTotp] = useState(false);
   const [totp, setTotp] = useState("");
+  const [avatarData, setAvatarData] = useState("");
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const fileRef = useRef(null);
 
   const [form, setForm] = useState({
     username: "",
     displayName: "",
     password: "",
-    emoji: "🙂",
   });
 
   function up(k, v) { setForm((f) => ({ ...f, [k]: v })); }
+
+  async function pickAvatar(file) {
+    if (!file) return;
+    setAvatarBusy(true);
+    setError(null);
+    try {
+      const dataUrl = await readAndCompress(file, 1024);
+      setAvatarData(dataUrl);
+    } catch {
+      setError("Bild konnte nicht gelesen werden.");
+    } finally {
+      setAvatarBusy(false);
+    }
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -51,7 +65,7 @@ function LoginPage() {
           username: form.username,
           displayName: form.displayName || form.username,
           password: form.password,
-          emoji: form.emoji,
+          images: avatarData ? [avatarData] : [],
         });
       }
       await refresh();
@@ -71,18 +85,20 @@ function LoginPage() {
 
   return (
     <div className="vv-login-page">
-      {/* ★ HERO ★ */}
+      {/* ❦ HERO ❦ */}
       <div className="vv-login-hero">
         <div className="vv-login-hero-stars">
-          <span>✿</span><span>★</span><span>✩</span><span>♡</span>
-          <span>♥</span><span>★</span><span>✿</span><span>✩</span>
+          <span>✦</span><span>❦</span><span>✦</span><span>❀</span>
+          <span>❦</span><span>✦</span><span>❀</span><span>✦</span>
         </div>
         <div className="vv-login-hero-avatar">
-          <span>{form.emoji || "🙂"}</span>
+          {avatarData
+            ? <img src={avatarData} alt="" />
+            : <span>📸</span>}
         </div>
-        <h1 className="vv-login-hero-title">★ Vibe★Vibo ★</h1>
+        <h1 className="vv-login-hero-title">VibeVibo</h1>
         <div className="vv-login-hero-sub">
-          ✿ deine Erinnerungen · deine Community · dein Vibe ✿
+          Anno 2026 · deine Erinnerungen · deine Community · dein Vibe
         </div>
       </div>
 
@@ -90,24 +106,24 @@ function LoginPage() {
         {/* Login/Register Card */}
         <div className="vv-login-card">
           <div className="vv-login-card-title">
-            {mode === "login" ? "🔑 EINLOGGEN" : "✿ ACCOUNT ERSTELLEN ✿"}
+            {mode === "login" ? "❦ Eintreten ❦" : "❦ Im Buch eintragen ❦"}
           </div>
           <div className="vv-login-card-body">
             <div className="vv-login-tabs">
               <button type="button"
                 className={`vv-login-tab${mode === "login" ? " active" : ""}`}
                 onClick={() => { setMode("login"); setNeedsTotp(false); setTotp(""); setError(null); }}>
-                🔑 Login
+                ❦ Anmelden
               </button>
               <button type="button"
                 className={`vv-login-tab${mode === "register" ? " active" : ""}`}
                 onClick={() => { setMode("register"); setNeedsTotp(false); setTotp(""); setError(null); }}>
-                ✨ Registrieren
+                ✦ Registrieren
               </button>
             </div>
 
             <form onSubmit={submit} className="vv-login-form">
-              <label className="vv-login-label">👤 Benutzername</label>
+              <label className="vv-login-label">Benutzername</label>
               <input
                 className="vv-login-input"
                 placeholder="z.B. lisa_2003"
@@ -120,31 +136,101 @@ function LoginPage() {
 
               {mode === "register" && (
                 <>
-                  <label className="vv-login-label">✏ Anzeigename (optional)</label>
+                  <label className="vv-login-label">Anzeigename (optional)</label>
                   <input
                     className="vv-login-input"
-                    placeholder="z.B. Lisa* °·.¸"
+                    placeholder="z.B. Lisa"
                     value={form.displayName}
                     onChange={(e) => up("displayName", e.target.value)}
                   />
 
-                  <label className="vv-login-label">😎 Avatar-Emoji</label>
-                  <div className="vv-login-emoji-row">
-                    {EMOJIS.map((emo) => (
+                  <label className="vv-login-label">Lichtbild (optional)</label>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    style={{ display: "none" }}
+                    onChange={(e) => pickAvatar(e.target.files?.[0])}
+                  />
+                  <div style={{
+                    display: "flex", gap: 14, alignItems: "center",
+                    padding: 12,
+                    background: "repeating-linear-gradient(90deg, rgba(139,111,71,0.04) 0 2px, transparent 2px 4px), rgba(249,240,219,0.7)",
+                    border: "3px double #c8a25c",
+                    borderRadius: 3,
+                    boxShadow: "inset 0 0 12px rgba(139,111,71,0.15)",
+                  }}>
+                    <div style={{
+                      width: 78, height: 78,
+                      flexShrink: 0,
+                      padding: 4,
+                      background: "linear-gradient(135deg, #c8a25c 0%, #8b6f47 100%)",
+                      borderRadius: 2,
+                      boxShadow: "0 2px 6px rgba(61,40,23,0.4), inset 0 0 0 1px rgba(255,255,255,0.2)",
+                    }}>
+                      <div style={{
+                        width: "100%", height: "100%",
+                        background: "#f4ead5",
+                        border: "1px solid rgba(139,111,71,0.5)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 30, overflow: "hidden",
+                        filter: "sepia(0.15)",
+                      }}>
+                        {avatarData
+                          ? <img src={avatarData} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          : <span>📷</span>}
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <button
-                        type="button" key={emo}
-                        onClick={() => up("emoji", emo)}
-                        className={`vv-login-emoji${form.emoji === emo ? " active" : ""}`}
-                        aria-label={emo}
+                        type="button"
+                        onClick={() => fileRef.current?.click()}
+                        disabled={avatarBusy}
+                        style={{
+                          padding: "10px 12px",
+                          borderRadius: 3,
+                          border: "2px ridge #c8a25c",
+                          background: "linear-gradient(180deg, #8b6f47 0%, #5a3e1d 100%)",
+                          color: "#f4ead5",
+                          fontFamily: "Georgia, 'Times New Roman', serif",
+                          fontWeight: 700, fontSize: 12,
+                          letterSpacing: "1.2px",
+                          fontVariant: "small-caps",
+                          cursor: avatarBusy ? "wait" : "pointer",
+                          width: "100%",
+                          textShadow: "0 1px 1px rgba(0,0,0,0.4)",
+                          boxShadow: "0 2px 0 #3d2817, inset 0 0 0 1px rgba(255,255,255,0.15)",
+                        }}
                       >
-                        {emo}
+                        {avatarBusy ? "… wird belichtet …" : avatarData ? "Anderes Lichtbild" : "Lichtbild aufnehmen"}
                       </button>
-                    ))}
+                      {avatarData && (
+                        <button
+                          type="button"
+                          onClick={() => { setAvatarData(""); if (fileRef.current) fileRef.current.value = ""; }}
+                          style={{
+                            marginTop: 8, padding: "4px 10px", borderRadius: 2,
+                            border: "1px solid rgba(139,111,71,0.4)",
+                            background: "transparent", color: "#6b4a26",
+                            fontFamily: "Georgia, serif", fontSize: 11, fontWeight: 600,
+                            fontStyle: "italic",
+                            cursor: "pointer",
+                          }}
+                        >
+                          ✕ entfernen
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="vv-login-hint">
+                    Dein Lichtbild wird von unserer Moderation geprüft, bevor es im Album erscheint.
+                    Auch ohne Bild geht's — du kannst später eines im Profil hinterlegen.
                   </div>
                 </>
               )}
 
-              <label className="vv-login-label">🔒 Passwort</label>
+              <label className="vv-login-label">Kennwort</label>
               <input
                 type="password"
                 className="vv-login-input"
@@ -156,13 +242,13 @@ function LoginPage() {
 
               {mode === "register" && (
                 <div className="vv-login-hint">
-                  💡 Mind. 10 Zeichen. Wir prüfen gegen bekannte Datenlecks (haveibeenpwned).
+                  Mindestens 10 Zeichen. Wir gleichen gegen bekannte Datenlecks ab (haveibeenpwned).
                 </div>
               )}
 
               {needsTotp && (
                 <>
-                  <label className="vv-login-label">🔐 2FA-Code (Authenticator-App)</label>
+                  <label className="vv-login-label">Sicherheits-Code (Authenticator)</label>
                   <input
                     type="text" inputMode="numeric" autoComplete="one-time-code"
                     pattern="[0-9]{6}" maxLength={6}
@@ -176,7 +262,7 @@ function LoginPage() {
               )}
 
               {error && (
-                <div className="vv-login-error">⚠ {error}</div>
+                <div className="vv-login-error">✦ {error}</div>
               )}
 
               <div className="vv-login-actions">
@@ -184,8 +270,8 @@ function LoginPage() {
                   disabled={busy || (needsTotp && totp.length !== 6)}>
                   {busy ? "…" : (
                     mode === "login"
-                      ? (needsTotp ? "🔐 Code prüfen" : "▶ Einloggen")
-                      : "🎉 Loslegen!"
+                      ? (needsTotp ? "Code prüfen" : "Eintreten")
+                      : "Eintragen"
                   )}
                 </button>
                 {needsTotp && (
@@ -199,45 +285,32 @@ function LoginPage() {
               {!needsTotp && (
                 <>
                   <div style={{
-                    display: "flex", alignItems: "center", gap: 10, margin: "14px 0 10px",
-                    color: "#94a3b8", fontSize: 11, fontWeight: 700,
+                    display: "flex", alignItems: "center", gap: 12, margin: "18px 0 12px",
+                    color: "#8b6f47", fontSize: 11, fontWeight: 700,
+                    fontVariant: "small-caps", letterSpacing: "3px",
+                    fontFamily: "Georgia, serif",
                   }}>
-                    <span style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.1)" }} />
-                    <span>ODER</span>
-                    <span style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.1)" }} />
+                    <span style={{ flex: 1, height: 3, borderTop: "1px solid #c8a25c", borderBottom: "1px solid #c8a25c" }} />
+                    <span>✦ oder ✦</span>
+                    <span style={{ flex: 1, height: 3, borderTop: "1px solid #c8a25c", borderBottom: "1px solid #c8a25c" }} />
                   </div>
 
-                  <div style={{ display: "grid", gap: 8 }}>
-                    <a href="/api/auth/google/start?next=/" style={{
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      gap: 10, padding: "11px 14px", borderRadius: 10,
-                      background: "#fff", color: "#1c1c1e",
-                      border: "2px solid #dadce0",
-                      textDecoration: "none", fontFamily: "inherit",
-                      fontWeight: 700, fontSize: 14,
-                    }}>
-                      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
-                        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-                        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-                      </svg>
-                      Mit Google anmelden
-                    </a>
-                    <a href="/api/auth/facebook/start?next=/" style={{
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      gap: 10, padding: "11px 14px", borderRadius: 10,
-                      background: "#1877F2", color: "#fff",
-                      border: "2px solid #1877F2",
-                      textDecoration: "none", fontFamily: "inherit",
-                      fontWeight: 700, fontSize: 14,
-                    }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fff">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                      </svg>
-                      Mit Facebook anmelden
-                    </a>
-                  </div>
+                  <a href="/api/auth/facebook/start?next=/" style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    gap: 10, padding: "12px 14px", borderRadius: 4,
+                    background: "linear-gradient(180deg, #1f5fc8 0%, #143f87 100%)",
+                    color: "#fff",
+                    border: "2px ridge #c8a25c",
+                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.25), 0 3px 0 #0a2553, 0 4px 8px rgba(0,0,0,0.3)",
+                    textDecoration: "none", fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontWeight: 700, fontSize: 14, letterSpacing: "0.4px",
+                    textShadow: "0 1px 1px rgba(0,0,0,0.5)",
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    Mit Facebook anmelden
+                  </a>
                 </>
               )}
             </form>
@@ -246,47 +319,71 @@ function LoginPage() {
 
         {/* Infobox */}
         <div className="vv-login-card vv-login-card-info">
-          <div className="vv-login-card-title">🌟 WILLKOMMEN ZURÜCK!</div>
+          <div className="vv-login-card-title">❦ Willkommen ❦</div>
           <div className="vv-login-card-body">
             <div className="vv-login-marquee-text">
-              ✨ Profile mit Lieblingssong ✨ Pinnwand wie früher ✨ Glitzer-Smileys ✨ ICQ-Oh-Oh-Sound ✨ Buschfunk ✨ Gruppen-Chats ✨
+              ✦ Profile mit Lieblingslied ✦ Pinnwand wie früher ✦ Gästebuch ✦ Buschfunk ✦ Gruppen-Stuben ✦
             </div>
 
             <div className="vv-login-info-block">
-              <div className="vv-login-info-icon">🎁</div>
+              <div className="vv-login-info-icon">✉</div>
               <div>
-                <strong>Noch keinen Account?</strong>
-                <p>Klick oben auf <em>✨ Registrieren</em>. Fidolin (unsere KI-Moderation) sorgt dafür, dass hier niemand belästigt wird.</p>
+                <strong>Noch kein Eintrag?</strong>
+                <p>Klick oben auf <em>Registrieren</em>. Fidolin, unser stiller Wächter, sorgt dafür, dass hier niemand belästigt wird.</p>
               </div>
             </div>
 
             <div className="vv-login-info-block vv-login-info-safe">
-              <div className="vv-login-info-icon">🛡️</div>
+              <div className="vv-login-info-icon">⚜</div>
               <div>
                 <strong>Sicherheit</strong>
-                <p>Login-Versuche werden begrenzt. VPN/Tor bei der Registrierung gesperrt. Hacker-Versuche werden protokolliert — Strafanzeige nach §§ 202a/202c StGB ist drin.</p>
+                <p>Login-Versuche werden begrenzt, VPN/Tor bei der Registrierung gesperrt. Eindringlinge werden protokolliert — Strafanzeige nach §§ 202a/202c StGB ist drin.</p>
               </div>
             </div>
 
             <div className="vv-login-info-features">
-              <div className="vv-login-feat">📌 Pinnwand & Gästebuch</div>
-              <div className="vv-login-feat">🎵 Profilmusik (YouTube/Spotify)</div>
-              <div className="vv-login-feat">💖 Komplimente verschicken</div>
-              <div className="vv-login-feat">👯 Top-5-Freunde</div>
-              <div className="vv-login-feat">🎁 Geschenke-Vitrine</div>
-              <div className="vv-login-feat">🥚 VIBO-Pet großziehen</div>
-              <div className="vv-login-feat">🗺️ Realitätskarte</div>
-              <div className="vv-login-feat">📣 Buschfunk-Feed</div>
+              <div className="vv-login-feat">❦ Pinnwand &amp; Gästebuch</div>
+              <div className="vv-login-feat">♪ Profilmelodie</div>
+              <div className="vv-login-feat">✦ Komplimente</div>
+              <div className="vv-login-feat">❀ Top-5-Freunde</div>
+              <div className="vv-login-feat">✉ Geschenke-Vitrine</div>
+              <div className="vv-login-feat">⚘ VIBO-Tier aufziehen</div>
+              <div className="vv-login-feat">⚓ Realitätskarte</div>
+              <div className="vv-login-feat">❦ Buschfunk-Anschlag</div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="vv-login-footer">
-        <span>★</span>
-        <span>VibeVibo © 2026 · made with ♥ for everyone who misses the old web</span>
-        <span>★</span>
+        <span>❦</span>
+        <span>VibeVibo · Anno MMXXVI · für alle, die das alte Netz vermissen</span>
+        <span>❦</span>
       </div>
     </div>
   );
+}
+
+// Liest File, skaliert auf max-Dimension, gibt base64 JPG zurück
+function readAndCompress(file, maxDim = 1024) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        const ratio = Math.min(1, maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }

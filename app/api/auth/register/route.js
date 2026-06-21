@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import {
   createUser, isIpBlocked, countRecentRegistrationsByIp, isDeviceBanned, recordDevice,
-  addProfilePic, MAX_PROFILE_PICS, audit, applyWomenShieldDefaults,
+  addProfilePic, MAX_PROFILE_PICS, audit, applyWomenShieldDefaults, logMod,
 } from "@/lib/db";
 import { getClientIp } from "@/lib/ip";
 import { getOrCreateDeviceId } from "@/lib/device";
 import { checkIpReputation, shouldBlockByIntel } from "@/lib/ipIntel";
 import { rateLimit } from "@/lib/rateLimit";
 import { isPwnedPassword } from "@/lib/pwnedPasswords";
+import { moderateImage } from "@/lib/fidolin";
 
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
@@ -86,10 +87,30 @@ export async function POST(req) {
       for (const img of images) {
         if (n >= MAX_PROFILE_PICS) break;
         const s = String(img || "");
-        if (IMG_RE.test(s) && s.length <= MAX_IMG_BYTES) {
-          addProfilePic(user.id, s, "pending", "Bei Registrierung – wartet auf Freigabe");
-          n++;
+        if (!IMG_RE.test(s) || s.length > MAX_IMG_BYTES) continue;
+
+        // 🛡 Fidolin checkt JEDES Registrierungs-Foto bevor's in die DB geht
+        let status = "pending";
+        let reason = "Wartet auf Freigabe";
+        let by = "fidolin";
+        try {
+          const verdict = await moderateImage(s);
+          if (verdict.block) { status = "rejected"; reason = verdict.reason || "Von Fidolin abgelehnt."; }
+          else if (verdict.undecided) { status = "pending"; reason = verdict.reason || "Wartet auf manuelle Prüfung."; }
+          else { status = "approved"; reason = ""; }
+          by = verdict.by || "fidolin";
+        } catch (e) {
+          status = "pending"; reason = "Auto-Check fehlgeschlagen – wartet auf Admin"; by = "fidolin-error";
         }
+
+        const picId = addProfilePic(user.id, s, status, reason);
+        try {
+          logMod({
+            userId: user.id, kind: "avatar",
+            decision: status, reason: reason || "Profilbild bei Registrierung", by,
+          });
+        } catch {}
+        n++;
       }
     }
 
