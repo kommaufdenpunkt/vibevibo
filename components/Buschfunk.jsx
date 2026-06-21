@@ -339,7 +339,7 @@ function renderEvent(ev, i, isLast) {
     icon = "💬";
     const POST_TYPE_BADGE = {
       quote:        { label: "🌹 ZITAT",         color: "#ec4899" },
-      feeling:      { label: "💭 GEFÜHL",        color: "#a855f7" },
+      feeling:      { label: "💭 STATUS",        color: "#a855f7" },
       mention:      { label: "👯 MIT-MARKIERT",  color: "#06b6d4" },
       memory:       { label: "📅 ERINNERUNG",    color: "#f97316" },
       gift_show:    { label: "🎁 GESCHENK",      color: "#fb923c" },

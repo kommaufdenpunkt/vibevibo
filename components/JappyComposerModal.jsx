@@ -34,7 +34,7 @@ const POST_TYPES = [
     bg: "linear-gradient(135deg, #fff1f2, #ffe4e6)",
   },
   {
-    id: "feeling",      label: "Gefühl",        icon: "💭", color: "#a855f7",
+    id: "feeling",      label: "Status",        icon: "💭", color: "#a855f7",
     bg: "linear-gradient(135deg, #faf5ff, #f3e8ff)",
   },
   {
@@ -102,6 +102,7 @@ function Trigger({ me, onOpen }) {
 }
 
 function Modal({ me, onClose, onPosted }) {
+  const { refresh: refreshMe } = useMe();
   const [postType, setPostType] = useState("free");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -149,6 +150,11 @@ function Modal({ me, onClose, onPosted }) {
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Fehler");
+      // 🎭 Wenn Status gesetzt wurde, Me-Context refreshen → ChatOverlay,
+      //    Profil-Header etc. zeigen sofort den neuen Status
+      if (postType === "feeling" && body.setStatus) {
+        try { await refreshMe?.(); } catch {}
+      }
       onPosted();
     } catch (e) { setErr(e.message); }
     finally { setBusy(false); }
@@ -1155,7 +1161,7 @@ function FeelingForm({ v, onChange, color, bg }) {
           onChange={(e) => onChange("setStatus", e.target.checked)}
           style={{ width: 16, height: 16, accentColor: color, flexShrink: 0 }} />
         <span style={{ flex: 1 }}>
-          ⭐ Auch als <b>Profil-Status</b> setzen (erscheint im Header)
+          ⭐ Als <b>Profil-Status</b> setzen — erscheint überall (Chat, Header, Online-Liste)
         </span>
       </label>
     </>
