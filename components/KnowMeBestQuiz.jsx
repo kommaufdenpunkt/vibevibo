@@ -313,8 +313,10 @@ function Modal({ onClose, children }) {
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: "#fff", padding: 22, borderRadius: 18, maxWidth: 500, width: "100%",
-        maxHeight: "90vh", overflowY: "auto",
+        background: "#fff", padding: 22, borderRadius: 18,
+        width: "100%", maxWidth: "min(500px, calc(100vw - 32px))",
+        maxHeight: "calc(100dvh - 32px)", overflowY: "auto",
+        boxSizing: "border-box",
       }}>{children}</div>
     </div>
   );

@@ -218,10 +218,11 @@ export default function PushSetup() {
       role="region"
       aria-label="Benachrichtigungen aktivieren"
       style={{
-        position: "fixed", left: 12, right: 12, bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom, 0px))`, zIndex: 110, maxWidth: 460, margin: "0 auto",
+        position: "fixed", left: 12, right: 12, bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom, 0px))`, zIndex: 110, maxWidth: "min(460px, calc(100vw - 24px))", margin: "0 auto",
         background: "linear-gradient(135deg, #ff3e9d 0%, #b91e7c 100%)", color: "#fff",
         borderRadius: 14, padding: 14, boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
         fontFamily: "Arial, sans-serif",
+        boxSizing: "border-box",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

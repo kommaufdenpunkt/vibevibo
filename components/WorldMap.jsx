@@ -923,7 +923,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
           Wir nutzen <strong>OpenStreetMap</strong> (kostenlos, kein Google), und
           dein Standort verlässt nie unseren Server.
         </p>
-        <div style={{ background: "#fff5fb", border: "1px solid #ffd6e7", padding: 12, borderRadius: 10, marginTop: 16, maxWidth: 460, marginLeft: "auto", marginRight: "auto", fontSize: 12, color: "#7a0e3a", textAlign: "left" }}>
+        <div style={{ background: "#fff5fb", border: "1px solid #ffd6e7", padding: 12, borderRadius: 10, marginTop: 16, maxWidth: "min(460px, 100%)", marginLeft: "auto", marginRight: "auto", fontSize: 12, color: "#7a0e3a", textAlign: "left", boxSizing: "border-box" }}>
           <strong>Datenschutz:</strong> Wir speichern nur deinen letzten Standort
           (für Anti-Cheat beim Einsammeln). Andere User sehen dich NICHT.
           Du kannst die Erlaubnis jederzeit in deinem Profil oder im Browser widerrufen.

@@ -115,7 +115,10 @@ function SendModal({ username, onClose, onSent }) {
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
     }}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()} style={{
-        background: "#fff", padding: 22, borderRadius: 18, maxWidth: 460, width: "100%",
+        background: "#fff", padding: 22, borderRadius: 18,
+        width: "100%", maxWidth: "min(460px, calc(100vw - 32px))",
+        maxHeight: "calc(100dvh - 32px)", overflowY: "auto",
+        boxSizing: "border-box",
       }}>
         <h3 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 900 }}>💌 Kompliment an @{username}</h3>
         <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 4, marginBottom: 14 }}>
