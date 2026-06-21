@@ -114,7 +114,7 @@ function Modal({ me, onClose, onPosted }) {
     feeling: { mood: null, text: "", mediaUrl: "", image: "", setStatus: true },
     mention: { mentions: "", text: "", image: "" },
     memory: { yearsAgo: 0, date: "", text: "", source: null, commentary: "", image: "" },
-    now_playing: { song: "", artist: "", link: "" },
+    now_playing: { input: "" },
     never_forget: { dateMode: "exact", date: "", time: "", approxDate: "", place: "", category: null, text: "", image: "" },
   });
 
@@ -143,6 +143,10 @@ function Modal({ me, onClose, onPosted }) {
       const body = { postType, text: composedText };
       if (fv.image && fv.image.startsWith("data:image/")) body.image = fv.image;
       if (fv.mediaUrl) body.mediaUrl = fv.mediaUrl;
+      // 🎵 now_playing: wenn input eine URL ist, als mediaUrl mitsenden
+      if (postType === "now_playing" && fv.input && /^https?:\/\//i.test(fv.input.trim())) {
+        body.mediaUrl = fv.input.trim();
+      }
       if (postType === "feeling" && fv.setStatus) body.setStatus = true;
       const r = await fetch("/api/buschfunk/post", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -428,21 +432,16 @@ function TypedForm({ type, value, onChange, color, bg }) {
   if (type === "now_playing") {
     return (
       <>
+        <Label color={color}>WAS LÄUFT GERADE?</Label>
         <InputField
-          value={v.song || ""} onChange={(x) => onChange("song", x)}
-          placeholder="🎵 Song-Titel"
+          value={v.input || ""} onChange={(x) => onChange("input", x)}
+          placeholder="🎵 YouTube/Spotify-Link einfügen oder Song + Artist tippen"
           color={color}
         />
-        <InputField
-          value={v.artist || ""} onChange={(x) => onChange("artist", x)}
-          placeholder="🎤 Künstler"
-          color={color} marginTop={8}
-        />
-        <InputField
-          value={v.link || ""} onChange={(x) => onChange("link", x)}
-          placeholder="🔗 YouTube/Spotify-Link (optional)"
-          color={color} marginTop={8}
-        />
+        <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 6, fontStyle: "italic", lineHeight: 1.4 }}>
+          Tipp: Wenn du einen Link einfügst (z.B. youtube.com/watch?…),
+          erscheint im Feed automatisch der Player. Sonst nur als Text.
+        </div>
       </>
     );
   }
@@ -1223,14 +1222,10 @@ function composeForType(type, v) {
     return `${head}: ${t}`;
   }
   if (type === "now_playing") {
-    const s = (v.song || "").trim();
-    const a = (v.artist || "").trim();
-    const l = (v.link || "").trim();
-    if (!s && !a) return "";
-    let out = `🎵 Hört ${s ? `„${s}"` : ""}`.trim();
-    if (a) out += ` von ${a}`;
-    if (l) out += `\n${l}`;
-    return out;
+    const i = (v.input || "").trim();
+    if (!i) return "";
+    if (/^https?:\/\//i.test(i)) return `🎵 Hört gerade: ${i}`;
+    return `🎵 Hört gerade: ${i}`;
   }
   if (type === "never_forget") {
     const t = (v.text || "").trim();
