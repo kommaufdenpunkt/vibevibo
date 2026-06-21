@@ -33,6 +33,7 @@ export default function JappyComposer({ onPosted }) {
   const [text, setText] = useState("");
   const [postType, setPostType] = useState("free");
   const [showSmileys, setShowSmileys] = useState(false);
+  const [showTypes, setShowTypes] = useState(false);
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
   const textareaRef = useRef(null);
@@ -104,37 +105,15 @@ export default function JappyComposer({ onPosted }) {
       border: `3px ridge ${activeType.color}`,
       borderRadius: 14, padding: 14, marginBottom: 12,
       boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+      position: "relative",
     }}>
-      {/* Post-Typ-Pillen */}
-      <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
-        {POST_TYPES.map((t) => {
-          const active = postType === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setPostType(t.id)}
-              style={{
-                padding: "5px 10px", borderRadius: 999,
-                background: active ? `linear-gradient(135deg, ${t.color}, ${t.color}cc)` : "rgba(0,0,0,0.04)",
-                color: active ? "#fff" : "#475569",
-                border: active ? `2px ridge ${t.color}` : "1.5px solid rgba(0,0,0,0.08)",
-                fontSize: 11, fontWeight: active ? 900 : 700, cursor: "pointer",
-                fontFamily: "inherit",
-                textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
-              }}
-            >{t.label}</button>
-          );
-        })}
-      </div>
-
-      {/* Toolbar: Bold / Italic / Smileys */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 6, alignItems: "center" }}>
+      {/* Kompakte Toolbar: Format + Smileys + Typ-Selector */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 8, alignItems: "center", position: "relative" }}>
         <button type="button" onClick={() => wrapSelection("**")} title="Fett (Markdown **text**)"
           style={tbtnStyle}><b>F</b></button>
         <button type="button" onClick={() => wrapSelection("*")} title="Kursiv (*text*)"
           style={{ ...tbtnStyle, fontStyle: "italic" }}>K</button>
-        <button type="button" onClick={() => setShowSmileys((s) => !s)}
+        <button type="button" onClick={() => { setShowSmileys((s) => !s); setShowTypes(false); }}
           title="Smileys"
           style={{
             ...tbtnStyle,
@@ -142,6 +121,56 @@ export default function JappyComposer({ onPosted }) {
             color: showSmileys ? "#fff" : "#475569",
             fontSize: 16,
           }}>😀</button>
+
+        {/* Typ-Selector — kompakter Dropdown statt 7 Pillen */}
+        <div style={{ position: "relative" }}>
+          <button type="button" onClick={() => { setShowTypes((s) => !s); setShowSmileys(false); }}
+            title="Post-Typ wählen"
+            style={{
+              padding: "4px 10px", borderRadius: 999,
+              background: `linear-gradient(135deg, ${activeType.color}, ${activeType.color}cc)`,
+              color: "#fff", border: `2px ridge ${activeType.color}`,
+              fontSize: 11, fontWeight: 900, cursor: "pointer",
+              fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4,
+              textShadow: "0 1px 1px rgba(0,0,0,0.25)", height: 28,
+            }}
+          >
+            {activeType.label} <span style={{ fontSize: 9, opacity: 0.85 }}>{showTypes ? "▴" : "▾"}</span>
+          </button>
+
+          {showTypes && (
+            <div style={{
+              position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 10,
+              background: "#fff", borderRadius: 10,
+              border: `2px ridge ${activeType.color}`,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+              padding: 6, minWidth: 200, display: "grid", gap: 2,
+            }}>
+              {POST_TYPES.map((t) => {
+                const active = postType === t.id;
+                return (
+                  <button key={t.id} type="button"
+                    onClick={() => { setPostType(t.id); setShowTypes(false); }}
+                    style={{
+                      padding: "7px 10px", borderRadius: 6,
+                      background: active ? `linear-gradient(135deg, ${t.color}22, ${t.color}11)` : "transparent",
+                      color: active ? t.color : "#1c1c1e",
+                      border: "none", cursor: "pointer", fontFamily: "inherit",
+                      fontSize: 12, fontWeight: active ? 900 : 600,
+                      textAlign: "left", display: "flex", alignItems: "center", gap: 6,
+                    }}
+                    onMouseOver={(e) => { if (!active) e.currentTarget.style.background = "rgba(0,0,0,0.04)"; }}
+                    onMouseOut={(e) => { if (!active) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <span style={{ flex: 1 }}>{t.label}</span>
+                    {active && <span style={{ color: t.color }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         <span style={{ flex: 1 }} />
         <span style={{ fontSize: 10, color: remaining < 20 ? "#dc2626" : "#94a3b8", fontWeight: remaining < 20 ? 800 : 600 }}>
           {remaining}
