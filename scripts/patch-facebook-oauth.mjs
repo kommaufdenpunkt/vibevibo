@@ -89,14 +89,17 @@ export function createUserFromFacebook({ facebookId, email, displayName, avatarU
   const dn = String(displayName || username).slice(0, 60);
   const av = String(avatarUrl || "").slice(0, 500);
 
+  // OAUTH_AUTO_APPROVE=1 → User direkt freigeschaltet. Sonst Warteliste (pending).
+  const status = process.env.OAUTH_AUTO_APPROVE === "1" ? "approved" : "pending";
+
   const info = db().prepare(\`
     INSERT INTO users (
       username, display_name, password_hash, status, role,
       email, facebook_id,
       avatar_url, avatar_status,
       created_at, last_seen
-    ) VALUES (?, ?, '', 'approved', 'user', ?, ?, ?, ?, ?, ?)
-  \`).run(username, dn, e, f, av, av ? 'approved' : 'none', now, now);
+    ) VALUES (?, ?, '', ?, 'user', ?, ?, ?, ?, ?, ?)
+  \`).run(username, dn, status, e, f, av, av ? 'approved' : 'none', now, now);
 
   return getUserById(Number(info.lastInsertRowid));
 }

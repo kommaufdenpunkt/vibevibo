@@ -7,12 +7,13 @@ import {
   createUserFromFacebook, createSession, audit, getUserById,
 } from "@/lib/db";
 import { setSessionCookie } from "@/lib/auth";
+import { getPublicOrigin } from "@/lib/publicUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function errRedirect(url, msg) {
-  const u = new URL("/login", url);
+function errRedirect(origin, msg) {
+  const u = new URL("/login", origin);
   u.searchParams.set("error", msg);
   return NextResponse.redirect(u.toString());
 }
@@ -20,8 +21,10 @@ function errRedirect(url, msg) {
 export async function GET(req) {
   const appId = process.env.FACEBOOK_CLIENT_ID || "";
   const appSecret = process.env.FACEBOOK_CLIENT_SECRET || "";
+  const publicOrigin = getPublicOrigin(req);
+
   if (!appId || !appSecret) {
-    return errRedirect(req.url, "Facebook-Login nicht konfiguriert");
+    return errRedirect(publicOrigin, "Facebook-Login nicht konfiguriert");
   }
 
   const url = new URL(req.url);
@@ -29,8 +32,8 @@ export async function GET(req) {
   const stateParam = url.searchParams.get("state");
   const oauthError = url.searchParams.get("error");
 
-  if (oauthError) return errRedirect(req.url, `Facebook-Login abgebrochen (${oauthError})`);
-  if (!code || !stateParam) return errRedirect(req.url, "Ungültige Facebook-Antwort");
+  if (oauthError) return errRedirect(publicOrigin, `Facebook-Login abgebrochen (${oauthError})`);
+  if (!code || !stateParam) return errRedirect(publicOrigin, "Ungültige Facebook-Antwort");
 
   const c = await cookies();
   const stateCookie = c.get("vv_oauth_state")?.value || "";
@@ -39,10 +42,10 @@ export async function GET(req) {
   c.set("vv_oauth_next", "", { path: "/", maxAge: 0 });
 
   if (!stateCookie || stateCookie !== stateParam) {
-    return errRedirect(req.url, "Sicherheits-Check fehlgeschlagen (state mismatch)");
+    return errRedirect(publicOrigin, "Sicherheits-Check fehlgeschlagen (state mismatch)");
   }
 
-  const redirectUri = `${url.origin}/api/auth/facebook/callback`;
+  const redirectUri = `${publicOrigin}/api/auth/facebook/callback`;
 
   // 1) Token tauschen (GET bei Facebook)
   let tokens;
@@ -56,10 +59,10 @@ export async function GET(req) {
     tokens = await r.json();
     if (!r.ok || !tokens.access_token) {
       audit({ action: "oauth.fb.token_fail", detail: JSON.stringify(tokens).slice(0, 200) });
-      return errRedirect(req.url, "Token-Tausch fehlgeschlagen");
+      return errRedirect(publicOrigin, "Token-Tausch fehlgeschlagen");
     }
   } catch {
-    return errRedirect(req.url, "Netzwerk-Fehler bei Facebook");
+    return errRedirect(publicOrigin, "Netzwerk-Fehler bei Facebook");
   }
 
   // 2) User-Info
@@ -72,10 +75,10 @@ export async function GET(req) {
     info = await r.json();
     if (!r.ok || !info.id) {
       audit({ action: "oauth.fb.userinfo_fail", detail: JSON.stringify(info).slice(0, 200) });
-      return errRedirect(req.url, "Facebook-User-Info konnte nicht geladen werden");
+      return errRedirect(publicOrigin, "Facebook-User-Info konnte nicht geladen werden");
     }
   } catch {
-    return errRedirect(req.url, "Netzwerk-Fehler bei Facebook-User-Info");
+    return errRedirect(publicOrigin, "Netzwerk-Fehler bei Facebook-User-Info");
   }
 
   const email = info.email || "";
@@ -99,18 +102,21 @@ export async function GET(req) {
         });
         audit({ userId: user.id, action: "oauth.fb.signup", detail: `email=${email}` });
       } catch (e) {
-        return errRedirect(req.url, `Account-Erstellung fehlgeschlagen: ${e.message}`);
+        return errRedirect(publicOrigin, `Account-Erstellung fehlgeschlagen: ${e.message}`);
       }
     }
   } else {
     audit({ userId: user.id, action: "oauth.fb.login" });
   }
 
-  if (user.status === "blocked") return errRedirect(req.url, "Dieser Account wurde gesperrt");
+  if (user.status === "blocked") return errRedirect(publicOrigin, "Dieser Account wurde gesperrt");
+  if (user.status === "pending") {
+    return errRedirect(publicOrigin, "Du stehst auf der Warteliste – wir schalten dich bald frei! 💌");
+  }
 
   // 4) Session + Redirect
   const token = createSession(user.id);
   await setSessionCookie(token);
   const safeNext = (next && next.startsWith("/") && !next.startsWith("//")) ? next : "/";
-  return NextResponse.redirect(new URL(safeNext, url.origin).toString());
+  return NextResponse.redirect(new URL(safeNext, publicOrigin).toString());
 }

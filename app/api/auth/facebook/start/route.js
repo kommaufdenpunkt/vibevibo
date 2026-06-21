@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { getPublicOrigin } from "@/lib/publicUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +22,8 @@ export async function GET(req) {
   }
 
   const url = new URL(req.url);
-  const redirectUri = `${url.origin}/api/auth/facebook/callback`;
+  const publicOrigin = getPublicOrigin(req);
+  const redirectUri = `${publicOrigin}/api/auth/facebook/callback`;
   const next = url.searchParams.get("next") || "/";
 
   const state = randomState();
