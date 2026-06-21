@@ -334,7 +334,7 @@ export default function HeutePage() {
         </div>
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
           gap: 10, marginBottom: 16,
         }}>
           <UserTiles fallback={[

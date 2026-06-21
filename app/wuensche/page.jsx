@@ -223,7 +223,7 @@ function SubmitModal({ onClose, onCreated }) {
         {err && <div style={{ color: "#991b1b", marginBottom: 10, fontSize: 12, fontWeight: 700 }}>⚠ {err}</div>}
 
         <label style={lbl()}>Kategorie</label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginBottom: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 6, marginBottom: 12 }}>
           {Object.entries(CATEGORIES).map(([key, c]) => (
             <button key={key} type="button" onClick={() => setCategory(key)} style={{
               padding: "8px 6px", borderRadius: 8, fontSize: 12, fontWeight: 700,

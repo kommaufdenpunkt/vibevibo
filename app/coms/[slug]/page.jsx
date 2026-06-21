@@ -141,7 +141,7 @@ export default function ComsPage() {
     <div style={{ background: "transparent", paddingBottom: 100, position: "relative", zIndex: 1 }}>
       {animatedTheme && <ComAnimatedBg theme={animatedTheme} />}
       {joinSound && <ComSoundFX sound={joinSound} slug={slug} />}
-      <div style={{ maxWidth: 920, margin: "0 auto", padding: "10px 12px 0", position: "relative", zIndex: 2 }}>
+      <div style={{ width: "100%", padding: "10px 12px 0", position: "relative", zIndex: 2, boxSizing: "border-box" }}>
 
         {/* ✨ HERO mit Glitter ✨ */}
         <div style={{

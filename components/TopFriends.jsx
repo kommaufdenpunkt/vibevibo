@@ -57,7 +57,7 @@ export default function TopFriends({ username, isOwner = false }) {
           </button>
         )}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4, maxWidth: 240 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, width: "100%" }}>
         {slots.map((s) => {
           if (s.empty) {
             return (
