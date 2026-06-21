@@ -335,7 +335,7 @@ a:hover { background: var(--vv-yellow); color: #000; }
   width: 80px; height: 80px; font-size: 36px; border-width: 3px;
 }
 
-/* 🏅 Rang-Rahmen (Bronze/Silber/Gold/Diamant/Legende) — wird vom Avatar via rank-Prop gesetzt */
+/* 🏅 Rang-Rahmen (Rookie/Active/Hot/Bronze/Silber/Gold/Diamant/Legende) — wird vom Avatar via rank-Prop gesetzt */
 .vv-rank-frame {
   position: relative;
   display: inline-flex;
@@ -349,6 +349,24 @@ a:hover { background: var(--vv-yellow); color: #000; }
   pointer-events: none;
   border: 3px solid;
   z-index: 2;
+}
+/* 🌱 Rookie (Rang 10-29) — dezenter Königsblau-Rahmen */
+.vv-rank-frame-rookie::before {
+  border-color: #3b82f6;
+  border-width: 2px;
+  inset: -4px;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.35), inset 0 0 3px rgba(59, 130, 246, 0.2);
+}
+/* 🔥 Active (Rang 30-49) — orange-warm */
+.vv-rank-frame-active::before {
+  border-color: #f97316;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.5), inset 0 0 4px rgba(249, 115, 22, 0.25);
+}
+/* ✨ Hot (Rang 50-69) — pulsierender Orange-Gold-Verlauf */
+.vv-rank-frame-hot::before {
+  border-image: linear-gradient(135deg, #f97316, #fbbf24, #f97316) 1;
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.65), inset 0 0 5px rgba(249, 115, 22, 0.3);
+  animation: vv-rank-pulse 2.8s ease-in-out infinite;
 }
 .vv-rank-frame-bronze::before {
   border-color: #cd7f32;
@@ -368,7 +386,7 @@ a:hover { background: var(--vv-yellow); color: #000; }
   animation: vv-rank-pulse 2.4s ease-in-out infinite;
 }
 .vv-rank-frame-legend::before {
-  border-image: linear-gradient(135deg, #fbbf24, #ec4899, #a855f7, #06b6d4, #fbbf24) 1;
+  border-image: linear-gradient(135deg, #fbbf24, #f97316, #1e40af, #06b6d4, #fbbf24) 1;
   box-shadow: 0 0 22px rgba(251, 191, 36, 0.9);
   animation: vv-rank-legend-glow 3.2s ease-in-out infinite;
 }
@@ -381,6 +399,7 @@ a:hover { background: var(--vv-yellow); color: #000; }
   50%      { filter: brightness(1.3) saturate(1.4); transform: rotate(0.4deg); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .vv-rank-frame-hot::before,
   .vv-rank-frame-diamond::before,
   .vv-rank-frame-legend::before { animation: none; }
 }
@@ -7801,8 +7820,10 @@ input[type="number"], input[type="tel"], textarea, select {
   line-height: 1.55;
   color: #4a044e;
   word-wrap: break-word;
-  max-width: 900px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 .vv-nost-greeting img {
   max-width: 100%;
@@ -8223,27 +8244,30 @@ input[type="number"], input[type="tel"], textarea, select {
    ================================================================= */
 .vv-jappy-greet {
   position: relative;
-  margin: 14px auto 18px !important;
-  border: 4px double #d946ef !important;
-  border-radius: 16px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 14px 0 18px !important;
+  border: 4px double #1e40af !important;
+  border-radius: 8px !important;
   box-shadow:
-    0 0 0 3px #fbcfe8 inset,
-    0 4px 22px rgba(217,70,239,0.25),
-    0 0 30px rgba(236,72,153,0.15);
+    0 0 0 3px #dbeafe inset,
+    0 4px 22px rgba(30,64,175,0.20),
+    0 0 30px rgba(59,130,246,0.10);
   background:
-    radial-gradient(circle at 12% 18%, rgba(255,192,225,0.55) 0 12px, transparent 14px),
-    radial-gradient(circle at 88% 84%, rgba(186,140,255,0.45) 0 10px, transparent 12px),
-    radial-gradient(circle at 28% 92%, rgba(255,210,236,0.4) 0 6px, transparent 8px),
-    radial-gradient(circle at 78% 14%, rgba(186,140,255,0.35) 0 5px, transparent 7px),
-    linear-gradient(180deg, #fff6fb 0%, #faedff 100%) !important;
+    radial-gradient(circle at 12% 18%, rgba(191,219,254,0.55) 0 12px, transparent 14px),
+    radial-gradient(circle at 88% 84%, rgba(147,197,253,0.45) 0 10px, transparent 12px),
+    radial-gradient(circle at 28% 92%, rgba(219,234,254,0.4) 0 6px, transparent 8px),
+    radial-gradient(circle at 78% 14%, rgba(147,197,253,0.35) 0 5px, transparent 7px),
+    linear-gradient(180deg, #ffffff 0%, #f0f4fa 100%) !important;
   overflow: hidden;
 }
 .vv-jappy-greet::before {
-  content: "★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★ ✿ ♡ ★";
+  content: "★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★";
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 14px;
-  background: linear-gradient(90deg, #ec4899, #a855f7, #06b6d4, #ec4899);
+  background: linear-gradient(90deg, #1e40af, #2563eb, #f97316, #2563eb, #1e40af);
   background-size: 300% 100%;
   animation: vv-jappy-rainbow 8s linear infinite;
   color: #fff;
@@ -8256,11 +8280,11 @@ input[type="number"], input[type="tel"], textarea, select {
   pointer-events: none;
 }
 .vv-jappy-greet::after {
-  content: "♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡ ✿ ★ ♡";
+  content: "✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦";
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 14px;
-  background: linear-gradient(90deg, #06b6d4, #a855f7, #ec4899, #06b6d4);
+  background: linear-gradient(90deg, #2563eb, #f97316, #1e40af, #2563eb);
   background-size: 300% 100%;
   animation: vv-jappy-rainbow 10s linear infinite reverse;
   color: #fff;
@@ -8285,19 +8309,19 @@ input[type="number"], input[type="tel"], textarea, select {
   flex-wrap: wrap;
   position: relative;
   margin: 18px 14px 0 !important;
-  padding: 8px 12px !important;
-  background: linear-gradient(135deg, #ec4899, #a855f7, #d946ef) !important;
-  background-size: 200% 200%;
-  animation: vv-jappy-shift 6s ease infinite;
+  padding: 10px 14px !important;
+  background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%) !important;
   color: #fff !important;
-  border-radius: 12px !important;
-  font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", cursive !important;
-  font-weight: 900 !important;
-  font-size: 15px !important;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 0 12px rgba(255,255,255,0.4);
-  letter-spacing: 1.2px !important;
-  border: 2px solid #fff !important;
-  box-shadow: 0 3px 0 rgba(190,24,93,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+  border-radius: 4px !important;
+  font-family: "Trebuchet MS", Tahoma, "Comic Sans MS", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.35);
+  letter-spacing: 1.5px !important;
+  border: 1px solid #1e3a8a !important;
+  border-bottom: 2px solid #f97316 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 2px 0 rgba(30,58,138,0.4);
+  text-transform: uppercase;
 }
 @keyframes vv-jappy-shift {
   0%, 100% { background-position: 0% 50%; }
@@ -8338,13 +8362,27 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 
 .vv-jappy-greet-body {
+  width: auto !important;
+  box-sizing: border-box !important;
   margin: 12px 14px 22px !important;
-  padding: 16px 18px !important;
+  padding: 18px 20px !important;
   background:
     repeating-linear-gradient(45deg, rgba(255,255,255,0.6) 0 2px, transparent 2px 14px),
     linear-gradient(180deg, #ffffff 0%, #fff6fb 100%) !important;
   border-radius: 12px;
   border: 2px dashed #f9a8d4;
+}
+/* Desktop: mehr Atemraum, aber wir bleiben full-width */
+@media (min-width: 1024px) {
+  .vv-jappy-greet-body { margin: 14px 18px 24px !important; padding: 22px 26px !important; }
+}
+/* Tablet/Mobil schmaler: dünnere Polster, damit der Editor mehr Platz hat */
+@media (max-width: 700px) {
+  .vv-jappy-greet { margin: 10px 0 14px !important; border-width: 3px !important; }
+  .vv-jappy-greet-body { margin: 10px 8px 16px !important; padding: 12px 12px !important; }
+}
+@media (max-width: 420px) {
+  .vv-jappy-greet-body { margin: 8px 6px 14px !important; padding: 10px 10px !important; border-width: 1.5px; }
 }
 
 .vv-jappy-greet-empty {
@@ -8780,6 +8818,13 @@ input[type="number"], input[type="tel"], textarea, select {
    ================================================================= */
 .vv-inline-greet-view {
   position: relative;
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+}
+.vv-inline-greet-view .vv-nost-greeting {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 .vv-inline-greet-edit-btn {
   position: absolute;
@@ -8805,8 +8850,13 @@ input[type="number"], input[type="tel"], textarea, select {
 }
 
 .vv-inline-greet-edit {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 4px 2px 2px;
 }
+.vv-inline-greet-edit > * { max-width: 100%; box-sizing: border-box; }
+.vv-inline-greet-edit textarea { width: 100% !important; box-sizing: border-box; }
 .vv-inline-greet-toolbar {
   display: flex;
   flex-wrap: wrap;
