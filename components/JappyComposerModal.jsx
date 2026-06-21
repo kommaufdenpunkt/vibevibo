@@ -103,7 +103,6 @@ function Trigger({ me, onOpen }) {
 
 function Modal({ me, onClose, onPosted }) {
   const [postType, setPostType] = useState("free");
-  const [showTypes, setShowTypes] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -201,8 +200,8 @@ function Modal({ me, onClose, onPosted }) {
 
         {/* Body */}
         <div style={{ padding: 16, overflowY: "auto", flex: 1 }}>
-          {/* Avatar + Typ-Picker */}
-          <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 14 }}>
+          {/* Avatar + Name */}
+          <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
             <div style={{ border: "3px ridge #ec4899", borderRadius: 10, padding: 2, background: "#fff" }}>
               <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 44, height: 44, borderRadius: 8 }} />
             </div>
@@ -211,71 +210,56 @@ function Modal({ me, onClose, onPosted }) {
                 fontSize: 16, fontWeight: 900, color: activeType.color,
                 textShadow: "1px 1px 0 #fff, 2px 2px 0 rgba(0,0,0,0.05)",
               }}>{me.displayName}</div>
-              <div style={{ position: "relative", marginTop: 4 }}>
-                <button onClick={() => setShowTypes((s) => !s)} style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "4px 10px", borderRadius: 999,
-                  background: `linear-gradient(135deg, ${activeType.color}, ${activeType.color}cc)`,
-                  color: "#fff", border: "2px ridge #fff",
-                  cursor: "pointer", fontFamily: "inherit",
-                  fontSize: 11, fontWeight: 900, letterSpacing: 0.4,
-                  textShadow: "0 1px 1px rgba(0,0,0,0.25)",
-                }}>
-                  <span style={{ fontSize: 13 }}>{activeType.icon}</span>
-                  <span>{activeType.label}</span>
-                  <span style={{ fontSize: 9 }}>{showTypes ? "▴" : "▾"}</span>
-                </button>
-                {showTypes && (
-                  <div style={{
-                    position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 10,
-                    background: "#fff", borderRadius: 10,
-                    border: "3px ridge #ec4899",
-                    boxShadow: "0 8px 24px rgba(236,72,153,0.25)",
-                    padding: 6, minWidth: 240, display: "grid", gap: 3,
-                  }}>
-                    {POST_TYPES.map((t) => {
-                      const active = postType === t.id;
-                      return (
-                        <button key={t.id} type="button"
-                          onClick={() => { setPostType(t.id); setShowTypes(false); }}
-                          style={{
-                            padding: "8px 12px", borderRadius: 8,
-                            background: active
-                              ? `linear-gradient(135deg, ${t.color}, ${t.color}cc)`
-                              : t.bg,
-                            color: active ? "#fff" : t.color,
-                            border: active ? `2px ridge ${t.color}` : `2px solid ${t.color}33`,
-                            cursor: "pointer", fontFamily: "inherit",
-                            fontSize: 13, fontWeight: 900,
-                            textAlign: "left", display: "flex", alignItems: "center", gap: 10,
-                            textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "1px 1px 0 #fff",
-                            transition: "transform 0.12s, box-shadow 0.12s",
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.transform = "translateX(2px)";
-                            e.currentTarget.style.boxShadow = `0 3px 10px ${t.color}55`;
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.transform = "translateX(0)";
-                            e.currentTarget.style.boxShadow = "none";
-                          }}
-                        >
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", justifyContent: "center",
-                            width: 28, height: 28, borderRadius: "50%",
-                            background: active ? "rgba(255,255,255,0.25)" : `${t.color}22`,
-                            border: active ? "1px solid rgba(255,255,255,0.4)" : `1.5px solid ${t.color}55`,
-                            fontSize: 15, flexShrink: 0,
-                          }}>{t.icon}</span>
-                          <span style={{ flex: 1 }}>{t.label}</span>
-                          {active && <span style={{ fontSize: 14 }}>✓</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+              <div style={{ fontSize: 11, color: "#831843", marginTop: 2, opacity: 0.8 }}>
+                Wähle deinen Post-Typ ↓
               </div>
             </div>
+          </div>
+
+          {/* Typ-Buttons (alle 7 nebeneinander, jeder mit eigener Farbe) */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(108px, 1fr))",
+            gap: 6, marginBottom: 14,
+          }}>
+            {POST_TYPES.map((t) => {
+              const active = postType === t.id;
+              return (
+                <button key={t.id} type="button"
+                  onClick={() => setPostType(t.id)}
+                  title={t.label}
+                  style={{
+                    padding: "8px 8px", borderRadius: 10,
+                    background: active
+                      ? `linear-gradient(135deg, ${t.color}, ${t.color}cc)`
+                      : t.bg,
+                    color: active ? "#fff" : t.color,
+                    border: active ? `2px ridge ${t.color}` : `2px solid ${t.color}33`,
+                    cursor: "pointer", fontFamily: "inherit",
+                    fontSize: 11.5, fontWeight: 900,
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "1px 1px 0 #fff",
+                    transition: "transform 0.12s, box-shadow 0.12s",
+                    boxShadow: active ? `0 4px 12px ${t.color}55` : "none",
+                  }}
+                  onMouseOver={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                      e.currentTarget.style.boxShadow = `0 3px 10px ${t.color}40`;
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }
+                  }}
+                >
+                  <span style={{ fontSize: 16, flexShrink: 0 }}>{t.icon}</span>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Pro-Typ-Formular */}
