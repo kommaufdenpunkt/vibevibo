@@ -1,18 +1,19 @@
 "use client";
 
-// ✿ 2006er „Beitrag erstellen"-Modal — Jappy/SchülerVZ-Style.
+// ✿ 2006er „Beitrag erstellen"-Modal — pro Post-Typ eigenes Formular.
 //
-//   • Trigger: kompakte „Was machst du gerade?"-Pille auf Startseite
-//   • Modal mit pinken Ridge-Borders, Glitzer-Background, Gradient-Title
-//   • Aa-Hintergrund-Modus (kurze Texte als Glitter-Hero)
-//   • Smiley-Picker (40 Smileys)
-//   • Bold/Italic via Markdown
-//   • Post-Typ-Dropdown (7 Typen)
-//   • Vollständig keyboard-bedienbar (ESC, Auto-Focus)
+//   • Frei:        Textarea
+//   • Zitat:       Zitat-Text + Autor/Quelle
+//   • Gefühl:      Mood-Emoji wählen + Begründung
+//   • Markierung:  Freunde-Tag (@user @user) + Text
+//   • Erinnerung:  Jahre-zurück + Text
+//   • Musik:       Song + Künstler + Link
+//   • Nie-vergessen: Datum + Was
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMe } from "@/lib/useMe";
 import Avatar from "@/components/Avatar";
+import { STATUS_CATS, searchStatuses } from "@/lib/status";
 
 const SMILEYS = [
   "😀","😃","😄","😁","😆","😅","🤣","😂",
@@ -24,13 +25,34 @@ const SMILEYS = [
 ];
 
 const POST_TYPES = [
-  { id: "free",         label: "Frei",          icon: "💬", color: "#ec4899", bg: "linear-gradient(135deg, #fce7f3, #fbcfe8, #f5d0fe)" },
-  { id: "quote",        label: "Zitat",         icon: "🌹", color: "#db2777", bg: "linear-gradient(135deg, #fff1f2, #ffe4e6, #fecdd3)" },
-  { id: "feeling",      label: "Gefühl",        icon: "💭", color: "#a855f7", bg: "linear-gradient(135deg, #faf5ff, #f3e8ff, #e9d5ff)" },
-  { id: "mention",      label: "Mit Markierung", icon: "👯", color: "#06b6d4", bg: "linear-gradient(135deg, #ecfeff, #cffafe, #a5f3fc)" },
-  { id: "memory",       label: "Erinnerung",    icon: "📅", color: "#f97316", bg: "linear-gradient(135deg, #fff7ed, #ffedd5, #fed7aa)" },
-  { id: "now_playing",  label: "Höre gerade",   icon: "🎵", color: "#10b981", bg: "linear-gradient(135deg, #ecfdf5, #d1fae5, #a7f3d0)" },
-  { id: "never_forget", label: "Nie vergessen", icon: "💔", color: "#475569", bg: "linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1)" },
+  {
+    id: "free",         label: "Frei",          icon: "💬", color: "#ec4899",
+    bg: "linear-gradient(135deg, #fce7f3, #fbcfe8)",
+  },
+  {
+    id: "quote",        label: "Zitat",         icon: "🌹", color: "#db2777",
+    bg: "linear-gradient(135deg, #fff1f2, #ffe4e6)",
+  },
+  {
+    id: "feeling",      label: "Gefühl",        icon: "💭", color: "#a855f7",
+    bg: "linear-gradient(135deg, #faf5ff, #f3e8ff)",
+  },
+  {
+    id: "mention",      label: "Mit Markierung", icon: "👯", color: "#06b6d4",
+    bg: "linear-gradient(135deg, #ecfeff, #cffafe)",
+  },
+  {
+    id: "memory",       label: "Erinnerung",    icon: "📅", color: "#f97316",
+    bg: "linear-gradient(135deg, #fff7ed, #ffedd5)",
+  },
+  {
+    id: "now_playing",  label: "Höre gerade",   icon: "🎵", color: "#10b981",
+    bg: "linear-gradient(135deg, #ecfdf5, #d1fae5)",
+  },
+  {
+    id: "never_forget", label: "Nie vergessen", icon: "💔", color: "#475569",
+    bg: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
+  },
 ];
 
 const MAX_LEN = 280;
@@ -61,9 +83,7 @@ function Trigger({ me, onOpen }) {
     onMouseOver={(e) => { e.currentTarget.style.transform = "scale(1.01)"; e.currentTarget.style.boxShadow = "0 6px 18px rgba(236,72,153,0.3)"; }}
     onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 3px 10px rgba(236,72,153,0.18)"; }}
     >
-      <div style={{
-        border: "2px ridge #ec4899", borderRadius: "50%", padding: 2, background: "#fff",
-      }}>
+      <div style={{ border: "2px ridge #ec4899", borderRadius: "50%", padding: 2, background: "#fff" }}>
         <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 36, height: 36, borderRadius: "50%" }} />
       </div>
       <span style={{ flex: 1, fontSize: 14, color: "#831843", fontStyle: "italic", textShadow: "0 1px 0 #fff" }}>
@@ -82,19 +102,23 @@ function Trigger({ me, onOpen }) {
 }
 
 function Modal({ me, onClose, onPosted }) {
-  const [text, setText] = useState("");
   const [postType, setPostType] = useState("free");
-  const [bgMode, setBgMode] = useState(false);
-  const [showSmileys, setShowSmileys] = useState(false);
   const [showTypes, setShowTypes] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const textareaRef = useRef(null);
+
+  // Form-State pro Typ (initial leer)
+  const [form, setForm] = useState({
+    free: { text: "" },
+    quote: { quote: "", author: "" },
+    feeling: { mood: null, text: "" },
+    mention: { mentions: "", text: "" },
+    memory: { yearsAgo: 1, text: "" },
+    now_playing: { song: "", artist: "", link: "" },
+    never_forget: { date: "", text: "" },
+  });
 
   const activeType = POST_TYPES.find((t) => t.id === postType) || POST_TYPES[0];
-  const remaining = MAX_LEN - text.length;
-  const canSubmit = text.trim().length >= 2 && remaining >= 0 && !busy;
-  const useBg = bgMode && text.length <= 100;
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -102,37 +126,13 @@ function Modal({ me, onClose, onPosted }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  useEffect(() => {
-    const t = setTimeout(() => textareaRef.current?.focus(), 60);
-    return () => clearTimeout(t);
-  }, []);
+  // Per-Typ Compose
+  const composedText = useMemo(() => composeForType(postType, form[postType]), [postType, form]);
+  const remaining = MAX_LEN - composedText.length;
+  const canSubmit = composedText.trim().length >= 2 && remaining >= 0 && !busy;
 
-  function insertAtCursor(snippet) {
-    const ta = textareaRef.current;
-    if (!ta) { setText((t) => t + snippet); return; }
-    const start = ta.selectionStart || 0;
-    const end = ta.selectionEnd || 0;
-    setText(text.slice(0, start) + snippet + text.slice(end));
-    requestAnimationFrame(() => {
-      ta.focus();
-      const pos = start + snippet.length;
-      ta.setSelectionRange(pos, pos);
-    });
-  }
-  function wrapSelection(prefix, suffix = prefix) {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart || 0;
-    const end = ta.selectionEnd || 0;
-    const selected = text.slice(start, end);
-    const replacement = prefix + (selected || "Text") + suffix;
-    setText(text.slice(0, start) + replacement + text.slice(end));
-    requestAnimationFrame(() => {
-      ta.focus();
-      const innerStart = start + prefix.length;
-      const innerEnd = innerStart + (selected || "Text").length;
-      ta.setSelectionRange(innerStart, innerEnd);
-    });
+  function patch(field, value) {
+    setForm((f) => ({ ...f, [postType]: { ...f[postType], [field]: value } }));
   }
 
   async function submit() {
@@ -141,7 +141,7 @@ function Modal({ me, onClose, onPosted }) {
     try {
       const r = await fetch("/api/buschfunk/post", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postType, text }),
+        body: JSON.stringify({ postType, text: composedText }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Fehler");
@@ -163,10 +163,10 @@ function Modal({ me, onClose, onPosted }) {
         borderRadius: 16, width: "100%", maxWidth: 560,
         maxHeight: "92vh", display: "flex", flexDirection: "column",
         overflow: "hidden",
-        boxShadow: "0 22px 64px rgba(236,72,153,0.35), 0 0 0 1px rgba(255,255,255,0.5)",
+        boxShadow: "0 22px 64px rgba(236,72,153,0.35)",
         border: "4px ridge #ec4899",
       }}>
-        {/* Glitzer-Header mit Gradient-Wave */}
+        {/* Header */}
         <div style={{
           position: "relative", overflow: "hidden",
           padding: "14px 16px",
@@ -176,20 +176,18 @@ function Modal({ me, onClose, onPosted }) {
           borderBottom: "3px ridge #fff",
         }}>
           <div style={{
-            position: "absolute", top: 6, left: 14, fontSize: 16, color: "#fff",
-            opacity: 0.7, animation: "vv-jc-spin 5s ease-in-out infinite",
+            position: "absolute", top: 6, left: 14, fontSize: 16, color: "#fff", opacity: 0.7,
+            animation: "vv-jc-spin 5s ease-in-out infinite",
           }}>✿</div>
           <div style={{
-            position: "absolute", bottom: 6, right: 14, fontSize: 16, color: "#fff",
-            opacity: 0.7, animation: "vv-jc-spin 5s ease-in-out infinite reverse",
+            position: "absolute", bottom: 6, right: 14, fontSize: 16, color: "#fff", opacity: 0.7,
+            animation: "vv-jc-spin 5s ease-in-out infinite reverse",
           }}>✿</div>
           <div style={{
             textAlign: "center", fontSize: 18, fontWeight: 900,
             color: "#fff", letterSpacing: 1.5,
             textShadow: "0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.4)",
-          }}>
-            ★ BEITRAG ERSTELLEN ★
-          </div>
+          }}>★ BEITRAG ERSTELLEN ★</div>
           <button onClick={onClose} title="Schließen" style={{
             position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
             width: 32, height: 32, borderRadius: "50%",
@@ -202,8 +200,8 @@ function Modal({ me, onClose, onPosted }) {
         </div>
 
         {/* Body */}
-        <div style={{ padding: 16, overflowY: "auto", flex: 1, background: "transparent" }}>
-          {/* Avatar + Name + Typ-Dropdown */}
+        <div style={{ padding: 16, overflowY: "auto", flex: 1 }}>
+          {/* Avatar + Typ-Picker */}
           <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 14 }}>
             <div style={{ border: "3px ridge #ec4899", borderRadius: 10, padding: 2, background: "#fff" }}>
               <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 44, height: 44, borderRadius: 8 }} />
@@ -214,7 +212,7 @@ function Modal({ me, onClose, onPosted }) {
                 textShadow: "1px 1px 0 #fff, 2px 2px 0 rgba(0,0,0,0.05)",
               }}>{me.displayName}</div>
               <div style={{ position: "relative", marginTop: 4 }}>
-                <button onClick={() => { setShowTypes((s) => !s); setShowSmileys(false); }} style={{
+                <button onClick={() => setShowTypes((s) => !s)} style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "4px 10px", borderRadius: 999,
                   background: `linear-gradient(135deg, ${activeType.color}, ${activeType.color}cc)`,
@@ -233,7 +231,7 @@ function Modal({ me, onClose, onPosted }) {
                     background: "#fff", borderRadius: 10,
                     border: "3px ridge #ec4899",
                     boxShadow: "0 8px 24px rgba(236,72,153,0.25)",
-                    padding: 6, minWidth: 220, display: "grid", gap: 2,
+                    padding: 6, minWidth: 240, display: "grid", gap: 3,
                   }}>
                     {POST_TYPES.map((t) => {
                       const active = postType === t.id;
@@ -241,19 +239,36 @@ function Modal({ me, onClose, onPosted }) {
                         <button key={t.id} type="button"
                           onClick={() => { setPostType(t.id); setShowTypes(false); }}
                           style={{
-                            padding: "7px 10px", borderRadius: 6,
-                            background: active ? `linear-gradient(135deg, ${t.color}22, ${t.color}11)` : "transparent",
-                            color: active ? t.color : "#1c1c1e",
-                            border: "none", cursor: "pointer", fontFamily: "inherit",
-                            fontSize: 13, fontWeight: active ? 900 : 600,
-                            textAlign: "left", display: "flex", alignItems: "center", gap: 8,
+                            padding: "8px 12px", borderRadius: 8,
+                            background: active
+                              ? `linear-gradient(135deg, ${t.color}, ${t.color}cc)`
+                              : t.bg,
+                            color: active ? "#fff" : t.color,
+                            border: active ? `2px ridge ${t.color}` : `2px solid ${t.color}33`,
+                            cursor: "pointer", fontFamily: "inherit",
+                            fontSize: 13, fontWeight: 900,
+                            textAlign: "left", display: "flex", alignItems: "center", gap: 10,
+                            textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "1px 1px 0 #fff",
+                            transition: "transform 0.12s, box-shadow 0.12s",
                           }}
-                          onMouseOver={(e) => { if (!active) e.currentTarget.style.background = "rgba(0,0,0,0.04)"; }}
-                          onMouseOut={(e) => { if (!active) e.currentTarget.style.background = "transparent"; }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = "translateX(2px)";
+                            e.currentTarget.style.boxShadow = `0 3px 10px ${t.color}55`;
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.transform = "translateX(0)";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
                         >
-                          <span style={{ fontSize: 15 }}>{t.icon}</span>
+                          <span style={{
+                            display: "inline-flex", alignItems: "center", justifyContent: "center",
+                            width: 28, height: 28, borderRadius: "50%",
+                            background: active ? "rgba(255,255,255,0.25)" : `${t.color}22`,
+                            border: active ? "1px solid rgba(255,255,255,0.4)" : `1.5px solid ${t.color}55`,
+                            fontSize: 15, flexShrink: 0,
+                          }}>{t.icon}</span>
                           <span style={{ flex: 1 }}>{t.label}</span>
-                          {active && <span style={{ color: t.color, fontWeight: 900 }}>✓</span>}
+                          {active && <span style={{ fontSize: 14 }}>✓</span>}
                         </button>
                       );
                     })}
@@ -263,113 +278,28 @@ function Modal({ me, onClose, onPosted }) {
             </div>
           </div>
 
-          {/* Textarea */}
-          {useBg ? (
+          {/* Pro-Typ-Formular */}
+          <TypedForm type={postType} value={form[postType]} onChange={patch} color={activeType.color} bg={activeType.bg} />
+
+          {/* Live-Preview */}
+          {composedText.trim().length > 0 && (
             <div style={{
+              marginTop: 14, padding: 10, borderRadius: 10,
               background: activeType.bg,
-              borderRadius: 12, minHeight: 220,
-              padding: 24, display: "flex", alignItems: "center", justifyContent: "center",
-              marginBottom: 12,
-              border: `3px ridge ${activeType.color}`,
-              position: "relative", overflow: "hidden",
-              boxShadow: `inset 0 0 30px ${activeType.color}22`,
+              border: `2px ridge ${activeType.color}`,
+              fontSize: 12.5, color: "#1c1c1e", lineHeight: 1.45,
+              whiteSpace: "pre-wrap", wordBreak: "break-word",
+              position: "relative",
             }}>
-              <span style={{ position: "absolute", top: 8, left: 10, fontSize: 14, color: activeType.color, opacity: 0.5 }}>✿</span>
-              <span style={{ position: "absolute", top: 8, right: 10, fontSize: 14, color: activeType.color, opacity: 0.5 }}>✿</span>
-              <span style={{ position: "absolute", bottom: 8, left: 10, fontSize: 14, color: activeType.color, opacity: 0.5 }}>✿</span>
-              <span style={{ position: "absolute", bottom: 8, right: 10, fontSize: 14, color: activeType.color, opacity: 0.5 }}>✿</span>
-              <textarea
-                ref={textareaRef}
-                value={text}
-                onChange={(e) => setText(e.target.value.slice(0, MAX_LEN + 50))}
-                placeholder={`Was machst du gerade, ${me.displayName}?`}
-                rows={3}
-                style={{
-                  width: "100%", padding: 0, background: "transparent",
-                  color: activeType.color, border: "none",
-                  fontFamily: "inherit",
-                  fontSize: text.length > 60 ? 18 : text.length > 30 ? 24 : 28,
-                  fontWeight: 900, lineHeight: 1.25,
-                  textAlign: "center", outline: "none", resize: "none",
-                  textShadow: "0 1px 0 #fff, 0 2px 4px rgba(0,0,0,0.08)",
-                }}
-              />
-            </div>
-          ) : (
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={(e) => setText(e.target.value.slice(0, MAX_LEN + 50))}
-              placeholder={`Was machst du gerade, ${me.displayName}?`}
-              rows={6}
-              style={{
-                width: "100%", padding: 12, background: "#fff",
-                color: "#1c1c1e", border: `2px ridge ${activeType.color}`,
-                borderRadius: 10,
-                fontFamily: "inherit", fontSize: text.length > 80 ? 15 : 17,
-                lineHeight: 1.45, marginBottom: 12,
-                outline: "none", resize: "vertical", boxSizing: "border-box",
-                minHeight: 120,
-              }}
-            />
-          )}
-
-          {/* Smiley-Picker */}
-          {showSmileys && (
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 2,
-              padding: 8, marginBottom: 12,
-              background: "linear-gradient(135deg, #fce7f3, #f5d0fe)",
-              borderRadius: 10,
-              border: "2px ridge #ec4899",
-            }}>
-              {SMILEYS.map((s) => (
-                <button key={s} type="button" onClick={() => insertAtCursor(s)} style={{
-                  padding: 4, fontSize: 22, background: "transparent",
-                  border: "none", cursor: "pointer", borderRadius: 4,
-                  transition: "background 0.12s, transform 0.12s",
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.7)"; e.currentTarget.style.transform = "scale(1.18)"; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.transform = "scale(1)"; }}
-                >{s}</button>
-              ))}
+              <div style={{
+                position: "absolute", top: -8, left: 10,
+                background: activeType.color, color: "#fff",
+                padding: "1px 8px", borderRadius: 6, fontSize: 9, fontWeight: 900,
+                letterSpacing: 0.8, textShadow: "0 1px 1px rgba(0,0,0,0.3)",
+              }}>VORSCHAU</div>
+              {composedText}
             </div>
           )}
-
-          {/* Format-Toolbar */}
-          <div style={{
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            padding: "8px 10px", borderRadius: 10,
-            background: "linear-gradient(135deg, #fce7f3, #f5d0fe)",
-            border: "2px ridge #ec4899",
-          }}>
-            <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={() => setBgMode((b) => !b)} title="Glitter-Hintergrund"
-                style={{
-                  width: 38, height: 38, borderRadius: 10,
-                  background: useBg
-                    ? activeType.bg
-                    : "linear-gradient(135deg, #fb923c, #ec4899, #a855f7, #06b6d4)",
-                  color: useBg ? activeType.color : "#fff",
-                  border: "2px ridge #fff",
-                  fontWeight: 900, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
-                  textShadow: useBg ? "0 1px 0 #fff" : "0 1px 2px rgba(0,0,0,0.3)",
-                }}>Aa</button>
-              <button onClick={() => wrapSelection("**")} title="Fett"
-                style={fmtBtn}><b>F</b></button>
-              <button onClick={() => wrapSelection("*")} title="Kursiv"
-                style={{ ...fmtBtn, fontStyle: "italic" }}>K</button>
-            </div>
-            <button onClick={() => { setShowSmileys((s) => !s); setShowTypes(false); }} title="Smileys"
-              style={{
-                width: 38, height: 38, borderRadius: "50%",
-                background: showSmileys
-                  ? "linear-gradient(135deg, #fbbf24, #f59e0b)"
-                  : "rgba(255,255,255,0.85)",
-                color: "#7c2d12", border: "2px ridge #fff",
-                cursor: "pointer", fontSize: 18, fontFamily: "inherit",
-              }}>😊</button>
-          </div>
 
           {err && (
             <div style={{
@@ -390,9 +320,7 @@ function Modal({ me, onClose, onPosted }) {
             display: "flex", justifyContent: "space-between", alignItems: "center",
             marginBottom: 8, fontSize: 11, color: "#831843",
           }}>
-            <span style={{ fontStyle: "italic", opacity: 0.85 }}>
-              Tipp: @name markiert Freunde ✿
-            </span>
+            <span style={{ fontStyle: "italic", opacity: 0.85 }}>{tipFor(postType)}</span>
             <span style={{
               color: remaining < 20 ? "#dc2626" : "#831843",
               fontWeight: remaining < 20 ? 900 : 700,
@@ -431,9 +359,342 @@ function Modal({ me, onClose, onPosted }) {
   );
 }
 
-const fmtBtn = {
-  width: 38, height: 38, borderRadius: 10,
-  background: "rgba(255,255,255,0.85)", color: "#831843",
-  border: "2px ridge #fff",
-  cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 800,
-};
+// === Per-Typ Formulare ===
+function TypedForm({ type, value, onChange, color, bg }) {
+  const v = value || {};
+  if (type === "free") {
+    return (
+      <TextareaField
+        value={v.text || ""} onChange={(x) => onChange("text", x)}
+        placeholder="Was machst du gerade?" color={color} rows={6}
+      />
+    );
+  }
+  if (type === "quote") {
+    return (
+      <>
+        <TextareaField
+          value={v.quote || ""} onChange={(x) => onChange("quote", x)}
+          placeholder="Das Zitat …" color={color} rows={3}
+        />
+        <InputField
+          value={v.author || ""} onChange={(x) => onChange("author", x)}
+          placeholder="— Autor / Quelle (z.B. Forrest Gump)"
+          color={color} marginTop={8}
+        />
+      </>
+    );
+  }
+  if (type === "feeling") {
+    return <FeelingForm v={v} onChange={onChange} color={color} bg={bg} />;
+  }
+  if (type === "mention") {
+    return (
+      <>
+        <InputField
+          value={v.mentions || ""} onChange={(x) => onChange("mentions", x)}
+          placeholder="@user1 @user2 @user3 …"
+          color={color}
+        />
+        <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 4, fontStyle: "italic" }}>
+          Tipp: mit @-Zeichen vor dem Username werden Freunde markiert.
+        </div>
+        <TextareaField
+          value={v.text || ""} onChange={(x) => onChange("text", x)}
+          placeholder="Was war? Wo wart ihr?" color={color} rows={4} marginTop={10}
+        />
+      </>
+    );
+  }
+  if (type === "memory") {
+    return (
+      <>
+        <div style={{ fontSize: 11, fontWeight: 800, color, letterSpacing: 0.5, marginBottom: 6 }}>
+          VOR WIE VIELEN JAHREN?
+        </div>
+        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+          {[1, 2, 3, 5, 10, 15, 20, 25].map((y) => {
+            const active = v.yearsAgo === y;
+            return (
+              <button key={y} type="button" onClick={() => onChange("yearsAgo", y)} style={{
+                padding: "6px 14px", borderRadius: 999,
+                background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+                color: active ? "#fff" : color,
+                border: active ? `2px ridge ${color}` : `2px solid ${color}33`,
+                cursor: "pointer", fontFamily: "inherit",
+                fontSize: 13, fontWeight: 900,
+                textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+              }}>
+                {y === 1 ? "1 Jahr" : `${y} Jahre`}
+              </button>
+            );
+          })}
+        </div>
+        <TextareaField
+          value={v.text || ""} onChange={(x) => onChange("text", x)}
+          placeholder="Was war damals? (z.B. ICQ-Sound im Ohr, Sommer 2003 🍦)"
+          color={color} rows={4}
+        />
+      </>
+    );
+  }
+  if (type === "now_playing") {
+    return (
+      <>
+        <InputField
+          value={v.song || ""} onChange={(x) => onChange("song", x)}
+          placeholder="🎵 Song-Titel"
+          color={color}
+        />
+        <InputField
+          value={v.artist || ""} onChange={(x) => onChange("artist", x)}
+          placeholder="🎤 Künstler"
+          color={color} marginTop={8}
+        />
+        <InputField
+          value={v.link || ""} onChange={(x) => onChange("link", x)}
+          placeholder="🔗 YouTube/Spotify-Link (optional)"
+          color={color} marginTop={8}
+        />
+      </>
+    );
+  }
+  if (type === "never_forget") {
+    return (
+      <>
+        <InputField
+          value={v.date || ""} onChange={(x) => onChange("date", x)}
+          placeholder="📅 Datum (z.B. 11.09.2001 oder Sommer 2003)"
+          color={color}
+        />
+        <TextareaField
+          value={v.text || ""} onChange={(x) => onChange("text", x)}
+          placeholder="Was wirst du nie vergessen?"
+          color={color} rows={5} marginTop={8}
+        />
+      </>
+    );
+  }
+  return null;
+}
+
+function InputField({ value, onChange, placeholder, color, marginTop = 0 }) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      maxLength={140}
+      style={{
+        width: "100%", padding: 12, marginTop,
+        background: "#fff", color: "#1c1c1e",
+        border: `2px ridge ${color}`,
+        borderRadius: 10, fontFamily: "inherit", fontSize: 14,
+        outline: "none", boxSizing: "border-box",
+      }}
+    />
+  );
+}
+
+function TextareaField({ value, onChange, placeholder, color, rows = 4, marginTop = 0 }) {
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      maxLength={MAX_LEN}
+      style={{
+        width: "100%", padding: 12, marginTop,
+        background: "#fff", color: "#1c1c1e",
+        border: `2px ridge ${color}`,
+        borderRadius: 10, fontFamily: "inherit", fontSize: 14,
+        lineHeight: 1.45, outline: "none", resize: "vertical",
+        boxSizing: "border-box", minHeight: 80,
+      }}
+    />
+  );
+}
+
+// === Gefühl-Form mit existierendem Status-Katalog ===
+function FeelingForm({ v, onChange, color, bg }) {
+  const [query, setQuery] = useState("");
+  const filtered = useMemo(() => {
+    const q = query.trim();
+    if (!q) return null;
+    return searchStatuses(q, []);
+  }, [query]);
+
+  // Nur die gratis Kategorien anzeigen (keine Pack-Locks im Composer)
+  const freeCats = STATUS_CATS.filter((c) => c.packId === null);
+
+  function pick(emoji, label) {
+    onChange("mood", { emoji, label });
+  }
+
+  return (
+    <>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="🔍 Status suchen (z.B. zocken, glücklich, im Café…)"
+        style={{
+          width: "100%", padding: 10,
+          background: "#fff", color: "#1c1c1e",
+          border: `2px ridge ${color}`,
+          borderRadius: 10, fontFamily: "inherit", fontSize: 13,
+          outline: "none", boxSizing: "border-box", marginBottom: 10,
+        }}
+      />
+
+      {v.mood && (
+        <div style={{
+          padding: "8px 12px", borderRadius: 999,
+          background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+          color: "#fff", border: "2px ridge #fff",
+          fontSize: 13, fontWeight: 900,
+          display: "inline-flex", alignItems: "center", gap: 8,
+          marginBottom: 10,
+          textShadow: "0 1px 1px rgba(0,0,0,0.3)",
+        }}>
+          <span style={{ fontSize: 17 }}>{v.mood.emoji}</span>
+          <span>{v.mood.label}</span>
+          <button type="button" onClick={() => onChange("mood", null)} style={{
+            marginLeft: 4, background: "rgba(255,255,255,0.3)",
+            border: "1px solid rgba(255,255,255,0.4)", color: "#fff",
+            width: 18, height: 18, borderRadius: "50%",
+            cursor: "pointer", fontFamily: "inherit", fontSize: 10, fontWeight: 900,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+          }}>✕</button>
+        </div>
+      )}
+
+      <div style={{ maxHeight: 280, overflowY: "auto", paddingRight: 4 }}>
+        {filtered ? (
+          // Such-Resultate (flach)
+          filtered.length === 0 ? (
+            <div style={{ padding: 14, textAlign: "center", color: "#94a3b8", fontSize: 12 }}>
+              Nichts gefunden für „{query}".
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {filtered.map(([em, lbl]) => (
+                <ChipBtn key={lbl} emoji={em} label={lbl}
+                  active={v.mood?.label === lbl}
+                  onClick={() => pick(em, lbl)}
+                  color={color} bg={bg}
+                />
+              ))}
+            </div>
+          )
+        ) : (
+          // Kategorien-View
+          freeCats.map((cat) => (
+            <div key={cat.title} style={{ marginBottom: 12 }}>
+              <div style={{
+                fontSize: 11, fontWeight: 900, color, letterSpacing: 0.5,
+                marginBottom: 6, textShadow: "0 1px 0 #fff",
+              }}>
+                {cat.title.toUpperCase()}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                {cat.items.map(([em, lbl]) => (
+                  <ChipBtn key={lbl} emoji={em} label={lbl}
+                    active={v.mood?.label === lbl}
+                    onClick={() => pick(em, lbl)}
+                    color={color} bg={bg}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div style={{ marginTop: 10 }}>
+        <InputField
+          value={v.text || ""} onChange={(x) => onChange("text", x)}
+          placeholder="Warum / mehr dazu (optional)" color={color}
+        />
+      </div>
+    </>
+  );
+}
+
+function ChipBtn({ emoji, label, active, onClick, color, bg }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      padding: "6px 11px", borderRadius: 999,
+      background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+      color: active ? "#fff" : "#1c1c1e",
+      border: active ? `2px ridge ${color}` : `1.5px solid ${color}33`,
+      cursor: "pointer", fontFamily: "inherit",
+      fontSize: 12, fontWeight: active ? 900 : 700,
+      display: "inline-flex", alignItems: "center", gap: 5,
+      textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+      whiteSpace: "nowrap", lineHeight: 1.2,
+    }}>
+      <span style={{ fontSize: 14 }}>{emoji}</span>
+      <span>{label}</span>
+    </button>
+  );
+}
+
+// === Compose-Logik pro Typ ===
+function composeForType(type, v) {
+  if (!v) return "";
+  if (type === "free") return (v.text || "").trim();
+  if (type === "quote") {
+    const q = (v.quote || "").trim();
+    const a = (v.author || "").trim();
+    if (!q) return "";
+    return a ? `„${q}" — ${a}` : `„${q}"`;
+  }
+  if (type === "feeling") {
+    const mood = v.mood;
+    const t = (v.text || "").trim();
+    if (!mood && !t) return "";
+    if (!mood) return t;
+    return t ? `${mood.emoji} ${mood.label} · ${t}` : `${mood.emoji} ${mood.label}`;
+  }
+  if (type === "mention") {
+    const m = (v.mentions || "").trim();
+    const t = (v.text || "").trim();
+    if (!m && !t) return "";
+    return [m, t].filter(Boolean).join(" — ");
+  }
+  if (type === "memory") {
+    const y = Number(v.yearsAgo) || 1;
+    const t = (v.text || "").trim();
+    if (!t) return "";
+    return `📅 Vor ${y} ${y === 1 ? "Jahr" : "Jahren"}: ${t}`;
+  }
+  if (type === "now_playing") {
+    const s = (v.song || "").trim();
+    const a = (v.artist || "").trim();
+    const l = (v.link || "").trim();
+    if (!s && !a) return "";
+    let out = `🎵 Hört ${s ? `„${s}"` : ""}`.trim();
+    if (a) out += ` von ${a}`;
+    if (l) out += `\n${l}`;
+    return out;
+  }
+  if (type === "never_forget") {
+    const d = (v.date || "").trim();
+    const t = (v.text || "").trim();
+    if (!d && !t) return "";
+    return `💔 ${d} — ${t}`.trim();
+  }
+  return "";
+}
+
+function tipFor(type) {
+  if (type === "free") return "Tipp: @name markiert Freunde";
+  if (type === "quote") return "Schöne Zitate werden oft geteilt";
+  if (type === "feeling") return "Such oder wähl deinen Status";
+  if (type === "mention") return "@user mit @-Zeichen davor";
+  if (type === "memory") return "Jeder hat Erinnerungen, teile deine";
+  if (type === "now_playing") return "Was läuft gerade im Ohr?";
+  if (type === "never_forget") return "Persönliche Geschichte";
+  return "";
+}
