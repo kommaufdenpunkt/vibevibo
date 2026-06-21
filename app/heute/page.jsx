@@ -129,7 +129,7 @@ export default function HeutePage() {
     return (
       <div style={{ padding: 40, textAlign: "center" }}>
         <Link href="/login?next=/heute" style={{
-          background: "linear-gradient(135deg, #ec4899, #8b5cf6)",
+          background: "linear-gradient(135deg, #1e40af, #8b5cf6)",
           color: "#fff", padding: "12px 24px", borderRadius: 999,
           textDecoration: "none", fontWeight: 800,
         }}>Zum Login</Link>
@@ -172,7 +172,7 @@ export default function HeutePage() {
   const claimableQuests = (data.quests?.quests || []).filter((q) => q.done && !q.claimed);
   if (claimableQuests.length > 0) alerts.push({
     icon: "🏆", text: `${claimableQuests.length} Quest${claimableQuests.length > 1 ? "s" : ""} fertig`,
-    action: "Belohnung", href: "/quests", color: "#f472b6",
+    action: "Belohnung", href: "/quests", color: "#60a5fa",
   });
 
   const giftsIn = data.notifications.filter((n) => n.type === "gift" && !n.read);
@@ -234,12 +234,12 @@ export default function HeutePage() {
         {false && <div>
         <div style={{
           position: "relative", overflow: "hidden",
-          background: "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #06b6d4 100%)",
+          background: "linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #06b6d4 100%)",
           backgroundSize: "200% 200%",
           animation: "vv-heute-hero 12s ease infinite",
           borderRadius: 20, padding: "20px 18px",
           color: "#fff", marginBottom: 12,
-          boxShadow: "0 8px 24px rgba(168,85,247,0.35)",
+          boxShadow: "0 8px 24px rgba(37,99,235,0.35)",
         }}>
           {/* Sparkle deco */}
           <div style={{
@@ -318,7 +318,7 @@ export default function HeutePage() {
             <Link href="/profile/dashboard" style={{
               fontSize: 11, color: "#fff", fontWeight: 800,
               textDecoration: "none", padding: "4px 12px",
-              background: "linear-gradient(135deg, #ec4899, #8b5cf6)",
+              background: "linear-gradient(135deg, #1e40af, #8b5cf6)",
               borderRadius: 999,
               boxShadow: "0 2px 6px rgba(139,92,246,0.35)",
             }}>🎛 Layout</Link>
@@ -340,10 +340,10 @@ export default function HeutePage() {
           <UserTiles fallback={[
             { href: "/buschfunk", color1: "#f97316", color2: "#ef4444", icon: "📣", title: "Buschfunk", sub: "Was läuft heute?" },
             { href: "/messenger", color1: "#06b6d4", color2: "#0284c7", icon: "💬", title: "Messenger", sub: "Direkt chatten" },
-            { href: "/vibo",      color1: "#a855f7", color2: "#7c3aed", icon: "🥚", title: "Mein VIBO", sub: data.vibo?.vibo?.name || "Dein Pet" },
+            { href: "/vibo",      color1: "#2563eb", color2: "#7c3aed", icon: "🥚", title: "Mein VIBO", sub: data.vibo?.vibo?.name || "Dein Pet" },
             { href: "/karte",     color1: "#06b6d4", color2: "#0e7490", icon: "🗺️", title: "Karte", sub: "Welt erkunden" },
             { href: "/geschenke", color1: "#f97316", color2: "#ea580c", icon: "🎁", title: "Geschenke", sub: "Verschicken" },
-            { href: "/fotos",     color1: "#ec4899", color2: "#be185d", icon: "📸", title: "Fotos", sub: "Galerie" },
+            { href: "/fotos",     color1: "#1e40af", color2: "#1e3a8a", icon: "📸", title: "Fotos", sub: "Galerie" },
             { href: "/freunde",   color1: "#3b82f6", color2: "#1e40af", icon: "👯", title: "Freunde", sub: "Wer ist online?" },
           ]} />
         </div>
@@ -611,9 +611,9 @@ function UserTiles({ fallback }) {
   // Map von App-IDs zu Tile-Konfigs (gleiche IDs wie in app/apps/page.jsx)
   const APP_TILES = {
     heute:       { href: "/heute",       icon: "🏠", title: "Startseite",    sub: "Tages-Übersicht",  color1: "#fbbf24", color2: "#ea580c" },
-    profile:     { href: "/profile",     icon: "🪪", title: "Mein Profil",    sub: "Deine Seite",      color1: "#ec4899", color2: "#be185d" },
+    profile:     { href: "/profile",     icon: "🪪", title: "Mein Profil",    sub: "Deine Seite",      color1: "#1e40af", color2: "#1e3a8a" },
     edit:        { href: "/profile/edit", icon: "✏️", title: "Bearbeiten",    sub: "Profil pflegen",   color1: "#f97316", color2: "#c2410c" },
-    skin:        { href: "/profile/skin", icon: "🎨", title: "Skin",          sub: "Look anpassen",    color1: "#a855f7", color2: "#7c3aed" },
+    skin:        { href: "/profile/skin", icon: "🎨", title: "Skin",          sub: "Look anpassen",    color1: "#2563eb", color2: "#7c3aed" },
     privacy:     { href: "/profile/privacy", icon: "🛡", title: "Schutz",     sub: "Privatsphäre",     color1: "#3b82f6", color2: "#1e40af" },
     messenger:   { href: "/messenger",   icon: "💬", title: "Messenger",      sub: "1-zu-1 Chat",      color1: "#06b6d4", color2: "#0284c7" },
     buschfunk:   { href: "/buschfunk",   icon: "📣", title: "Buschfunk",      sub: "Status & Posts",   color1: "#f97316", color2: "#ef4444" },
@@ -622,25 +622,25 @@ function UserTiles({ fallback }) {
     friends:     { href: "/freunde",     icon: "👯", title: "Freunde",       sub: "Wer ist online?",  color1: "#3b82f6", color2: "#1e40af" },
     neu:         { href: "/neu",         icon: "🆕", title: "Neuigkeiten",   sub: "Was läuft",        color1: "#10b981", color2: "#065f46" },
     schulen:     { href: "/schulen",     icon: "🎓", title: "Schulen",       sub: "Klassen-Netz",     color1: "#0891b2", color2: "#155e75" },
-    compliments: { href: "/compliments", icon: "💝", title: "Komplimente",   sub: "Lieb sein",        color1: "#ec4899", color2: "#9d174d" },
-    vibo:        { href: "/vibo",        icon: "🥚", title: "Mein VIBO",     sub: "Dein Tamagotchi",  color1: "#a855f7", color2: "#7c3aed" },
+    compliments: { href: "/compliments", icon: "💝", title: "Komplimente",   sub: "Lieb sein",        color1: "#1e40af", color2: "#9d174d" },
+    vibo:        { href: "/vibo",        icon: "🥚", title: "Mein VIBO",     sub: "Dein Tamagotchi",  color1: "#2563eb", color2: "#7c3aed" },
     "vibo-shop": { href: "/shop?tab=vibo", icon: "🛒", title: "VIBO-Shop",   sub: "Futter & Möbel",   color1: "#10b981", color2: "#065f46" },
     "vibo-game": { href: "/vibo/minigame", icon: "🍕", title: "Mini-Game",   sub: "Snack-Schnapp",    color1: "#f59e0b", color2: "#b45309" },
     cemetery:    { href: "/vibo/cemetery", icon: "🪦", title: "Friedhof",    sub: "Erinnerungen",     color1: "#64748b", color2: "#334155" },
     karte:       { href: "/karte",       icon: "🗺️", title: "Karte",        sub: "Welt erkunden",    color1: "#06b6d4", color2: "#0e7490" },
-    fotos:       { href: "/fotos",       icon: "📸", title: "Fotos",         sub: "Galerie",          color1: "#ec4899", color2: "#be185d" },
+    fotos:       { href: "/fotos",       icon: "📸", title: "Fotos",         sub: "Galerie",          color1: "#1e40af", color2: "#1e3a8a" },
     geschenke:   { href: "/geschenke",   icon: "🎁", title: "Geschenke",     sub: "Verschicken",      color1: "#f97316", color2: "#ea580c" },
     markt:       { href: "/markt",       icon: "💰", title: "Markt",         sub: "Items handeln",    color1: "#f59e0b", color2: "#b45309" },
     "vibes-earn": { href: "/vibes-verdienen", icon: "💰", title: "Vibes verdienen", sub: "Werbung & Co", color1: "#22c55e", color2: "#15803d" },
     quests:      { href: "/quests",      icon: "🥇", title: "Quests",        sub: "Aufgaben",         color1: "#3b82f6", color2: "#1e3a8a" },
     daily:       { href: "/heute",       icon: "🎁", title: "Tages-Bonus",   sub: "Tägliche ✨",       color1: "#fbbf24", color2: "#d97706" },
     rang:        { href: "/rang",        icon: "🏆", title: "Rang & XP",     sub: "Level up",         color1: "#f59e0b", color2: "#92400e" },
-    shop:        { href: "/shop",        icon: "🛍️", title: "Shop",         sub: "Premium",          color1: "#a855f7", color2: "#6d28d9" },
+    shop:        { href: "/shop",        icon: "🛍️", title: "Shop",         sub: "Premium",          color1: "#2563eb", color2: "#6d28d9" },
     echtgeld:    { href: "/shop#stripe", icon: "💳", title: "Echtgeld",      sub: "Vibes & VIP",      color1: "#f59e0b", color2: "#b45309" },
-    empfehl:     { href: "/vibes-verdienen?tab=empfehlungen", icon: "💝", title: "Empfehlungen", sub: "Amazon", color1: "#ec4899", color2: "#be185d" },
+    empfehl:     { href: "/vibes-verdienen?tab=empfehlungen", icon: "💝", title: "Empfehlungen", sub: "Amazon", color1: "#1e40af", color2: "#1e3a8a" },
     "vibes-tx":  { href: "/profile/transactions", icon: "📊", title: "Transaktionen", sub: "Verlauf", color1: "#8b5cf6", color2: "#5b21b6" },
     games:       { href: "/spiele",      icon: "🎮", title: "Spiele",        sub: "Mini-Games",       color1: "#f43f5e", color2: "#9f1239" },
-    cards:       { href: "/cards",       icon: "🃏", title: "Karten",        sub: "Sammeln & Tauschen", color1: "#a855f7", color2: "#5b21b6" },
+    cards:       { href: "/cards",       icon: "🃏", title: "Karten",        sub: "Sammeln & Tauschen", color1: "#2563eb", color2: "#5b21b6" },
     install:     { href: "/installieren", icon: "📲", title: "Als App",       sub: "PWA installieren", color1: "#10b981", color2: "#047857" },
   };
 
@@ -692,8 +692,8 @@ function BigTile({ href, color1, color2, icon, title, sub }) {
 const BF_TYPE = {
   status:     { icon: "💬", label: "Status",      g1: "#3b82f6", g2: "#6366f1", chip: "#dbeafe", chipText: "#1e40af" },
   pinnwand:   { icon: "📌", label: "Pinnwand",    g1: "#f97316", g2: "#ea580c", chip: "#ffedd5", chipText: "#9a3412" },
-  gift:       { icon: "🎁", label: "Geschenk",    g1: "#ec4899", g2: "#be185d", chip: "#fce7f3", chipText: "#9d174d" },
-  newpic:     { icon: "🖼️", label: "Neues Bild",  g1: "#a855f7", g2: "#7c3aed", chip: "#ede9fe", chipText: "#5b21b6" },
+  gift:       { icon: "🎁", label: "Geschenk",    g1: "#1e40af", g2: "#1e3a8a", chip: "#f0f4fa", chipText: "#9d174d" },
+  newpic:     { icon: "🖼️", label: "Neues Bild",  g1: "#2563eb", g2: "#7c3aed", chip: "#ede9fe", chipText: "#5b21b6" },
   grouppost:  { icon: "🏘️", label: "Gruppe",      g1: "#06b6d4", g2: "#0891b2", chip: "#cffafe", chipText: "#155e75" },
   login:      { icon: "✨", label: "Online",      g1: "#10b981", g2: "#059669", chip: "#d1fae5", chipText: "#065f46" },
   register:   { icon: "🎉", label: "Neu dabei",   g1: "#f59e0b", g2: "#d97706", chip: "#fef3c7", chipText: "#92400e" },
@@ -877,7 +877,7 @@ function ActivityRow({ n, myUsername }) {
     <Link href={href} style={{
       display: "flex", alignItems: "center", gap: 8,
       padding: "8px 10px", borderRadius: 10,
-      background: n.read ? "transparent" : "rgba(236,72,153,0.08)",
+      background: n.read ? "transparent" : "rgba(30,64,175,0.08)",
       textDecoration: "none", color: "inherit",
       WebkitTapHighlightColor: "transparent",
     }}>
@@ -887,7 +887,7 @@ function ActivityRow({ n, myUsername }) {
         </div>
         <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 1 }}>{when}</div>
       </div>
-      {!n.read && <div style={{ width: 7, height: 7, borderRadius: 999, background: "#ec4899" }} />}
+      {!n.read && <div style={{ width: 7, height: 7, borderRadius: 999, background: "#1e40af" }} />}
     </Link>
   );
 }

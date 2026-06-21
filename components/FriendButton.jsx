@@ -52,7 +52,7 @@ export default function FriendButton({ username }) {
     return <span style={{ ...baseStyle, background: "rgba(16,185,129,0.15)", color: "#10b981" }}>✓ Befreundet</span>;
   }
   if (status === "outgoing") {
-    return <span style={{ ...baseStyle, background: "rgba(168,85,247,0.15)", color: "#a855f7" }}>⏳ Anfrage gesendet</span>;
+    return <span style={{ ...baseStyle, background: "rgba(37,99,235,0.15)", color: "#2563eb" }}>⏳ Anfrage gesendet</span>;
   }
   if (status === "incoming") {
     return (
@@ -68,7 +68,7 @@ export default function FriendButton({ username }) {
   return (
     <>
       <button onClick={() => setShowModal(true)}
-        style={{ ...baseStyle, background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff", boxShadow: "0 4px 12px rgba(168,85,247,0.35)" }}>
+        style={{ ...baseStyle, background: "linear-gradient(135deg, #1e40af, #2563eb)", color: "#fff", boxShadow: "0 4px 12px rgba(37,99,235,0.35)" }}>
         🤝 Freund werden
       </button>
       {showModal && (
@@ -94,7 +94,7 @@ export default function FriendButton({ username }) {
             />
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: 12, borderRadius: 10, background: "#f5f5f7", border: "1px solid #e5e5e7", fontFamily: "inherit", fontWeight: 700, cursor: "pointer" }}>Abbrechen</button>
-              <button onClick={send} disabled={busy} style={{ flex: 2, padding: 12, borderRadius: 10, background: "linear-gradient(135deg,#ec4899,#a855f7)", color: "#fff", border: "none", fontFamily: "inherit", fontWeight: 800, cursor: "pointer" }}>
+              <button onClick={send} disabled={busy} style={{ flex: 2, padding: 12, borderRadius: 10, background: "linear-gradient(135deg,#1e40af,#2563eb)", color: "#fff", border: "none", fontFamily: "inherit", fontWeight: 800, cursor: "pointer" }}>
                 {busy ? "⏳…" : "🤝 Anfrage senden"}
               </button>
             </div>

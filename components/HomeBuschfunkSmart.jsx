@@ -22,8 +22,8 @@ const REFRESH_INTERVAL_MS = 60_000;
 const NEU_THRESHOLD_MS = 5 * 60_000;
 
 const POST_TYPE_BADGE = {
-  quote:        { label: "✦ ZITAT ✦",        color: "#ec4899" },
-  feeling:      { label: "♥ GEFÜHL ♥",       color: "#a855f7" },
+  quote:        { label: "✦ ZITAT ✦",        color: "#1e40af" },
+  feeling:      { label: "♥ GEFÜHL ♥",       color: "#2563eb" },
   mention:      { label: "✿ MIT-@ ✿",        color: "#06b6d4" },
   memory:       { label: "★ ERINNERUNG ★",   color: "#f97316" },
   gift_show:    { label: "❀ GESCHENK ❀",     color: "#f97316" },
@@ -33,8 +33,8 @@ const POST_TYPE_BADGE = {
 
 // Farb-Rotation pro Post (Pink/Cyan/Violet/Gold) — wie wkw/Jappy mit bunten Boxen
 const POST_TONES = [
-  { border: "#ec4899", titleBg: "linear-gradient(135deg,#ec4899,#db2777)", body: "linear-gradient(180deg,#fff,#fdf2f8)" },
-  { border: "#a855f7", titleBg: "linear-gradient(135deg,#a855f7,#9333ea)", body: "linear-gradient(180deg,#fff,#faf5ff)" },
+  { border: "#1e40af", titleBg: "linear-gradient(135deg,#1e40af,#db2777)", body: "linear-gradient(180deg,#fff,#f0f4fa)" },
+  { border: "#2563eb", titleBg: "linear-gradient(135deg,#2563eb,#1e3a8a)", body: "linear-gradient(180deg,#fff,#faf5ff)" },
   { border: "#06b6d4", titleBg: "linear-gradient(135deg,#06b6d4,#0891b2)", body: "linear-gradient(180deg,#fff,#ecfeff)" },
   { border: "#f59e0b", titleBg: "linear-gradient(135deg,#f59e0b,#d97706)", body: "linear-gradient(180deg,#fff,#fffbeb)" },
 ];
@@ -107,8 +107,8 @@ export default function HomeBuschfunkSmart() {
     <div>
       {/* Live-Ticker — wie damals: blinkender Punkt + Marquee-Style */}
       <div style={{
-        background: "linear-gradient(135deg, #fce7f3, #f5d0fe, #ddd6fe)",
-        border: "3px ridge #ec4899",
+        background: "linear-gradient(135deg, #f0f4fa, #f5d0fe, #ddd6fe)",
+        border: "3px ridge #1e40af",
         borderRadius: 10, padding: "8px 12px", marginBottom: 14,
         display: "flex", alignItems: "center", gap: 8,
       }}>
@@ -120,7 +120,7 @@ export default function HomeBuschfunkSmart() {
           flexShrink: 0,
         }} />
         <span style={{
-          fontSize: 12, fontWeight: 900, color: "#831843",
+          fontSize: 12, fontWeight: 900, color: "#1e293b",
           letterSpacing: 1, textShadow: "0 1px 0 #fff",
           flex: 1,
         }}>
@@ -129,7 +129,7 @@ export default function HomeBuschfunkSmart() {
         {newCount > 0 && (
           <button onClick={() => { setNewCount(0); load(); }} style={{
             padding: "4px 10px", borderRadius: 999,
-            background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
+            background: "linear-gradient(135deg, #1e40af, #2563eb)", color: "#fff",
             border: "2px ridge #fff", fontSize: 11, fontWeight: 900,
             cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5,
             animation: "vv-nost-pulse 1.2s infinite",
@@ -137,8 +137,8 @@ export default function HomeBuschfunkSmart() {
         )}
         <button onClick={load} disabled={refreshing} title="Neu laden" style={{
           width: 28, height: 28, borderRadius: "50%",
-          background: "linear-gradient(135deg, #fff, #fce7f3)",
-          border: "2px ridge #ec4899", color: "#831843",
+          background: "linear-gradient(135deg, #fff, #f0f4fa)",
+          border: "2px ridge #1e40af", color: "#1e293b",
           cursor: refreshing ? "wait" : "pointer", fontSize: 14, fontFamily: "inherit",
           transition: "transform 0.3s",
           transform: refreshing ? "rotate(360deg)" : "rotate(0deg)",
@@ -164,7 +164,7 @@ export default function HomeBuschfunkSmart() {
         <div style={{ textAlign: "center", marginTop: 18 }}>
           <Link href="/buschfunk" style={{
             display: "inline-block", padding: "10px 22px", borderRadius: 10,
-            background: "linear-gradient(135deg, #ec4899, #a855f7, #06b6d4)",
+            background: "linear-gradient(135deg, #1e40af, #2563eb, #06b6d4)",
             backgroundSize: "200% 100%",
             color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 900,
             border: "3px ridge #fff", letterSpacing: 1,
@@ -196,8 +196,8 @@ export default function HomeBuschfunkSmart() {
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes vv-nost-neu-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.6); transform: rotate(-3deg); }
-          50%      { box-shadow: 0 0 0 10px rgba(236,72,153,0); transform: rotate(3deg); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(30,64,175,0.6); transform: rotate(-3deg); }
+          50%      { box-shadow: 0 0 0 10px rgba(30,64,175,0); transform: rotate(3deg); }
         }
       `}</style>
     </div>
@@ -218,9 +218,9 @@ function NostalgicPostCard({ ev, tone }) {
   return (
     <div style={{
       borderRadius: 14, overflow: "hidden",
-      border: isFriend ? "4px ridge #ec4899" : `3px ridge ${tone.border}`,
+      border: isFriend ? "4px ridge #1e40af" : `3px ridge ${tone.border}`,
       boxShadow: isFriend
-        ? "0 4px 14px rgba(236,72,153,0.25), inset 0 0 0 1px rgba(255,255,255,0.6)"
+        ? "0 4px 14px rgba(30,64,175,0.25), inset 0 0 0 1px rgba(255,255,255,0.6)"
         : "0 3px 10px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.6)",
       background: tone.body,
       position: "relative",
@@ -230,7 +230,7 @@ function NostalgicPostCard({ ev, tone }) {
       {isNew && (
         <span style={{
           position: "absolute", top: -10, right: 10,
-          background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
+          background: "linear-gradient(135deg, #1e40af, #2563eb)", color: "#fff",
           padding: "4px 10px", borderRadius: 999, fontSize: 10, fontWeight: 900,
           letterSpacing: 1, border: "2px ridge #fff",
           textShadow: "0 1px 1px rgba(0,0,0,0.3)",
@@ -281,7 +281,7 @@ function NostalgicPostCard({ ev, tone }) {
             }}>{actor.displayName || "?"}</Link>
             {isFriend && (
               <span title="Freund" style={{
-                marginLeft: 6, fontSize: 13, color: "#ec4899",
+                marginLeft: 6, fontSize: 13, color: "#1e40af",
                 animation: "vv-nost-sparkle 3s ease-in-out infinite",
               }}>★</span>
             )}
@@ -407,27 +407,27 @@ function EmptyState() {
   return (
     <div style={{
       textAlign: "center", padding: "30px 14px",
-      background: "linear-gradient(135deg, #fce7f3, #f5d0fe, #ddd6fe)",
-      borderRadius: 12, border: "3px ridge #ec4899",
-      boxShadow: "0 4px 14px rgba(236,72,153,0.15)",
+      background: "linear-gradient(135deg, #f0f4fa, #f5d0fe, #ddd6fe)",
+      borderRadius: 12, border: "3px ridge #1e40af",
+      boxShadow: "0 4px 14px rgba(30,64,175,0.15)",
     }}>
       <div style={{ fontSize: 50, marginBottom: 8 }}>✿</div>
       <div style={{
-        fontSize: 17, fontWeight: 900, color: "#831843", marginBottom: 6,
+        fontSize: 17, fontWeight: 900, color: "#1e293b", marginBottom: 6,
         letterSpacing: 1, textShadow: "1px 1px 0 #fff",
       }}>
         ★ HIER IST ES NOCH STILL ★
       </div>
-      <div style={{ fontSize: 13, color: "#831843", marginBottom: 14, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 13, color: "#1e293b", marginBottom: 14, lineHeight: 1.5 }}>
         Sei der/die Erste heute! Ein Status, ein Zitat, eine Erinnerung —<br/>
         was beschäftigt dich gerade?
       </div>
       <Link href="/buschfunk/neu" style={{
         display: "inline-block", padding: "10px 22px", borderRadius: 10,
-        background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
+        background: "linear-gradient(135deg, #1e40af, #2563eb)", color: "#fff",
         textDecoration: "none", fontWeight: 900, fontSize: 13,
         border: "3px ridge #fff",
-        boxShadow: "0 4px 12px rgba(236,72,153,0.35)",
+        boxShadow: "0 4px 12px rgba(30,64,175,0.35)",
         letterSpacing: 0.5,
       }}>✿ JETZT WAS POSTEN ✿</Link>
     </div>
