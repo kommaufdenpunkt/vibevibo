@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getPublicOrigin } from "@/lib/publicUrl";
+import { ensureOAuthColumns } from "@/lib/ensureOauthSchema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ function randomState() {
 }
 
 export async function GET(req) {
+  ensureOAuthColumns();
   const appId = process.env.FACEBOOK_CLIENT_ID || "";
   if (!appId) {
     return NextResponse.json({

@@ -3902,8 +3902,9 @@ input[type="number"], input[type="tel"], textarea, select {
 
 .vv-nost-avatar-frame {
   position: relative;
-  display: inline-block;
-  margin: 6px auto 10px;
+  display: block;
+  width: fit-content;
+  margin: 6px auto 12px;
   padding: 6px;
   background: conic-gradient(from 0deg, #ec4899, #f472b6, #a855f7, #06b6d4, #fbbf24, #ec4899);
   border-radius: 50%;

@@ -9,6 +9,7 @@ import {
 } from "@/lib/db";
 import { setSessionCookie } from "@/lib/auth";
 import { getPublicOrigin } from "@/lib/publicUrl";
+import { ensureOAuthColumns } from "@/lib/ensureOauthSchema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +20,17 @@ function errRedirect(origin, msg) {
   return NextResponse.redirect(u.toString());
 }
 
+function waitlistRedirect(origin, { name, fromFacebook }) {
+  const u = new URL("/warteliste", origin);
+  if (name) u.searchParams.set("name", name);
+  if (fromFacebook) u.searchParams.set("fb", "1");
+  return NextResponse.redirect(u.toString());
+}
+
 export async function GET(req) {
+  // 🛡 ZUERST: Schema-Self-Heal — verhindert „table users has no column named email"
+  ensureOAuthColumns();
+
   const appId = process.env.FACEBOOK_CLIENT_ID || "";
   const appSecret = process.env.FACEBOOK_CLIENT_SECRET || "";
   const publicOrigin = getPublicOrigin(req);
@@ -112,7 +123,11 @@ export async function GET(req) {
 
   if (user.status === "blocked") return errRedirect(publicOrigin, "Dieser Account wurde gesperrt");
   if (user.status === "pending") {
-    return errRedirect(publicOrigin, "Du stehst auf der Warteliste – wir schalten dich bald frei! 💌");
+    // Schöne Warteliste-Seite statt hässlicher Fehler-URL
+    return waitlistRedirect(publicOrigin, {
+      name: user.displayName || user.username || "",
+      fromFacebook: true,
+    });
   }
 
   // 4) Session + Redirect
