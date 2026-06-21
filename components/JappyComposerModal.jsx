@@ -855,158 +855,169 @@ const NF_ERAS = [
 ];
 
 function NeverForgetForm({ v, onChange, color, bg }) {
+  const [open, setOpen] = useState({
+    date: !!v.date || !!v.approxDate,
+    place: !!v.place,
+    cat: !!v.category,
+  });
   const today = new Date();
   const maxDate = today.toISOString().slice(0, 10);
 
-  const mode = v.dateMode || "exact"; // "exact" | "approx"
-
-  function setMode(m) { onChange("dateMode", m); }
-
-  // Berechne „vor X Jahren, Y Monaten" aus exaktem Datum
-  function exactDateLabel() {
-    if (!v.date) return null;
-    const d = new Date(v.date + (v.time ? `T${v.time}` : "T12:00"));
-    const now = new Date();
-    let years = now.getFullYear() - d.getFullYear();
-    let months = now.getMonth() - d.getMonth();
-    if (months < 0) { years--; months += 12; }
-    if (now.getDate() < d.getDate()) months--;
-    if (months < 0) { years--; months += 12; }
-
-    const dateStr = d.toLocaleDateString("de-DE", {
-      weekday: "long", day: "numeric", month: "long", year: "numeric",
-    });
-    const timeStr = v.time ? d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr" : null;
-    return { dateStr, timeStr, years, months };
+  function toggle(key) {
+    setOpen((o) => ({ ...o, [key]: !o[key] }));
   }
 
-  const info = mode === "exact" ? exactDateLabel() : null;
+  // Chip-Summary: zeigt was eingegeben wurde (kompakt)
+  const summary = [];
+  if (v.date) {
+    const dt = new Date(v.date);
+    summary.push("📅 " + dt.toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" })
+      + (v.time ? " · " + v.time + " Uhr" : ""));
+  } else if (v.approxDate) {
+    summary.push("🌫 " + v.approxDate);
+  }
+  if (v.place) summary.push("📍 " + v.place);
+  if (v.category) {
+    const c = NF_CATEGORIES.find((x) => x.id === v.category);
+    if (c) summary.push(`${c.emoji} ${c.label}`);
+  }
 
   return (
     <>
-      {/* Mode-Switch */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
-        <button type="button" onClick={() => setMode("exact")} style={modeBtn(mode === "exact", color)}>
-          📅 Genaues Datum
-        </button>
-        <button type="button" onClick={() => setMode("approx")} style={modeBtn(mode === "approx", color)}>
-          🌫 Etwa damals
-        </button>
+      {/* HAUPTSACHE: Die emotionale Story */}
+      <TextareaField
+        value={v.text || ""} onChange={(x) => onChange("text", x)}
+        placeholder="💔 Ich werde nie vergessen, wie …"
+        color={color} rows={6}
+      />
+
+      {/* Summary-Chips wenn was eingegeben wurde */}
+      {summary.length > 0 && (
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10,
+          padding: 10, borderRadius: 10,
+          background: bg, border: `2px ridge ${color}`,
+        }}>
+          {summary.map((s, i) => (
+            <span key={i} style={{
+              padding: "3px 10px", borderRadius: 999,
+              background: "rgba(255,255,255,0.8)", color,
+              fontSize: 11, fontWeight: 800,
+            }}>{s}</span>
+          ))}
+        </div>
+      )}
+
+      {/* + Buttons für optionale Felder */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
+        <AddChip label="Datum" emoji="📅" open={open.date} onClick={() => toggle("date")} color={color} bg={bg} filled={!!v.date || !!v.approxDate} />
+        <AddChip label="Ort" emoji="📍" open={open.place} onClick={() => toggle("place")} color={color} bg={bg} filled={!!v.place} />
+        <AddChip label="Kategorie" emoji="🏷️" open={open.cat} onClick={() => toggle("cat")} color={color} bg={bg} filled={!!v.category} />
       </div>
 
-      {mode === "exact" ? (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8 }}>
-            <div>
-              <Label color={color}>DATUM</Label>
-              <input
-                type="date" value={v.date || ""} max={maxDate}
-                onChange={(e) => onChange("date", e.target.value)}
-                style={dateInputStyle(color)}
-              />
-            </div>
-            <div>
-              <Label color={color}>UHRZEIT (optional)</Label>
-              <input
-                type="time" value={v.time || ""}
-                onChange={(e) => onChange("time", e.target.value)}
-                style={dateInputStyle(color)}
-              />
-            </div>
+      {/* Datum (aufklappbar) */}
+      {open.date && (
+        <div style={{ marginTop: 10, padding: 12, borderRadius: 10, background: bg, border: `2px ridge ${color}33` }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8, marginBottom: 8 }}>
+            <input type="date" value={v.date || ""} max={maxDate}
+              onChange={(e) => { onChange("date", e.target.value); onChange("approxDate", ""); }}
+              style={dateInputStyle(color)}
+              placeholder="Genaues Datum"
+            />
+            <input type="time" value={v.time || ""}
+              onChange={(e) => onChange("time", e.target.value)}
+              style={dateInputStyle(color)}
+            />
           </div>
-
-          {info && (
-            <div style={{
-              padding: "8px 12px", borderRadius: 8, marginTop: 8,
-              background: bg, border: `2px solid ${color}33`,
-              fontSize: 12, color, fontWeight: 700, textAlign: "center",
-            }}>
-              📅 <b>{info.dateStr}</b>{info.timeStr && <> · {info.timeStr}</>}
-              <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2 }}>
-                ⏳ vor {info.years} {info.years === 1 ? "Jahr" : "Jahren"}
-                {info.months > 0 && `, ${info.months} ${info.months === 1 ? "Monat" : "Monaten"}`}
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          <Label color={color}>UNGEFÄHR WANN</Label>
-          <InputField
-            value={v.approxDate || ""} onChange={(x) => onChange("approxDate", x)}
-            placeholder="z.B. Sommer 2003, in der Schulzeit, vor langer Zeit …"
-            color={color}
+          <div style={{ textAlign: "center", fontSize: 10, color: "#94a3b8", margin: "6px 0", fontWeight: 700, letterSpacing: 0.5 }}>
+            — ODER UNGEFÄHR —
+          </div>
+          <input value={v.approxDate || ""}
+            onChange={(e) => { onChange("approxDate", e.target.value); onChange("date", ""); onChange("time", ""); }}
+            placeholder="z.B. Sommer 2003, Schulzeit, 11.09.2001"
+            style={dateInputStyle(color)}
           />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
             {NF_ERAS.map((e) => (
               <button key={e.label} type="button"
-                onClick={() => onChange("approxDate", e.value)}
+                onClick={() => { onChange("approxDate", e.value); onChange("date", ""); onChange("time", ""); }}
                 style={{
-                  padding: "4px 10px", borderRadius: 999,
-                  background: v.approxDate === e.value ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+                  padding: "3px 9px", borderRadius: 999,
+                  background: v.approxDate === e.value ? `linear-gradient(135deg, ${color}, ${color}cc)` : "rgba(255,255,255,0.7)",
                   color: v.approxDate === e.value ? "#fff" : color,
                   border: v.approxDate === e.value ? `2px ridge ${color}` : `1.5px solid ${color}33`,
                   cursor: "pointer", fontFamily: "inherit",
-                  fontSize: 10.5, fontWeight: 800,
-                  textShadow: v.approxDate === e.value ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
-                }}>
-                {e.label}
-              </button>
+                  fontSize: 10, fontWeight: 700,
+                }}>{e.label}</button>
             ))}
           </div>
-        </>
+        </div>
       )}
 
-      {/* Ort */}
-      <div style={{ marginTop: 12 }}>
-        <Label color={color}>WO WAR ES (optional)</Label>
-        <InputField
-          value={v.place || ""} onChange={(x) => onChange("place", x)}
-          placeholder="z.B. in der Schule, zu Hause, Berlin, am Strand …"
-          color={color}
-        />
-      </div>
-
-      {/* Kategorie */}
-      <div style={{ marginTop: 12 }}>
-        <Label color={color}>KATEGORIE (optional)</Label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-          {NF_CATEGORIES.map((c) => {
-            const active = v.category === c.id;
-            return (
-              <button key={c.id} type="button"
-                onClick={() => onChange("category", active ? null : c.id)}
-                style={{
-                  padding: "5px 11px", borderRadius: 999,
-                  background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
-                  color: active ? "#fff" : color,
-                  border: active ? `2px ridge ${color}` : `1.5px solid ${color}33`,
-                  cursor: "pointer", fontFamily: "inherit",
-                  fontSize: 11.5, fontWeight: 800,
-                  display: "inline-flex", alignItems: "center", gap: 5,
-                  textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
-                }}>
-                <span style={{ fontSize: 13 }}>{c.emoji}</span>
-                <span>{c.label}</span>
-              </button>
-            );
-          })}
+      {/* Ort (aufklappbar) */}
+      {open.place && (
+        <div style={{ marginTop: 10, padding: 12, borderRadius: 10, background: bg, border: `2px ridge ${color}33` }}>
+          <input value={v.place || ""}
+            onChange={(e) => onChange("place", e.target.value)}
+            placeholder="z.B. in der Schule, zu Hause, Berlin, am Strand"
+            style={dateInputStyle(color)}
+          />
         </div>
-      </div>
+      )}
 
-      {/* Story */}
-      <div style={{ marginTop: 12 }}>
-        <Label color={color}>WAS WIRST DU NIE VERGESSEN?</Label>
-        <TextareaField
-          value={v.text || ""} onChange={(x) => onChange("text", x)}
-          placeholder="Erzähl in deinen eigenen Worten — was ist passiert? Wie hat es sich angefühlt?"
-          color={color} rows={5}
-        />
-      </div>
+      {/* Kategorie (aufklappbar) */}
+      {open.cat && (
+        <div style={{ marginTop: 10, padding: 12, borderRadius: 10, background: bg, border: `2px ridge ${color}33` }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {NF_CATEGORIES.map((c) => {
+              const active = v.category === c.id;
+              return (
+                <button key={c.id} type="button"
+                  onClick={() => onChange("category", active ? null : c.id)}
+                  style={{
+                    padding: "5px 11px", borderRadius: 999,
+                    background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : "rgba(255,255,255,0.7)",
+                    color: active ? "#fff" : color,
+                    border: active ? `2px ridge ${color}` : `1.5px solid ${color}33`,
+                    cursor: "pointer", fontFamily: "inherit",
+                    fontSize: 11, fontWeight: 800,
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                  }}>
+                  <span style={{ fontSize: 13 }}>{c.emoji}</span>
+                  <span>{c.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <ImageUpload value={v.image || ""} onChange={(x) => onChange("image", x)}
-        color={color} bg={bg} label="📸 Historisches Bild / Foto vom Tag" />
+        color={color} bg={bg} label="📸 Foto vom Moment (optional)" />
     </>
+  );
+}
+
+function AddChip({ label, emoji, open, onClick, color, bg, filled }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      padding: "6px 12px", borderRadius: 999,
+      background: open
+        ? `linear-gradient(135deg, ${color}, ${color}cc)`
+        : (filled ? bg : "rgba(0,0,0,0.04)"),
+      color: open ? "#fff" : (filled ? color : "#64748b"),
+      border: open
+        ? `2px ridge ${color}`
+        : (filled ? `2px solid ${color}66` : "1.5px solid rgba(0,0,0,0.1)"),
+      cursor: "pointer", fontFamily: "inherit",
+      fontSize: 11.5, fontWeight: 800,
+      display: "inline-flex", alignItems: "center", gap: 4,
+      textShadow: open ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+    }}>
+      <span style={{ fontSize: 12 }}>{emoji}</span>
+      <span>{open ? label : `+ ${label}`}</span>
+      {filled && !open && <span style={{ fontSize: 10 }}>✓</span>}
+    </button>
   );
 }
 
