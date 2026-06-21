@@ -114,7 +114,7 @@ function Modal({ me, onClose, onPosted }) {
     mention: { mentions: "", text: "", image: "" },
     memory: { yearsAgo: 0, date: "", text: "", source: null, commentary: "", image: "" },
     now_playing: { song: "", artist: "", link: "" },
-    never_forget: { date: "", text: "", image: "" },
+    never_forget: { dateMode: "exact", date: "", time: "", approxDate: "", place: "", category: null, text: "", image: "" },
   });
 
   const activeType = POST_TYPES.find((t) => t.id === postType) || POST_TYPES[0];
@@ -441,22 +441,7 @@ function TypedForm({ type, value, onChange, color, bg }) {
     );
   }
   if (type === "never_forget") {
-    return (
-      <>
-        <InputField
-          value={v.date || ""} onChange={(x) => onChange("date", x)}
-          placeholder="📅 Datum (z.B. 11.09.2001 oder Sommer 2003)"
-          color={color}
-        />
-        <TextareaField
-          value={v.text || ""} onChange={(x) => onChange("text", x)}
-          placeholder="Was wirst du nie vergessen?"
-          color={color} rows={5} marginTop={8}
-        />
-        <ImageUpload value={v.image || ""} onChange={(x) => onChange("image", x)}
-          color={color} bg={bg} label="📸 Historisches Bild" />
-      </>
-    );
+    return <NeverForgetForm v={v} onChange={onChange} color={color} bg={bg} />;
   }
   return null;
 }
@@ -840,6 +825,205 @@ function modeBtn(active, color) {
   };
 }
 
+// === Nie-Vergessen-Form mit Datum+Uhrzeit+Ort+Kategorie ===
+const NF_CATEGORIES = [
+  { id: "family",   emoji: "👨‍👩‍👧",  label: "Familie" },
+  { id: "school",   emoji: "🎓",  label: "Schule" },
+  { id: "work",     emoji: "💼",  label: "Beruf" },
+  { id: "love",     emoji: "💕",  label: "Liebe" },
+  { id: "travel",   emoji: "✈️",  label: "Reise" },
+  { id: "loss",     emoji: "🕯️",  label: "Abschied" },
+  { id: "history",  emoji: "🌍",  label: "Geschichte" },
+  { id: "moment",   emoji: "✨",  label: "Moment" },
+];
+
+const NF_ERAS = [
+  { label: "Kindheit",      value: "in der Kindheit" },
+  { label: "Schulzeit",     value: "in der Schulzeit" },
+  { label: "90er",          value: "in den 90er Jahren" },
+  { label: "2000er",        value: "in den 2000er Jahren" },
+  { label: "2010er",        value: "in den 2010er Jahren" },
+  { label: "Studium",       value: "im Studium" },
+  { label: "Ausbildung",    value: "in der Ausbildung" },
+  { label: "Sommer 2003",   value: "Sommer 2003" },
+  { label: "WM 2006",       value: "während der WM 2006" },
+];
+
+function NeverForgetForm({ v, onChange, color, bg }) {
+  const today = new Date();
+  const maxDate = today.toISOString().slice(0, 10);
+
+  const mode = v.dateMode || "exact"; // "exact" | "approx"
+
+  function setMode(m) { onChange("dateMode", m); }
+
+  // Berechne „vor X Jahren, Y Monaten" aus exaktem Datum
+  function exactDateLabel() {
+    if (!v.date) return null;
+    const d = new Date(v.date + (v.time ? `T${v.time}` : "T12:00"));
+    const now = new Date();
+    let years = now.getFullYear() - d.getFullYear();
+    let months = now.getMonth() - d.getMonth();
+    if (months < 0) { years--; months += 12; }
+    if (now.getDate() < d.getDate()) months--;
+    if (months < 0) { years--; months += 12; }
+
+    const dateStr = d.toLocaleDateString("de-DE", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+    });
+    const timeStr = v.time ? d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr" : null;
+    return { dateStr, timeStr, years, months };
+  }
+
+  const info = mode === "exact" ? exactDateLabel() : null;
+
+  return (
+    <>
+      {/* Mode-Switch */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+        <button type="button" onClick={() => setMode("exact")} style={modeBtn(mode === "exact", color)}>
+          📅 Genaues Datum
+        </button>
+        <button type="button" onClick={() => setMode("approx")} style={modeBtn(mode === "approx", color)}>
+          🌫 Etwa damals
+        </button>
+      </div>
+
+      {mode === "exact" ? (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8 }}>
+            <div>
+              <Label color={color}>DATUM</Label>
+              <input
+                type="date" value={v.date || ""} max={maxDate}
+                onChange={(e) => onChange("date", e.target.value)}
+                style={dateInputStyle(color)}
+              />
+            </div>
+            <div>
+              <Label color={color}>UHRZEIT (optional)</Label>
+              <input
+                type="time" value={v.time || ""}
+                onChange={(e) => onChange("time", e.target.value)}
+                style={dateInputStyle(color)}
+              />
+            </div>
+          </div>
+
+          {info && (
+            <div style={{
+              padding: "8px 12px", borderRadius: 8, marginTop: 8,
+              background: bg, border: `2px solid ${color}33`,
+              fontSize: 12, color, fontWeight: 700, textAlign: "center",
+            }}>
+              📅 <b>{info.dateStr}</b>{info.timeStr && <> · {info.timeStr}</>}
+              <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2 }}>
+                ⏳ vor {info.years} {info.years === 1 ? "Jahr" : "Jahren"}
+                {info.months > 0 && `, ${info.months} ${info.months === 1 ? "Monat" : "Monaten"}`}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <Label color={color}>UNGEFÄHR WANN</Label>
+          <InputField
+            value={v.approxDate || ""} onChange={(x) => onChange("approxDate", x)}
+            placeholder="z.B. Sommer 2003, in der Schulzeit, vor langer Zeit …"
+            color={color}
+          />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
+            {NF_ERAS.map((e) => (
+              <button key={e.label} type="button"
+                onClick={() => onChange("approxDate", e.value)}
+                style={{
+                  padding: "4px 10px", borderRadius: 999,
+                  background: v.approxDate === e.value ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+                  color: v.approxDate === e.value ? "#fff" : color,
+                  border: v.approxDate === e.value ? `2px ridge ${color}` : `1.5px solid ${color}33`,
+                  cursor: "pointer", fontFamily: "inherit",
+                  fontSize: 10.5, fontWeight: 800,
+                  textShadow: v.approxDate === e.value ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+                }}>
+                {e.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Ort */}
+      <div style={{ marginTop: 12 }}>
+        <Label color={color}>WO WAR ES (optional)</Label>
+        <InputField
+          value={v.place || ""} onChange={(x) => onChange("place", x)}
+          placeholder="z.B. in der Schule, zu Hause, Berlin, am Strand …"
+          color={color}
+        />
+      </div>
+
+      {/* Kategorie */}
+      <div style={{ marginTop: 12 }}>
+        <Label color={color}>KATEGORIE (optional)</Label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {NF_CATEGORIES.map((c) => {
+            const active = v.category === c.id;
+            return (
+              <button key={c.id} type="button"
+                onClick={() => onChange("category", active ? null : c.id)}
+                style={{
+                  padding: "5px 11px", borderRadius: 999,
+                  background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+                  color: active ? "#fff" : color,
+                  border: active ? `2px ridge ${color}` : `1.5px solid ${color}33`,
+                  cursor: "pointer", fontFamily: "inherit",
+                  fontSize: 11.5, fontWeight: 800,
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+                }}>
+                <span style={{ fontSize: 13 }}>{c.emoji}</span>
+                <span>{c.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Story */}
+      <div style={{ marginTop: 12 }}>
+        <Label color={color}>WAS WIRST DU NIE VERGESSEN?</Label>
+        <TextareaField
+          value={v.text || ""} onChange={(x) => onChange("text", x)}
+          placeholder="Erzähl in deinen eigenen Worten — was ist passiert? Wie hat es sich angefühlt?"
+          color={color} rows={5}
+        />
+      </div>
+
+      <ImageUpload value={v.image || ""} onChange={(x) => onChange("image", x)}
+        color={color} bg={bg} label="📸 Historisches Bild / Foto vom Tag" />
+    </>
+  );
+}
+
+function Label({ color, children }) {
+  return (
+    <div style={{
+      fontSize: 10, fontWeight: 900, color, letterSpacing: 0.6,
+      marginBottom: 4, textTransform: "uppercase", opacity: 0.85,
+    }}>{children}</div>
+  );
+}
+
+function dateInputStyle(color) {
+  return {
+    width: "100%", padding: 10,
+    background: "#fff", color: "#1c1c1e",
+    border: `2px ridge ${color}`,
+    borderRadius: 10, fontFamily: "inherit", fontSize: 14, fontWeight: 700,
+    outline: "none", boxSizing: "border-box",
+  };
+}
+
 // === Gefühl-Form mit existierendem Status-Katalog ===
 function FeelingForm({ v, onChange, color, bg }) {
   const [query, setQuery] = useState("");
@@ -1043,10 +1227,38 @@ function composeForType(type, v) {
     return out;
   }
   if (type === "never_forget") {
-    const d = (v.date || "").trim();
     const t = (v.text || "").trim();
-    if (!d && !t) return "";
-    return `💔 ${d} — ${t}`.trim();
+    if (!t) return "";
+
+    // Datums-Teil zusammenbauen
+    let when = "";
+    if (v.dateMode === "approx") {
+      when = (v.approxDate || "").trim();
+    } else if (v.date) {
+      const dt = new Date(v.date + (v.time ? `T${v.time}` : "T12:00"));
+      when = dt.toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
+      if (v.time) {
+        when += " · " + dt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr";
+      }
+    }
+
+    const place = (v.place || "").trim();
+    const catObj = (v.category && (
+      v.category === "family"  ? { emoji: "👨‍👩‍👧",  label: "Familie" } :
+      v.category === "school"  ? { emoji: "🎓",  label: "Schule" } :
+      v.category === "work"    ? { emoji: "💼",  label: "Beruf" } :
+      v.category === "love"    ? { emoji: "💕",  label: "Liebe" } :
+      v.category === "travel"  ? { emoji: "✈️",  label: "Reise" } :
+      v.category === "loss"    ? { emoji: "🕯️",  label: "Abschied" } :
+      v.category === "history" ? { emoji: "🌍",  label: "Geschichte" } :
+      v.category === "moment"  ? { emoji: "✨",  label: "Moment" } : null
+    )) || null;
+
+    let head = "💔";
+    if (catObj) head += ` ${catObj.emoji}`;
+    if (when) head += ` ${when}`;
+    if (place) head += ` · ${place}`;
+    return `${head}\n\n${t}`;
   }
   return "";
 }
