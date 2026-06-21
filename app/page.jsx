@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 import Buschfunk from "@/components/Buschfunk";
-import JappyComposer from "@/components/JappyComposer";
+import JappyComposerModal from "@/components/JappyComposerModal";
 import { useMe } from "@/lib/useMe";
 import { useState } from "react";
 
@@ -91,8 +91,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 📝 Jappy-Style Inline-Composer — direkt posten ohne Seiten-Wechsel */}
-        <JappyComposer onPosted={() => setFeedTick((t) => t + 1)} />
+        {/* 📝 FB/Jappy-Style Composer-Trigger — öffnet Modal mit Aa/Smiley/Typ */}
+        <JappyComposerModal onPosted={() => setFeedTick((t) => t + 1)} />
 
         <style>{`
           @keyframes vv-bf-hero {
