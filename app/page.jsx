@@ -82,12 +82,6 @@ export default function HomePage() {
               fontWeight: 900, fontSize: 13, textDecoration: "none",
               boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
             }}>📝 Meine Pinnwand</Link>
-            <Link href="/heute" style={{
-              background: "rgba(0,0,0,0.18)", color: "#fff",
-              padding: "8px 16px", borderRadius: 999,
-              fontWeight: 800, fontSize: 13, textDecoration: "none",
-              backdropFilter: "blur(8px)",
-            }}>📊 Heute</Link>
           </div>
         </div>
 
