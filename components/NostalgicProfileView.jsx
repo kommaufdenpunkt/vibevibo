@@ -24,6 +24,7 @@ import ViboProfileWidget from "@/components/ViboProfileWidget";
 import Marquee from "@/components/Marquee";
 import FriendButton from "@/components/FriendButton";
 import SosButton from "@/components/SosButton";
+import LiveCallButton from "@/components/LiveCallButton";
 import KnowMeBestQuiz from "@/components/KnowMeBestQuiz";
 import MoodDisplay from "@/components/MoodDisplay";
 import ProfileMusicPlayer from "@/components/ProfileMusicPlayer";
@@ -164,13 +165,20 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
 
         {/* 🤝 Friend-Request + 💛 SOS-Button — neben Standard-Aktionen */}
         {me && !isOwner && (
-          <div style={{
-            display: "flex", gap: 10, justifyContent: "center",
-            marginTop: 10, flexWrap: "wrap",
-          }}>
-            <FriendButton username={profile.username} />
-            <SosButton username={profile.username} />
-          </div>
+          <>
+            <div style={{
+              display: "flex", gap: 10, justifyContent: "center",
+              marginTop: 10, flexWrap: "wrap",
+            }}>
+              <FriendButton username={profile.username} />
+              <SosButton username={profile.username} />
+            </div>
+            {/* 📞 Live-Call Buttons (Audio + Video) */}
+            <LiveCallButton
+              partnerUsername={profile.username}
+              partnerDisplayName={profile.displayName}
+            />
+          </>
         )}
         {!me && (
           <div className="vv-nost-actions">

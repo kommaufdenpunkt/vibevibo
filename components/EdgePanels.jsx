@@ -221,6 +221,21 @@ export default function EdgePanels() {
             <span className="vv-edge-quick-emoji">📅</span>
             <span className="vv-edge-quick-label">Heute vor X Jahren</span>
           </Link>
+          <Link href="/live" className="vv-edge-quick-tile" style={{
+            background: "linear-gradient(135deg, #a3473d, #7a2e26, #a3473d)",
+            backgroundSize: "200% 100%",
+            animation: "vv-live-pulse 3s ease-in-out infinite",
+            position: "relative",
+          }}>
+            <span className="vv-edge-quick-emoji">🔴</span>
+            <span className="vv-edge-quick-label">LIVE</span>
+            <style>{`
+              @keyframes vv-live-pulse {
+                0%, 100% { background-position: 0% 50%; }
+                50%      { background-position: 100% 50%; }
+              }
+            `}</style>
+          </Link>
         </div>
       </aside>
     </>
