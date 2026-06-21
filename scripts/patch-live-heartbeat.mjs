@@ -19,6 +19,7 @@ const DB_PATH = join(ROOT, "lib", "db.js");
 
 const MARK_COL = "/* 🛡 LIVE_HOST_HEARTBEAT_COL_V1 */";
 const MARK_FN  = "// 🛡 LIVE_HOST_HEARTBEAT_FN_V1";
+const MARK_FN2 = "// 💰 LIVE_EMOTE_PAYMENT_FN_V1";
 
 let src = readFileSync(DB_PATH, "utf-8");
 let changed = false;
@@ -115,7 +116,20 @@ export function maintainLiveStream(streamId, opts = {}) {
   }
   return { kickedCohosts: kicked, streamEnded: ended };
 }
+`;
+  src += FN;
+  changed = true;
+  console.log("✓ heartbeatLiveHost + cleanupStaleLiveHosts + maintainLiveStream ergänzt.");
+} else {
+  console.log("✓ Helper-Marker bereits drin — skip.");
+}
 
+// ─── 3. Atomare Emote-Payment-Funktion (eigener Marker — wird auch nachgereicht
+//         wenn MARK_FN bereits gesetzt ist) ───
+if (!src.includes(MARK_FN2)) {
+  const FN2 = `
+
+${MARK_FN2}
 // 💰 Atomare Vibes-Verarbeitung fuer Live-Emotes.
 // Spend + Payout + Log laufen in EINER SQLite-Transaction —
 // kein Race-Window zwischen Debit und Verteilung.
@@ -140,11 +154,11 @@ export function processLiveEmotePayment(streamId, fromUserId, fromUsername, emot
   try { return tx(); } catch { return { ok: false, missing: 0, error: true }; }
 }
 `;
-  src += FN;
+  src += FN2;
   changed = true;
-  console.log("✓ heartbeatLiveHost + cleanupStaleLiveHosts + maintainLiveStream ergänzt.");
+  console.log("✓ processLiveEmotePayment ergänzt.");
 } else {
-  console.log("✓ Helper-Marker bereits drin — skip.");
+  console.log("✓ Emote-Payment-Marker bereits drin — skip.");
 }
 
 if (changed) {
