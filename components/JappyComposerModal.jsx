@@ -113,7 +113,7 @@ function Modal({ me, onClose, onPosted }) {
     quote: { quote: "", author: "" },
     feeling: { mood: null, text: "" },
     mention: { mentions: "", text: "" },
-    memory: { yearsAgo: 1, text: "" },
+    memory: { yearsAgo: 1, text: "", source: null, commentary: "" },
     now_playing: { song: "", artist: "", link: "" },
     never_forget: { date: "", text: "" },
   });
@@ -407,36 +407,7 @@ function TypedForm({ type, value, onChange, color, bg }) {
     );
   }
   if (type === "memory") {
-    return (
-      <>
-        <div style={{ fontSize: 11, fontWeight: 800, color, letterSpacing: 0.5, marginBottom: 6 }}>
-          VOR WIE VIELEN JAHREN?
-        </div>
-        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-          {[1, 2, 3, 5, 10, 15, 20, 25].map((y) => {
-            const active = v.yearsAgo === y;
-            return (
-              <button key={y} type="button" onClick={() => onChange("yearsAgo", y)} style={{
-                padding: "6px 14px", borderRadius: 999,
-                background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
-                color: active ? "#fff" : color,
-                border: active ? `2px ridge ${color}` : `2px solid ${color}33`,
-                cursor: "pointer", fontFamily: "inherit",
-                fontSize: 13, fontWeight: 900,
-                textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
-              }}>
-                {y === 1 ? "1 Jahr" : `${y} Jahre`}
-              </button>
-            );
-          })}
-        </div>
-        <TextareaField
-          value={v.text || ""} onChange={(x) => onChange("text", x)}
-          placeholder="Was war damals? (z.B. ICQ-Sound im Ohr, Sommer 2003 🍦)"
-          color={color} rows={4}
-        />
-      </>
-    );
+    return <MemoryForm v={v} onChange={onChange} color={color} bg={bg} />;
   }
   if (type === "now_playing") {
     return (
@@ -514,6 +485,166 @@ function TextareaField({ value, onChange, placeholder, color, rows = 4, marginTo
       }}
     />
   );
+}
+
+// === Erinnerung-Form: lädt echte eigene Memories aus der Vergangenheit ===
+function MemoryForm({ v, onChange, color, bg }) {
+  const [memories, setMemories] = useState(null);
+  const [mode, setMode] = useState("pick"); // "pick" | "manual"
+
+  useEffect(() => {
+    fetch("/api/me/memories")
+      .then((r) => r.ok ? r.json() : { memories: [] })
+      .then((d) => setMemories(d.memories || []))
+      .catch(() => setMemories([]));
+  }, []);
+
+  function pickMemory(m) {
+    const txt = m.text || m.note || m.caption || "";
+    onChange("yearsAgo", m.yearsAgo);
+    onChange("text", txt);
+    onChange("source", "real");
+  }
+
+  function resetPick() {
+    onChange("yearsAgo", 1);
+    onChange("text", "");
+    onChange("source", null);
+  }
+
+  if (memories === null) {
+    return <div style={{ padding: 20, textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
+      ⏳ Lade deine Erinnerungen…
+    </div>;
+  }
+
+  return (
+    <>
+      {/* Mode-Switch */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+        <button type="button" onClick={() => setMode("pick")} style={modeBtn(mode === "pick", color)}>
+          🕰️ Echte Erinnerung ({memories.length})
+        </button>
+        <button type="button" onClick={() => setMode("manual")} style={modeBtn(mode === "manual", color)}>
+          ✏️ Selbst tippen
+        </button>
+      </div>
+
+      {mode === "pick" ? (
+        memories.length === 0 ? (
+          <div style={{
+            padding: 20, textAlign: "center", color: "#831843", fontSize: 13,
+            background: bg, borderRadius: 10, border: `2px ridge ${color}33`, lineHeight: 1.5,
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>🌱</div>
+            Du hast noch keine Posts/Geschenke aus dem heutigen Tag in vergangenen Jahren.
+            Tippe deine Erinnerung manuell oder komm in einem Jahr wieder!
+          </div>
+        ) : (
+          <div style={{ maxHeight: 260, overflowY: "auto", display: "grid", gap: 6 }}>
+            {memories.map((m, i) => {
+              const txt = m.text || m.note || m.caption || "(ohne Text)";
+              const isPicked = v.source === "real" && v.yearsAgo === m.yearsAgo && v.text === txt;
+              const kindLabel = {
+                pinnwand: "📌 Pinnwand", gift: "🎁 Geschenk",
+                photo: "📸 Foto", status: "💬 Status",
+              }[m.kind] || "📅 Aktivität";
+              return (
+                <button key={`${m.kind}-${m.id}-${i}`} type="button"
+                  onClick={() => pickMemory(m)}
+                  style={{
+                    padding: "10px 12px", borderRadius: 10,
+                    background: isPicked ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+                    color: isPicked ? "#fff" : "#1c1c1e",
+                    border: isPicked ? `2px ridge ${color}` : `2px solid ${color}33`,
+                    cursor: "pointer", fontFamily: "inherit",
+                    textAlign: "left", display: "block",
+                    textShadow: isPicked ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+                  }}
+                >
+                  <div style={{
+                    display: "flex", justifyContent: "space-between", marginBottom: 4,
+                    fontSize: 10.5, fontWeight: 900, letterSpacing: 0.4,
+                    opacity: isPicked ? 0.95 : 0.7,
+                  }}>
+                    <span>{kindLabel} · ⏳ vor {m.yearsAgo} {m.yearsAgo === 1 ? "Jahr" : "Jahren"}</span>
+                    <span>{new Date(m.at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  </div>
+                  <div style={{ fontSize: 13, lineHeight: 1.4, fontWeight: 600,
+                    overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                  }}>
+                    {txt}
+                  </div>
+                  {isPicked && <div style={{ fontSize: 10, marginTop: 4, fontWeight: 800 }}>✓ ausgewählt</div>}
+                </button>
+              );
+            })}
+          </div>
+        )
+      ) : (
+        <>
+          <div style={{ fontSize: 11, fontWeight: 800, color, letterSpacing: 0.5, marginBottom: 6 }}>
+            VOR WIE VIELEN JAHREN?
+          </div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+            {[1, 2, 3, 5, 10, 15, 20, 25].map((y) => {
+              const active = v.yearsAgo === y;
+              return (
+                <button key={y} type="button" onClick={() => { onChange("yearsAgo", y); onChange("source", "manual"); }} style={{
+                  padding: "6px 14px", borderRadius: 999,
+                  background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+                  color: active ? "#fff" : color,
+                  border: active ? `2px ridge ${color}` : `2px solid ${color}33`,
+                  cursor: "pointer", fontFamily: "inherit",
+                  fontSize: 13, fontWeight: 900,
+                  textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+                }}>
+                  {y === 1 ? "1 Jahr" : `${y} Jahre`}
+                </button>
+              );
+            })}
+          </div>
+          <TextareaField
+            value={v.text || ""} onChange={(x) => { onChange("text", x); onChange("source", "manual"); }}
+            placeholder="Was war damals? (z.B. ICQ-Sound im Ohr, Sommer 2003 🍦)"
+            color={color} rows={4}
+          />
+        </>
+      )}
+
+      {/* Optional: Eigene Worte dazu */}
+      {v.source === "real" && (
+        <div style={{ marginTop: 10 }}>
+          <InputField
+            value={v.commentary || ""} onChange={(x) => onChange("commentary", x)}
+            placeholder="Dein Kommentar dazu (optional)"
+            color={color}
+          />
+        </div>
+      )}
+
+      {(v.source === "real" || (v.source === null && v.yearsAgo)) && (
+        <button type="button" onClick={resetPick} style={{
+          marginTop: 8, padding: "4px 10px", borderRadius: 8,
+          background: "transparent", color: "#94a3b8",
+          border: "1px solid #cbd5e1", cursor: "pointer", fontFamily: "inherit",
+          fontSize: 11, fontWeight: 700,
+        }}>↺ Reset</button>
+      )}
+    </>
+  );
+}
+
+function modeBtn(active, color) {
+  return {
+    flex: 1, padding: "7px 10px", borderRadius: 8,
+    background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : "rgba(0,0,0,0.04)",
+    color: active ? "#fff" : "#475569",
+    border: active ? `2px ridge ${color}` : "1.5px solid rgba(0,0,0,0.08)",
+    cursor: "pointer", fontFamily: "inherit",
+    fontSize: 11.5, fontWeight: active ? 900 : 700,
+    textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+  };
 }
 
 // === Gefühl-Form mit existierendem Status-Katalog ===
@@ -666,8 +797,14 @@ function composeForType(type, v) {
   if (type === "memory") {
     const y = Number(v.yearsAgo) || 1;
     const t = (v.text || "").trim();
+    const c = (v.commentary || "").trim();
     if (!t) return "";
-    return `📅 Vor ${y} ${y === 1 ? "Jahr" : "Jahren"}: ${t}`;
+    const head = `📅 Vor ${y} ${y === 1 ? "Jahr" : "Jahren"}`;
+    if (v.source === "real") {
+      // Repost: Original-Text in Anführungszeichen + optional Kommentar
+      return c ? `${head}: „${t}"\n\n${c}` : `${head}: „${t}"`;
+    }
+    return `${head}: ${t}`;
   }
   if (type === "now_playing") {
     const s = (v.song || "").trim();
