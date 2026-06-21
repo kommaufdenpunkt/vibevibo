@@ -26,28 +26,28 @@ const SMILEYS = [
 
 const POST_TYPES = [
   {
-    id: "free",         label: "Frei",          icon: "💬", color: "#ec4899",
-    bg: "linear-gradient(135deg, #fce7f3, #fbcfe8)",
+    id: "free",         label: "Frei",          icon: "💬", color: "#a3473d",
+    bg: "linear-gradient(135deg, #f4ead5, #e8d8b8)",
   },
   {
-    id: "quote",        label: "Zitat",         icon: "🌹", color: "#db2777",
-    bg: "linear-gradient(135deg, #fff1f2, #ffe4e6)",
+    id: "quote",        label: "Zitat",         icon: "🌹", color: "#7a2e26",
+    bg: "linear-gradient(135deg, #f9eedb, #f0deba)",
   },
   {
-    id: "feeling",      label: "Status",        icon: "💭", color: "#a855f7",
-    bg: "linear-gradient(135deg, #faf5ff, #f3e8ff)",
+    id: "feeling",      label: "Status",        icon: "💭", color: "#8b6f47",
+    bg: "linear-gradient(135deg, #f5ecd6, #ebdfb8)",
   },
   {
-    id: "mention",      label: "Mit Markierung", icon: "👯", color: "#06b6d4",
-    bg: "linear-gradient(135deg, #ecfeff, #cffafe)",
+    id: "mention",      label: "Mit Markierung", icon: "👯", color: "#c8a25c",
+    bg: "linear-gradient(135deg, #faf4e0, #e8dbb5)",
   },
   {
-    id: "memory",       label: "Erinnerung",    icon: "📅", color: "#f97316",
-    bg: "linear-gradient(135deg, #fff7ed, #ffedd5)",
+    id: "memory",       label: "Erinnerung",    icon: "📅", color: "#b8743f",
+    bg: "linear-gradient(135deg, #faf0dc, #f0deba)",
   },
   {
-    id: "now_playing",  label: "Höre gerade",   icon: "🎵", color: "#10b981",
-    bg: "linear-gradient(135deg, #ecfdf5, #d1fae5)",
+    id: "now_playing",  label: "Höre gerade",   icon: "🎵", color: "#8a8a3f",
+    bg: "linear-gradient(135deg, #ede4c8, #d4c89a)",
   },
   {
     id: "never_forget", label: "Nie vergessen", icon: "💔", color: "#475569",
@@ -73,9 +73,9 @@ export default function JappyComposerModal({ onPosted }) {
 function Trigger({ me, onOpen }) {
   return (
     <div onClick={onOpen} style={{
-      background: "linear-gradient(135deg, #fce7f3, #f5d0fe, #ddd6fe)",
+      background: "linear-gradient(135deg, #f4ead5, #e0c89a, #c4b88e)",
       borderRadius: 999, padding: "10px 14px", marginBottom: 12,
-      border: "3px ridge #ec4899",
+      border: "3px ridge #a3473d",
       boxShadow: "0 3px 10px rgba(236,72,153,0.18)",
       display: "flex", alignItems: "center", gap: 12,
       cursor: "pointer", transition: "transform 0.18s, box-shadow 0.18s",
@@ -83,14 +83,14 @@ function Trigger({ me, onOpen }) {
     onMouseOver={(e) => { e.currentTarget.style.transform = "scale(1.01)"; e.currentTarget.style.boxShadow = "0 6px 18px rgba(236,72,153,0.3)"; }}
     onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 3px 10px rgba(236,72,153,0.18)"; }}
     >
-      <div style={{ border: "2px ridge #ec4899", borderRadius: "50%", padding: 2, background: "#fff" }}>
+      <div style={{ border: "2px ridge #a3473d", borderRadius: "50%", padding: 2, background: "#fff" }}>
         <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 36, height: 36, borderRadius: "50%" }} />
       </div>
-      <span style={{ flex: 1, fontSize: 14, color: "#831843", fontStyle: "italic", textShadow: "0 1px 0 #fff" }}>
-        ✿ Was machst du gerade, <b style={{ color: "#ec4899", fontStyle: "normal" }}>{me.displayName}</b>?
+      <span style={{ flex: 1, fontSize: 14, color: "#5c2e27", fontStyle: "italic", textShadow: "0 1px 0 #fff" }}>
+        ✿ Was machst du gerade, <b style={{ color: "#a3473d", fontStyle: "normal" }}>{me.displayName}</b>?
       </span>
       <span style={{
-        background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
+        background: "linear-gradient(135deg, #a3473d, #8b6f47)", color: "#fff",
         padding: "5px 14px", borderRadius: 999,
         fontSize: 11, fontWeight: 900, letterSpacing: 0.5,
         border: "2px ridge #fff",
@@ -172,19 +172,19 @@ function Modal({ me, onClose, onPosted }) {
       padding: 12,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: "linear-gradient(180deg, #fff, #fef7fb 30%, #fff)",
+        background: "linear-gradient(180deg, #fff, #f9eedb 30%, #fff)",
         color: "#1c1c1e",
         borderRadius: 16, width: "100%", maxWidth: 560,
         maxHeight: "92vh", display: "flex", flexDirection: "column",
         overflow: "hidden",
         boxShadow: "0 22px 64px rgba(236,72,153,0.35)",
-        border: "4px ridge #ec4899",
+        border: "4px ridge #a3473d",
       }}>
         {/* Header */}
         <div style={{
           position: "relative", overflow: "hidden",
           padding: "14px 16px",
-          background: "linear-gradient(135deg, #ec4899, #a855f7, #06b6d4, #ec4899)",
+          background: "linear-gradient(135deg, #a3473d, #8b6f47, #c8a25c, #a3473d)",
           backgroundSize: "300% 100%",
           animation: "vv-jc-wave 8s ease-in-out infinite",
           borderBottom: "3px ridge #fff",
@@ -205,7 +205,7 @@ function Modal({ me, onClose, onPosted }) {
           <button onClick={onClose} title="Schließen" style={{
             position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
             width: 32, height: 32, borderRadius: "50%",
-            background: "rgba(255,255,255,0.95)", color: "#831843",
+            background: "rgba(255,255,255,0.95)", color: "#5c2e27",
             border: "2px ridge #fff", cursor: "pointer", fontSize: 14, fontFamily: "inherit",
             fontWeight: 900,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -217,7 +217,7 @@ function Modal({ me, onClose, onPosted }) {
         <div style={{ padding: 16, overflowY: "auto", flex: 1 }}>
           {/* Avatar + Name */}
           <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
-            <div style={{ border: "3px ridge #ec4899", borderRadius: 10, padding: 2, background: "#fff" }}>
+            <div style={{ border: "3px ridge #a3473d", borderRadius: 10, padding: 2, background: "#fff" }}>
               <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 44, height: 44, borderRadius: 8 }} />
             </div>
             <div style={{ flex: 1 }}>
@@ -225,7 +225,7 @@ function Modal({ me, onClose, onPosted }) {
                 fontSize: 16, fontWeight: 900, color: activeType.color,
                 textShadow: "1px 1px 0 #fff, 2px 2px 0 rgba(0,0,0,0.05)",
               }}>{me.displayName}</div>
-              <div style={{ fontSize: 11, color: "#831843", marginTop: 2, opacity: 0.8 }}>
+              <div style={{ fontSize: 11, color: "#5c2e27", marginTop: 2, opacity: 0.8 }}>
                 postet als <b style={{ color: activeType.color }}>{activeType.icon} {activeType.label}</b>
               </div>
             </div>
@@ -312,7 +312,7 @@ function Modal({ me, onClose, onPosted }) {
           {err && (
             <div style={{
               marginTop: 10, padding: 10, borderRadius: 8,
-              background: "rgba(239,68,68,0.1)", color: "#991b1b",
+              background: "rgba(239,68,68,0.1)", color: "#7a1f17",
               border: "2px ridge #ef4444",
               fontSize: 12, fontWeight: 800, textAlign: "center",
             }}>⚠ {err}</div>
@@ -321,16 +321,16 @@ function Modal({ me, onClose, onPosted }) {
 
         {/* Footer */}
         <div style={{
-          padding: "12px 16px", borderTop: "3px ridge #ec4899",
-          background: "linear-gradient(180deg, #fef7fb, #fce7f3)",
+          padding: "12px 16px", borderTop: "3px ridge #a3473d",
+          background: "linear-gradient(180deg, #f9eedb, #f4ead5)",
         }}>
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
-            marginBottom: 8, fontSize: 11, color: "#831843",
+            marginBottom: 8, fontSize: 11, color: "#5c2e27",
           }}>
             <span style={{ fontStyle: "italic", opacity: 0.85 }}>{tipFor(postType)}</span>
             <span style={{
-              color: remaining < 20 ? "#dc2626" : "#831843",
+              color: remaining < 20 ? "#dc2626" : "#5c2e27",
               fontWeight: remaining < 20 ? 900 : 700,
             }}>{remaining}</span>
           </div>
@@ -535,7 +535,7 @@ function MemoryForm({ v, onChange, color, bg }) {
       {mode === "pick" ? (
         memories.length === 0 ? (
           <div style={{
-            padding: 20, textAlign: "center", color: "#831843", fontSize: 13,
+            padding: 20, textAlign: "center", color: "#5c2e27", fontSize: 13,
             background: bg, borderRadius: 10, border: `2px ridge ${color}33`, lineHeight: 1.5,
           }}>
             <div style={{ fontSize: 28, marginBottom: 6 }}>🌱</div>
@@ -754,7 +754,7 @@ function ImageUpload({ value, onChange, color, bg, label = "📸 Foto" }) {
         <button type="button" onClick={() => onChange("")} title="Bild entfernen" style={{
           position: "absolute", top: 8, right: 8,
           width: 32, height: 32, borderRadius: "50%",
-          background: "rgba(255,255,255,0.95)", color: "#b91c1c",
+          background: "rgba(255,255,255,0.95)", color: "#a3473d",
           border: "2px ridge #fff", cursor: "pointer", fontSize: 14,
           fontWeight: 900, fontFamily: "inherit",
           boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
@@ -786,7 +786,7 @@ function ImageUpload({ value, onChange, color, bg, label = "📸 Foto" }) {
       {err && (
         <div style={{
           marginTop: 6, padding: 8, borderRadius: 6,
-          background: "rgba(239,68,68,0.1)", color: "#991b1b",
+          background: "rgba(239,68,68,0.1)", color: "#7a1f17",
           fontSize: 11, fontWeight: 700, textAlign: "center",
         }}>⚠ {err}</div>
       )}

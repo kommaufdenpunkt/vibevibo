@@ -1,43 +1,40 @@
-/* VibeVibo - Nostalgie pur, 2000er Web-Stil */
+/* VibeVibo — Vintage-Papier Theme: Kraft-Braun / Gold / Cream / Tiefrot */
 
 :root {
-  --vv-pink: #ff3e9d;
-  --vv-pink-deep: #d4006e;
-  --vv-cyan: #00e5ff;
-  --vv-purple: #6e00ff;
-  --vv-violet: #b300ff;
-  --vv-orange: #ff8a00;
-  --vv-yellow: #fff700;
-  --vv-bg: #0a0420;
-  --vv-bg-2: #1a0a3e;
-  --vv-card: #ffffff;
-  --vv-card-border: #000000;
-  --vv-text: #1a0033;
-  --vv-link: #1c00ff;
-  --vv-link-visited: #8c00ff;
-  --vv-schuelervz: #1a4d8f;
-  --vv-jappy: #ff66b3;
-  --vv-myspace: #6699ff;
+  --vv-pink: #a3473d;          /* Tiefrot — Haupt-Akzent */
+  --vv-pink-deep: #7a2e26;     /* Tiefrot dunkel */
+  --vv-cyan: #c8a25c;          /* Gold — Tertiär */
+  --vv-purple: #6e5837;        /* Braun dunkel */
+  --vv-violet: #8b6f47;        /* Kraft-Braun — Sekundär */
+  --vv-orange: #b8743f;        /* warmes Orange-Braun */
+  --vv-yellow: #d4b66a;        /* Soft-Gold */
+  --vv-bg: #2c241a;            /* warmes Dunkelbraun (für Dark-Mode-Fallback) */
+  --vv-bg-2: #3a2f22;
+  --vv-card: #f4ead5;          /* Cream — Karten-Background */
+  --vv-card-border: #5c4830;
+  --vv-text: #2c241a;          /* dunkles Warmbraun für Lesbarkeit */
+  --vv-link: #8b6f47;
+  --vv-link-visited: #6e5837;
+  --vv-schuelervz: #5e4731;
+  --vv-jappy: #a3473d;
+  --vv-myspace: #8b6f47;
 }
 
-/* Dark-Theme für die GESAMTE App (nicht nur Messenger): wenn der User
-   Dark-Mode gewählt hat, werden auch Startseite, Freunde, Shop, Gruppen
-   etc. dunkel — passend zum VIBO-/Messenger-Look.
-   Ausgenommen: das Profil (.vv-skin) behält helle, frei skinbare Karten. */
+/* Dark-Theme — warme Brauntöne statt kalt */
 [data-theme="dark"] {
-  --vv-card: #140d28;
-  --vv-card-border: #000000;
-  --vv-text: #f1ecff;
-  --vv-link: #8ab4ff;
-  --vv-link-visited: #c79bff;
+  --vv-card: #2a221a;
+  --vv-card-border: #5c4830;
+  --vv-text: #f4ead5;
+  --vv-link: #d4b66a;
+  --vv-link-visited: #c8a25c;
 }
-/* Profil bleibt hell + individuell skinbar (Custom-CSS überschreibt eh) */
+/* Profil bleibt hell + individuell skinbar */
 [data-theme="dark"] .vv-skin {
-  --vv-card: #ffffff;
-  --vv-card-border: #000000;
-  --vv-text: #1a0033;
-  --vv-link: #1c00ff;
-  --vv-link-visited: #8c00ff;
+  --vv-card: #f4ead5;
+  --vv-card-border: #5c4830;
+  --vv-text: #2c241a;
+  --vv-link: #8b6f47;
+  --vv-link-visited: #6e5837;
 }
 
 * {
@@ -334,6 +331,56 @@ a:hover { background: var(--vv-yellow); color: #000; }
 }
 .vv-avatar.vv-avatar-md {
   width: 80px; height: 80px; font-size: 36px; border-width: 3px;
+}
+
+/* 🏅 Rang-Rahmen (Bronze/Silber/Gold/Diamant/Legende) — wird vom Avatar via rank-Prop gesetzt */
+.vv-rank-frame {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+}
+.vv-rank-frame::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  pointer-events: none;
+  border: 3px solid;
+  z-index: 2;
+}
+.vv-rank-frame-bronze::before {
+  border-color: #cd7f32;
+  box-shadow: 0 0 12px rgba(205, 127, 50, 0.55), inset 0 0 6px rgba(205, 127, 50, 0.35);
+}
+.vv-rank-frame-silver::before {
+  border-color: #c0c0c0;
+  box-shadow: 0 0 14px rgba(192, 192, 192, 0.7), inset 0 0 6px rgba(192, 192, 192, 0.4);
+}
+.vv-rank-frame-gold::before {
+  border-color: #ffd700;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.8), inset 0 0 6px rgba(255, 215, 0, 0.45);
+}
+.vv-rank-frame-diamond::before {
+  border-color: #06b6d4;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.85), inset 0 0 8px rgba(6, 182, 212, 0.5);
+  animation: vv-rank-pulse 2.4s ease-in-out infinite;
+}
+.vv-rank-frame-legend::before {
+  border-image: linear-gradient(135deg, #fbbf24, #ec4899, #a855f7, #06b6d4, #fbbf24) 1;
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.9);
+  animation: vv-rank-legend-glow 3.2s ease-in-out infinite;
+}
+@keyframes vv-rank-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.025); }
+}
+@keyframes vv-rank-legend-glow {
+  0%, 100% { filter: brightness(1) saturate(1); transform: rotate(0deg); }
+  50%      { filter: brightness(1.3) saturate(1.4); transform: rotate(0.4deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vv-rank-frame-diamond::before,
+  .vv-rank-frame-legend::before { animation: none; }
 }
 
 .vv-profile-stats {

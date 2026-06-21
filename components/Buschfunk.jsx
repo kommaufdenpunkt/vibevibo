@@ -19,9 +19,9 @@ import VoiceMessage from "./VoiceMessage";
 const COMMENT_REACTIONS = [
   { key: "like", emoji: "👍", color: "#3b82f6" },
   { key: "love", emoji: "❤️", color: "#ef4444" },
-  { key: "haha", emoji: "😂", color: "#f59e0b" },
-  { key: "wow",  emoji: "😍", color: "#ec4899" },
-  { key: "fire", emoji: "🔥", color: "#f97316" },
+  { key: "haha", emoji: "😂", color: "#b89048" },
+  { key: "wow",  emoji: "😍", color: "#a3473d" },
+  { key: "fire", emoji: "🔥", color: "#b8743f" },
   { key: "sad",  emoji: "😢", color: "#6b7280" },
 ];
 
@@ -83,7 +83,7 @@ function CommentRow({ c, me, isReply, allComments, onReply, onDelete, onReport, 
           </Link>
           {parent && !parent.deleted && (
             <span className="vv-bf-comment-reply-ref">
-              ↪ <Link href={`/u/${parent.from.username}`} style={{ color: "#831843", textDecoration: "none" }}>@{parent.from.username}</Link>
+              ↪ <Link href={`/u/${parent.from.username}`} style={{ color: "#5c2e27", textDecoration: "none" }}>@{parent.from.username}</Link>
             </span>
           )}
           <span className="vv-bf-comment-time">{relTime(c.at)}</span>
@@ -338,12 +338,12 @@ function renderEvent(ev, i, isLast) {
   } else if (ev.type === "status") {
     icon = "💬";
     const POST_TYPE_BADGE = {
-      quote:        { label: "🌹 ZITAT",         color: "#ec4899" },
-      feeling:      { label: "💭 STATUS",        color: "#a855f7" },
-      mention:      { label: "👯 MIT-MARKIERT",  color: "#06b6d4" },
-      memory:       { label: "📅 ERINNERUNG",    color: "#f97316" },
+      quote:        { label: "🌹 ZITAT",         color: "#a3473d" },
+      feeling:      { label: "💭 STATUS",        color: "#8b6f47" },
+      mention:      { label: "👯 MIT-MARKIERT",  color: "#c8a25c" },
+      memory:       { label: "📅 ERINNERUNG",    color: "#b8743f" },
       gift_show:    { label: "🎁 GESCHENK",      color: "#fb923c" },
-      now_playing:  { label: "🎵 NOW PLAYING",   color: "#10b981" },
+      now_playing:  { label: "🎵 NOW PLAYING",   color: "#8a8a3f" },
       never_forget: { label: "💔 NIE VERGESSEN", color: "#475569" },
     };
     const badge = POST_TYPE_BADGE[ev.postType];
@@ -475,15 +475,15 @@ export default function Buschfunk() {
       <div style={{
         display: "flex", alignItems: "center", gap: 8,
         padding: "7px 12px", marginBottom: 10, borderRadius: 8,
-        background: "linear-gradient(135deg, #fce7f3, #f5d0fe, #ddd6fe)",
-        border: "2px ridge #ec4899",
-        fontSize: 11.5, fontWeight: 800, color: "#831843",
+        background: "linear-gradient(135deg, #f4ead5, #e0c89a, #c4b88e)",
+        border: "2px ridge #a3473d",
+        fontSize: 11.5, fontWeight: 800, color: "#5c2e27",
         textShadow: "0 1px 0 #fff", letterSpacing: 0.5,
       }}>
         <span style={{
           width: 10, height: 10, borderRadius: "50%",
-          background: refreshing ? "#fbbf24" : "#22c55e",
-          boxShadow: refreshing ? "0 0 8px #fbbf24" : "0 0 6px #22c55e",
+          background: refreshing ? "#d4b66a" : "#8a8a3f",
+          boxShadow: refreshing ? "0 0 8px #d4b66a" : "0 0 6px #8a8a3f",
           animation: "vv-bf-blink 1s steps(2) infinite",
           flexShrink: 0,
         }} />
@@ -493,7 +493,7 @@ export default function Buschfunk() {
         {newCount > 0 && (
           <button onClick={() => { setNewCount(0); load(); }} style={{
             padding: "3px 9px", borderRadius: 999,
-            background: "linear-gradient(135deg, #ec4899, #a855f7)",
+            background: "linear-gradient(135deg, #a3473d, #8b6f47)",
             color: "#fff", border: "2px ridge #fff",
             fontSize: 10, fontWeight: 900, letterSpacing: 0.5,
             cursor: "pointer", fontFamily: "inherit",
@@ -631,7 +631,7 @@ function KingFeatureBanner() {
     <Link href={f.href} style={{
       display: "block", textDecoration: "none",
       padding: "12px 14px", marginBottom: 10, borderRadius: 12,
-      background: "linear-gradient(135deg, #fbbf24, #ec4899, #a855f7, #06b6d4)",
+      background: "linear-gradient(135deg, #d4b66a, #a3473d, #8b6f47, #c8a25c)",
       backgroundSize: "300% 100%",
       animation: "vv-bf-king-wave 12s ease-in-out infinite",
       color: "#fff",

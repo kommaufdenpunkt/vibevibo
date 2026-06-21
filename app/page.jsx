@@ -25,7 +25,7 @@ export default function HomePage() {
         <Link href="/login"
           style={{
             display: "inline-block", padding: "12px 24px", borderRadius: 999,
-            background: "linear-gradient(135deg, #fb923c, #ec4899, #8b5cf6)",
+            background: "linear-gradient(135deg, #fb923c, #a3473d, #8b6f47)",
             color: "#fff", fontWeight: 800, textDecoration: "none",
             boxShadow: "0 6px 20px rgba(236,72,153,0.4)",
           }}>
@@ -42,7 +42,7 @@ export default function HomePage() {
         {/* === HERO BANNER === */}
         <div style={{
           position: "relative", overflow: "hidden",
-          background: "linear-gradient(135deg, #fb923c 0%, #ec4899 50%, #a855f7 100%)",
+          background: "linear-gradient(135deg, #fb923c 0%, #a3473d 50%, #8b6f47 100%)",
           backgroundSize: "200% 200%",
           animation: "vv-bf-hero 12s ease infinite",
           borderRadius: 20, padding: "18px 18px",
@@ -77,7 +77,7 @@ export default function HomePage() {
           {/* Quick-Links */}
           <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
             <Link href={`/u/${me.username}#wall`} style={{
-              background: "rgba(255,255,255,0.95)", color: "#9a3412",
+              background: "rgba(255,255,255,0.95)", color: "#5c2e27",
               padding: "8px 16px", borderRadius: 999,
               fontWeight: 900, fontSize: 13, textDecoration: "none",
               boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
