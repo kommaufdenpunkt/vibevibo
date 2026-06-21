@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import {
   getLiveStream, addLiveChatMessage, publishLive, userRow, getUserById,
   isMuted as isStreamMuted, isStreamBanned, getWomenShieldFields,
+  isLiveHost, heartbeatLiveHost, maintainLiveStream,
 } from "@/lib/db";
 import { isMuted as isCommMuted, checkTextPost } from "@/lib/moderate";
 import { CHAT_MAX_LEN, CHAT_MIN_INTERVAL_MS } from "@/lib/live";
@@ -62,6 +63,14 @@ export async function POST(req, ctx) {
 
   const cid = addLiveChatMessage(sid, me.id, text);
   const u = userRow(getUserById(me.id));
+
+  // 💓 Wenn Schreiber selbst Host ist → Heartbeat
+  try { if (isLiveHost(sid, me.id)) heartbeatLiveHost(sid, me.id); } catch {}
+  // 🧹 Opportunistic Stale-Cleanup
+  if (Math.random() < 0.1) {
+    try { maintainLiveStream(sid); } catch {}
+  }
+
   const msg = {
     id: cid, text, at: now,
     user: {
