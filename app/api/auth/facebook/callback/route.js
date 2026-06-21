@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import {
   findUserByFacebookId, findUserByEmailFB, linkFacebookAccount,
   createUserFromFacebook, createSession, audit, getUserById,
+  getOnboardingNeeded,
 } from "@/lib/db";
 import { setSessionCookie } from "@/lib/auth";
 import { getPublicOrigin } from "@/lib/publicUrl";
@@ -117,6 +118,13 @@ export async function GET(req) {
   // 4) Session + Redirect
   const token = createSession(user.id);
   await setSessionCookie(token);
+
+  // 5) Onboarding-Check: wenn User noch keinen eigenen Username/Anzeigenamen
+  //    gewählt hat → erst zur /willkommen-Seite, dann erst zum eigentlichen Ziel
+  if (getOnboardingNeeded(user.id)) {
+    return NextResponse.redirect(new URL("/willkommen", publicOrigin).toString());
+  }
+
   const safeNext = (next && next.startsWith("/") && !next.startsWith("//")) ? next : "/";
   return NextResponse.redirect(new URL(safeNext, publicOrigin).toString());
 }

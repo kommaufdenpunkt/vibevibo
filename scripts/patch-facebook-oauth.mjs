@@ -95,10 +95,10 @@ export function createUserFromFacebook({ facebookId, email, displayName, avatarU
   const info = db().prepare(\`
     INSERT INTO users (
       username, display_name, password_hash, status, role,
-      email, facebook_id,
+      email, facebook_id, needs_onboarding,
       avatar_url, avatar_status,
       created_at, last_seen
-    ) VALUES (?, ?, '', ?, 'user', ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, '', ?, 'user', ?, ?, 1, ?, ?, ?, ?)
   \`).run(username, dn, status, e, f, av, av ? 'approved' : 'none', now, now);
 
   return getUserById(Number(info.lastInsertRowid));
