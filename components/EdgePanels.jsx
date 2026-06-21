@@ -201,15 +201,15 @@ export default function EdgePanels() {
         {/* Aufgeräumte Schnell-Aktionen — 4 wichtigste Sprungbretter */}
         <div className="vv-edge-quick">
           <div className="vv-edge-nav-grouptitle">🚀 Schnell-Aktionen</div>
-          <Link href="/" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #a3473d, #7a2e26)" }}>
+          <Link href="/" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #dc2626, #991b1b)" }}>
             <span className="vv-edge-quick-emoji">🏠</span>
             <span className="vv-edge-quick-label">Startseite</span>
           </Link>
-          <Link href="/messenger" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #c8a25c, #3b82f6)" }}>
+          <Link href="/messenger" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #f97316, #3b82f6)" }}>
             <span className="vv-edge-quick-emoji">💬</span>
             <span className="vv-edge-quick-label">Messenger</span>
           </Link>
-          <Link href="/vibo" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #8b6f47, #7c3aed)" }}>
+          <Link href="/vibo" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #3b82f6, #7c3aed)" }}>
             <span className="vv-edge-quick-emoji">🥚</span>
             <span className="vv-edge-quick-label">Mein VIBO</span>
           </Link>
@@ -217,12 +217,12 @@ export default function EdgePanels() {
             <span className="vv-edge-quick-emoji">💕</span>
             <span className="vv-edge-quick-label">Geheimer Schwarm</span>
           </Link>
-          <Link href="/erinnerungen" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #b8743f, #8a4a23)" }}>
+          <Link href="/erinnerungen" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #f97316, #8a4a23)" }}>
             <span className="vv-edge-quick-emoji">📅</span>
             <span className="vv-edge-quick-label">Heute vor X Jahren</span>
           </Link>
           <Link href="/live" className="vv-edge-quick-tile" style={{
-            background: "linear-gradient(135deg, #a3473d, #7a2e26, #a3473d)",
+            background: "linear-gradient(135deg, #dc2626, #991b1b, #dc2626)",
             backgroundSize: "200% 100%",
             animation: "vv-live-pulse 3s ease-in-out infinite",
             position: "relative",

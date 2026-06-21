@@ -32,13 +32,13 @@ export default function LiveCallButton({ partnerUsername, partnerDisplayName }) 
         title={`${partnerDisplayName} anrufen (nur Audio)`}
         style={{
           padding: "10px 18px", borderRadius: 999,
-          background: "linear-gradient(135deg, #8b6f47, #6e5837)",
-          color: "#fff", border: "3px ridge #fff",
-          cursor: busy ? "wait" : "pointer", fontFamily: "inherit",
-          fontWeight: 900, fontSize: 13, letterSpacing: 0.5,
-          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+          background: "linear-gradient(180deg, #2563eb, #1e40af)",
+          color: "#fff", border: "2px solid #1e3a8a",
+          cursor: busy ? "wait" : "pointer", fontFamily: "Tahoma, Verdana, sans-serif",
+          fontWeight: 800, fontSize: 13, letterSpacing: 0.3,
+          textShadow: "0 1px 1px rgba(0,0,0,0.3)",
           display: "inline-flex", alignItems: "center", gap: 6,
-          boxShadow: "0 4px 12px rgba(139,111,71,0.4)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 10px rgba(30,64,175,0.45)",
           animation: !busy ? "vv-call-pulse 2.4s ease-in-out infinite" : "none",
         }}
       >
@@ -53,13 +53,13 @@ export default function LiveCallButton({ partnerUsername, partnerDisplayName }) 
         title={`${partnerDisplayName} per Video anrufen`}
         style={{
           padding: "10px 18px", borderRadius: 999,
-          background: "linear-gradient(135deg, #a3473d, #7a2e26)",
-          color: "#fff", border: "3px ridge #fff",
-          cursor: busy ? "wait" : "pointer", fontFamily: "inherit",
-          fontWeight: 900, fontSize: 13, letterSpacing: 0.5,
-          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+          background: "linear-gradient(180deg, #f97316, #ea580c)",
+          color: "#fff", border: "2px solid #c2410c",
+          cursor: busy ? "wait" : "pointer", fontFamily: "Tahoma, Verdana, sans-serif",
+          fontWeight: 800, fontSize: 13, letterSpacing: 0.3,
+          textShadow: "0 1px 1px rgba(0,0,0,0.3)",
           display: "inline-flex", alignItems: "center", gap: 6,
-          boxShadow: "0 4px 12px rgba(163,71,61,0.4)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 10px rgba(234,88,12,0.45)",
           animation: !busy ? "vv-call-pulse 2.4s ease-in-out infinite 0.3s" : "none",
         }}
       >
@@ -69,8 +69,8 @@ export default function LiveCallButton({ partnerUsername, partnerDisplayName }) 
 
       <style>{`
         @keyframes vv-call-pulse {
-          0%, 100% { transform: translateY(0); box-shadow: 0 4px 12px rgba(139,111,71,0.4); }
-          50%      { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139,111,71,0.55); }
+          0%, 100% { transform: translateY(0); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 10px rgba(30,64,175,0.45); }
+          50%      { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 6px 16px rgba(30,64,175,0.6); }
         }
       `}</style>
     </div>

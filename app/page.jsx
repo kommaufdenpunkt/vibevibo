@@ -24,10 +24,11 @@ export default function HomePage() {
         </p>
         <Link href="/login"
           style={{
-            display: "inline-block", padding: "12px 24px", borderRadius: 999,
-            background: "linear-gradient(135deg, #fb923c, #a3473d, #8b6f47)",
+            display: "inline-block", padding: "12px 24px", borderRadius: 6,
+            background: "linear-gradient(180deg, #f97316, #ea580c)",
             color: "#fff", fontWeight: 800, textDecoration: "none",
-            boxShadow: "0 6px 20px rgba(236,72,153,0.4)",
+            border: "1px solid #c2410c",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 12px rgba(234,88,12,0.4)",
           }}>
           🔑 Einloggen
         </Link>
@@ -42,12 +43,13 @@ export default function HomePage() {
         {/* === HERO BANNER === */}
         <div style={{
           position: "relative", overflow: "hidden",
-          background: "linear-gradient(135deg, #fb923c 0%, #a3473d 50%, #8b6f47 100%)",
+          background: "linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #1e3a8a 100%)",
           backgroundSize: "200% 200%",
           animation: "vv-bf-hero 12s ease infinite",
-          borderRadius: 20, padding: "18px 18px",
+          borderRadius: 8, padding: "18px 18px",
           color: "#fff", marginBottom: 12,
-          boxShadow: "0 8px 24px rgba(236,72,153,0.35)",
+          border: "1px solid #1e3a8a",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 16px rgba(30,58,138,0.4)",
         }}>
           <div style={{
             position: "absolute", top: 8, right: 12, fontSize: 26, opacity: 0.45,
@@ -77,10 +79,11 @@ export default function HomePage() {
           {/* Quick-Links */}
           <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
             <Link href={`/u/${me.username}#wall`} style={{
-              background: "rgba(255,255,255,0.95)", color: "#5c2e27",
-              padding: "8px 16px", borderRadius: 999,
-              fontWeight: 900, fontSize: 13, textDecoration: "none",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              background: "rgba(255,255,255,0.95)", color: "#1e3a8a",
+              padding: "8px 16px", borderRadius: 4,
+              fontWeight: 800, fontSize: 13, textDecoration: "none",
+              border: "1px solid rgba(30,58,138,0.2)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
             }}>📝 Meine Pinnwand</Link>
           </div>
         </div>

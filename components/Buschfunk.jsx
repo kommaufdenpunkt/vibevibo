@@ -20,8 +20,8 @@ const COMMENT_REACTIONS = [
   { key: "like", emoji: "👍", color: "#3b82f6" },
   { key: "love", emoji: "❤️", color: "#ef4444" },
   { key: "haha", emoji: "😂", color: "#b89048" },
-  { key: "wow",  emoji: "😍", color: "#a3473d" },
-  { key: "fire", emoji: "🔥", color: "#b8743f" },
+  { key: "wow",  emoji: "😍", color: "#1e40af" },
+  { key: "fire", emoji: "🔥", color: "#ea580c" },
   { key: "sad",  emoji: "😢", color: "#6b7280" },
 ];
 
@@ -83,7 +83,7 @@ function CommentRow({ c, me, isReply, allComments, onReply, onDelete, onReport, 
           </Link>
           {parent && !parent.deleted && (
             <span className="vv-bf-comment-reply-ref">
-              ↪ <Link href={`/u/${parent.from.username}`} style={{ color: "#5c2e27", textDecoration: "none" }}>@{parent.from.username}</Link>
+              ↪ <Link href={`/u/${parent.from.username}`} style={{ color: "#1e293b", textDecoration: "none" }}>@{parent.from.username}</Link>
             </span>
           )}
           <span className="vv-bf-comment-time">{relTime(c.at)}</span>
@@ -338,11 +338,11 @@ function renderEvent(ev, i, isLast) {
   } else if (ev.type === "status") {
     icon = "💬";
     const POST_TYPE_BADGE = {
-      quote:        { label: "🌹 ZITAT",         color: "#a3473d" },
-      feeling:      { label: "💭 STATUS",        color: "#8b6f47" },
-      mention:      { label: "👯 MIT-MARKIERT",  color: "#c8a25c" },
-      memory:       { label: "📅 ERINNERUNG",    color: "#b8743f" },
-      gift_show:    { label: "🎁 GESCHENK",      color: "#fb923c" },
+      quote:        { label: "🌹 ZITAT",         color: "#1e40af" },
+      feeling:      { label: "💭 STATUS",        color: "#3b82f6" },
+      mention:      { label: "👯 MIT-MARKIERT",  color: "#f97316" },
+      memory:       { label: "📅 ERINNERUNG",    color: "#ea580c" },
+      gift_show:    { label: "🎁 GESCHENK",      color: "#f97316" },
       now_playing:  { label: "🎵 NOW PLAYING",   color: "#8a8a3f" },
       never_forget: { label: "💔 NIE VERGESSEN", color: "#475569" },
     };
@@ -475,15 +475,15 @@ export default function Buschfunk() {
       <div style={{
         display: "flex", alignItems: "center", gap: 8,
         padding: "7px 12px", marginBottom: 10, borderRadius: 8,
-        background: "linear-gradient(135deg, #f4ead5, #e0c89a, #c4b88e)",
-        border: "2px ridge #a3473d",
-        fontSize: 11.5, fontWeight: 800, color: "#5c2e27",
+        background: "linear-gradient(135deg, #f0f4fa, #e0c89a, #c4b88e)",
+        border: "2px ridge #1e40af",
+        fontSize: 11.5, fontWeight: 800, color: "#1e293b",
         textShadow: "0 1px 0 #fff", letterSpacing: 0.5,
       }}>
         <span style={{
           width: 10, height: 10, borderRadius: "50%",
-          background: refreshing ? "#d4b66a" : "#8a8a3f",
-          boxShadow: refreshing ? "0 0 8px #d4b66a" : "0 0 6px #8a8a3f",
+          background: refreshing ? "#fbbf24" : "#8a8a3f",
+          boxShadow: refreshing ? "0 0 8px #fbbf24" : "0 0 6px #8a8a3f",
           animation: "vv-bf-blink 1s steps(2) infinite",
           flexShrink: 0,
         }} />
@@ -493,7 +493,7 @@ export default function Buschfunk() {
         {newCount > 0 && (
           <button onClick={() => { setNewCount(0); load(); }} style={{
             padding: "3px 9px", borderRadius: 999,
-            background: "linear-gradient(135deg, #a3473d, #8b6f47)",
+            background: "linear-gradient(135deg, #1e40af, #3b82f6)",
             color: "#fff", border: "2px ridge #fff",
             fontSize: 10, fontWeight: 900, letterSpacing: 0.5,
             cursor: "pointer", fontFamily: "inherit",
@@ -631,7 +631,7 @@ function KingFeatureBanner() {
     <Link href={f.href} style={{
       display: "block", textDecoration: "none",
       padding: "12px 14px", marginBottom: 10, borderRadius: 12,
-      background: "linear-gradient(135deg, #d4b66a, #a3473d, #8b6f47, #c8a25c)",
+      background: "linear-gradient(135deg, #fbbf24, #1e40af, #3b82f6, #f97316)",
       backgroundSize: "300% 100%",
       animation: "vv-bf-king-wave 12s ease-in-out infinite",
       color: "#fff",

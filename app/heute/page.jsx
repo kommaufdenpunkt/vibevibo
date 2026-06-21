@@ -178,7 +178,7 @@ export default function HeutePage() {
   const giftsIn = data.notifications.filter((n) => n.type === "gift" && !n.read);
   if (giftsIn.length > 0) alerts.push({
     icon: "🎁", text: `${giftsIn.length} neue Geschenke`,
-    action: "Auspacken", href: "/geschenke", color: "#fb923c",
+    action: "Auspacken", href: "/geschenke", color: "#f97316",
   });
 
   const pinnwandIn = data.notifications.filter((n) => n.type === "pinnwand" && !n.read);
@@ -338,11 +338,11 @@ export default function HeutePage() {
           gap: 10, marginBottom: 16,
         }}>
           <UserTiles fallback={[
-            { href: "/buschfunk", color1: "#fb923c", color2: "#ef4444", icon: "📣", title: "Buschfunk", sub: "Was läuft heute?" },
+            { href: "/buschfunk", color1: "#f97316", color2: "#ef4444", icon: "📣", title: "Buschfunk", sub: "Was läuft heute?" },
             { href: "/messenger", color1: "#06b6d4", color2: "#0284c7", icon: "💬", title: "Messenger", sub: "Direkt chatten" },
             { href: "/vibo",      color1: "#a855f7", color2: "#7c3aed", icon: "🥚", title: "Mein VIBO", sub: data.vibo?.vibo?.name || "Dein Pet" },
             { href: "/karte",     color1: "#06b6d4", color2: "#0e7490", icon: "🗺️", title: "Karte", sub: "Welt erkunden" },
-            { href: "/geschenke", color1: "#fb923c", color2: "#ea580c", icon: "🎁", title: "Geschenke", sub: "Verschicken" },
+            { href: "/geschenke", color1: "#f97316", color2: "#ea580c", icon: "🎁", title: "Geschenke", sub: "Verschicken" },
             { href: "/fotos",     color1: "#ec4899", color2: "#be185d", icon: "📸", title: "Fotos", sub: "Galerie" },
             { href: "/freunde",   color1: "#3b82f6", color2: "#1e40af", icon: "👯", title: "Freunde", sub: "Wer ist online?" },
           ]} />
@@ -360,7 +360,7 @@ export default function HeutePage() {
               <Link href="/buschfunk" style={{
                 fontSize: 11, color: "#fff", fontWeight: 800,
                 textDecoration: "none", padding: "4px 12px",
-                background: "linear-gradient(135deg, #fb923c, #ea580c)",
+                background: "linear-gradient(135deg, #f97316, #ea580c)",
                 borderRadius: 999,
                 textShadow: "0 1px 2px rgba(0,0,0,0.3)",
               }}>📣 Buschfunk →</Link>
@@ -612,11 +612,11 @@ function UserTiles({ fallback }) {
   const APP_TILES = {
     heute:       { href: "/heute",       icon: "🏠", title: "Startseite",    sub: "Tages-Übersicht",  color1: "#fbbf24", color2: "#ea580c" },
     profile:     { href: "/profile",     icon: "🪪", title: "Mein Profil",    sub: "Deine Seite",      color1: "#ec4899", color2: "#be185d" },
-    edit:        { href: "/profile/edit", icon: "✏️", title: "Bearbeiten",    sub: "Profil pflegen",   color1: "#fb923c", color2: "#c2410c" },
+    edit:        { href: "/profile/edit", icon: "✏️", title: "Bearbeiten",    sub: "Profil pflegen",   color1: "#f97316", color2: "#c2410c" },
     skin:        { href: "/profile/skin", icon: "🎨", title: "Skin",          sub: "Look anpassen",    color1: "#a855f7", color2: "#7c3aed" },
     privacy:     { href: "/profile/privacy", icon: "🛡", title: "Schutz",     sub: "Privatsphäre",     color1: "#3b82f6", color2: "#1e40af" },
     messenger:   { href: "/messenger",   icon: "💬", title: "Messenger",      sub: "1-zu-1 Chat",      color1: "#06b6d4", color2: "#0284c7" },
-    buschfunk:   { href: "/buschfunk",   icon: "📣", title: "Buschfunk",      sub: "Status & Posts",   color1: "#fb923c", color2: "#ef4444" },
+    buschfunk:   { href: "/buschfunk",   icon: "📣", title: "Buschfunk",      sub: "Status & Posts",   color1: "#f97316", color2: "#ef4444" },
     gruppen:     { href: "/coms",     icon: "🌐", title: "Coms",         sub: "Communities",      color1: "#8b5cf6", color2: "#6d28d9" },
     live:        { href: "/live",        icon: "📺", title: "Live",          sub: "Video-Streams",    color1: "#dc2626", color2: "#991b1b" },
     friends:     { href: "/freunde",     icon: "👯", title: "Freunde",       sub: "Wer ist online?",  color1: "#3b82f6", color2: "#1e40af" },
@@ -629,7 +629,7 @@ function UserTiles({ fallback }) {
     cemetery:    { href: "/vibo/cemetery", icon: "🪦", title: "Friedhof",    sub: "Erinnerungen",     color1: "#64748b", color2: "#334155" },
     karte:       { href: "/karte",       icon: "🗺️", title: "Karte",        sub: "Welt erkunden",    color1: "#06b6d4", color2: "#0e7490" },
     fotos:       { href: "/fotos",       icon: "📸", title: "Fotos",         sub: "Galerie",          color1: "#ec4899", color2: "#be185d" },
-    geschenke:   { href: "/geschenke",   icon: "🎁", title: "Geschenke",     sub: "Verschicken",      color1: "#fb923c", color2: "#ea580c" },
+    geschenke:   { href: "/geschenke",   icon: "🎁", title: "Geschenke",     sub: "Verschicken",      color1: "#f97316", color2: "#ea580c" },
     markt:       { href: "/markt",       icon: "💰", title: "Markt",         sub: "Items handeln",    color1: "#f59e0b", color2: "#b45309" },
     "vibes-earn": { href: "/vibes-verdienen", icon: "💰", title: "Vibes verdienen", sub: "Werbung & Co", color1: "#22c55e", color2: "#15803d" },
     quests:      { href: "/quests",      icon: "🥇", title: "Quests",        sub: "Aufgaben",         color1: "#3b82f6", color2: "#1e3a8a" },
@@ -691,7 +691,7 @@ function BigTile({ href, color1, color2, icon, title, sub }) {
 // jeder Post-Typ hat eigenen Look.
 const BF_TYPE = {
   status:     { icon: "💬", label: "Status",      g1: "#3b82f6", g2: "#6366f1", chip: "#dbeafe", chipText: "#1e40af" },
-  pinnwand:   { icon: "📌", label: "Pinnwand",    g1: "#fb923c", g2: "#ea580c", chip: "#ffedd5", chipText: "#9a3412" },
+  pinnwand:   { icon: "📌", label: "Pinnwand",    g1: "#f97316", g2: "#ea580c", chip: "#ffedd5", chipText: "#9a3412" },
   gift:       { icon: "🎁", label: "Geschenk",    g1: "#ec4899", g2: "#be185d", chip: "#fce7f3", chipText: "#9d174d" },
   newpic:     { icon: "🖼️", label: "Neues Bild",  g1: "#a855f7", g2: "#7c3aed", chip: "#ede9fe", chipText: "#5b21b6" },
   grouppost:  { icon: "🏘️", label: "Gruppe",      g1: "#06b6d4", g2: "#0891b2", chip: "#cffafe", chipText: "#155e75" },

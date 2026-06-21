@@ -26,28 +26,28 @@ const SMILEYS = [
 
 const POST_TYPES = [
   {
-    id: "free",         label: "Frei",          icon: "💬", color: "#a3473d",
-    bg: "linear-gradient(135deg, #f4ead5, #e8d8b8)",
+    id: "free",         label: "Frei",          icon: "💬", color: "#1e40af",
+    bg: "linear-gradient(135deg, #f0f4fa, #dbeafe)",
   },
   {
-    id: "quote",        label: "Zitat",         icon: "🌹", color: "#7a2e26",
+    id: "quote",        label: "Zitat",         icon: "🌹", color: "#1e3a8a",
     bg: "linear-gradient(135deg, #f9eedb, #f0deba)",
   },
   {
-    id: "feeling",      label: "Status",        icon: "💭", color: "#8b6f47",
+    id: "feeling",      label: "Status",        icon: "💭", color: "#3b82f6",
     bg: "linear-gradient(135deg, #f5ecd6, #ebdfb8)",
   },
   {
-    id: "mention",      label: "Mit Markierung", icon: "👯", color: "#c8a25c",
+    id: "mention",      label: "Mit Markierung", icon: "👯", color: "#f97316",
     bg: "linear-gradient(135deg, #faf4e0, #e8dbb5)",
   },
   {
-    id: "memory",       label: "Erinnerung",    icon: "📅", color: "#b8743f",
+    id: "memory",       label: "Erinnerung",    icon: "📅", color: "#ea580c",
     bg: "linear-gradient(135deg, #faf0dc, #f0deba)",
   },
   {
     id: "now_playing",  label: "Höre gerade",   icon: "🎵", color: "#8a8a3f",
-    bg: "linear-gradient(135deg, #ede4c8, #d4c89a)",
+    bg: "linear-gradient(135deg, #ede4c8, #cbd5e1)",
   },
   {
     id: "never_forget", label: "Nie vergessen", icon: "💔", color: "#475569",
@@ -73,9 +73,9 @@ export default function JappyComposerModal({ onPosted }) {
 function Trigger({ me, onOpen }) {
   return (
     <div onClick={onOpen} style={{
-      background: "linear-gradient(135deg, #f4ead5, #e0c89a, #c4b88e)",
+      background: "linear-gradient(135deg, #f0f4fa, #e0c89a, #c4b88e)",
       borderRadius: 999, padding: "10px 14px", marginBottom: 12,
-      border: "3px ridge #a3473d",
+      border: "3px ridge #1e40af",
       boxShadow: "0 3px 10px rgba(236,72,153,0.18)",
       display: "flex", alignItems: "center", gap: 12,
       cursor: "pointer", transition: "transform 0.18s, box-shadow 0.18s",
@@ -83,14 +83,14 @@ function Trigger({ me, onOpen }) {
     onMouseOver={(e) => { e.currentTarget.style.transform = "scale(1.01)"; e.currentTarget.style.boxShadow = "0 6px 18px rgba(236,72,153,0.3)"; }}
     onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 3px 10px rgba(236,72,153,0.18)"; }}
     >
-      <div style={{ border: "2px ridge #a3473d", borderRadius: "50%", padding: 2, background: "#fff" }}>
+      <div style={{ border: "2px ridge #1e40af", borderRadius: "50%", padding: 2, background: "#fff" }}>
         <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 36, height: 36, borderRadius: "50%" }} />
       </div>
-      <span style={{ flex: 1, fontSize: 14, color: "#5c2e27", fontStyle: "italic", textShadow: "0 1px 0 #fff" }}>
-        ✿ Was machst du gerade, <b style={{ color: "#a3473d", fontStyle: "normal" }}>{me.displayName}</b>?
+      <span style={{ flex: 1, fontSize: 14, color: "#1e293b", fontStyle: "italic", textShadow: "0 1px 0 #fff" }}>
+        ✿ Was machst du gerade, <b style={{ color: "#1e40af", fontStyle: "normal" }}>{me.displayName}</b>?
       </span>
       <span style={{
-        background: "linear-gradient(135deg, #a3473d, #8b6f47)", color: "#fff",
+        background: "linear-gradient(135deg, #1e40af, #3b82f6)", color: "#fff",
         padding: "5px 14px", borderRadius: 999,
         fontSize: 11, fontWeight: 900, letterSpacing: 0.5,
         border: "2px ridge #fff",
@@ -178,13 +178,13 @@ function Modal({ me, onClose, onPosted }) {
         maxHeight: "92vh", display: "flex", flexDirection: "column",
         overflow: "hidden",
         boxShadow: "0 22px 64px rgba(236,72,153,0.35)",
-        border: "4px ridge #a3473d",
+        border: "4px ridge #1e40af",
       }}>
         {/* Header */}
         <div style={{
           position: "relative", overflow: "hidden",
           padding: "14px 16px",
-          background: "linear-gradient(135deg, #a3473d, #8b6f47, #c8a25c, #a3473d)",
+          background: "linear-gradient(135deg, #1e40af, #3b82f6, #f97316, #1e40af)",
           backgroundSize: "300% 100%",
           animation: "vv-jc-wave 8s ease-in-out infinite",
           borderBottom: "3px ridge #fff",
@@ -205,7 +205,7 @@ function Modal({ me, onClose, onPosted }) {
           <button onClick={onClose} title="Schließen" style={{
             position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
             width: 32, height: 32, borderRadius: "50%",
-            background: "rgba(255,255,255,0.95)", color: "#5c2e27",
+            background: "rgba(255,255,255,0.95)", color: "#1e293b",
             border: "2px ridge #fff", cursor: "pointer", fontSize: 14, fontFamily: "inherit",
             fontWeight: 900,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -217,7 +217,7 @@ function Modal({ me, onClose, onPosted }) {
         <div style={{ padding: 16, overflowY: "auto", flex: 1 }}>
           {/* Avatar + Name */}
           <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
-            <div style={{ border: "3px ridge #a3473d", borderRadius: 10, padding: 2, background: "#fff" }}>
+            <div style={{ border: "3px ridge #1e40af", borderRadius: 10, padding: 2, background: "#fff" }}>
               <Avatar url={me.avatarUrl} name={me.displayName} className="vv-avatar" style={{ width: 44, height: 44, borderRadius: 8 }} />
             </div>
             <div style={{ flex: 1 }}>
@@ -225,7 +225,7 @@ function Modal({ me, onClose, onPosted }) {
                 fontSize: 16, fontWeight: 900, color: activeType.color,
                 textShadow: "1px 1px 0 #fff, 2px 2px 0 rgba(0,0,0,0.05)",
               }}>{me.displayName}</div>
-              <div style={{ fontSize: 11, color: "#5c2e27", marginTop: 2, opacity: 0.8 }}>
+              <div style={{ fontSize: 11, color: "#1e293b", marginTop: 2, opacity: 0.8 }}>
                 postet als <b style={{ color: activeType.color }}>{activeType.icon} {activeType.label}</b>
               </div>
             </div>
@@ -321,16 +321,16 @@ function Modal({ me, onClose, onPosted }) {
 
         {/* Footer */}
         <div style={{
-          padding: "12px 16px", borderTop: "3px ridge #a3473d",
-          background: "linear-gradient(180deg, #f9eedb, #f4ead5)",
+          padding: "12px 16px", borderTop: "3px ridge #1e40af",
+          background: "linear-gradient(180deg, #f9eedb, #f0f4fa)",
         }}>
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
-            marginBottom: 8, fontSize: 11, color: "#5c2e27",
+            marginBottom: 8, fontSize: 11, color: "#1e293b",
           }}>
             <span style={{ fontStyle: "italic", opacity: 0.85 }}>{tipFor(postType)}</span>
             <span style={{
-              color: remaining < 20 ? "#dc2626" : "#5c2e27",
+              color: remaining < 20 ? "#dc2626" : "#1e293b",
               fontWeight: remaining < 20 ? 900 : 700,
             }}>{remaining}</span>
           </div>
@@ -535,7 +535,7 @@ function MemoryForm({ v, onChange, color, bg }) {
       {mode === "pick" ? (
         memories.length === 0 ? (
           <div style={{
-            padding: 20, textAlign: "center", color: "#5c2e27", fontSize: 13,
+            padding: 20, textAlign: "center", color: "#1e293b", fontSize: 13,
             background: bg, borderRadius: 10, border: `2px ridge ${color}33`, lineHeight: 1.5,
           }}>
             <div style={{ fontSize: 28, marginBottom: 6 }}>🌱</div>
@@ -754,7 +754,7 @@ function ImageUpload({ value, onChange, color, bg, label = "📸 Foto" }) {
         <button type="button" onClick={() => onChange("")} title="Bild entfernen" style={{
           position: "absolute", top: 8, right: 8,
           width: 32, height: 32, borderRadius: "50%",
-          background: "rgba(255,255,255,0.95)", color: "#a3473d",
+          background: "rgba(255,255,255,0.95)", color: "#1e40af",
           border: "2px ridge #fff", cursor: "pointer", fontSize: 14,
           fontWeight: 900, fontFamily: "inherit",
           boxShadow: "0 2px 6px rgba(0,0,0,0.3)",

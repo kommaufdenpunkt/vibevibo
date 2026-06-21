@@ -85,20 +85,19 @@ function LoginPage() {
 
   return (
     <div className="vv-login-page">
-      {/* ❦ HERO ❦ */}
+      {/* ★ HERO ★ */}
       <div className="vv-login-hero">
         <div className="vv-login-hero-stars">
-          <span>✦</span><span>❦</span><span>✦</span><span>❀</span>
-          <span>❦</span><span>✦</span><span>❀</span><span>✦</span>
+          <span>★</span><span>✦</span><span>★</span><span>✦</span><span>★</span>
         </div>
         <div className="vv-login-hero-avatar">
           {avatarData
             ? <img src={avatarData} alt="" />
             : <span>📸</span>}
         </div>
-        <h1 className="vv-login-hero-title">VibeVibo</h1>
+        <h1 className="vv-login-hero-title">Vibe<i>★</i>Vibo</h1>
         <div className="vv-login-hero-sub">
-          Anno 2026 · deine Erinnerungen · deine Community · dein Vibe
+          deine Erinnerungen · deine Community · dein Vibe
         </div>
       </div>
 
@@ -106,24 +105,24 @@ function LoginPage() {
         {/* Login/Register Card */}
         <div className="vv-login-card">
           <div className="vv-login-card-title">
-            {mode === "login" ? "❦ Eintreten ❦" : "❦ Im Buch eintragen ❦"}
+            {mode === "login" ? "★ Einloggen" : "★ Account erstellen"}
           </div>
           <div className="vv-login-card-body">
             <div className="vv-login-tabs">
               <button type="button"
                 className={`vv-login-tab${mode === "login" ? " active" : ""}`}
                 onClick={() => { setMode("login"); setNeedsTotp(false); setTotp(""); setError(null); }}>
-                ❦ Anmelden
+                🔑 Login
               </button>
               <button type="button"
                 className={`vv-login-tab${mode === "register" ? " active" : ""}`}
                 onClick={() => { setMode("register"); setNeedsTotp(false); setTotp(""); setError(null); }}>
-                ✦ Registrieren
+                ✨ Registrieren
               </button>
             </div>
 
             <form onSubmit={submit} className="vv-login-form">
-              <label className="vv-login-label">Benutzername</label>
+              <label className="vv-login-label">👤 Benutzername</label>
               <input
                 className="vv-login-input"
                 placeholder="z.B. lisa_2003"
@@ -136,7 +135,7 @@ function LoginPage() {
 
               {mode === "register" && (
                 <>
-                  <label className="vv-login-label">Anzeigename (optional)</label>
+                  <label className="vv-login-label">✏ Anzeigename (optional)</label>
                   <input
                     className="vv-login-input"
                     placeholder="z.B. Lisa"
@@ -144,7 +143,7 @@ function LoginPage() {
                     onChange={(e) => up("displayName", e.target.value)}
                   />
 
-                  <label className="vv-login-label">Lichtbild (optional)</label>
+                  <label className="vv-login-label">📸 Profilbild (optional)</label>
                   <input
                     ref={fileRef}
                     type="file"
@@ -154,28 +153,27 @@ function LoginPage() {
                     onChange={(e) => pickAvatar(e.target.files?.[0])}
                   />
                   <div style={{
-                    display: "flex", gap: 14, alignItems: "center",
-                    padding: 12,
-                    background: "repeating-linear-gradient(90deg, rgba(139,111,71,0.04) 0 2px, transparent 2px 4px), rgba(249,240,219,0.7)",
-                    border: "3px double #c8a25c",
-                    borderRadius: 3,
-                    boxShadow: "inset 0 0 12px rgba(139,111,71,0.15)",
+                    display: "flex", gap: 12, alignItems: "center",
+                    padding: 11,
+                    background: "#f0f4fa",
+                    border: "1px solid #c5d2e8",
+                    borderRadius: 4,
                   }}>
                     <div style={{
-                      width: 78, height: 78,
+                      width: 72, height: 72,
                       flexShrink: 0,
-                      padding: 4,
-                      background: "linear-gradient(135deg, #c8a25c 0%, #8b6f47 100%)",
-                      borderRadius: 2,
-                      boxShadow: "0 2px 6px rgba(61,40,23,0.4), inset 0 0 0 1px rgba(255,255,255,0.2)",
+                      padding: 3,
+                      background: "#ffffff",
+                      border: "1px solid #c5d2e8",
+                      borderRadius: 4,
+                      boxShadow: "0 1px 3px rgba(30,58,138,0.15)",
                     }}>
                       <div style={{
                         width: "100%", height: "100%",
-                        background: "#f4ead5",
-                        border: "1px solid rgba(139,111,71,0.5)",
+                        background: "linear-gradient(180deg, #f0f4fa, #e2e8f0)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 30, overflow: "hidden",
-                        filter: "sepia(0.15)",
+                        fontSize: 28, overflow: "hidden", borderRadius: 3,
+                        color: "#475569",
                       }}>
                         {avatarData
                           ? <img src={avatarData} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -188,49 +186,47 @@ function LoginPage() {
                         onClick={() => fileRef.current?.click()}
                         disabled={avatarBusy}
                         style={{
-                          padding: "10px 12px",
-                          borderRadius: 3,
-                          border: "2px ridge #c8a25c",
-                          background: "linear-gradient(180deg, #8b6f47 0%, #5a3e1d 100%)",
-                          color: "#f4ead5",
-                          fontFamily: "Georgia, 'Times New Roman', serif",
+                          padding: "9px 12px",
+                          borderRadius: 4,
+                          border: "1px solid #c2410c",
+                          background: "linear-gradient(180deg, #f97316 0%, #ea580c 100%)",
+                          color: "#ffffff",
+                          fontFamily: "Tahoma, Verdana, sans-serif",
                           fontWeight: 700, fontSize: 12,
-                          letterSpacing: "1.2px",
-                          fontVariant: "small-caps",
+                          letterSpacing: "0.3px",
                           cursor: avatarBusy ? "wait" : "pointer",
                           width: "100%",
-                          textShadow: "0 1px 1px rgba(0,0,0,0.4)",
-                          boxShadow: "0 2px 0 #3d2817, inset 0 0 0 1px rgba(255,255,255,0.15)",
+                          textShadow: "0 1px 1px rgba(0,0,0,0.25)",
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 1px 2px rgba(234,88,12,0.3)",
                         }}
                       >
-                        {avatarBusy ? "… wird belichtet …" : avatarData ? "Anderes Lichtbild" : "Lichtbild aufnehmen"}
+                        {avatarBusy ? "… lade …" : avatarData ? "📷 Anderes Foto" : "📷 Foto aufnehmen"}
                       </button>
                       {avatarData && (
                         <button
                           type="button"
                           onClick={() => { setAvatarData(""); if (fileRef.current) fileRef.current.value = ""; }}
                           style={{
-                            marginTop: 8, padding: "4px 10px", borderRadius: 2,
-                            border: "1px solid rgba(139,111,71,0.4)",
-                            background: "transparent", color: "#6b4a26",
-                            fontFamily: "Georgia, serif", fontSize: 11, fontWeight: 600,
-                            fontStyle: "italic",
+                            marginTop: 6, padding: "3px 8px", borderRadius: 3,
+                            border: "1px solid #c5d2e8",
+                            background: "#ffffff", color: "#475569",
+                            fontFamily: "Tahoma, Verdana, sans-serif", fontSize: 11, fontWeight: 600,
                             cursor: "pointer",
                           }}
                         >
-                          ✕ entfernen
+                          × entfernen
                         </button>
                       )}
                     </div>
                   </div>
                   <div className="vv-login-hint">
-                    Dein Lichtbild wird von unserer Moderation geprüft, bevor es im Album erscheint.
-                    Auch ohne Bild geht's — du kannst später eines im Profil hinterlegen.
+                    🛡 Dein Foto wird von unserer Moderation geprüft, bevor es sichtbar wird.
+                    Ohne Foto geht's auch — du kannst später eins im Profil hochladen.
                   </div>
                 </>
               )}
 
-              <label className="vv-login-label">Kennwort</label>
+              <label className="vv-login-label">🔒 Passwort</label>
               <input
                 type="password"
                 className="vv-login-input"
@@ -242,13 +238,13 @@ function LoginPage() {
 
               {mode === "register" && (
                 <div className="vv-login-hint">
-                  Mindestens 10 Zeichen. Wir gleichen gegen bekannte Datenlecks ab (haveibeenpwned).
+                  💡 Mind. 10 Zeichen. Wir prüfen gegen bekannte Datenlecks (haveibeenpwned).
                 </div>
               )}
 
               {needsTotp && (
                 <>
-                  <label className="vv-login-label">Sicherheits-Code (Authenticator)</label>
+                  <label className="vv-login-label">🔐 2FA-Code (Authenticator-App)</label>
                   <input
                     type="text" inputMode="numeric" autoComplete="one-time-code"
                     pattern="[0-9]{6}" maxLength={6}
@@ -262,7 +258,7 @@ function LoginPage() {
               )}
 
               {error && (
-                <div className="vv-login-error">✦ {error}</div>
+                <div className="vv-login-error">⚠ {error}</div>
               )}
 
               <div className="vv-login-actions">
@@ -270,8 +266,8 @@ function LoginPage() {
                   disabled={busy || (needsTotp && totp.length !== 6)}>
                   {busy ? "…" : (
                     mode === "login"
-                      ? (needsTotp ? "Code prüfen" : "Eintreten")
-                      : "Eintragen"
+                      ? (needsTotp ? "🔐 Code prüfen" : "▶ Einloggen")
+                      : "🎉 Loslegen!"
                   )}
                 </button>
                 {needsTotp && (
@@ -285,26 +281,27 @@ function LoginPage() {
               {!needsTotp && (
                 <>
                   <div style={{
-                    display: "flex", alignItems: "center", gap: 12, margin: "18px 0 12px",
-                    color: "#8b6f47", fontSize: 11, fontWeight: 700,
-                    fontVariant: "small-caps", letterSpacing: "3px",
-                    fontFamily: "Georgia, serif",
+                    display: "flex", alignItems: "center", gap: 10, margin: "16px 0 10px",
+                    color: "#64748b", fontSize: 11, fontWeight: 700,
+                    letterSpacing: "1.5px",
+                    fontFamily: "Tahoma, Verdana, sans-serif",
                   }}>
-                    <span style={{ flex: 1, height: 3, borderTop: "1px solid #c8a25c", borderBottom: "1px solid #c8a25c" }} />
-                    <span>✦ oder ✦</span>
-                    <span style={{ flex: 1, height: 3, borderTop: "1px solid #c8a25c", borderBottom: "1px solid #c8a25c" }} />
+                    <span style={{ flex: 1, height: 1, background: "#c5d2e8" }} />
+                    <span>ODER</span>
+                    <span style={{ flex: 1, height: 1, background: "#c5d2e8" }} />
                   </div>
 
                   <a href="/api/auth/facebook/start?next=/" style={{
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    gap: 10, padding: "12px 14px", borderRadius: 4,
-                    background: "linear-gradient(180deg, #1f5fc8 0%, #143f87 100%)",
+                    gap: 10, padding: "11px 14px", borderRadius: 4,
+                    background: "linear-gradient(180deg, #1877F2 0%, #166FE5 100%)",
                     color: "#fff",
-                    border: "2px ridge #c8a25c",
-                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.25), 0 3px 0 #0a2553, 0 4px 8px rgba(0,0,0,0.3)",
-                    textDecoration: "none", fontFamily: "Georgia, 'Times New Roman', serif",
-                    fontWeight: 700, fontSize: 14, letterSpacing: "0.4px",
-                    textShadow: "0 1px 1px rgba(0,0,0,0.5)",
+                    border: "1px solid #0e5cc4",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 2px rgba(24,119,242,0.3)",
+                    textDecoration: "none",
+                    fontFamily: "Tahoma, Verdana, sans-serif",
+                    fontWeight: 700, fontSize: 14, letterSpacing: "0.2px",
+                    textShadow: "0 1px 1px rgba(0,0,0,0.25)",
                   }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fff">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -319,46 +316,46 @@ function LoginPage() {
 
         {/* Infobox */}
         <div className="vv-login-card vv-login-card-info">
-          <div className="vv-login-card-title">❦ Willkommen ❦</div>
+          <div className="vv-login-card-title">🌟 Willkommen zurück!</div>
           <div className="vv-login-card-body">
             <div className="vv-login-marquee-text">
-              ✦ Profile mit Lieblingslied ✦ Pinnwand wie früher ✦ Gästebuch ✦ Buschfunk ✦ Gruppen-Stuben ✦
+              ★ Profile mit Lieblingssong ★ Pinnwand wie früher ★ Glitzer-Smileys ★ Buschfunk ★ Gruppen-Chats ★
             </div>
 
             <div className="vv-login-info-block">
-              <div className="vv-login-info-icon">✉</div>
+              <div className="vv-login-info-icon">🎁</div>
               <div>
-                <strong>Noch kein Eintrag?</strong>
-                <p>Klick oben auf <em>Registrieren</em>. Fidolin, unser stiller Wächter, sorgt dafür, dass hier niemand belästigt wird.</p>
+                <strong>Noch keinen Account?</strong>
+                <p>Klick oben auf <em>Registrieren</em>. Fidolin (unsere KI-Moderation) sorgt dafür, dass hier niemand belästigt wird.</p>
               </div>
             </div>
 
             <div className="vv-login-info-block vv-login-info-safe">
-              <div className="vv-login-info-icon">⚜</div>
+              <div className="vv-login-info-icon">🛡️</div>
               <div>
                 <strong>Sicherheit</strong>
-                <p>Login-Versuche werden begrenzt, VPN/Tor bei der Registrierung gesperrt. Eindringlinge werden protokolliert — Strafanzeige nach §§ 202a/202c StGB ist drin.</p>
+                <p>Login-Versuche werden begrenzt, VPN/Tor bei der Registrierung gesperrt. Hacker-Versuche werden protokolliert — Strafanzeige nach §§ 202a/202c StGB ist drin.</p>
               </div>
             </div>
 
             <div className="vv-login-info-features">
-              <div className="vv-login-feat">❦ Pinnwand &amp; Gästebuch</div>
-              <div className="vv-login-feat">♪ Profilmelodie</div>
-              <div className="vv-login-feat">✦ Komplimente</div>
-              <div className="vv-login-feat">❀ Top-5-Freunde</div>
-              <div className="vv-login-feat">✉ Geschenke-Vitrine</div>
-              <div className="vv-login-feat">⚘ VIBO-Tier aufziehen</div>
-              <div className="vv-login-feat">⚓ Realitätskarte</div>
-              <div className="vv-login-feat">❦ Buschfunk-Anschlag</div>
+              <div className="vv-login-feat">📌 Pinnwand &amp; Gästebuch</div>
+              <div className="vv-login-feat">🎵 Profilmusik</div>
+              <div className="vv-login-feat">💖 Komplimente verschicken</div>
+              <div className="vv-login-feat">👯 Top-5-Freunde</div>
+              <div className="vv-login-feat">🎁 Geschenke-Vitrine</div>
+              <div className="vv-login-feat">🥚 VIBO-Pet großziehen</div>
+              <div className="vv-login-feat">🗺 Realitätskarte</div>
+              <div className="vv-login-feat">📣 Buschfunk-Feed</div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="vv-login-footer">
-        <span>❦</span>
-        <span>VibeVibo · Anno MMXXVI · für alle, die das alte Netz vermissen</span>
-        <span>❦</span>
+        <span>★</span>
+        <span>VibeVibo © 2026 · made for everyone who misses the old web</span>
+        <span>★</span>
       </div>
     </div>
   );

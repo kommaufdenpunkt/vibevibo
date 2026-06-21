@@ -73,7 +73,7 @@ export default function WillkommenPage() {
   if (!me) {
     return (
       <div style={pageWrap()}>
-        <p style={{ color: "#5c2e27" }}>Bitte einloggen.</p>
+        <p style={{ color: "#1e293b" }}>Bitte einloggen.</p>
       </div>
     );
   }
@@ -107,9 +107,10 @@ export default function WillkommenPage() {
             placeholder="z.B. Gino-92" />
 
           <div style={{
-            marginTop: 14, padding: 10, borderRadius: 8,
-            background: "#f4ead5", border: "2px solid #8b6f47",
-            fontSize: 11.5, color: "#5c2e27", lineHeight: 1.5,
+            marginTop: 14, padding: 10, borderRadius: 4,
+            background: "#f0f4fa", border: "1px solid #c5d2e8",
+            borderLeft: "3px solid #3b82f6",
+            fontSize: 11.5, color: "#1e3a8a", lineHeight: 1.5,
           }}>
             ℹ <b>Regeln:</b> 3–30 Zeichen · nur a-z, A-Z, 0-9, <code>_</code> und <code>-</code> ·
             <b> keine Leerzeichen</b> · keine Umlaute (ä → ae)
@@ -117,23 +118,24 @@ export default function WillkommenPage() {
 
           {err && (
             <div style={{
-              marginTop: 12, padding: 10, borderRadius: 8,
-              background: "#fbe5e0", color: "#7a2e26",
-              border: "2px solid #a3473d", fontSize: 13, fontWeight: 700, textAlign: "center",
+              marginTop: 12, padding: 10, borderRadius: 4,
+              background: "#fef2f2", color: "#991b1b",
+              border: "1px solid #dc2626", fontSize: 13, fontWeight: 700, textAlign: "center",
             }}>⚠ {err}</div>
           )}
 
           <button onClick={submit} disabled={!canSubmit} style={{
-            marginTop: 16, width: "100%", padding: 14, borderRadius: 10,
+            marginTop: 16, width: "100%", padding: 13, borderRadius: 4,
             background: canSubmit
-              ? "linear-gradient(135deg, #a3473d, #7a2e26)"
-              : "#d4c89a",
-            color: "#fff", border: "3px ridge #fff",
+              ? "linear-gradient(180deg, #f97316, #ea580c)"
+              : "#cbd5e1",
+            color: "#fff", border: canSubmit ? "1px solid #c2410c" : "1px solid #94a3b8",
             cursor: canSubmit ? "pointer" : "not-allowed",
-            fontFamily: "inherit", fontWeight: 900, fontSize: 15, letterSpacing: 0.8,
-            textShadow: canSubmit ? "0 1px 2px rgba(0,0,0,0.3)" : "none",
+            fontFamily: "Tahoma, Verdana, sans-serif", fontWeight: 800, fontSize: 14, letterSpacing: 0.5,
+            textShadow: canSubmit ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+            boxShadow: canSubmit ? "inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 0 #9a3412" : "none",
           }}>
-            {busy ? "⏳ Speichern…" : "★ LOSLEGEN ★"}
+            {busy ? "⏳ Speichern…" : "★ Loslegen"}
           </button>
         </div>
       </div>
@@ -145,10 +147,10 @@ function NameField({ value, onChange, status, placeholder }) {
   const v = value || "";
   const validFormat = v.length === 0 || (NAME_REGEX.test(v) && v.length >= 3 && v.length <= 30);
   const hint = !v ? null
-    : !validFormat ? { color: "#a3473d", text: "⚠ Nur a-z, A-Z, 0-9, _ und - (3–30 Zeichen)" }
-    : status.checking ? { color: "#8b6f47", text: "⏳ Prüfe…" }
-    : status.available === true ? { color: "#5c4830", text: "✓ Frei!" }
-    : status.available === false ? { color: "#a3473d", text: status.reason === "taken" ? "⚠ Schon vergeben" : "⚠ Ungültig" }
+    : !validFormat ? { color: "#dc2626", text: "⚠ Nur a-z, A-Z, 0-9, _ und - (3–30 Zeichen)" }
+    : status.checking ? { color: "#64748b", text: "⏳ Prüfe…" }
+    : status.available === true ? { color: "#16a34a", text: "✓ Frei!" }
+    : status.available === false ? { color: "#dc2626", text: status.reason === "taken" ? "⚠ Schon vergeben" : "⚠ Ungültig" }
     : null;
 
   return (
@@ -159,17 +161,18 @@ function NameField({ value, onChange, status, placeholder }) {
         placeholder={placeholder}
         maxLength={30}
         style={{
-          width: "100%", padding: 12,
-          background: "#fff", color: "#2c241a",
-          border: `2px ridge ${
-            !v ? "#8b6f47"
-              : !validFormat ? "#a3473d"
-              : status.available === true ? "#5c4830"
-              : status.available === false ? "#a3473d"
-              : "#8b6f47"
+          width: "100%", padding: "10px 12px",
+          background: "#fff", color: "#0f172a",
+          border: `1px solid ${
+            !v ? "#94a3b8"
+              : !validFormat ? "#dc2626"
+              : status.available === true ? "#16a34a"
+              : status.available === false ? "#dc2626"
+              : "#94a3b8"
           }`,
-          borderRadius: 10, fontFamily: "inherit", fontSize: 15, fontWeight: 700,
+          borderRadius: 4, fontFamily: "Verdana, Tahoma, sans-serif", fontSize: 14, fontWeight: 600,
           outline: "none", boxSizing: "border-box",
+          boxShadow: "inset 0 1px 2px rgba(0,0,0,0.08)",
         }}
       />
       {hint && (
@@ -184,8 +187,8 @@ function NameField({ value, onChange, status, placeholder }) {
 function Label({ children }) {
   return (
     <div style={{
-      fontSize: 10.5, fontWeight: 900, color: "#5c4830",
-      letterSpacing: 0.5, marginBottom: 5, textTransform: "uppercase",
+      fontSize: 11, fontWeight: 700, color: "#1e3a8a",
+      letterSpacing: 0.4, marginBottom: 5,
     }}>{children}</div>
   );
 }
@@ -221,25 +224,24 @@ function useDebouncedCheck(value, paramName, setStatus) {
 function pageWrap() {
   return {
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #f4ead5, #e8d8b8)",
+    background: "linear-gradient(135deg, #e8edf5, #d6dfee)",
     display: "flex", alignItems: "center", justifyContent: "center",
     padding: 20,
   };
 }
 function cardWrap() {
   return {
-    background: "#fff8e7", borderRadius: 16, maxWidth: 520, width: "100%",
-    border: "4px ridge #8b6f47",
-    boxShadow: "0 12px 40px rgba(92, 72, 48, 0.35)",
+    background: "#ffffff", borderRadius: 6, maxWidth: 520, width: "100%",
+    border: "1px solid #c5d2e8",
+    boxShadow: "0 12px 40px rgba(30,58,138,0.25)",
     overflow: "hidden",
   };
 }
 function heroWrap() {
   return {
-    background: "linear-gradient(135deg, #a3473d, #8b6f47, #c8a25c)",
-    backgroundSize: "200% 100%",
-    animation: "vv-wk-wave 8s ease-in-out infinite",
+    background: "linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%)",
     padding: "22px 20px", textAlign: "center",
-    borderBottom: "3px ridge #fff",
+    borderBottom: "2px solid #f97316",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)",
   };
 }
