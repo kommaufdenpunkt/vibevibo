@@ -612,7 +612,7 @@ const KING_FEATURES = [
   { emoji: "❓", title: "WER KENNT MICH AM BESTEN?", body: "Quiz für deine Freunde mit Bestenliste.", href: "/profile" },
   { emoji: "🎁", title: "GESCHENK-EDITIONEN", body: "Sammel-Sets wie früher bei Diddl-Maus oder Tazo. Komplett = Badge.", href: "/sammlungen" },
   { emoji: "💬", title: "CHAT-ARCHIV", body: "Wichtige Nachrichten archivieren — bleibt aus dem Verlauf raus.", href: "/messenger/archiv" },
-  { emoji: "📌", title: "POST-TYPEN-EDITOR", body: "Zitat · Gefühl · Memory · Now-Playing — 7 Typen statt nur „Status".", href: "/buschfunk/neu" },
+  { emoji: "📌", title: "POST-TYPEN-EDITOR", body: "Zitat · Gefühl · Memory · Now-Playing — 7 Typen statt nur Status.", href: "/buschfunk/neu" },
 ];
 
 function KingFeatureBanner() {
