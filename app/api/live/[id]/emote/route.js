@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
-  getLiveStream, listLiveHosts, logLiveEmote, spendCredits, adminGrantCredits,
-  publishLive, userRow, getUserById, isMuted, isStreamBanned,
-  heartbeatLiveHost, maintainLiveStream, isLiveHost, db,
+  getLiveStream, publishLive, userRow, getUserById,
+  isMuted, isStreamBanned,
+  heartbeatLiveHost, maintainLiveStream, isLiveHost,
+  processLiveEmotePayment,
 } from "@/lib/db";
 import { EMOTE_MAP, EMOTE_HOST_PAYOUT_PCT, EMOTE_MIN_INTERVAL_MS } from "@/lib/live";
 
@@ -13,10 +14,10 @@ const lastEmote = new Map(); // streamId:userId → ts
 //
 // 🛡 Hardening (Audit 2026-06-21):
 //   - Spend + Payout + Log laufen in EINER Transaction (Race-Frei)
-//   - Hosts werden INNERHALB der Transaction frisch geladen (kein "stale list")
-//   - emote.cost wird server-seitig aus EMOTE_MAP gelesen (Client kann nicht
-//     cost=0 spoofen — wurde nie aus body gelesen, aber explicit dokumentiert)
-//   - Heartbeat falls Sender Host ist
+//     via processLiveEmotePayment() — siehe lib/db.js
+//   - Hosts werden INNERHALB der Transaction frisch geladen (kein stale snapshot)
+//   - emote.cost wird server-seitig aus EMOTE_MAP gelesen (Client kann nicht spoofen)
+//   - Heartbeat falls Sender Host ist + Stale-Cleanup opportunistisch
 export async function POST(req, ctx) {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "auth required" }, { status: 401 });
@@ -40,35 +41,12 @@ export async function POST(req, ctx) {
   }
   lastEmote.set(key, now);
 
-  // 🛡 ATOMARE TRANSACTION: Spend + Payout + Log in einem Rutsch.
-  // Falls irgendetwas crashed → SQLite rollt komplett zurück, keine
-  // verlorenen Vibes, keine Vibes-aus-dem-Nichts.
-  let result;
-  try {
-    result = db().transaction(() => {
-      const spend = spendCredits(me.id, emote.cost, `live_emote:${emote.id}`, { type: "live_stream", id: sid });
-      if (!spend.ok) {
-        return { ok: false, missing: spend.missing };
-      }
-      // Hosts INNERHALB der Transaction laden — falls jemand grad ausgestiegen ist
-      // kriegen wir die aktuelle Liste (kein "stale snapshot").
-      const hosts = listLiveHosts(sid);
-      if (hosts.length > 0) {
-        const total = Math.floor((emote.cost * EMOTE_HOST_PAYOUT_PCT) / 100);
-        const share = Math.floor(total / hosts.length);
-        if (share > 0) {
-          for (const h of hosts) {
-            adminGrantCredits(h.userId, share, `live_emote_received:${emote.id} (von @${me.username})`);
-          }
-        }
-      }
-      logLiveEmote(sid, me.id, emote.id, emote.cost);
-      return { ok: true, balance: spend.balance };
-    })();
-  } catch (e) {
-    return NextResponse.json({ error: "Verarbeitung fehlgeschlagen — Vibes wurden NICHT belastet." }, { status: 500 });
+  // 🛡 ATOMARE TRANSACTION: Spend + Payout + Log in EINER db().transaction().
+  // Wrapped in lib/db.js → processLiveEmotePayment.
+  const result = processLiveEmotePayment(sid, me.id, me.username, emote, EMOTE_HOST_PAYOUT_PCT);
+  if (result?.error) {
+    return NextResponse.json({ error: "Verarbeitung fehlgeschlagen — Vibes NICHT belastet." }, { status: 500 });
   }
-
   if (!result.ok) {
     return NextResponse.json({
       error: `Nicht genug Vibes (brauchst ${emote.cost} ✨, fehlen ${result.missing}).`,
