@@ -108,13 +108,13 @@ function Modal({ me, onClose, onPosted }) {
 
   // Form-State pro Typ (initial leer)
   const [form, setForm] = useState({
-    free: { text: "" },
-    quote: { quote: "", author: "" },
-    feeling: { mood: null, text: "" },
-    mention: { mentions: "", text: "" },
-    memory: { yearsAgo: 1, text: "", source: null, commentary: "" },
+    free: { text: "", image: "" },
+    quote: { quote: "", author: "", image: "" },
+    feeling: { mood: null, text: "", mediaUrl: "", image: "", setStatus: true },
+    mention: { mentions: "", text: "", image: "" },
+    memory: { yearsAgo: 0, date: "", text: "", source: null, commentary: "", image: "" },
     now_playing: { song: "", artist: "", link: "" },
-    never_forget: { date: "", text: "" },
+    never_forget: { date: "", text: "", image: "" },
   });
 
   const activeType = POST_TYPES.find((t) => t.id === postType) || POST_TYPES[0];
@@ -138,9 +138,14 @@ function Modal({ me, onClose, onPosted }) {
     if (!canSubmit) return;
     setBusy(true); setErr("");
     try {
+      const fv = form[postType] || {};
+      const body = { postType, text: composedText };
+      if (fv.image && fv.image.startsWith("data:image/")) body.image = fv.image;
+      if (fv.mediaUrl) body.mediaUrl = fv.mediaUrl;
+      if (postType === "feeling" && fv.setStatus) body.setStatus = true;
       const r = await fetch("/api/buschfunk/post", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postType, text: composedText }),
+        body: JSON.stringify(body),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Fehler");
@@ -211,16 +216,15 @@ function Modal({ me, onClose, onPosted }) {
                 textShadow: "1px 1px 0 #fff, 2px 2px 0 rgba(0,0,0,0.05)",
               }}>{me.displayName}</div>
               <div style={{ fontSize: 11, color: "#831843", marginTop: 2, opacity: 0.8 }}>
-                Wähle deinen Post-Typ ↓
+                postet als <b style={{ color: activeType.color }}>{activeType.icon} {activeType.label}</b>
               </div>
             </div>
           </div>
 
-          {/* Typ-Buttons (alle 7 nebeneinander, jeder mit eigener Farbe) */}
+          {/* Typ-Buttons — nur Icons, der aktive expandiert mit Label */}
           <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(108px, 1fr))",
-            gap: 6, marginBottom: 14,
+            display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap",
+            alignItems: "center",
           }}>
             {POST_TYPES.map((t) => {
               const active = postType === t.id;
@@ -229,34 +233,44 @@ function Modal({ me, onClose, onPosted }) {
                   onClick={() => setPostType(t.id)}
                   title={t.label}
                   style={{
-                    padding: "8px 8px", borderRadius: 10,
+                    height: 44,
+                    width: active ? "auto" : 44,
+                    minWidth: 44,
+                    padding: active ? "0 14px 0 10px" : 0,
+                    borderRadius: 999,
                     background: active
                       ? `linear-gradient(135deg, ${t.color}, ${t.color}cc)`
                       : t.bg,
                     color: active ? "#fff" : t.color,
                     border: active ? `2px ridge ${t.color}` : `2px solid ${t.color}33`,
                     cursor: "pointer", fontFamily: "inherit",
-                    fontSize: 11.5, fontWeight: 900,
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    fontSize: 13, fontWeight: 900,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
                     textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "1px 1px 0 #fff",
-                    transition: "transform 0.12s, box-shadow 0.12s",
-                    boxShadow: active ? `0 4px 12px ${t.color}55` : "none",
+                    transition: "all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                    boxShadow: active ? `0 5px 14px ${t.color}55` : "none",
+                    overflow: "hidden",
                   }}
                   onMouseOver={(e) => {
                     if (!active) {
-                      e.currentTarget.style.transform = "translateY(-1px)";
-                      e.currentTarget.style.boxShadow = `0 3px 10px ${t.color}40`;
+                      e.currentTarget.style.transform = "scale(1.1)";
+                      e.currentTarget.style.boxShadow = `0 3px 10px ${t.color}50`;
                     }
                   }}
                   onMouseOut={(e) => {
                     if (!active) {
-                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.transform = "scale(1)";
                       e.currentTarget.style.boxShadow = "none";
                     }
                   }}
                 >
-                  <span style={{ fontSize: 16, flexShrink: 0 }}>{t.icon}</span>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</span>
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>{t.icon}</span>
+                  {active && (
+                    <span style={{
+                      whiteSpace: "nowrap",
+                      animation: "vv-jc-label-in 0.25s ease-out",
+                    }}>{t.label}</span>
+                  )}
                 </button>
               );
             })}
@@ -337,6 +351,10 @@ function Modal({ me, onClose, onPosted }) {
             0%, 100% { transform: rotate(-12deg) scale(1); }
             50%      { transform: rotate(12deg) scale(1.15); }
           }
+          @keyframes vv-jc-label-in {
+            from { opacity: 0; transform: translateX(-4px); }
+            to   { opacity: 1; transform: translateX(0); }
+          }
         `}</style>
       </div>
     </div>
@@ -348,10 +366,14 @@ function TypedForm({ type, value, onChange, color, bg }) {
   const v = value || {};
   if (type === "free") {
     return (
-      <TextareaField
-        value={v.text || ""} onChange={(x) => onChange("text", x)}
-        placeholder="Was machst du gerade?" color={color} rows={6}
-      />
+      <>
+        <TextareaField
+          value={v.text || ""} onChange={(x) => onChange("text", x)}
+          placeholder="Was machst du gerade?" color={color} rows={6}
+        />
+        <ImageUpload value={v.image || ""} onChange={(x) => onChange("image", x)}
+          color={color} bg={bg} label="📸 Bild anhängen" />
+      </>
     );
   }
   if (type === "quote") {
@@ -366,6 +388,8 @@ function TypedForm({ type, value, onChange, color, bg }) {
           placeholder="— Autor / Quelle (z.B. Forrest Gump)"
           color={color} marginTop={8}
         />
+        <ImageUpload value={v.image || ""} onChange={(x) => onChange("image", x)}
+          color={color} bg={bg} label="📸 Bild zur Quelle" />
       </>
     );
   }
@@ -387,6 +411,8 @@ function TypedForm({ type, value, onChange, color, bg }) {
           value={v.text || ""} onChange={(x) => onChange("text", x)}
           placeholder="Was war? Wo wart ihr?" color={color} rows={4} marginTop={10}
         />
+        <ImageUpload value={v.image || ""} onChange={(x) => onChange("image", x)}
+          color={color} bg={bg} label="📸 Foto von euch" />
       </>
     );
   }
@@ -427,6 +453,8 @@ function TypedForm({ type, value, onChange, color, bg }) {
           placeholder="Was wirst du nie vergessen?"
           color={color} rows={5} marginTop={8}
         />
+        <ImageUpload value={v.image || ""} onChange={(x) => onChange("image", x)}
+          color={color} bg={bg} label="📸 Historisches Bild" />
       </>
     );
   }
@@ -566,34 +594,7 @@ function MemoryForm({ v, onChange, color, bg }) {
           </div>
         )
       ) : (
-        <>
-          <div style={{ fontSize: 11, fontWeight: 800, color, letterSpacing: 0.5, marginBottom: 6 }}>
-            VOR WIE VIELEN JAHREN?
-          </div>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-            {[1, 2, 3, 5, 10, 15, 20, 25].map((y) => {
-              const active = v.yearsAgo === y;
-              return (
-                <button key={y} type="button" onClick={() => { onChange("yearsAgo", y); onChange("source", "manual"); }} style={{
-                  padding: "6px 14px", borderRadius: 999,
-                  background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
-                  color: active ? "#fff" : color,
-                  border: active ? `2px ridge ${color}` : `2px solid ${color}33`,
-                  cursor: "pointer", fontFamily: "inherit",
-                  fontSize: 13, fontWeight: 900,
-                  textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
-                }}>
-                  {y === 1 ? "1 Jahr" : `${y} Jahre`}
-                </button>
-              );
-            })}
-          </div>
-          <TextareaField
-            value={v.text || ""} onChange={(x) => { onChange("text", x); onChange("source", "manual"); }}
-            placeholder="Was war damals? (z.B. ICQ-Sound im Ohr, Sommer 2003 🍦)"
-            color={color} rows={4}
-          />
-        </>
+        <ManualMemoryForm v={v} onChange={onChange} color={color} bg={bg} />
       )}
 
       {/* Optional: Eigene Worte dazu */}
@@ -617,6 +618,214 @@ function MemoryForm({ v, onChange, color, bg }) {
       )}
     </>
   );
+}
+
+// === Manueller Erinnerungs-Form mit Datum-Picker ===
+function ManualMemoryForm({ v, onChange, color, bg }) {
+  // ISO yyyy-mm-dd → für native date input
+  const today = new Date();
+  const maxDate = today.toISOString().slice(0, 10);
+
+  function pickDate(iso) {
+    if (!iso) {
+      onChange("date", "");
+      onChange("yearsAgo", 0);
+      onChange("source", "manual");
+      return;
+    }
+    const d = new Date(iso);
+    const now = new Date();
+    let years = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) years--;
+    onChange("date", iso);
+    onChange("yearsAgo", Math.max(0, years));
+    onChange("source", "manual");
+  }
+
+  function pickQuickYear(y) {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - y);
+    pickDate(d.toISOString().slice(0, 10));
+  }
+
+  const dateLabel = v.date ? new Date(v.date).toLocaleDateString("de-DE", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  }) : null;
+
+  return (
+    <>
+      <div style={{ fontSize: 11, fontWeight: 800, color, letterSpacing: 0.5, marginBottom: 6 }}>
+        VON WANN IST DIE ERINNERUNG?
+      </div>
+
+      {/* Datum-Picker */}
+      <input
+        type="date"
+        value={v.date || ""}
+        max={maxDate}
+        onChange={(e) => pickDate(e.target.value)}
+        style={{
+          width: "100%", padding: 12,
+          background: "#fff", color: "#1c1c1e",
+          border: `2px ridge ${color}`,
+          borderRadius: 10, fontFamily: "inherit", fontSize: 14, fontWeight: 700,
+          outline: "none", boxSizing: "border-box", marginBottom: 8,
+        }}
+      />
+
+      {/* Schnell-Buttons */}
+      <div style={{ display: "flex", gap: 5, marginBottom: 10, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 10.5, color: "#94a3b8", alignSelf: "center", marginRight: 4, fontWeight: 700 }}>
+          Schnell:
+        </span>
+        {[1, 2, 3, 5, 10, 15, 20, 25].map((y) => {
+          const active = v.yearsAgo === y;
+          return (
+            <button key={y} type="button" onClick={() => pickQuickYear(y)} style={{
+              padding: "4px 11px", borderRadius: 999,
+              background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : bg,
+              color: active ? "#fff" : color,
+              border: active ? `2px ridge ${color}` : `1.5px solid ${color}33`,
+              cursor: "pointer", fontFamily: "inherit",
+              fontSize: 11, fontWeight: 800,
+              textShadow: active ? "0 1px 1px rgba(0,0,0,0.25)" : "none",
+            }}>
+              -{y}{y === 1 ? "J" : "J"}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Anzeige des gewählten Datums */}
+      {dateLabel && (
+        <div style={{
+          padding: "8px 12px", borderRadius: 8, marginBottom: 10,
+          background: bg, border: `2px solid ${color}33`,
+          fontSize: 12, color, fontWeight: 700, textAlign: "center",
+        }}>
+          📅 <b>{dateLabel}</b>
+          {v.yearsAgo > 0 && <span style={{ opacity: 0.85 }}> — vor {v.yearsAgo} {v.yearsAgo === 1 ? "Jahr" : "Jahren"}</span>}
+        </div>
+      )}
+
+      <TextareaField
+        value={v.text || ""} onChange={(x) => { onChange("text", x); onChange("source", "manual"); }}
+        placeholder="Was war damals? (z.B. ICQ-Sound im Ohr, Sommer 2003 🍦)"
+        color={color} rows={4}
+      />
+
+      {/* 📸 Bild-Upload */}
+      <ImageUpload
+        value={v.image || ""}
+        onChange={(x) => onChange("image", x)}
+        color={color} bg={bg}
+        label="📸 Foto zur Erinnerung"
+      />
+    </>
+  );
+}
+
+function ImageUpload({ value, onChange, color, bg, label = "📸 Foto" }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const inputRef = useRef(null);
+
+  async function handleFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErr("Nur Bilder erlaubt (PNG/JPG/HEIC).");
+      setTimeout(() => setErr(""), 4000);
+      return;
+    }
+    if (file.size > 8_000_000) {
+      setErr("Bild zu groß (max 8 MB).");
+      setTimeout(() => setErr(""), 4000);
+      return;
+    }
+    setBusy(true); setErr("");
+    try {
+      const dataUrl = await readAndCompress(file, 1024);
+      onChange(dataUrl);
+    } catch (e) {
+      setErr("Bild konnte nicht gelesen werden.");
+    } finally { setBusy(false); }
+  }
+
+  if (value) {
+    return (
+      <div style={{ marginTop: 10, position: "relative" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={value} alt="" style={{
+          width: "100%", maxHeight: 280, objectFit: "contain",
+          borderRadius: 10, border: `2px ridge ${color}`,
+          background: "#000", display: "block",
+        }} />
+        <button type="button" onClick={() => onChange("")} title="Bild entfernen" style={{
+          position: "absolute", top: 8, right: 8,
+          width: 32, height: 32, borderRadius: "50%",
+          background: "rgba(255,255,255,0.95)", color: "#b91c1c",
+          border: "2px ridge #fff", cursor: "pointer", fontSize: 14,
+          fontWeight: 900, fontFamily: "inherit",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        }}>✕</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+        style={{ display: "none" }}
+      />
+      <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} style={{
+        width: "100%", padding: "10px 14px", borderRadius: 10,
+        background: bg, color, border: `2px dashed ${color}66`,
+        cursor: busy ? "wait" : "pointer", fontFamily: "inherit",
+        fontSize: 13, fontWeight: 800,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+      }}>
+        {busy ? "⏳ Lade…" : label}
+        <span style={{ fontSize: 10, opacity: 0.7, fontWeight: 600 }}>(Kamera oder Galerie)</span>
+      </button>
+      {err && (
+        <div style={{
+          marginTop: 6, padding: 8, borderRadius: 6,
+          background: "rgba(239,68,68,0.1)", color: "#991b1b",
+          fontSize: 11, fontWeight: 700, textAlign: "center",
+        }}>⚠ {err}</div>
+      )}
+    </div>
+  );
+}
+
+// Liest File, skaliert auf max-Dimension, gibt base64 JPG zurück
+function readAndCompress(file, maxDim = 1024) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        const ratio = Math.min(1, maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function modeBtn(active, color) {
@@ -732,6 +941,39 @@ function FeelingForm({ v, onChange, color, bg }) {
           placeholder="Warum / mehr dazu (optional)" color={color}
         />
       </div>
+
+      {/* 🎵 Optional: Song / YouTube-Link */}
+      <div style={{ marginTop: 8 }}>
+        <InputField
+          value={v.mediaUrl || ""} onChange={(x) => onChange("mediaUrl", x)}
+          placeholder="🎵 YouTube/Spotify-Link zur Stimmung (optional)"
+          color={color}
+        />
+      </div>
+
+      {/* 📸 Optional: Bild */}
+      <ImageUpload
+        value={v.image || ""}
+        onChange={(x) => onChange("image", x)}
+        color={color} bg={bg}
+        label="📸 Foto / Bild dazu"
+      />
+
+      {/* ✓ Auch als Profil-Status setzen */}
+      <label style={{
+        display: "flex", alignItems: "center", gap: 8, marginTop: 10,
+        padding: "8px 12px", borderRadius: 10,
+        background: v.setStatus ? `linear-gradient(135deg, ${color}22, ${color}11)` : "rgba(0,0,0,0.03)",
+        border: v.setStatus ? `2px ridge ${color}` : "2px solid rgba(0,0,0,0.05)",
+        cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: v.setStatus ? color : "#475569",
+      }}>
+        <input type="checkbox" checked={!!v.setStatus}
+          onChange={(e) => onChange("setStatus", e.target.checked)}
+          style={{ width: 16, height: 16, accentColor: color, flexShrink: 0 }} />
+        <span style={{ flex: 1 }}>
+          ⭐ Auch als <b>Profil-Status</b> setzen (erscheint im Header)
+        </span>
+      </label>
     </>
   );
 }
