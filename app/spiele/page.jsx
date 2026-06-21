@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import ViboMinigame from "@/components/ViboMinigame";
+import PremiumHero from "@/components/PremiumHero";
 
 const GAMES = [
   {
@@ -72,20 +73,47 @@ export default function SpielePage() {
 
   return (
     <div style={{ padding: 16, maxWidth: 720, margin: "0 auto" }}>
-      <div style={{
-        background: "linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6)",
-        color: "#fff",
-        padding: "18px 16px",
-        borderRadius: 14,
-        marginBottom: 18,
-        boxShadow: "0 6px 18px rgba(139,92,246,0.3)",
-        textAlign: "center",
+      <PremiumHero
+        eyebrow="🎮 Mini-Spiele"
+        title="VibeVibo Spiele"
+        subtitle="Spielen, sammeln, dein VIBO großziehen"
+        gradient="midnight"
+        sparkles={["🎮", "🎲", "⭐"]}
+      />
+
+      {/* 🆕 Multi-Live-Spiele-Hero — direkt unter PremiumHero */}
+      <Link href="/spiele/live" style={{
+        display: "block", marginBottom: 14,
+        background: "linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%)",
+        borderRadius: 8, padding: "16px 18px",
+        color: "#ffffff", textDecoration: "none",
+        border: "2px solid #f97316",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 16px rgba(30,58,138,0.4)",
+        position: "relative", overflow: "hidden",
       }}>
-        <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: 0.5 }}>🎮 VibeVibo Spiele</div>
-        <div style={{ fontSize: 13, marginTop: 4, opacity: 0.9 }}>
-          Spielen, sammeln, dein VIBO grossziehen
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ fontSize: 42, lineHeight: 1 }}>🎲</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "#fbbf24", marginBottom: 2 }}>
+              NEU · Live mit Freunden
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 900, marginBottom: 4 }}>
+              Würfel-Duell · UNO · Kniffel
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.92, lineHeight: 1.4 }}>
+              Im Multi-Couch-Live zocken — Video+Audio läuft nebenbei. Bis 16 Spieler. Vibes-Pot!
+            </div>
+          </div>
+          <div style={{
+            fontSize: 13, fontWeight: 800, padding: "8px 12px", borderRadius: 4,
+            background: "linear-gradient(180deg, #f97316, #ea580c)",
+            border: "1px solid #c2410c", whiteSpace: "nowrap",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 0 #9a3412",
+          }}>
+            Spielen ›
+          </div>
         </div>
-      </div>
+      </Link>
 
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
         {GAMES.map((g) => (
