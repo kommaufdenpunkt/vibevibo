@@ -29,6 +29,7 @@ const NAV_GROUPS = [
     title: "🌍 Community",
     items: [
       { href: "/coms", label: "Coms", icon: "🌐" },
+      { href: "/mitglieder", label: "Mitglieder", icon: "👥" },
       { href: "/karte", label: "Karte", icon: "🗺️" },
       { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
       { href: "/fotos", label: "Fotos", icon: "📸" },
