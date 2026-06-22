@@ -21,6 +21,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/", label: "Startseite", icon: "🏠" },
       { href: "/profile", label: "Mein Profil", icon: "🪪" },
+      { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
       { href: "/messenger", label: "Messenger", icon: "💬" },
       { href: "/freunde", label: "Freunde", icon: "👯" },
     ],
@@ -31,7 +32,6 @@ const NAV_GROUPS = [
       { href: "/coms", label: "Coms", icon: "🌐" },
       { href: "/mitglieder", label: "Mitglieder", icon: "👥" },
       { href: "/karte", label: "Karte", icon: "🗺️" },
-      { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
       { href: "/fotos", label: "Fotos", icon: "📸" },
     ],
   },
@@ -199,17 +199,9 @@ export default function EdgePanels() {
           )}
         </div>
 
-        {/* Aufgeräumte Schnell-Aktionen — 4 wichtigste Sprungbretter */}
+        {/* Aufgeräumte Schnell-Aktionen — keine Duplikate mit linkem Nav-Menü */}
         <div className="vv-edge-quick">
           <div className="vv-edge-nav-grouptitle">🚀 Schnell-Aktionen</div>
-          <Link href="/" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #dc2626, #991b1b)" }}>
-            <span className="vv-edge-quick-emoji">🏠</span>
-            <span className="vv-edge-quick-label">Startseite</span>
-          </Link>
-          <Link href="/vibo" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #3b82f6, #7c3aed)" }}>
-            <span className="vv-edge-quick-emoji">🥚</span>
-            <span className="vv-edge-quick-label">Mein VIBO</span>
-          </Link>
           <Link href="/crushes" className="vv-edge-quick-tile" style={{ background: "linear-gradient(135deg, #f43f5e, #e11d48)" }}>
             <span className="vv-edge-quick-emoji">💕</span>
             <span className="vv-edge-quick-label">Geheimer Schwarm</span>
