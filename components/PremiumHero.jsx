@@ -88,8 +88,9 @@ export default function PremiumHero({
         }}>{title}</h1>
         {subtitle && (
           <div style={{
-            fontSize: 13, opacity: 0.95, lineHeight: 1.45,
-            maxWidth: 600,
+            fontSize: 13.5, opacity: 1, lineHeight: 1.5,
+            maxWidth: 600, fontWeight: 600,
+            textShadow: "0 1px 3px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.2)",
           }}>{subtitle}</div>
         )}
 
