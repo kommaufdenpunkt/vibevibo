@@ -236,6 +236,12 @@ export default function EdgePanels() {
               }
             `}</style>
           </Link>
+          <Link href="/blockierte" className="vv-edge-quick-tile" style={{
+            background: "linear-gradient(135deg, #475569, #1e293b)",
+          }}>
+            <span className="vv-edge-quick-emoji">🚫</span>
+            <span className="vv-edge-quick-label">Blockliste</span>
+          </Link>
         </div>
       </aside>
     </>
