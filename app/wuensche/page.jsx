@@ -50,10 +50,10 @@ export default function WunschPage() {
 
   return (
     <div style={{ maxWidth: 820, margin: "0 auto", padding: 16 }}>
-      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", textShadow: "0 2px 4px rgba(0,0,0,0.4)" }}>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: "#1c1c1e", textShadow: "0 1px 2px rgba(255,255,255,0.5)" }}>
         💡 Wunschseite
       </h1>
-      <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.8)", marginTop: 4, lineHeight: 1.5, textShadow: "0 1px 2px rgba(0,0,0,0.3)" }}>
+      <p style={{ fontSize: 13.5, color: "#334155", marginTop: 4, lineHeight: 1.5, fontWeight: 500 }}>
         Was wünschst du dir bei VibeVibo? Bug gefunden? Idee fürs nächste Feature? Hier raus damit. Vote für Wünsche anderer — wir bauen die mit den meisten Stimmen zuerst.
       </p>
 
@@ -84,7 +84,7 @@ export default function WunschPage() {
 
       {/* Sort */}
       <div style={{ display: "flex", gap: 6, marginBottom: 14, alignItems: "center" }}>
-        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginRight: 6 }}>Sortierung:</span>
+        <span style={{ fontSize: 11, color: "#475569", fontWeight: 700, marginRight: 6 }}>Sortierung:</span>
         {[
           { id: "top",   label: "🏆 Top" },
           { id: "trend", label: "📈 Trend" },
@@ -92,9 +92,9 @@ export default function WunschPage() {
         ].map((s) => (
           <button key={s.id} onClick={() => setSort(s.id)} style={{
             padding: "5px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700,
-            background: sort === s.id ? "rgba(236,72,153,0.2)" : "rgba(255,255,255,0.08)",
-            color: sort === s.id ? "#fff" : "rgba(255,255,255,0.7)",
-            border: sort === s.id ? "1px solid rgba(236,72,153,0.4)" : "1px solid rgba(255,255,255,0.1)",
+            background: sort === s.id ? "rgba(236,72,153,0.2)" : "rgba(255,255,255,0.85)",
+            color: sort === s.id ? "#831843" : "#475569",
+            border: sort === s.id ? "1px solid rgba(236,72,153,0.4)" : "1px solid rgba(0,0,0,0.08)",
             cursor: "pointer", fontFamily: "inherit",
           }}>{s.label}</button>
         ))}
@@ -113,11 +113,12 @@ export default function WunschPage() {
       {/* Liste */}
       {wishes.length === 0 ? (
         <div style={{
-          padding: 40, textAlign: "center", color: "rgba(255,255,255,0.7)",
-          background: "rgba(255,255,255,0.05)", borderRadius: 14,
+          padding: 40, textAlign: "center", color: "#475569",
+          background: "rgba(255,255,255,0.7)", borderRadius: 14,
+          border: "1px dashed rgba(0,0,0,0.08)",
         }}>
           <div style={{ fontSize: 36, marginBottom: 6 }}>💭</div>
-          <b>Noch keine Wünsche hier</b><br/>
+          <b style={{ color: "#1c1c1e" }}>Noch keine Wünsche hier</b><br/>
           <span style={{ fontSize: 12 }}>Sei der erste!</span>
         </div>
       ) : wishes.map((w) => <WishCard key={w.id} wish={w} onVote={vote} canVote={!!me} />)}
