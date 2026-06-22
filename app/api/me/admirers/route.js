@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { listMyAdmirers, getWomenInitiative } from "@/lib/db";
+import { listMyAdmirers, getWomenInitiative, blockedUserIdsFor } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,8 +17,16 @@ export async function GET() {
       error: "Dieser Bereich ist nur für weibliche Accounts gedacht.",
     }, { status: 403 });
   }
+
+  const all = listMyAdmirers(me.id);
+  // 🚫 Block-Filter: blockierte User nicht als Admirer anzeigen
+  const hidden = blockedUserIdsFor(me.id);
+  const admirers = hidden.size === 0
+    ? all
+    : all.filter((a) => !hidden.has(Number(a.id || a.userId || a.user_id)));
+
   return NextResponse.json({
-    admirers: listMyAdmirers(me.id),
+    admirers,
     minInteractions: 3,
     womenInitiative: getWomenInitiative(me.id),
   });

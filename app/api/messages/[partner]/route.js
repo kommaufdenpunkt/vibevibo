@@ -6,6 +6,7 @@ import {
   markConversationRead,
   getConversationRetention,
   setConversationRetention,
+  isBlockedBetween,
 } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 
@@ -15,6 +16,11 @@ export async function GET(_req, { params }) {
   const { partner } = await params;
   const other = getUserByUsername(partner);
   if (!other) return NextResponse.json({ error: "not found" }, { status: 404 });
+
+  // 🚫 Block-Filter: kein Zugriff auf DM-Thread mit blockiertem User
+  if (isBlockedBetween(me.id, other.id)) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
 
   // Beim Oeffnen des Chats: alle Nachrichten des Partners als gelesen markieren
   markConversationRead(me.id, other.id);

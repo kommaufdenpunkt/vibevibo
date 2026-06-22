@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { sendGift, getUserByUsername } from "@/lib/db";
+import { sendGift, getUserByUsername, isBlockedBetween } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,6 +16,12 @@ export async function POST(req) {
   }
   const target = getUserByUsername(String(targetUsername).toLowerCase());
   if (!target) return NextResponse.json({ error: "Empfänger nicht gefunden" }, { status: 404 });
+
+  // 🚫 Block-Schutz: kein Geschenk an blockierte User
+  if (isBlockedBetween(me.id, target.id)) {
+    return NextResponse.json({ error: "Diese Aktion ist nicht möglich." }, { status: 403 });
+  }
+
   try {
     const giftRowId = sendGift({
       fromUserId: me.id,

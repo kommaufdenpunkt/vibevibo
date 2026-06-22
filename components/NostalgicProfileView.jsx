@@ -24,6 +24,7 @@ import ViboProfileWidget from "@/components/ViboProfileWidget";
 import Marquee from "@/components/Marquee";
 import FriendButton from "@/components/FriendButton";
 import SosButton from "@/components/SosButton";
+import BlockButton from "@/components/BlockButton";
 import LiveCallButton from "@/components/LiveCallButton";
 import KnowMeBestQuiz from "@/components/KnowMeBestQuiz";
 import MoodDisplay from "@/components/MoodDisplay";
@@ -177,13 +178,14 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
           </div>
         )}
 
-        {/* 💛 SOS-Knopf — separate Sicherheits-Sektion */}
+        {/* 💛 SOS + 🚫 Block — Sicherheits-Sektion */}
         {me && !isOwner && (
           <div style={{
-            display: "flex", justifyContent: "center",
-            marginTop: 10,
+            display: "flex", justifyContent: "center", gap: 10,
+            marginTop: 10, flexWrap: "wrap", alignItems: "center",
           }}>
             <SosButton username={profile.username} />
+            <BlockButton username={profile.username} compact />
           </div>
         )}
         {!me && (

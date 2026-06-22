@@ -9,6 +9,7 @@ import {
   getUserByUsername,
   listMyCrushes, listMyMatches, countMyCrushes,
   addSecretCrush, addNotification,
+  isBlockedBetween,
 } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
 
@@ -41,6 +42,11 @@ export async function POST(req) {
 
   const target = getUserByUsername(username);
   if (!target) return NextResponse.json({ error: "User nicht gefunden" }, { status: 404 });
+
+  // 🚫 Block-Schutz: blockierte User können nicht als Crush gewählt werden
+  if (isBlockedBetween(me.id, target.id)) {
+    return NextResponse.json({ error: "User nicht gefunden" }, { status: 404 });
+  }
 
   const result = addSecretCrush(me.id, target.id);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
