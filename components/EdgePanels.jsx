@@ -18,28 +18,31 @@ import ChangelogPanel from "@/components/ChangelogPanel";
 const NAV_GROUPS = [
   {
     title: "👤 Persönlich",
+    headerBg: "linear-gradient(135deg, #ec4899, #a855f7)",
     items: [
-      { href: "/", label: "Startseite", icon: "🏠" },
-      { href: "/profile", label: "Mein Profil", icon: "🪪" },
-      { href: "/vibo", label: "Mein VIBO", icon: "🥚" },
-      { href: "/messenger", label: "Messenger", icon: "💬" },
-      { href: "/freunde", label: "Freunde", icon: "👯" },
+      { href: "/",          label: "Startseite",  icon: "🏠", bg: "linear-gradient(135deg, #dc2626, #991b1b)" },
+      { href: "/profile",   label: "Mein Profil", icon: "🪪", bg: "linear-gradient(135deg, #ec4899, #be185d)" },
+      { href: "/vibo",      label: "Mein VIBO",   icon: "🥚", bg: "linear-gradient(135deg, #a855f7, #6d28d9)" },
+      { href: "/messenger", label: "Messenger",   icon: "💬", bg: "linear-gradient(135deg, #f97316, #3b82f6)" },
+      { href: "/freunde",   label: "Freunde",     icon: "👯", bg: "linear-gradient(135deg, #f43f5e, #ec4899)" },
     ],
   },
   {
     title: "🌍 Community",
+    headerBg: "linear-gradient(135deg, #06b6d4, #3b82f6)",
     items: [
-      { href: "/coms", label: "Coms", icon: "🌐" },
-      { href: "/mitglieder", label: "Mitglieder", icon: "👥" },
-      { href: "/karte", label: "Karte", icon: "🗺️" },
-      { href: "/fotos", label: "Fotos", icon: "📸" },
+      { href: "/coms",       label: "Coms",       icon: "🌐", bg: "linear-gradient(135deg, #06b6d4, #0891b2)" },
+      { href: "/mitglieder", label: "Mitglieder", icon: "👥", bg: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
+      { href: "/karte",      label: "Karte",      icon: "🗺️", bg: "linear-gradient(135deg, #10b981, #047857)" },
+      { href: "/fotos",      label: "Fotos",      icon: "📸", bg: "linear-gradient(135deg, #8b5cf6, #5b21b6)" },
     ],
   },
   {
     title: "🛍️ Mehr",
+    headerBg: "linear-gradient(135deg, #f59e0b, #d97706)",
     items: [
-      { href: "/shop", label: "Shop", icon: "🛍️" },
-      { href: "/vibes-verdienen", label: "Vibes verdienen", icon: "💰" },
+      { href: "/shop",            label: "Shop",            icon: "🛍️", bg: "linear-gradient(135deg, #f59e0b, #d97706)" },
+      { href: "/vibes-verdienen", label: "Vibes verdienen", icon: "💰", bg: "linear-gradient(135deg, #eab308, #ca8a04)" },
     ],
   },
 ];
@@ -127,22 +130,71 @@ export default function EdgePanels() {
         <nav className="vv-edge-nav">
           {NAV_GROUPS.map((group) => (
             <div key={group.title} className="vv-edge-nav-group">
-              <div className="vv-edge-nav-grouptitle">{group.title}</div>
-              {group.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`vv-edge-nav-item${pathname === item.href ? " active" : ""}`}
-                >
-                  <span className="vv-edge-nav-icon">{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              <div className="vv-edge-nav-grouptitle" style={{
+                background: group.headerBg,
+                color: "#fff",
+                padding: "6px 12px",
+                borderRadius: 999,
+                fontWeight: 800,
+                fontSize: 11,
+                letterSpacing: 0.5,
+                textTransform: "uppercase",
+                textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                display: "inline-block",
+                marginBottom: 8,
+                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              }}>{group.title}</div>
+              {group.items.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`vv-edge-nav-item${active ? " active" : ""}`}
+                    style={{
+                      background: item.bg,
+                      color: "#fff",
+                      borderRadius: 12,
+                      padding: "10px 14px",
+                      marginBottom: 6,
+                      fontWeight: 700,
+                      textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                      boxShadow: active
+                        ? "0 4px 12px rgba(0,0,0,0.25), inset 0 0 0 2px rgba(255,255,255,0.5)"
+                        : "0 2px 6px rgba(0,0,0,0.12)",
+                      transform: active ? "scale(1.02)" : "none",
+                      transition: "transform 0.15s, box-shadow 0.15s",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      textDecoration: "none",
+                    }}
+                  >
+                    <span className="vv-edge-nav-icon" style={{ fontSize: 18 }}>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
           ))}
           <div className="vv-edge-nav-group">
-            <button type="button" onClick={handleLogout} className="vv-edge-nav-item vv-edge-nav-logout">
-              <span className="vv-edge-nav-icon">↩</span>
+            <button type="button" onClick={handleLogout} className="vv-edge-nav-item vv-edge-nav-logout" style={{
+              background: "linear-gradient(135deg, #64748b, #334155)",
+              color: "#fff",
+              borderRadius: 12,
+              padding: "10px 14px",
+              fontWeight: 700,
+              textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}>
+              <span className="vv-edge-nav-icon" style={{ fontSize: 18 }}>↩</span>
               <span>Logout</span>
             </button>
           </div>
