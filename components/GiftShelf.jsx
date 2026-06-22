@@ -245,21 +245,28 @@ function GiftPicker({ onClose, onSend, balance }) {
         <div style={{ overflowY: "auto", flex: 1, marginBottom: 8 }}>
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))", gap: 6,
+            gridTemplateColumns: "repeat(auto-fill, minmax(108px, 1fr))", gap: 8,
           }}>
             {filtered.map((g) => {
               const active = selected?.id === g.id;
               return (
                 <button key={g.id} type="button" onClick={() => setSelected(g)}
                   style={{
-                    padding: "10px 4px", borderRadius: 10, cursor: "pointer",
+                    padding: "12px 6px 10px", borderRadius: 12, cursor: "pointer",
                     border: `2px solid ${active ? "#ec4899" : "var(--vv-border,#e5e7eb)"}`,
                     background: active ? "linear-gradient(135deg,#fdf2f8,#fce7f3)" : "var(--vv-surface,#f5f5f7)",
                     color: "var(--vv-text,#1c1c1e)",
                     fontFamily: "inherit", textAlign: "center",
+                    minHeight: 100,
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", justifyContent: "center", gap: 4,
                   }}>
-                  <div style={{ fontSize: 28 }}>{g.icon}</div>
-                  <div style={{ fontSize: 10, fontWeight: 700, marginTop: 2 }}>{g.name}</div>
+                  <div style={{ fontSize: 30, lineHeight: 1 }}>{g.icon}</div>
+                  <div style={{
+                    fontSize: 11.5, fontWeight: 700, lineHeight: 1.2,
+                    wordBreak: "break-word", hyphens: "auto",
+                    color: "var(--vv-text,#1c1c1e)",
+                  }}>{g.name}</div>
                   <div style={{ fontSize: 11, fontWeight: 800, color: "#ec4899" }}>{g.price} ✨</div>
                 </button>
               );
