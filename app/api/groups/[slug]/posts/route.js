@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGroup, isMember, addGroupPost, getGroupPosts } from "@/lib/db";
+import { getGroup, isMember, addGroupPost, getGroupPosts, blockedUserIdsFor } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { checkTextPost, isMuted } from "@/lib/moderate";
 
@@ -17,5 +17,14 @@ export async function POST(req, { params }) {
   const verdict = await checkTextPost(me.id, "gruppenpost", cleaned);
   if (!verdict.ok) return NextResponse.json({ error: `Fidolin hat das blockiert: ${verdict.reason}` }, { status: 422 });
   addGroupPost(g.id, me.id, cleaned);
-  return NextResponse.json({ posts: getGroupPosts(g.id) });
+  // 🚫 Block-Filter beim Zurückgeben
+  const all = getGroupPosts(g.id);
+  const hidden = blockedUserIdsFor(me.id);
+  const posts = hidden.size === 0
+    ? all
+    : all.filter((p) => {
+        const uid = Number(p?.userId ?? p?.user_id ?? p?.authorId ?? 0);
+        return !uid || !hidden.has(uid);
+      });
+  return NextResponse.json({ posts });
 }

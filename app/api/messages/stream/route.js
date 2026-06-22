@@ -1,7 +1,9 @@
 import { getSessionUser } from "@/lib/auth";
-import { subscribe, getUserById } from "@/lib/db";
+import { subscribe, getUserById, blockedUserIdsFor } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+const HIDDEN_CACHE_TTL_MS = 10000;
 
 export async function GET() {
   const me = await getSessionUser();
@@ -10,6 +12,21 @@ export async function GET() {
   const encoder = new TextEncoder();
   let unsubscribe = null;
   let pingInterval = null;
+
+  // 🚫 Block-Filter: kleine Cache damit nicht jede Message eine DB-Query auslöst
+  let hidden = blockedUserIdsFor(me.id);
+  let hiddenAt = Date.now();
+  const refreshHidden = () => {
+    if (Date.now() - hiddenAt > HIDDEN_CACHE_TTL_MS) {
+      hidden = blockedUserIdsFor(me.id);
+      hiddenAt = Date.now();
+    }
+  };
+  const isHidden = (actorId) => {
+    if (!actorId || Number(actorId) === me.id) return false;
+    refreshHidden();
+    return hidden.has(Number(actorId));
+  };
 
   const stream = new ReadableStream({
     start(controller) {
@@ -25,6 +42,10 @@ export async function GET() {
         // Backward-Compat: rohe Message-Objekte ohne envelope
         const type = envelope?.type || (envelope?.fromUserId && envelope?.toUserId ? "message" : "unknown");
         const data = envelope?.data ?? envelope;
+
+        // 🚫 Block-Filter: alle Events mit fromUserId vom blockierten User wegwerfen
+        const actorId = data?.fromUserId;
+        if (actorId && isHidden(actorId)) return;
 
         if (type === "message") {
           const msg = data;

@@ -2,15 +2,13 @@
 // (Nutzt die NATIVEN Block-Helpers aus db.js: addUserBlock / listMyBlocks)
 //
 // GET    → { blocks, count }
-// POST   { username, reason? }   → blockiert (Filter blenden überall aus)
-//
-// TODO T3: auto-friendship-cleanup via neuen Helper clearFriendshipBetween(a, b)
-//         in db.js (db() ist module-internal, kein direkter Zugriff aus Routes).
+// POST   { username, reason? }   → blockiert + räumt bestehende Freundschaft auf
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
   addUserBlock, listMyBlocks, countMyBlocks, getUserByUsername,
+  clearFriendshipBetween,
 } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -41,6 +39,8 @@ export async function POST(req) {
   try {
     const ok = addUserBlock(me.id, target.id, reason);
     if (!ok) return NextResponse.json({ error: "Block fehlgeschlagen" }, { status: 500 });
+    // 🧹 Bestehende Friendship (beide Richtungen) auflösen
+    try { clearFriendshipBetween(me.id, target.id); } catch {}
     return NextResponse.json({
       ok: true,
       blocks: listMyBlocks(me.id),

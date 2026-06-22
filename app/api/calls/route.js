@@ -4,6 +4,7 @@ import {
   createCall, getUserByUsername, getChatRoom, isRoomMember,
   listChatRoomMemberIds, publishToUser, isChatMuted,
   isWomenInitiativeBlocking,
+  isBlockedBetween, blockedUserIdsFor,
 } from "@/lib/db";
 import { isMuted } from "@/lib/moderate";
 import { sendPushToUser } from "@/lib/push";
@@ -26,6 +27,11 @@ export async function POST(req) {
     if (!partner) return NextResponse.json({ error: "partner not found" }, { status: 404 });
     if (partner.id === me.id) return NextResponse.json({ error: "kein selbst-call" }, { status: 400 });
 
+    // 🚫 Block-Schutz: kein Call wenn eine Richtung blockiert ist
+    if (isBlockedBetween(me.id, partner.id)) {
+      return NextResponse.json({ error: "Diese Aktion ist nicht möglich." }, { status: 403 });
+    }
+
     // 🩷 Frauen-Initiative: Männer dürfen Frauen mit Initiative-Schalter nicht
     // direkt anrufen. Erst müssen sie kommentieren/reagieren — wenn sie sich
     // für ihn interessiert, schreibt sie zuerst. Dann darf er sie anrufen.
@@ -44,6 +50,11 @@ export async function POST(req) {
     if (!room) return NextResponse.json({ error: "room not found" }, { status: 404 });
     if (!isRoomMember(roomId, me.id)) return NextResponse.json({ error: "kein mitglied" }, { status: 403 });
     inviteeIds = listChatRoomMemberIds(roomId).filter((id) => id !== me.id);
+    // 🚫 Block-Filter: blockierte Gruppen-Mitglieder NICHT klingeln
+    const hidden = blockedUserIdsFor(me.id);
+    if (hidden.size > 0) {
+      inviteeIds = inviteeIds.filter((id) => !hidden.has(Number(id)));
+    }
   }
 
   const call = createCall({ initiatorId: me.id, type, partnerId, roomId, withVideo });
