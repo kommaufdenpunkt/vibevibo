@@ -1,9 +1,11 @@
-// 🎀 Admin-API für Fidolin-Erinnerungs-Posts
+// 🎀 Admin-API für Fidolin-Erinnerungs-Posts (v2).
 //
-// GET    → { memories: [...] }
-// POST   { id?, month, day, anniYear, category, emoji, content, active } → upsert
-// DELETE ?id=123 → entfernen
-// PATCH  ?id=123 { active: true|false } → aktivieren/deaktivieren
+// GET     → { memories, due }
+// POST    { id?, month, day, anniYear, category, emoji, content, active } → upsert
+// POST    ?action=seed                  → Standard-Katalog importieren (nur wenn leer)
+// POST    ?action=post&id=N             → Sofort posten (manuell, statt Cron-Wartezeit)
+// PATCH   ?id=N  { active: bool }       → aktivieren/deaktivieren
+// DELETE  ?id=N                         → entfernen
 
 import { NextResponse } from "next/server";
 import { isAdminRequest, adminEnabled } from "@/lib/admin";
@@ -12,6 +14,10 @@ import {
   upsertFidolinMemory,
   toggleFidolinMemoryActive,
   deleteFidolinMemory,
+  listMemoriesDueToday,
+  seedFidolinMemoriesIfEmpty,
+  postFidolinMemory,
+  ensureFidolinUser,
 } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -23,13 +29,39 @@ function guard(req) {
   return null;
 }
 
+function payload() {
+  return {
+    memories: listAllFidolinMemories(),
+    due: listMemoriesDueToday(),
+  };
+}
+
 export async function GET(req) {
   const g = guard(req); if (g) return g;
-  return NextResponse.json({ memories: listAllFidolinMemories() });
+  return NextResponse.json(payload());
 }
 
 export async function POST(req) {
   const g = guard(req); if (g) return g;
+  const url = new URL(req.url);
+  const action = url.searchParams.get("action") || "";
+
+  // Standard-Katalog importieren (idempotent — nur bei leerer Tabelle)
+  if (action === "seed") {
+    ensureFidolinUser();
+    const seeded = seedFidolinMemoriesIfEmpty();
+    return NextResponse.json({ ok: true, seeded, ...payload() });
+  }
+
+  // Manuell sofort posten (ohne Cron-Wartezeit)
+  if (action === "post") {
+    const id = Number(url.searchParams.get("id"));
+    if (!id) return NextResponse.json({ error: "id fehlt" }, { status: 400 });
+    const result = postFidolinMemory(id);
+    return NextResponse.json({ ...result, ...payload() });
+  }
+
+  // Default: upsert
   let body = {};
   try { body = await req.json(); } catch {}
   try {
@@ -43,7 +75,7 @@ export async function POST(req) {
       content: String(body?.content || ""),
       active: body?.active !== false ? 1 : 0,
     });
-    return NextResponse.json({ ok: true, id, memories: listAllFidolinMemories() });
+    return NextResponse.json({ ok: true, id, ...payload() });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });
   }
@@ -57,7 +89,7 @@ export async function PATCH(req) {
   let body = {};
   try { body = await req.json(); } catch {}
   toggleFidolinMemoryActive(id, !!body?.active);
-  return NextResponse.json({ ok: true, memories: listAllFidolinMemories() });
+  return NextResponse.json({ ok: true, ...payload() });
 }
 
 export async function DELETE(req) {
@@ -66,5 +98,5 @@ export async function DELETE(req) {
   const id = Number(url.searchParams.get("id"));
   if (!id) return NextResponse.json({ error: "id fehlt" }, { status: 400 });
   deleteFidolinMemory(id);
-  return NextResponse.json({ ok: true, memories: listAllFidolinMemories() });
+  return NextResponse.json({ ok: true, ...payload() });
 }
