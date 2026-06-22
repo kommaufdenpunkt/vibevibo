@@ -137,6 +137,20 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
           </div>
         )}
 
+        {/* 🎯 Primäre Sozial-Aktionen ZUERST — Freund werden + Anrufen + Video-Call */}
+        {me && !isOwner && (
+          <div style={{
+            display: "flex", gap: 10, justifyContent: "center",
+            marginBottom: 12, flexWrap: "wrap", alignItems: "center",
+          }}>
+            <FriendButton username={profile.username} />
+            <LiveCallButton
+              partnerUsername={profile.username}
+              partnerDisplayName={profile.displayName}
+            />
+          </div>
+        )}
+
         {/* 🎯 Aktions-Bar — Gruscheln, Nachricht, Fotos, Kompliment */}
         {me && !isOwner && (
           <div className="vv-nost-actions">
@@ -163,22 +177,14 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
           </div>
         )}
 
-        {/* 🤝 Friend-Request + 💛 SOS-Button — neben Standard-Aktionen */}
+        {/* 💛 SOS-Knopf — separate Sicherheits-Sektion */}
         {me && !isOwner && (
-          <>
-            <div style={{
-              display: "flex", gap: 10, justifyContent: "center",
-              marginTop: 10, flexWrap: "wrap",
-            }}>
-              <FriendButton username={profile.username} />
-              <SosButton username={profile.username} />
-            </div>
-            {/* 📞 Live-Call Buttons (Audio + Video) */}
-            <LiveCallButton
-              partnerUsername={profile.username}
-              partnerDisplayName={profile.displayName}
-            />
-          </>
+          <div style={{
+            display: "flex", justifyContent: "center",
+            marginTop: 10,
+          }}>
+            <SosButton username={profile.username} />
+          </div>
         )}
         {!me && (
           <div className="vv-nost-actions">
