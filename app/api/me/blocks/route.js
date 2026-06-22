@@ -1,17 +1,26 @@
 // 🚫 Block-API — eigene Blocks verwalten.
+// (Nutzt die NATIVEN Block-Helpers aus db.js: addUserBlock / listMyBlocks)
 //
-// GET    → { blocks: [...], count }
-// POST   { username }            → blockUser(me, target)
-// (Unblock geht über DELETE /api/me/blocks/[id])
+// GET    → { blocks, count }
+// POST   { username, reason? }   → blockiert + räumt bestehende Friendship auf
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
-  blockUser, listMyBlocks, countMyBlocks, getUserByUsername,
+  addUserBlock, listMyBlocks, countMyBlocks, getUserByUsername, db,
 } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function cleanupFriendship(a, b) {
+  try {
+    db().prepare(`
+      DELETE FROM friend_requests
+       WHERE (from_id = ? AND to_id = ?) OR (from_id = ? AND to_id = ?)
+    `).run(a, b, b, a);
+  } catch {}
+}
 
 export async function GET() {
   const me = await getSessionUser();
@@ -36,8 +45,9 @@ export async function POST(req) {
     return NextResponse.json({ error: "Du kannst dich nicht selbst blockieren" }, { status: 400 });
   }
   try {
-    const ok = blockUser(me.id, target.id, reason);
+    const ok = addUserBlock(me.id, target.id, reason);
     if (!ok) return NextResponse.json({ error: "Block fehlgeschlagen" }, { status: 500 });
+    cleanupFriendship(me.id, target.id);
     return NextResponse.json({
       ok: true,
       blocks: listMyBlocks(me.id),

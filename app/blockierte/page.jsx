@@ -88,7 +88,7 @@ export default function BlockierteSeite() {
                   {b.displayName || b.username}
                 </div>
                 <div style={{ fontSize: 11.5, color: "#64748b" }}>
-                  @{b.username} · blockiert am {new Date(b.createdAt).toLocaleDateString("de-DE")}
+                  @{b.username} · blockiert am {new Date(b.blockedAt || b.createdAt || 0).toLocaleDateString("de-DE")}
                 </div>
                 {b.reason && (
                   <div style={{

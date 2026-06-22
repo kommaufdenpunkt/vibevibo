@@ -3,7 +3,7 @@
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { unblockUser, listMyBlocks, countMyBlocks } from "@/lib/db";
+import { removeUserBlock, listMyBlocks, countMyBlocks } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export async function DELETE(req, ctx) {
   const blockedId = Number(params?.id);
   if (!blockedId) return NextResponse.json({ error: "id fehlt" }, { status: 400 });
   try {
-    unblockUser(me.id, blockedId);
+    removeUserBlock(me.id, blockedId);
     return NextResponse.json({
       ok: true,
       blocks: listMyBlocks(me.id),

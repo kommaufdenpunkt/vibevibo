@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
   getUserByUsername, friendRequestStatus,
-  hasBlocked, isBlockedBy,
+  hasUserBlocked,
 } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -15,8 +15,8 @@ export async function GET(req, { params }) {
   const target = getUserByUsername(String(username).toLowerCase());
   if (!target) return NextResponse.json({ status: "none" });
 
-  const iBlock = hasBlocked(me.id, target.id);
-  const blockedByThem = isBlockedBy(me.id, target.id);
+  const iBlock = hasUserBlocked(me.id, target.id);
+  const blockedByThem = hasUserBlocked(target.id, me.id);
 
   return NextResponse.json({
     status: (iBlock || blockedByThem) ? "blocked" : friendRequestStatus(me.id, target.id),
