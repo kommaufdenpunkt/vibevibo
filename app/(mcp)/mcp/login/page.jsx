@@ -5,10 +5,6 @@
 //  • prüft via getMcpUser() ob schon eingeloggt → redirect("/mcp")
 //  • rendert Hochsicherheits-Header (Stufe, TLS-Hinweis, Audit-Info)
 //  • wrappt das bestehende McpLoginForm in Glass-Card
-//
-// CSS-Klassen, die das Form benutzt (mcp-input/mcp-label/mcp-btn/mcp-alert/...)
-// kommen aus app/(mcp)/mcp.css — das wurde mit vv_mcp_css_restore (6d0ed62)
-// wiederhergestellt.
 
 import { redirect } from "next/navigation";
 import { getMcpUser } from "@/lib/modAuth";
@@ -34,10 +30,11 @@ export default async function McpLoginPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: "32px 20px",
+        // 🌑 dunkler Hintergrund — fast schwarz mit dezenten lila/blauen Glows
         background:
-          "radial-gradient(ellipse at top, #1a0b3d 0%, #060611 55%), " +
-          "radial-gradient(ellipse at bottom right, rgba(124, 58, 237, 0.18), transparent 60%), " +
-          "radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.12), transparent 55%)",
+          "radial-gradient(ellipse at top, #0a0512 0%, #010103 60%), " +
+          "radial-gradient(ellipse at bottom right, rgba(124, 58, 237, 0.07), transparent 65%), " +
+          "radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.04), transparent 60%)",
       }}
     >
       <div
@@ -45,13 +42,14 @@ export default async function McpLoginPage() {
           width: "100%",
           maxWidth: 440,
           padding: "28px 26px 24px",
-          background: "rgba(20, 22, 38, 0.65)",
+          // dunklere Glass-Card damit sie sich vom noch dunkleren BG abhebt
+          background: "rgba(18, 18, 30, 0.72)",
           backdropFilter: "blur(28px) saturate(180%)",
           WebkitBackdropFilter: "blur(28px) saturate(180%)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
+          border: "1px solid rgba(255, 255, 255, 0.06)",
           borderRadius: 24,
           boxShadow:
-            "0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
+            "0 25px 70px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
           color: "#f1f1f5",
         }}
       >
@@ -64,8 +62,8 @@ export default async function McpLoginPage() {
             padding: "9px 14px",
             marginBottom: 20,
             background:
-              "linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(220, 38, 38, 0.10))",
-            border: "1px solid rgba(239, 68, 68, 0.4)",
+              "linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(220, 38, 38, 0.08))",
+            border: "1px solid rgba(239, 68, 68, 0.38)",
             borderRadius: 10,
             fontSize: 11,
             fontWeight: 800,
@@ -95,7 +93,7 @@ export default async function McpLoginPage() {
               borderRadius: 16,
               background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
               boxShadow:
-                "0 12px 32px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+                "0 12px 32px rgba(124, 58, 237, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
               marginBottom: 12,
               fontSize: 26,
             }}
@@ -130,11 +128,12 @@ export default async function McpLoginPage() {
         <div
           style={{
             padding: "11px 13px",
-            background: "rgba(124, 58, 237, 0.08)",
-            border: "1px solid rgba(124, 58, 237, 0.22)",
+            // dunklerer Block
+            background: "rgba(124, 58, 237, 0.06)",
+            border: "1px solid rgba(124, 58, 237, 0.2)",
             borderRadius: 10,
             fontSize: 11,
-            color: "rgba(241, 241, 245, 0.72)",
+            color: "rgba(241, 241, 245, 0.7)",
             lineHeight: 1.7,
           }}
         >
@@ -143,7 +142,7 @@ export default async function McpLoginPage() {
           <div>📋 Jeder Login-Versuch wird im Audit-Log gespeichert</div>
         </div>
 
-        {/* Login Form — bestehende Komponente, username + 2FA + /api/mcp/auth */}
+        {/* Login Form */}
         <McpLoginForm />
 
         {/* Footer */}
@@ -151,10 +150,10 @@ export default async function McpLoginPage() {
           style={{
             marginTop: 20,
             paddingTop: 16,
-            borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.05)",
             textAlign: "center",
             fontSize: 10,
-            color: "rgba(241, 241, 245, 0.42)",
+            color: "rgba(241, 241, 245, 0.4)",
             lineHeight: 1.7,
             fontWeight: 500,
           }}
