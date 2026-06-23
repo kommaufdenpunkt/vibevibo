@@ -1,78 +1,206 @@
-// 🚨 NUCLEAR DEBUG — bypasst ALLE parent CSS via position:fixed + z-index:99999.
-// Wenn das NICHT sichtbar ist, läuft der Page-Code gar nicht.
+// MCP Login — polished glassmorphism, dark, professional.
+// Auth-Endpoint kommt in Ship 1.7. Bis dahin: clean UI + Form-State + Hint.
 
-import { redirect } from "next/navigation";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useState } from "react";
 
-export default async function McpLoginPage() {
-  // Erstmal KEIN auth-call — wir wollen nur sehen ob die Page überhaupt rendert.
+export default function McpLoginPage() {
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/mcp/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      if (res.ok) {
+        window.location.href = "/mcp";
+        return;
+      }
+
+      let msg = "Anmeldung fehlgeschlagen.";
+      try {
+        const data = await res.json();
+        if (data?.error) msg = data.error;
+      } catch {}
+      // Endpoint noch nicht da → freundlicher Hinweis
+      if (res.status === 404) {
+        msg = "Auth-Endpoint noch nicht aktiv (Ship 1.7). UI ist fertig.";
+      }
+      setError(msg);
+    } catch (err) {
+      setError("Netzwerkfehler. Versuch's nochmal.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      zIndex: 99999,
-      background: "linear-gradient(135deg, #ff006e, #fb5607, #ffbe0b, #8338ec, #3a86ff)",
-      backgroundSize: "400% 400%",
-      animation: "rainbow 4s ease infinite",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 20,
-      fontFamily: "system-ui, -apple-system, sans-serif",
-    }}>
-      <style>{`
-        @keyframes rainbow {
-          0%, 100% { background-position: 0% 50%; }
-          50%      { background-position: 100% 50%; }
-        }
-      `}</style>
-      <div style={{
-        background: "white",
-        color: "#1c1c1e",
-        padding: "48px 40px",
-        borderRadius: 20,
-        maxWidth: 540,
-        textAlign: "center",
-        boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
-        border: "8px solid lime",
-      }}>
-        <div style={{ fontSize: 72, marginBottom: 12 }}>🚨</div>
-        <h1 style={{
-          fontSize: 36,
-          fontWeight: 900,
-          margin: "0 0 12px",
-          background: "linear-gradient(135deg, #ff006e, #8338ec)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}>
-          NUCLEAR DEBUG
-        </h1>
-        <p style={{ fontSize: 18, fontWeight: 700, color: "#1c1c1e", marginBottom: 8 }}>
-          Wenn du das hier siehst:
-        </p>
-        <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.6, marginBottom: 16 }}>
-          ✅ Deine MCP-Login-Page <strong>RENDERT korrekt</strong>.<br/>
-          ➜ Das vorherige Problem war: Parent-Layout-CSS hat unsere Inline-Styles überschrieben/versteckt.<br/>
-          ➜ Lösung: <strong>Route-Group-Refactor</strong> (saubere Architektur).
-        </p>
-        <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.6, marginBottom: 20 }}>
-          Wenn du das hier <strong>NICHT</strong> siehst (immer noch leer):<br/>
-          ➜ Page-Code wird <strong>gar nicht ausgeführt</strong>.<br/>
-          ➜ Tieferes Problem (Server-Error, Build-Issue, Cache).
-        </p>
-        <div style={{
-          background: "#fef3c7",
-          padding: 14,
-          borderRadius: 10,
-          fontSize: 12,
-          color: "#78350f",
-          fontWeight: 700,
-          border: "2px solid #f59e0b",
-        }}>
-          📸 Screenshot machen und schicken — dann weiß ich was zu tun ist.
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "32px 20px",
+        background:
+          "radial-gradient(ellipse at top, #1a0b3d 0%, #060611 55%), " +
+          "radial-gradient(ellipse at bottom right, rgba(124, 58, 237, 0.18), transparent 60%), " +
+          "radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.12), transparent 55%)",
+      }}
+    >
+      <div
+        className="mcp-glass"
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          padding: "40px 32px 32px",
+        }}
+      >
+        {/* Logo / Wordmark */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 64,
+              height: 64,
+              borderRadius: 18,
+              background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+              boxShadow:
+                "0 12px 32px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+              marginBottom: 16,
+              fontSize: 30,
+            }}
+            aria-hidden="true"
+          >
+            🛡️
+          </div>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: 26,
+              fontWeight: 800,
+              letterSpacing: "-0.01em",
+              color: "#f8f8fb",
+            }}
+          >
+            MCP
+          </h1>
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontSize: 13,
+              color: "rgba(241, 241, 245, 0.55)",
+              fontWeight: 500,
+            }}
+          >
+            Moderator Control Panel
+          </p>
         </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} noValidate>
+          <div style={{ marginBottom: 16 }}>
+            <label htmlFor="mcp-email" className="mcp-label">
+              E-Mail
+            </label>
+            <input
+              id="mcp-email"
+              type="email"
+              autoComplete="username"
+              required
+              placeholder="moderator@vibevibo.de"
+              className="mcp-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label htmlFor="mcp-password" className="mcp-label">
+              Passwort
+            </label>
+            <input
+              id="mcp-password"
+              type="password"
+              autoComplete="current-password"
+              required
+              placeholder="••••••••"
+              className="mcp-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          {error && (
+            <div className="mcp-error" role="alert" style={{ marginBottom: 16 }}>
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="mcp-btn"
+            disabled={loading || !email || !password}
+          >
+            {loading ? "Prüfe…" : "Anmelden"}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <div
+          style={{
+            marginTop: 28,
+            paddingTop: 20,
+            borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: 11,
+              color: "rgba(241, 241, 245, 0.4)",
+              lineHeight: 1.6,
+            }}
+          >
+            🔒 Nur für Mitglieder des VibeVibo-Teams.
+            <br />
+            Alle Zugriffe werden protokolliert.
+          </p>
+        </div>
+      </div>
+
+      {/* Mini-Brand am Rand */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 16,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          fontSize: 11,
+          color: "rgba(241, 241, 245, 0.25)",
+          fontWeight: 500,
+          pointerEvents: "none",
+        }}
+      >
+        VibeVibo · mcp.vibevibo.de
       </div>
     </div>
   );
