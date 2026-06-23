@@ -1,3 +1,9 @@
+// 🚑 FIX: Route-Groups in Next.js sind IMMER nested unter dem Root-Layout.
+// Sub-Layouts dürfen KEIN eigenes <html>/<body> haben — sonst nested HTML invalid.
+// Stattdessen wrappen wir nur die Children in einer mcp-body-root-Klasse.
+// Die Root-Layout-Wrapper (vv-page, vv-banner, vv-footer) bleiben sichtbar —
+// für TRUE standalone müsste man app/layout.jsx auf Route-Groups splitten.
+
 import "./mcp.css";
 
 export const metadata = {
@@ -14,19 +20,21 @@ export const viewport = {
   viewportFit: "cover",
 };
 
-export default function McpRootLayout({ children }) {
+export default function McpLayout({ children }) {
   return (
-    <html lang="de">
-      <head>
-        <meta name="theme-color" content="#060611" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="mcp-body-root">{children}</body>
-    </html>
+    <div
+      className="mcp-body-root"
+      style={{
+        // 🛡 MCP überdeckt VibeVibo-Layout via position:fixed + z-index
+        // damit's wie eine standalone Hochsicherheits-Seite aussieht.
+        position: "fixed",
+        inset: 0,
+        zIndex: 99998,
+        overflow: "auto",
+        background: "#060611",
+      }}
+    >
+      {children}
+    </div>
   );
 }
