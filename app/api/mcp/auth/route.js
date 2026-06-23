@@ -1,6 +1,11 @@
 // 🛡 MCP-Auth — gehärteter Mod-Login.
 // Schutzlagen: Rate-Limit (IP+Username) · IP-Intel · DB-Throttle ·
 //              Timing-Protection · Audit-Trail · CSRF-Origin-Check.
+//
+// 🔐 PHASE B: User mit gesetztem MCP-Passwort werden gegen MCP-Hash geprüft
+// (lib/mcpCredentials.js, scrypt). User OHNE MCP-Passwort fallen zurück auf
+// normales vibevibo.de-Passwort — verhindert Lockout für andere Mods bis die
+// auch ihr MCP-PW gesetzt haben.
 
 import { NextResponse } from "next/server";
 import {
@@ -9,6 +14,7 @@ import {
   recordMcpLoginAttempt, countMcpFailsByUsername, countMcpFailsByIp, clearMcpFails,
   isMcpTotpEnabled, verifyMcpTotpCode,
 } from "@/lib/db";
+import { hasMcpPassword, verifyMcpPassword } from "@/lib/mcpCredentials";
 import { setMcpSessionCookie, clearMcpSessionCookie, audit } from "@/lib/modAuth";
 import { getClientIp } from "@/lib/ip";
 import { getOrCreateDeviceId } from "@/lib/device";
@@ -99,10 +105,19 @@ export async function POST(req) {
       return respond(429, { error: `Aus VPN/Proxy-Netzen nur 2 Versuche möglich. Bitte normale Verbindung nutzen.${STRAFANZEIGE_HINT}` });
     }
 
-    // 6) Passwort prüfen
-    const user = verifyPassword(username, password);
+    // 6) Passwort prüfen — 🔐 PHASE B:
+    //    User MIT gesetztem MCP-Passwort: nur scrypt-Hash aus mcp_password_hash gilt
+    //    User OHNE MCP-Passwort:           fallback auf normales vibevibo.de-Passwort
+    let user = null;
+    let pwSource = "site";
+    if (hasMcpPassword(username)) {
+      user = verifyMcpPassword(username, password);
+      pwSource = "mcp";
+    } else {
+      user = verifyPassword(username, password);
+    }
     if (!user) {
-      recordMcpLoginAttempt({ username, ip, ua, success: false, reason: "wrong_password" });
+      recordMcpLoginAttempt({ username, ip, ua, success: false, reason: `wrong_password:${pwSource}` });
       return respond(401, { error: "Falscher Benutzername oder Passwort." });
     }
 
@@ -138,9 +153,9 @@ export async function POST(req) {
     await setMcpSessionCookie(token);
     recordMcpLoginAttempt({
       username, userId: user.id, ip, ua, success: true,
-      reason: `role=${getUserRole(user.id)}`,
+      reason: `role=${getUserRole(user.id)},pw=${pwSource}`,
     });
-    audit(user.id, "mcp.login", { details: `ip=${ip.slice(0, 16)},ua=${ua.slice(0, 32)}` });
+    audit(user.id, "mcp.login", { details: `ip=${ip.slice(0, 16)},ua=${ua.slice(0, 32)},pw=${pwSource}` });
     return respond(200, {
       ok: true,
       user: {
