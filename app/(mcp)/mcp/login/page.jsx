@@ -1,49 +1,29 @@
-// MCP Login — polished glassmorphism, dark, professional.
-// Auth-Endpoint kommt in Ship 1.7. Bis dahin: clean UI + Form-State + Hint.
+// MCP Login — integriert das bestehende <McpLoginForm /> (mit username + 2FA-Flow,
+// POST /api/mcp/auth, Cookie via lib/modAuth.js) in eine Hochsicherheits-Optik.
+//
+// Server Component:
+//  • prüft via getMcpUser() ob schon eingeloggt → redirect("/mcp")
+//  • rendert Hochsicherheits-Header (Stufe, TLS-Hinweis, Audit-Info)
+//  • wrappt das bestehende McpLoginForm in Glass-Card
+//
+// CSS-Klassen, die das Form benutzt (mcp-input/mcp-label/mcp-btn/mcp-alert/...)
+// kommen aus app/(mcp)/mcp.css — das wurde mit vv_mcp_css_restore (6d0ed62)
+// wiederhergestellt.
 
-"use client";
+import { redirect } from "next/navigation";
+import { getMcpUser } from "@/lib/modAuth";
+import McpLoginForm from "@/components/mcp/McpLoginForm";
 
-import { useState } from "react";
+export const dynamic = "force-dynamic";
 
-export default function McpLoginPage() {
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+export const metadata = {
+  title: "MCP Login — VibeVibo Team",
+  robots: { index: false, follow: false },
+};
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/mcp/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-
-      if (res.ok) {
-        window.location.href = "/mcp";
-        return;
-      }
-
-      let msg = "Anmeldung fehlgeschlagen.";
-      try {
-        const data = await res.json();
-        if (data?.error) msg = data.error;
-      } catch {}
-      // Endpoint noch nicht da → freundlicher Hinweis
-      if (res.status === 404) {
-        msg = "Auth-Endpoint noch nicht aktiv (Ship 1.7). UI ist fertig.";
-      }
-      setError(msg);
-    } catch (err) {
-      setError("Netzwerkfehler. Versuch's nochmal.");
-    } finally {
-      setLoading(false);
-    }
-  }
+export default async function McpLoginPage() {
+  const me = await getMcpUser();
+  if (me) redirect("/mcp");
 
   return (
     <div
@@ -61,28 +41,63 @@ export default function McpLoginPage() {
       }}
     >
       <div
-        className="mcp-glass"
         style={{
           width: "100%",
-          maxWidth: 420,
-          padding: "40px 32px 32px",
+          maxWidth: 440,
+          padding: "28px 26px 24px",
+          background: "rgba(20, 22, 38, 0.65)",
+          backdropFilter: "blur(28px) saturate(180%)",
+          WebkitBackdropFilter: "blur(28px) saturate(180%)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: 24,
+          boxShadow:
+            "0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
+          color: "#f1f1f5",
         }}
       >
-        {/* Logo / Wordmark */}
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
+        {/* Sicherheitsstufe Badge */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "9px 14px",
+            marginBottom: 20,
+            background:
+              "linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(220, 38, 38, 0.10))",
+            border: "1px solid rgba(239, 68, 68, 0.4)",
+            borderRadius: 10,
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "#fca5a5",
+          }}
+        >
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 8 }}>🔴</span>
+            Sicherheitsstufe: HOCH
+          </span>
+          <span style={{ opacity: 0.6, letterSpacing: "0.02em", fontSize: 10 }}>
+            MCP v1
+          </span>
+        </div>
+
+        {/* Logo + Title */}
+        <div style={{ textAlign: "center", marginBottom: 18 }}>
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 64,
-              height: 64,
-              borderRadius: 18,
+              width: 56,
+              height: 56,
+              borderRadius: 16,
               background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
               boxShadow:
                 "0 12px 32px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
-              marginBottom: 16,
-              fontSize: 30,
+              marginBottom: 12,
+              fontSize: 26,
             }}
             aria-hidden="true"
           >
@@ -91,7 +106,7 @@ export default function McpLoginPage() {
           <h1
             style={{
               margin: 0,
-              fontSize: 26,
+              fontSize: 22,
               fontWeight: 800,
               letterSpacing: "-0.01em",
               color: "#f8f8fb",
@@ -101,8 +116,8 @@ export default function McpLoginPage() {
           </h1>
           <p
             style={{
-              margin: "4px 0 0",
-              fontSize: 13,
+              margin: "3px 0 0",
+              fontSize: 12,
               color: "rgba(241, 241, 245, 0.55)",
               fontWeight: 500,
             }}
@@ -111,96 +126,45 @@ export default function McpLoginPage() {
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} noValidate>
-          <div style={{ marginBottom: 16 }}>
-            <label htmlFor="mcp-email" className="mcp-label">
-              E-Mail
-            </label>
-            <input
-              id="mcp-email"
-              type="email"
-              autoComplete="username"
-              required
-              placeholder="moderator@vibevibo.de"
-              className="mcp-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+        {/* Sicherheits-Hinweise */}
+        <div
+          style={{
+            padding: "11px 13px",
+            background: "rgba(124, 58, 237, 0.08)",
+            border: "1px solid rgba(124, 58, 237, 0.22)",
+            borderRadius: 10,
+            fontSize: 11,
+            color: "rgba(241, 241, 245, 0.72)",
+            lineHeight: 1.7,
+          }}
+        >
+          <div>🔒 TLS 1.3 · HSTS · Host-Only-Cookie · SameSite=Strict</div>
+          <div>🔐 2-Faktor erforderlich (falls aktiviert)</div>
+          <div>📋 Jeder Login-Versuch wird im Audit-Log gespeichert</div>
+        </div>
 
-          <div style={{ marginBottom: 20 }}>
-            <label htmlFor="mcp-password" className="mcp-label">
-              Passwort
-            </label>
-            <input
-              id="mcp-password"
-              type="password"
-              autoComplete="current-password"
-              required
-              placeholder="••••••••"
-              className="mcp-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          {error && (
-            <div className="mcp-error" role="alert" style={{ marginBottom: 16 }}>
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="mcp-btn"
-            disabled={loading || !email || !password}
-          >
-            {loading ? "Prüfe…" : "Anmelden"}
-          </button>
-        </form>
+        {/* Login Form — bestehende Komponente, username + 2FA + /api/mcp/auth */}
+        <McpLoginForm />
 
         {/* Footer */}
         <div
           style={{
-            marginTop: 28,
-            paddingTop: 20,
+            marginTop: 20,
+            paddingTop: 16,
             borderTop: "1px solid rgba(255, 255, 255, 0.06)",
             textAlign: "center",
+            fontSize: 10,
+            color: "rgba(241, 241, 245, 0.42)",
+            lineHeight: 1.7,
+            fontWeight: 500,
           }}
         >
-          <p
-            style={{
-              margin: 0,
-              fontSize: 11,
-              color: "rgba(241, 241, 245, 0.4)",
-              lineHeight: 1.6,
-            }}
-          >
-            🔒 Nur für Mitglieder des VibeVibo-Teams.
-            <br />
-            Alle Zugriffe werden protokolliert.
-          </p>
+          Nur für Mitglieder des VibeVibo-Teams.
+          <br />
+          Unbefugte Zugriffsversuche werden geloggt und können geahndet werden.
+          <br />
+          <span style={{ opacity: 0.7 }}>VibeVibo · mcp.vibevibo.de</span>
         </div>
-      </div>
-
-      {/* Mini-Brand am Rand */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 16,
-          left: 0,
-          right: 0,
-          textAlign: "center",
-          fontSize: 11,
-          color: "rgba(241, 241, 245, 0.25)",
-          fontWeight: 500,
-          pointerEvents: "none",
-        }}
-      >
-        VibeVibo · mcp.vibevibo.de
       </div>
     </div>
   );
