@@ -4,6 +4,7 @@
 import { redirect } from "next/navigation";
 import { getAdminUser } from "@/lib/adminAuth";
 import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
+import DevSeedTestImage from "@/components/admin/DevSeedTestImage";
 
 export const dynamic = "force-dynamic";
 
@@ -116,6 +117,9 @@ export default async function AdminDashboard() {
         <ToolCard color="#7c3aed" icon="🛡" title="Sicherheits-Analyse" desc="Live-Status der Plattform" disabled />
         <ToolCard color="#10b981" icon="👥" title="User & Mod-Verwaltung" desc="Mods ernennen, Permissions setzen" disabled />
       </div>
+
+      {/* Dev-Tools (klein, am Rand) */}
+      <DevSeedTestImage />
 
       <div style={{ marginTop: 28, textAlign: "center" }}>
         <AdminLogoutButton />
