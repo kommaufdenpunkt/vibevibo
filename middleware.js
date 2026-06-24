@@ -1,15 +1,15 @@
 // Middleware:
 // • 🛡 Hacker-Detection: 50+ Angriffsmuster → Permabann + 403
 // • Session-Check für eingeloggte Bereiche
+// • 🛡 Security-Hardening V2 (HSTS preload + strict CSP + Cross-Origin-Isolation)
 //
-// Hinweis: Edge-Runtime hat keinen DB-Zugriff. Permabann-Liste wird per
-// fire-and-forget POST an /api/_internal/ban gespeichert (läuft in Node-Runtime).
-// Wiederholtes Bombardieren von derselben IP wird trotzdem direkt wieder erkannt
-// und 403't (die Detection-Regel triggert ja jedes Mal).
+// 🔐 Admin-Subdomain (admin.vibevibo.de) wird auf /adminpanel/* gemapped
+// (statt /admin/*, da bereits ein existing app/admin/* existiert).
 
 import { NextResponse } from "next/server";
 import { detectAttack, getClientIp, isWhitelisted } from "@/lib/hackerguard";
 import { applySecurityHeaders } from "@/lib/securityHeaders";
+import { applyHardeningV2 } from "@/lib/securityHardeningV2";
 import { ensureCsrfCookie } from "@/lib/csrf";
 
 const COOKIE = "vv_session";
@@ -43,36 +43,29 @@ const PUBLIC_PREFIX = [
   "/api/maintenance",
   "/api/push/key",
   "/api/admin/",
+  "/api/adminpanel/",
   "/api/_internal/",
   "/api/welcome-bonus",
-  "/api/ads/public-",  // 🍪 Public-Ad-Config für anonyme Besucher
-  "/api/cron/",        // ⏰ Cron-Endpoints — eigene x-cron-secret-Auth pro Route
+  "/api/ads/public-",
+  "/api/cron/",
   "/ads.txt",
 ];
 
-// ⚡ MCP — wenn Host = mcp.vibevibo.de, alle Pfade nach /mcp/* umleiten
-// (außer /api/ und _next-Assets, die normal durchgereicht werden).
 function isMcpHost(hostname) {
   if (!hostname) return false;
   const h = hostname.toLowerCase();
   return h === "mcp.vibevibo.de" || h.startsWith("mcp.vibevibo.de:");
 }
 
-// 🔐 Admin — wenn Host = admin.vibevibo.de, alle Pfade nach /admin/* umleiten.
-// Separates Subdomain für Sicherheits-Analyse & weitere Admin-Tools.
-// Bewusst getrennt von MCP: Defense-in-Depth — Tool das System analysiert
-// soll AUSSERHALB dieses Systems leben.
 function isAdminHost(hostname) {
   if (!hostname) return false;
   const h = hostname.toLowerCase();
   return h === "admin.vibevibo.de" || h.startsWith("admin.vibevibo.de:");
 }
 
-// 🛡 Wrapper: liefert NextResponse mit Security-Headers + CSRF-Cookie
-function harden(req, res, { isMcp, isApi }) {
+function harden(req, res, { isMcp, isApi, isAdmin = false }) {
   applySecurityHeaders(res, { isMcp, isApi });
-  // CSRF-Cookie nur auf Nicht-API-Responses ausstellen (für HTML-Seiten),
-  // damit das Token im Browser landet bevor das Frontend POSTen will.
+  applyHardeningV2(res, { isMcp, isApi, isAdmin });
   if (!isApi) {
     try { ensureCsrfCookie(req, res); } catch {}
   }
@@ -83,31 +76,39 @@ export function middleware(req) {
   const { pathname } = req.nextUrl;
   const hostname = req.headers.get("host") || "";
   const isMcp = isMcpHost(hostname) || pathname === "/mcp" || pathname.startsWith("/mcp/");
+  const isAdmin = isAdminHost(hostname)
+    || pathname === "/adminpanel" || pathname.startsWith("/adminpanel/");
   const isApi = pathname.startsWith("/api/");
 
-  // === 🔐 Admin-Hostname-Routing ===
+  // === 🔐 Admin-Hostname-Routing — admin.vibevibo.de wird auf /adminpanel/* gemapped ===
   if (isAdminHost(hostname)) {
-    // API + Next-Assets durchreichen ohne Rewrite (aber mit Security-Headers)
+    // API + Next-Assets durchreichen ohne Rewrite
     if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") ||
         pathname === "/favicon.ico" || pathname === "/robots.txt" ||
         pathname === "/sitemap.xml" || pathname === "/ads.txt" ||
         pathname.startsWith("/icon-") || pathname === "/apple-icon.png" ||
         pathname === "/manifest.webmanifest") {
-      return harden(req, NextResponse.next(), { isMcp: false, isApi });
+      return harden(req, NextResponse.next(), { isMcp: false, isApi, isAdmin: true });
     }
-    // Schon unter /admin? Dann nicht doppelt rewriten
-    if (pathname === "/admin" || pathname.startsWith("/admin/")) {
-      return harden(req, NextResponse.next(), { isMcp: false, isApi: false });
+
+    // Schon unter /adminpanel? Nicht doppelt rewriten
+    if (pathname === "/adminpanel" || pathname.startsWith("/adminpanel/")) {
+      return harden(req, NextResponse.next(), { isMcp: false, isApi: false, isAdmin: true });
     }
-    // Rewrite zu /admin + originaler Pfad
+
+    // Strip leading /admin (Compat für alte URLs wie admin.vibevibo.de/admin/login)
+    let cleanPath = pathname;
+    if (cleanPath === "/admin") cleanPath = "/";
+    else if (cleanPath.startsWith("/admin/")) cleanPath = cleanPath.slice(6) || "/";
+
+    // Rewrite zu /adminpanel + cleanPath
     const url = req.nextUrl.clone();
-    url.pathname = pathname === "/" ? "/admin" : `/admin${pathname}`;
-    return harden(req, NextResponse.rewrite(url), { isMcp: false, isApi: false });
+    url.pathname = cleanPath === "/" ? "/adminpanel" : `/adminpanel${cleanPath}`;
+    return harden(req, NextResponse.rewrite(url), { isMcp: false, isApi: false, isAdmin: true });
   }
 
   // === ⚡ MCP-Hostname-Routing ===
   if (isMcpHost(hostname)) {
-    // API + Next-Assets durchreichen ohne Rewrite (aber mit Security-Headers)
     if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") ||
         pathname === "/favicon.ico" || pathname === "/robots.txt" ||
         pathname === "/sitemap.xml" || pathname === "/ads.txt" ||
@@ -115,22 +116,19 @@ export function middleware(req) {
         pathname === "/manifest.webmanifest") {
       return harden(req, NextResponse.next(), { isMcp: true, isApi });
     }
-    // Schon unter /mcp? Dann nicht doppelt rewriten
     if (pathname === "/mcp" || pathname.startsWith("/mcp/")) {
       return harden(req, NextResponse.next(), { isMcp: true, isApi: false });
     }
-    // Rewrite zu /mcp + originaler Pfad
     const url = req.nextUrl.clone();
     url.pathname = pathname === "/" ? "/mcp" : `/mcp${pathname}`;
     return harden(req, NextResponse.rewrite(url), { isMcp: true, isApi: false });
   }
 
-  // === 🛡 HACKER-GUARD (vor allem anderen) ===
+  // === 🛡 HACKER-GUARD ===
   const ip = getClientIp(req);
   if (!isWhitelisted(ip, req)) {
     const attack = detectAttack(req);
     if (attack) {
-      // Fire-and-forget: schreibe Permabann ins DB
       try {
         const origin = req.nextUrl.origin;
         fetch(`${origin}/api/_internal/ban`, {
@@ -140,20 +138,13 @@ export function middleware(req) {
             "x-internal-token": process.env.VV_INTERNAL_TOKEN || "no-token",
           },
           body: JSON.stringify({
-            ip,
-            pattern: attack.pattern,
-            severity: attack.severity,
-            payload: attack.payload,
-            method: req.method,
-            path: pathname,
+            ip, pattern: attack.pattern, severity: attack.severity,
+            payload: attack.payload, method: req.method, path: pathname,
             userAgent: req.headers.get("user-agent") || "",
           }),
         }).catch(() => {});
       } catch {}
-      return new NextResponse("Forbidden", {
-        status: 403,
-        headers: { "x-banned": "1" },
-      });
+      return new NextResponse("Forbidden", { status: 403, headers: { "x-banned": "1" } });
     }
   }
 
@@ -163,10 +154,11 @@ export function middleware(req) {
     if (pathname.startsWith(p)) return harden(req, NextResponse.next(), { isMcp, isApi });
   }
   if (pathname.endsWith("/manifest.webmanifest")) return harden(req, NextResponse.next(), { isMcp, isApi });
-  // ⚡ MCP-Routen: Auth-Check macht das MCP-Layout selbst
   if (pathname === "/mcp" || pathname.startsWith("/mcp/")) return harden(req, NextResponse.next(), { isMcp: true, isApi });
-  // 🔐 Admin-Routen: Auth-Check macht das Admin-Layout selbst
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) return harden(req, NextResponse.next(), { isMcp: false, isApi });
+  // /adminpanel/* — Auth wird im Layout selbst geprüft
+  if (pathname === "/adminpanel" || pathname.startsWith("/adminpanel/")) {
+    return harden(req, NextResponse.next(), { isMcp: false, isApi, isAdmin: true });
+  }
 
   const session = req.cookies.get(COOKIE)?.value;
   if (session) return harden(req, NextResponse.next(), { isMcp, isApi });

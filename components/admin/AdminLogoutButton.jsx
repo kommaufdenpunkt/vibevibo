@@ -3,12 +3,12 @@
 export default function AdminLogoutButton() {
   async function handleLogout() {
     try {
-      await fetch("/api/admin/auth", {
+      await fetch("/api/adminpanel/auth", {
         method: "DELETE",
         credentials: "include",
       });
     } catch {}
-    window.location.href = "/admin/login";
+    window.location.href = "/login";
   }
 
   return (
