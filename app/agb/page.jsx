@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Allgemeine Geschäftsbedingungen — VibeVibo",
-  description: "AGB von VibeVibo: Mindestalter 18+, Nutzungsregeln, Krisen-/Suizidprävention, Moderation, Vibes, Werbung, Haftung, 24h-Lösch-Gnadenfrist.",
+  description: "AGB von VibeVibo: Mindestalter 18+, Bild-Authentizität & Moderation, Nutzungsregeln, Krisen-/Suizidprävention, Moderation, Vibes, Werbung, Haftung, 24h-Lösch-Gnadenfrist.",
 };
 
 export default function AgbPage() {
@@ -8,8 +8,9 @@ export default function AgbPage() {
     <article className="vv-card" style={{ maxWidth: 820, margin: "0 auto", padding: 22, lineHeight: 1.6 }}>
       <h1>📜 Allgemeine Geschäftsbedingungen (AGB)</h1>
       <p className="vv-muted" style={{ fontSize: 12 }}>
-        Stand: 20. Juni 2026 — Aktualisierungen: § 13a (Krisen-/Suizidprävention),
-        § 16 (24-Stunden-Gnadenfrist bei Konto-Löschung).
+        Stand: 24. Juni 2026 — Aktualisierungen: § 5 (Bild-Authentizität, Bild-Akte
+        & Mod-Prozess), § 13a (Krisen-/Suizidprävention), § 16 (24-Stunden-Gnadenfrist
+        bei Konto-Löschung).
       </p>
 
       <h2>§ 1 Geltungsbereich und Anbieter</h2>
@@ -120,21 +121,153 @@ export default function AgbPage() {
         nicht zu Trainingszwecken gespeichert.
       </p>
 
-      <h2>§ 5 Profilbilder und Bild-Inhalte</h2>
-      <p>Profilbilder unterliegen besonderen Regeln:</p>
+      <h2>§ 5 Bilder, Bild-Authentizität & Bild-Moderation</h2>
+      <p>
+        Dieser Paragraph regelt verbindlich, welche Bilder du auf VibeVibo hochladen
+        darfst (Profilbild, Buschfunk-Bilder, Feed-Bilder, Kommentar-Bilder,
+        Fotoalben), wie Bilder geprüft werden und welche Konsequenzen bei Verstößen
+        gelten.
+      </p>
+
+      <h3>5.1 Grundsatz: Authentizität</h3>
+      <p>
+        VibeVibo ist eine Community echter Menschen. Damit Vertrauen und Frauen-Schutz
+        (§ 4.2) funktionieren, gilt für <strong>alle Bilder, auf denen eine Person
+        zu sehen ist</strong>:
+      </p>
       <ul>
-        <li><strong>Nur eigene Person</strong> — du musst auf dem Bild erkennbar sein</li>
-        <li><strong>Keine Fun-Bilder</strong> — keine Cartoons, Avatare, Comicfiguren, Tiere als Profilbild</li>
-        <li><strong>Keine Funbilder</strong> oder stark bearbeiteten Aufnahmen</li>
-        <li><strong>Keine Waffen, Drogen, Alkohol</strong> im Vordergrund</li>
-        <li><strong>Keine politischen oder extremistischen Symbole</strong></li>
-        <li><strong>Keine Nacktheit</strong> oder anzüglichen Posen</li>
-        <li><strong>Keine Bilder Dritter</strong> ohne deren Einwilligung</li>
+        <li><strong>Es muss sich um dich selbst handeln.</strong> Auf Profilbildern und Bildern, die dich repräsentieren, muss die abgebildete Person eindeutig du sein.</li>
+        <li><strong>Das Bild muss aktuell sein.</strong> Es darf nicht älter als rund 2 Jahre sein oder dein heutiges Aussehen so stark verfälschen, dass du nicht mehr erkennbar bist.</li>
+        <li><strong>Das Bild muss von dir selbst stammen</strong> — also tatsächlich von dir aufgenommen worden oder im Auftrag für dich entstanden sein. Du bestätigst mit dem Upload, dass du alle erforderlichen Rechte (Urheber-, Persönlichkeits-, Nutzungsrechte) besitzt.</li>
+      </ul>
+
+      <h3>5.2 Was ist erlaubt</h3>
+      <ul>
+        <li>Selbst aufgenommene, aktuelle Fotos von dir selbst.</li>
+        <li>Bilder, auf denen du klar im Vordergrund stehst (auch in Alltagssituationen).</li>
+        <li>Stimmungsbilder ohne Personen (Natur, Tiere, Essen, Reisefotos) für Buschfunk, Feed und Fotoalben.</li>
+        <li>Bilder mit anderen Personen, sofern du <strong>deren ausdrückliche Einwilligung</strong> zur Veröffentlichung hast.</li>
+      </ul>
+
+      <h3>5.3 Was ist verboten</h3>
+      <ul>
+        <li><strong>Stock-Fotos, Kataloge, Werbeaufnahmen</strong> oder andere fremde Fotografien aus Suchmaschinen, sozialen Netzwerken oder Bildagenturen.</li>
+        <li><strong>KI-generierte Bilder</strong> oder synthetische Aufnahmen, die eine reale Person darstellen sollen (Deepfakes, „AI-Models", Avatar-Fotos).</li>
+        <li><strong>Stark bearbeitete Bilder</strong>, die dich unkenntlich machen (massive Filter, Face-Swap, Beauty-Filter so stark, dass dein Aussehen verfälscht ist).</li>
+        <li><strong>Bilder anderer realer Personen</strong>, die du als dich selbst ausgibst (Identitätsfälschung).</li>
+        <li><strong>Cartoons, Avatare, Comicfiguren, Tiere</strong> als Profilbild (Stimmungsbilder im Feed bleiben davon erlaubt).</li>
+        <li><strong>Nacktheit, sexuell anzügliche Posen, Unterwäsche-Fotos</strong> in einer Form, die in den öffentlichen Bereichen der Plattform unangemessen ist.</li>
+        <li><strong>Drogen und Drogenkonsum</strong> in Bild oder Hintergrund (Joints, Bongs, Pillen, Spritzen, harte Drogen — auch Anspielungen wie Cannabis-Blätter als Symbol).</li>
+        <li><strong>Waffen, Gewalt, Selbstverletzung</strong> in glorifizierender oder bedrohlicher Form.</li>
+        <li><strong>Politische, extremistische oder verbotene Symbole</strong> (Hakenkreuze, SS-Runen, IS-Flaggen, Reichsadler etc.).</li>
+        <li><strong>Bilder, die offensichtlich nicht zum Mindestalter passen</strong> (eine Person, die deutlich jünger als 18 wirkt, kombiniert mit einem Konto, das 18+ angibt).</li>
+        <li><strong>Bilder mit personenbezogenen Daten Dritter</strong> (Klarname, Adresse, Telefonnummer auf einem Schild im Hintergrund) ohne deren Einwilligung.</li>
+      </ul>
+
+      <h3>5.4 Wie Bilder geprüft werden</h3>
+      <p>
+        Jedes auf VibeVibo hochgeladene Bild durchläuft ein mehrstufiges
+        Moderationsverfahren:
+      </p>
+      <ol>
+        <li>
+          <strong>Automatische Vorprüfung (KI „Fidolin", Google Gemini).</strong>
+          Klare Verstöße (z.B. Nacktheit, Drogen, Gewalt) werden direkt abgelehnt
+          und gar nicht erst in der Plattform sichtbar.
+        </li>
+        <li>
+          <strong>Menschliche Mod-Prüfung.</strong> Alle übrigen Bilder landen in
+          einer Moderations-Warteschlange („Bildertool") und werden von geschultem
+          Mod-Personal (siehe § 13) einzeln gesichtet — bei Bedarf mit Vergleich
+          gegen frühere Bilder desselben Nutzers und gegen die Bild-Akte (§ 5.5).
+        </li>
+        <li>
+          <strong>Entscheidung.</strong> Das Bild wird entweder freigeschaltet
+          (Approve) oder mit einer der vorgesehenen Begründungen abgelehnt (Reject)
+          — z.B. <em>Zu freizügig</em>, <em>Person nicht erkennbar</em>,
+          <em> Stockfoto/AI-generiert</em>, <em>Wirkt minderjährig</em>,
+          <em> Identitätsfälschung</em>, <em>Anstößiger Inhalt</em>, <em>Drogen</em>,
+          oder eine individuell formulierte Begründung („Sonstiger Grund").
+        </li>
+      </ol>
+      <p>
+        Auf eine Freischaltung besteht <strong>kein Anspruch</strong>. Der Anbieter
+        behält sich vor, einzelne Bilder oder ganze Bild-Kategorien (z.B. Fotoalben)
+        nach freiem Ermessen abzulehnen, wenn dies aus Sicherheits-, Jugendschutz-
+        oder Vertrauensgründen geboten erscheint.
+      </p>
+
+      <h3>5.5 Bild-Akte: Verstoß-Historie pro User</h3>
+      <p>
+        Für jeden Nutzer wird eine plattform-interne <strong>Bild-Akte</strong>
+        geführt. Dort wird festgehalten:
+      </p>
+      <ul>
+        <li>welche Bilder freigeschaltet wurden,</li>
+        <li>welche Bilder mit welcher Begründung abgelehnt wurden,</li>
+        <li>ob die Ablehnung durch die KI „Fidolin" automatisch erfolgte oder durch einen Menschen,</li>
+        <li>wann und durch welchen Mod die Entscheidung getroffen wurde (für interne Audit-Zwecke und Einsprüche).</li>
       </ul>
       <p>
-        Jedes Profilbild wird automatisch durch die KI „Fidolin" (Google Gemini)
-        vorgeprüft und kann zusätzlich durch das Mod-Team geprüft werden. Auf eine
-        Freischaltung besteht kein Anspruch.
+        Diese Akte dient ausschließlich der Qualitätssicherung, der konsistenten
+        Bewertung wiederkehrender Uploads und der Eskalation bei wiederholten
+        Verstößen. Sie ist nur für berechtigtes Mod- und Admin-Personal einsehbar
+        und unterliegt zusätzlich einem Audit-Trail (Mods müssen eine begründete
+        Anfrage stellen, um eine Userakte einzusehen).
+      </p>
+      <p>
+        Bei einer endgültigen Konto-Löschung nach § 16 wird die Bild-Akte
+        anonymisiert (Bezug zur Person entfernt), bleibt aber als statistische
+        Lerngrundlage für die Moderation und ggf. als Beweismittel für laufende
+        Verfahren erhalten — analog zu § 16.3.
+      </p>
+
+      <h3>5.6 Konsequenzen bei Ablehnung</h3>
+      <p>
+        Wird ein Bild abgelehnt, geschieht Folgendes:
+      </p>
+      <ul>
+        <li>
+          Das Bild wird <strong>sofort entfernt</strong> und nicht in der Plattform
+          ausgespielt.
+        </li>
+        <li>
+          Du erhältst eine <strong>orange System-Nachricht vom „vibeviboteam"</strong>
+          im normalen Postfach. Diese Nachricht erklärt knapp, warum das Bild
+          abgelehnt wurde, und muss aktiv mit <em>„Gelesen und verstanden"</em>
+          bestätigt werden. Erst danach ist sie aus dem Postfach verschwunden.
+        </li>
+        <li>
+          Der Vorfall wird in deiner Bild-Akte (§ 5.5) vermerkt.
+        </li>
+      </ul>
+
+      <h3>5.7 Eskalation bei wiederholten Verstößen</h3>
+      <p>
+        Bild-Verstöße werden im Rahmen des allgemeinen Strike-Systems (§ 13.2)
+        eskaliert. Pro 90-Tage-Zeitraum gilt:
+      </p>
+      <ul>
+        <li><strong>1.–2. Bild-Verstoß:</strong> Verwarnung per oranger System-DM, Akteneintrag.</li>
+        <li><strong>3. Bild-Verstoß:</strong> Temporäre Sperrung des Bild-Uploads für 7 Tage.</li>
+        <li><strong>4. Bild-Verstoß:</strong> Sperrung des Bild-Uploads für 30 Tage + manuelle Überprüfung deines Profils.</li>
+        <li><strong>5. Bild-Verstoß oder vorsätzliche Identitätsfälschung:</strong> Permanenter Bann gemäß § 13.2.</li>
+      </ul>
+      <p>
+        Schwere Einzelverstöße (z.B. Versuch des Uploads von Material, das auf
+        Minderjährige hindeutet, oder Identitätsdiebstahl mit Fotos einer realen
+        Drittperson) führen <strong>ohne Vorwarnung zum dauerhaften Bann</strong>
+        und können — bei Strafrechtsrelevanz — eine Anzeige nach sich ziehen.
+      </p>
+
+      <h3>5.8 Einspruchsrecht</h3>
+      <p>
+        Hältst du eine Bild-Ablehnung für falsch, kannst du Einspruch einlegen —
+        per ❓-Hilfebutton oder direkt per E-Mail an
+        <a href="mailto:ginoheidrich@outlook.com"> ginoheidrich@outlook.com</a>
+        mit kurzem Hinweis, um welches Bild es geht. Dein Fall wird dann durch eine
+        zweite, unabhängige Person erneut geprüft. Das Ergebnis erhältst du wieder
+        als System-Nachricht.
       </p>
 
       <h2>§ 6 Sprachnachrichten und Voice-Chat</h2>
@@ -343,7 +476,7 @@ export default function AgbPage() {
       <p>
         Abweichend von § 16.2 werden Daten, die zur Aufklärung eines möglichen
         Verbrechens oder zur Verhinderung weiterer Schäden erforderlich sind,
-        <strong>nicht im Rahmen der 24-stündigen Lösch-Frist</strong> entfernt.
+        <strong> nicht im Rahmen der 24-stündigen Lösch-Frist</strong> entfernt.
         Sie werden vielmehr in einem gesicherten Forensik-Archiv aufbewahrt, bis
         die zuständigen Behörden die Freigabe erteilen — längstens jedoch 10 Jahre.
       </p>
@@ -416,6 +549,7 @@ export default function AgbPage() {
         <li>Direktnachrichten → bleiben beim Empfänger lesbar (anonymisiert)</li>
         <li><strong>Geschenke, die du verschenkt hast</strong> → bleiben beim Empfänger sichtbar, mit Absender „N/A"</li>
         <li>Moderations-Protokolle und Sanktions-Historie</li>
+        <li>Bild-Akte gemäß § 5.5 (anonymisiert)</li>
       </ul>
       <p>
         Rechtsgrundlage: Art. 6 Abs. 1 lit. c und f DSGVO (rechtliche
