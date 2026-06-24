@@ -58,6 +58,16 @@ function isMcpHost(hostname) {
   return h === "mcp.vibevibo.de" || h.startsWith("mcp.vibevibo.de:");
 }
 
+// 🔐 Admin — wenn Host = admin.vibevibo.de, alle Pfade nach /admin/* umleiten.
+// Separates Subdomain für Sicherheits-Analyse & weitere Admin-Tools.
+// Bewusst getrennt von MCP: Defense-in-Depth — Tool das System analysiert
+// soll AUSSERHALB dieses Systems leben.
+function isAdminHost(hostname) {
+  if (!hostname) return false;
+  const h = hostname.toLowerCase();
+  return h === "admin.vibevibo.de" || h.startsWith("admin.vibevibo.de:");
+}
+
 // 🛡 Wrapper: liefert NextResponse mit Security-Headers + CSRF-Cookie
 function harden(req, res, { isMcp, isApi }) {
   applySecurityHeaders(res, { isMcp, isApi });
@@ -74,6 +84,26 @@ export function middleware(req) {
   const hostname = req.headers.get("host") || "";
   const isMcp = isMcpHost(hostname) || pathname === "/mcp" || pathname.startsWith("/mcp/");
   const isApi = pathname.startsWith("/api/");
+
+  // === 🔐 Admin-Hostname-Routing ===
+  if (isAdminHost(hostname)) {
+    // API + Next-Assets durchreichen ohne Rewrite (aber mit Security-Headers)
+    if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") ||
+        pathname === "/favicon.ico" || pathname === "/robots.txt" ||
+        pathname === "/sitemap.xml" || pathname === "/ads.txt" ||
+        pathname.startsWith("/icon-") || pathname === "/apple-icon.png" ||
+        pathname === "/manifest.webmanifest") {
+      return harden(req, NextResponse.next(), { isMcp: false, isApi });
+    }
+    // Schon unter /admin? Dann nicht doppelt rewriten
+    if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+      return harden(req, NextResponse.next(), { isMcp: false, isApi: false });
+    }
+    // Rewrite zu /admin + originaler Pfad
+    const url = req.nextUrl.clone();
+    url.pathname = pathname === "/" ? "/admin" : `/admin${pathname}`;
+    return harden(req, NextResponse.rewrite(url), { isMcp: false, isApi: false });
+  }
 
   // === ⚡ MCP-Hostname-Routing ===
   if (isMcpHost(hostname)) {
@@ -135,6 +165,8 @@ export function middleware(req) {
   if (pathname.endsWith("/manifest.webmanifest")) return harden(req, NextResponse.next(), { isMcp, isApi });
   // ⚡ MCP-Routen: Auth-Check macht das MCP-Layout selbst
   if (pathname === "/mcp" || pathname.startsWith("/mcp/")) return harden(req, NextResponse.next(), { isMcp: true, isApi });
+  // 🔐 Admin-Routen: Auth-Check macht das Admin-Layout selbst
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return harden(req, NextResponse.next(), { isMcp: false, isApi });
 
   const session = req.cookies.get(COOKIE)?.value;
   if (session) return harden(req, NextResponse.next(), { isMcp, isApi });
