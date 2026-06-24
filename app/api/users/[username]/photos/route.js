@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUserByUsername, listPhotos, addPhoto, getAlbum, logMod } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { moderateImage } from "@/lib/fidolin";
+import { enqueueImageForReview, rejectImage } from "@/lib/imageModeration";
 
 const MAX_PHOTO_BYTES = 1_200_000; // ~1.2 MB Base64
 
@@ -46,5 +47,35 @@ export async function POST(req, { params }) {
 
   const id = addPhoto(me.id, albumId ? Number(albumId) : null, dataUrl, String(caption || "").slice(0, 240), status, reason);
   logMod({ userId: me.id, kind: "foto", decision: status, reason: reason || "Foto geprüft", by: verdict.by || "fidolin" });
+
+  // 🖼 Bildertool-Integration: jedes Foto wandert in die Mod-Queue.
+  // → Wenn Fidolin schon geblockt hat: direkt als rejected eintragen +
+  //   orange System-DM an den User mit Begründung.
+  // → Sonst: pending, Mod sichtet im Bildertool-Feed.
+  try {
+    const queueId = enqueueImageForReview({
+      imageUrl: dataUrl,
+      sourceType: "profile",
+      sourceRef: String(id),
+      uploadedByUserId: me.id,
+      fidolinAuto: status === "rejected",
+    });
+    if (status === "rejected") {
+      try {
+        rejectImage({
+          queueId,
+          modId: 0, // 0 = automatisch durch Fidolin (System)
+          reasonCode: "inappropriate",
+          customReasonText: reason,
+        });
+      } catch (e) {
+        console.error("[photos.upload] auto-reject queue entry fehlgeschlagen:", e.message);
+      }
+    }
+  } catch (e) {
+    // Queue-Fehler darf den Upload niemals abbrechen.
+    console.error("[photos.upload] enqueueImageForReview fehlgeschlagen:", e.message);
+  }
+
   return NextResponse.json({ id, status, reason });
 }

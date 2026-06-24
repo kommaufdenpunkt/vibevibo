@@ -114,7 +114,7 @@ export default async function AdminDashboard() {
         gap: 14, marginBottom: 24,
       }}>
         <ToolCard href="/broadcast" color="#fb923c" icon="📢" title="Broadcast-Editor" desc="Updates / Neuigkeiten an alle User schicken" />
-        <ToolCard color="#7c3aed" icon="🛡" title="Sicherheits-Analyse" desc="Live-Status der Plattform" disabled />
+        <ToolCard href="/sicherheit" color="#7c3aed" icon="🛡" title="Sicherheits-Analyse" desc="Login-Audit, IP-Block, Top-Attacker (letzte 24h)" />
         <ToolCard color="#10b981" icon="👥" title="User & Mod-Verwaltung" desc="Mods ernennen, Permissions setzen" disabled />
       </div>
 

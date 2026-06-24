@@ -15,8 +15,9 @@ const ITEMS_ALL = [
   { href: "/mcp/2fa", emoji: "🔐", label: "2-Faktor-Authentifizierung" },
 ];
 
+// 🛡 Sicherheits-Analyse ist auf admin.vibevibo.de migriert (Plattform-Admin-Tool,
+// nicht Inhalts-Moderation). Mods sehen den Link hier nicht mehr.
 const ITEMS_TEAMLEITUNG = [
-  { href: "/mcp/sicherheit",     emoji: "🛡", label: "Sicherheits-Analyse", lead: true },
   { href: "/mcp/multi-accounts", emoji: "🕵", label: "Multi-Account-Detektor", lead: true },
 ];
 
