@@ -8,6 +8,7 @@
 //   setStatus — bool, wenn true & postType=feeling → Mood auf Profil setzen
 //
 // Sicherheits-Pipeline: Auth → Mute → Burst → Fidolin (Text + Bild) → Insert
+// → Bildertool-Queue (für menschliche Sicht-Prüfung durch Mods)
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
@@ -18,6 +19,7 @@ import {
 import { checkTextPost, isMuted } from "@/lib/moderate";
 import { moderateImage } from "@/lib/fidolin";
 import { parseMediaUrl, serializeMedia } from "@/lib/media";
+import { enqueueImageForReview } from "@/lib/imageModeration";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -90,6 +92,24 @@ export async function POST(req) {
   });
   if (!result?.id) {
     return NextResponse.json({ error: "Konnte nicht gespeichert werden." }, { status: 500 });
+  }
+
+  // 🖼 Bildertool-Integration: jedes Buschfunk-Bild geht zusätzlich in die Mod-Queue
+  // damit ein Mensch das Bild prüft (Fidolin hat es nur grob durchgewunken).
+  // fidolinAuto=false weil Fidolin nicht geblockt hat — Mod sichtet es regulär.
+  if (storedImage) {
+    try {
+      enqueueImageForReview({
+        imageUrl: storedImage,
+        sourceType: "buschfunk",
+        sourceRef: String(result.id),
+        uploadedByUserId: me.id,
+        fidolinAuto: false,
+      });
+    } catch (e) {
+      // Queue-Fehler darf den Post nicht abbrechen.
+      console.error("[buschfunk.post] enqueueImageForReview fehlgeschlagen:", e.message);
+    }
   }
 
   // Mentions
