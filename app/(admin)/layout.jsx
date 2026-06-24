@@ -1,9 +1,11 @@
 // Route-Group Layout für admin.vibevibo.de
 // Analog zu (mcp): kein eigenes <html>/<body>, sondern wrapped Children
 // in einem position:fixed Overlay-Div, das die vibevibo.de Root-Chrome
-// überdeckt.
+// überdeckt. Zusätzlich rendert es die S8-Edge-Panels für Admin-Nav.
 
 import AdminChromeHider from "./AdminChromeHider";
+import AdminEdgePanels from "@/components/admin/AdminEdgePanels";
+import { getAdminUser } from "@/lib/adminAuth";
 
 export const metadata = {
   title: "Admin — VibeVibo",
@@ -19,7 +21,8 @@ export const viewport = {
   viewportFit: "cover",
 };
 
-export default function AdminLayout({ children }) {
+export default async function AdminLayout({ children }) {
+  const me = await getAdminUser();
   return (
     <div
       className="admin-body-root"
@@ -39,6 +42,11 @@ export default function AdminLayout({ children }) {
     >
       <AdminChromeHider />
       {children}
+      {me && (
+        <AdminEdgePanels
+          user={{ id: me.id, username: me.username, role: me.role }}
+        />
+      )}
     </div>
   );
 }
