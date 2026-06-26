@@ -1,0 +1,211 @@
+/* 🌙 Glass-Dark 2007 — Polish-Layer fürs Dark-Theme.
+ *
+ * Wird NACH globals.css geladen und überschreibt selektiv die grellsten
+ * Stellen, ohne den Light-Mode anzufassen. Komponenten müssen NICHT
+ * geändert werden — Hardcoded #ec4899 etc. werden via CSS-Filter/Blend
+ * gedämpft wenn sie auf bestimmten Klassen sitzen.
+ *
+ * Ziele:
+ *   • Dunkle Mitternachts-Basis statt grell-bunte Body-Radials
+ *   • Dezente kalte Sparkles statt warmes Pink-Glitter
+ *   • Glass-Cards (semi-transparent, mit Backdrop-Blur + Glow)
+ *   • Sanftere Hot-Pink-Gradienten (etwas Sättigung raus)
+ *   • Bessere Kontraste für lange Texte
+ */
+
+/* ============================================================
+   1) BODY-BACKGROUND — die bunten Radial-Gradients dämpfen
+   ============================================================ */
+[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(60, 90, 180, 0.18), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(110, 60, 180, 0.14), transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(40, 60, 120, 0.12), transparent 65%),
+    linear-gradient(180deg, #07091a 0%, #0e1430 50%, #07091a 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* ============================================================
+   2) SPARKLES — kleiner und kühler im Dark-Mode
+   ============================================================ */
+[data-theme="dark"] body::before {
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(0.8px 0.8px at 35% 70%, rgba(255,255,255,0.45), transparent),
+    radial-gradient(1px 1px at 60% 30%, rgba(180, 200, 255, 0.5), transparent),
+    radial-gradient(0.8px 0.8px at 80% 60%, rgba(160, 200, 255, 0.55), transparent),
+    radial-gradient(1.2px 1.2px at 90% 15%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(0.8px 0.8px at 5% 85%, rgba(255,255,255,0.4), transparent) !important;
+  opacity: 0.5 !important;
+}
+
+/* ============================================================
+   3) GLASS-CARDS — semi-transparent + Backdrop-Blur
+   ============================================================ */
+[data-theme="dark"] .vv-card {
+  background: rgba(18, 22, 48, 0.55) !important;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(140, 170, 255, 0.12);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: rgba(241, 245, 255, 0.92);
+}
+
+/* Sub-Cards (kleinere/eingebettete Karten) etwas weniger transparent */
+[data-theme="dark"] .vv-card .vv-card {
+  background: rgba(28, 34, 65, 0.7) !important;
+}
+
+/* ============================================================
+   4) MCP-Header — von hot pink → midnight royal blue
+   ============================================================ */
+[data-theme="dark"] .mcp-header {
+  background: linear-gradient(135deg, rgba(30, 60, 140, 0.35), rgba(80, 40, 130, 0.25)) !important;
+  border-bottom: 1px solid rgba(140, 170, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .mcp-brand-text small {
+  color: rgba(160, 180, 220, 0.75) !important;
+}
+
+/* ============================================================
+   5) Bildertool & Coms Hero — Gradient-Sättigung runter
+   ============================================================ */
+[data-theme="dark"] .mcp-greeting-text .accent,
+[data-theme="dark"] [class*="hero"] {
+  filter: saturate(0.7) brightness(0.95);
+}
+
+/* PremiumHero-Komponente — Sättigung dämpfen */
+[data-theme="dark"] [class*="PremiumHero"],
+[data-theme="dark"] [class*="premium-hero"] {
+  filter: saturate(0.75) brightness(0.9);
+}
+
+/* ============================================================
+   6) Hot-Pink / Cyan-Akzent-Buttons dämpfen
+   ============================================================ */
+[data-theme="dark"] .vv-btn-pink,
+[data-theme="dark"] button[class*="pink"] {
+  background: linear-gradient(135deg, #9a3268, #6b1e4a) !important;
+  box-shadow: 0 4px 16px rgba(154, 50, 104, 0.35), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+
+[data-theme="dark"] .vv-btn-pink:hover,
+[data-theme="dark"] button[class*="pink"]:hover {
+  background: linear-gradient(135deg, #b53d7c, #7d2356) !important;
+}
+
+/* ============================================================
+   7) Chip-Hot-Pink in /coms (inline-style #ec4899→#8b5cf6 Gradient)
+   ============================================================ */
+[data-theme="dark"] button[style*="rgb(236, 72, 153)"],
+[data-theme="dark"] button[style*="#ec4899"] {
+  background: linear-gradient(135deg, #5e3da3, #3a2470) !important;
+  color: #e7e0ff !important;
+}
+
+/* ============================================================
+   8) Edge-Panel-Handles dezenter
+   ============================================================ */
+[data-theme="dark"] aside[aria-label*="Navigation"] + button,
+[data-theme="dark"] button[aria-label*="Navigation öffnen"],
+[data-theme="dark"] button[aria-label*="Schnellzugriff"] {
+  opacity: 0.85;
+}
+
+[data-theme="dark"] button[aria-label*="Mod-Navigation"] {
+  background: linear-gradient(135deg, #c4708e, #6b3e5a) !important;
+}
+
+[data-theme="dark"] button[aria-label*="Schnellzugriff"] {
+  background: linear-gradient(135deg, #d68842, #8a4f24) !important;
+}
+
+[data-theme="dark"] button[aria-label*="Admin-Navigation"] {
+  background: linear-gradient(135deg, #a23030, #5e1818) !important;
+}
+
+/* ============================================================
+   9) Form-Inputs — bessere Kontraste auf Glass-Bg
+   ============================================================ */
+[data-theme="dark"] .vv-input,
+[data-theme="dark"] .vv-textarea,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] textarea {
+  background: rgba(12, 16, 36, 0.65) !important;
+  border: 1px solid rgba(140, 170, 255, 0.18) !important;
+  color: #e7ecff !important;
+}
+
+[data-theme="dark"] .vv-input:focus,
+[data-theme="dark"] .vv-textarea:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: rgba(160, 190, 255, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(120, 150, 240, 0.18) !important;
+  outline: none;
+}
+
+/* ============================================================
+   10) Text-Kontrast für lange Texte (z.B. AGB, Performance-Dashboard)
+   ============================================================ */
+[data-theme="dark"] article {
+  color: rgba(232, 236, 255, 0.92);
+}
+
+[data-theme="dark"] .vv-muted {
+  color: rgba(180, 195, 220, 0.65) !important;
+}
+
+[data-theme="dark"] code {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #c4d4ff !important;
+  border: 1px solid rgba(140, 170, 255, 0.1);
+}
+
+/* ============================================================
+   11) Profile-Cards (Skin-able) NICHT anfassen — sind bewusst hell
+   ============================================================ */
+[data-theme="dark"] .vv-skin .vv-card {
+  background: #ffffff !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: #1e293b !important;
+  border: 1px solid #c5d2e8 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ============================================================
+   12) Cursor — der custom-Sparkle-Cursor in Dark-Mode kleiner
+   ============================================================ */
+[data-theme="dark"] html,
+[data-theme="dark"] body {
+  cursor: auto !important;
+}
+
+/* ============================================================
+   13) Subtile Outer-Glow auf wichtige Cards (StudiVZ-Feeling)
+   ============================================================ */
+[data-theme="dark"] .vv-card:hover {
+  border-color: rgba(160, 190, 255, 0.22) !important;
+  box-shadow:
+    0 12px 40px rgba(60, 90, 200, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* ============================================================
+   14) MCP-Bottom-Nav — auch glassig
+   ============================================================ */
+[data-theme="dark"] .mcp-bottom-nav,
+[data-theme="dark"] nav[class*="bottom"] {
+  background: rgba(10, 14, 32, 0.85) !important;
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border-top: 1px solid rgba(140, 170, 255, 0.1);
+}
