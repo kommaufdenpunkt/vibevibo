@@ -6,13 +6,17 @@
 // beim Friend-Request senden.
 //
 // Dieser Endpoint führt die Migration idempotent direkt auf der prod-DB aus.
-// → GET oder POST mit Admin-Cookie → läuft einmal → fertig.
+// → GET oder POST mit Admin-Session (admin.vibevibo.de) → läuft einmal → fertig.
+//
+// 🔐 Auth: nutzt getAdminUser() aus lib/adminAuth (User-Account-Login auf
+//    admin.vibevibo.de, Cookie vv_admin_session) — NICHT das Passwort-System
+//    aus lib/admin.js. So erkennt der Endpoint die eingeloggte Admin-Session.
 //
 // Idempotent: kann gefahrlos mehrfach aufgerufen werden (CREATE IF NOT EXISTS).
 // GET ist hier ok weil reine Schema-Migration, kein Data-Mutation.
 
 import { NextResponse } from "next/server";
-import { isAdmin } from "@/lib/admin";
+import { getAdminUser, auditAdmin } from "@/lib/adminAuth";
 import Database from "better-sqlite3";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
@@ -35,7 +39,7 @@ function findDbPath() {
   return null;
 }
 
-async function runMigration() {
+async function runMigration(adminUser) {
   const dbPath = findDbPath();
   if (!dbPath) {
     return NextResponse.json({ error: "DB nicht gefunden." }, { status: 500 });
@@ -104,6 +108,12 @@ async function runMigration() {
     try { db.close(); } catch {}
   }
 
+  try {
+    auditAdmin(adminUser?.id, "migrate.friend_requests", {
+      details: tableExisted ? "skipped (existed)" : "created",
+    });
+  } catch {}
+
   return NextResponse.json({
     ok: true,
     message: tableExisted
@@ -114,15 +124,17 @@ async function runMigration() {
 }
 
 export async function GET() {
-  if (!(await isAdmin())) {
+  const u = await getAdminUser();
+  if (!u) {
     return NextResponse.json({ error: "Admin-Login nötig." }, { status: 401 });
   }
-  return runMigration();
+  return runMigration(u);
 }
 
 export async function POST() {
-  if (!(await isAdmin())) {
+  const u = await getAdminUser();
+  if (!u) {
     return NextResponse.json({ error: "Admin-Login nötig." }, { status: 401 });
   }
-  return runMigration();
+  return runMigration(u);
 }
