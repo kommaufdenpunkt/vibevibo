@@ -1,22 +1,67 @@
-// 🤖 robots.txt via Next.js-Metadata-Konvention.
-// Wichtig: Datei MUSS unter app/robots.js liegen (nicht .ts und nicht in einem Unterordner),
-// damit Next.js 16 sie als robots-Metadata-File erkennt.
-// AdSense-Crawler brauchen vollen Zugriff, sonst keine Werbung.
-
-const BASE = process.env.NEXT_PUBLIC_BASE_URL || "https://vibevibo.de";
+// 🤖 robots.txt — dynamisch generiert.
+// Ziel: AdSense-Bots, Googlebot, Bingbot etc. sollen NUR die fertigen
+// Public-Pages crawlen. Mod-Bereich, Admin-Bereich, API-Routes, halbfertige
+// "Coming-Soon"-Pages bleiben außen vor → wirken nicht mehr wie "Low Quality"
+// in AdSense-Reviews.
 
 export default function robots() {
+  const base = "https://vibevibo.de";
+
   return {
     rules: [
-      // AdSense-Bots — kritisch
-      { userAgent: "Mediapartners-Google", allow: "/" },
-      { userAgent: "AdsBot-Google", allow: "/" },
-      { userAgent: "AdsBot-Google-Mobile", allow: "/" },
-      { userAgent: "Google-AdSense-Crawler", allow: "/" },
-
-      // Allgemeine Suchmaschinen — nur öffentliche Bereiche
       {
         userAgent: "*",
+        allow: [
+          "/",
+          "/about",
+          "/faq",
+          "/hilfe",
+          "/neu",
+          "/agb",
+          "/datenschutz",
+          "/impressum",
+          "/installieren",
+          "/coms",
+          "/coms/", // alle einzelnen Coms-Pages
+          "/profile/", // öffentliche Profil-Seiten
+        ],
+        disallow: [
+          // 🔒 Mod-Bereich — komplett raus, alle Subpaths
+          "/mcp",
+          "/mcp/",
+          // 🔒 Admin-Bereich (legacy /admin/* — neue Site läuft auf admin.vibevibo.de)
+          "/admin",
+          "/admin/",
+          "/adminpanel",
+          "/adminpanel/",
+          // 🔒 APIs — nie crawlen
+          "/api/",
+          // 🔒 Halbfertige Bereiche (vermeidet "Under-Construction"-Eindruck)
+          "/wuensche",
+          "/system-nachrichten",
+          // 🔒 Private Routen die Auth brauchen
+          "/messenger",
+          "/messenger/",
+          "/freunde",
+          "/vibo",
+          "/vibo/",
+          "/crushes",
+          "/blockierte",
+          "/erinnerungen",
+          "/live",
+          "/live/",
+          "/profile/transactions",
+          "/profile/status",
+          "/shop",
+          "/shop/",
+          "/vibes-verdienen",
+          // 🔒 Next.js Internals
+          "/_next/",
+        ],
+      },
+      {
+        // 💸 AdSense-Bot bekommt zusätzliche Whitelist für saubere Auswertung
+        userAgent: "Mediapartners-Google",
         allow: [
           "/",
           "/about",
@@ -25,37 +70,16 @@ export default function robots() {
           "/agb",
           "/datenschutz",
           "/impressum",
-          "/neu",
+          "/coms",
+          "/coms/",
+          "/profile/",
         ],
         disallow: [
-          "/api/",
-          "/admin/",
-          "/mcp/",
-          "/messenger/",
-          "/messenger",
-          "/profile/edit",
-          "/profile/skin",
-          "/profile/status",
-          "/profile/transactions",
-          "/vibo/",
-          "/login",
-          "/register",
-          "/installieren",
-          "/_next/",
-          "/u/",
-          "/users/",
+          "/mcp/", "/admin/", "/adminpanel/", "/api/",
         ],
       },
-
-      // KI-Scraper sperren
-      { userAgent: "GPTBot", disallow: "/" },
-      { userAgent: "ClaudeBot", disallow: "/" },
-      { userAgent: "anthropic-ai", disallow: "/" },
-      { userAgent: "CCBot", disallow: "/" },
-      { userAgent: "Google-Extended", disallow: "/" },
-      { userAgent: "PerplexityBot", disallow: "/" },
     ],
-    sitemap: `${BASE}/sitemap.xml`,
-    host: BASE.replace(/^https?:\/\//, ""),
+    sitemap: `${base}/sitemap.xml`,
+    host: base,
   };
 }
