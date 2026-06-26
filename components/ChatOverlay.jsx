@@ -577,7 +577,9 @@ export default function ChatOverlay() {
           right: 18, zIndex: 99,
           width: "min(380px, 94vw)",
           maxHeight: "calc(100dvh - 110px - env(safe-area-inset-bottom, 0px))",
-          height: view === "chat" ? "78dvh" : "min(78dvh, 620px)",
+          /* vv-overlay-autoheight */
+          height: view === "chat" ? "78dvh" : "auto",
+          minHeight: view === "chat" ? undefined : 240,
           borderRadius: 18, overflow: "hidden",
           boxShadow: "0 20px 60px rgba(0,0,0,0.42), 0 4px 12px rgba(0,0,0,0.12)",
           display: "flex", flexDirection: "column",
