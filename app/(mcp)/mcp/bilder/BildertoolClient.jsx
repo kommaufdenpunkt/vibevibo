@@ -10,8 +10,8 @@ import ImageReviewCard from "@/components/mcp/ImageReviewCard";
 
 export default function BildertoolClient() {
   const [tab, setTab] = useState("pending");
-  const [images, setImages] = useState([]);       // pending mode
-  const [autoRejects, setAutoRejects] = useState([]); // auto_rejects mode
+  const [images, setImages] = useState([]);
+  const [autoRejects, setAutoRejects] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [counts, setCounts] = useState({ pending: 0, autoRejects: 0 });
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function BildertoolClient() {
       "Optionale Korrektur-Nachricht an den User (oder leer für Standard-Text):",
       ""
     );
-    if (msg === null) return; // abgebrochen
+    if (msg === null) return;
     try {
       const r = await fetch(`/api/mcp/images/akte/${akteId}/revert`, {
         method: "POST",
@@ -144,7 +144,7 @@ export default function BildertoolClient() {
             <EmptyState
               emoji="🎉"
               title="Queue ist leer"
-              text={<>Aktuell sind keine Bilder zur Moderation offen.<br/><br/><strong>Zum Testen:</strong> Admin-Dashboard → 🧪 DEV-TOOLS → "Test-Bild erzeugen"</>}
+              text={<>Aktuell sind keine Bilder zur Moderation offen.<br/><br/><strong>Zum Testen:</strong> Admin-Dashboard → 🧪 DEV-TOOLS → Test-Bild erzeugen</>}
               color="#10b981"
             />
           ) : (
@@ -175,7 +175,7 @@ export default function BildertoolClient() {
             <>
               <Hint
                 icon="🤖"
-                text="Hier siehst du was Fidolin (KI) direkt blockiert hat. Wenn die Ablehnung falsch war, klick „🔄 Doch freigeben" — der User bekommt dann eine orange Korrektur-DM und sein Akte-Eintrag wird gelöscht."
+                text={'Hier siehst du was Fidolin (KI) direkt blockiert hat. Wenn die Ablehnung falsch war, klick 🔄 Doch freigeben — der User bekommt dann eine orange Korrektur-DM und sein Akte-Eintrag wird gelöscht.'}
                 color="#fbbf24"
               />
               {autoRejects.map((entry) => (
@@ -272,7 +272,6 @@ function AutoRejectCard({ entry, onRevert }) {
       border: "1px solid rgba(255,255,255,0.06)",
       borderRadius: 14,
     }}>
-      {/* Header */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         marginBottom: 10, fontSize: 12,
@@ -292,7 +291,6 @@ function AutoRejectCard({ entry, onRevert }) {
         }}>🤖 FIDOLIN</span>
       </div>
 
-      {/* Image */}
       <div style={{
         aspectRatio: "3/4", overflow: "hidden", borderRadius: 12,
         background: "#000", marginBottom: 10,
@@ -305,7 +303,6 @@ function AutoRejectCard({ entry, onRevert }) {
         />
       </div>
 
-      {/* Reject reason */}
       <div style={{
         marginBottom: 12, padding: "10px 12px",
         background: "rgba(239,68,68,0.08)",
@@ -320,7 +317,6 @@ function AutoRejectCard({ entry, onRevert }) {
         {entry.rejection_reason_text || entry.rejection_reason_code || "Kein Grund angegeben"}
       </div>
 
-      {/* Meta */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         fontSize: 11, color: "rgba(241,241,245,0.45)",
@@ -330,7 +326,6 @@ function AutoRejectCard({ entry, onRevert }) {
         <span>{date}</span>
       </div>
 
-      {/* Actions */}
       <div style={{ display: "flex", gap: 8 }}>
         <button
           type="button"
