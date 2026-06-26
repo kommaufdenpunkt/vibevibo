@@ -9,6 +9,8 @@ import { useMe } from "@/lib/useMe";
 import { relTime } from "@/lib/format";
 import PremiumHero from "@/components/PremiumHero";
 
+const CATEGORY_VISIBLE_COUNT = 5; // initiale Anzahl Kategorie-Chips (zzgl. "Alle")
+
 export default function GruppenPage() {
   const { me } = useMe();
   const [groups, setGroups] = useState([]);
@@ -20,6 +22,7 @@ export default function GruppenPage() {
   const [category, setCategory] = useState(null); // null = alle
   const [sort, setSort] = useState("new"); // new|trending|active|members
   const [categories, setCategories] = useState([]);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   async function reload() {
     const params = new URLSearchParams();
@@ -59,6 +62,21 @@ export default function GruppenPage() {
   }
 
   const canAfford = balance == null || balance >= createCost;
+
+  // Sichtbare Kategorien: erste N, oder alle wenn aufgeklappt ODER wenn die
+  // aktuelle Auswahl außerhalb der ersten N liegt (sonst verschwindet die
+  // Aktive Chip beim Zusammenklappen).
+  const visibleCategories = (() => {
+    if (showAllCategories) return categories;
+    if (categories.length <= CATEGORY_VISIBLE_COUNT) return categories;
+    const head = categories.slice(0, CATEGORY_VISIBLE_COUNT);
+    if (category && !head.some((c) => c.id === category)) {
+      const active = categories.find((c) => c.id === category);
+      if (active) return [...head, active];
+    }
+    return head;
+  })();
+  const hiddenCount = categories.length - visibleCategories.length;
 
   return (
     <>
@@ -138,15 +156,32 @@ export default function GruppenPage() {
         <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
           Kategorie
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
           <button onClick={() => setCategory(null)} style={chipStyle(category === null)}>
             🌐 Alle
           </button>
-          {categories.map((c) => (
+          {visibleCategories.map((c) => (
             <button key={c.id} onClick={() => setCategory(c.id)} style={chipStyle(category === c.id)}>
               {c.label}
             </button>
           ))}
+          {hiddenCount > 0 && (
+            <button
+              onClick={() => setShowAllCategories(true)}
+              style={chipStyle(false, { borderStyle: "dashed" })}
+              title={`Noch ${hiddenCount} weitere Kategorien`}
+            >
+              + Mehr ({hiddenCount})
+            </button>
+          )}
+          {showAllCategories && categories.length > CATEGORY_VISIBLE_COUNT && (
+            <button
+              onClick={() => setShowAllCategories(false)}
+              style={chipStyle(false, { borderStyle: "dashed", opacity: 0.7 })}
+            >
+              − Weniger
+            </button>
+          )}
         </div>
       </div>
 
@@ -233,7 +268,7 @@ export default function GruppenPage() {
   );
 }
 
-function chipStyle(active) {
+function chipStyle(active, extra = {}) {
   return {
     background: active ? "linear-gradient(135deg, #ec4899, #8b5cf6)" : "rgba(255,255,255,0.85)",
     color: active ? "#fff" : "#475569",
@@ -244,5 +279,6 @@ function chipStyle(active) {
     fontWeight: 700,
     cursor: "pointer",
     boxShadow: active ? "0 2px 8px rgba(139,92,246,0.3)" : "none",
+    ...extra,
   };
 }

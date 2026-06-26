@@ -1,10 +1,11 @@
 "use client";
 
 // 🚀 Performance-Dashboard mit CCleaner-Style Scan + 1-Klick-Optimierung.
+// Cookie-basiert — keine ?pw=-URL-Parameter mehr.
 
 import { useState, useEffect } from "react";
 
-export default function PerformanceDashboard({ pw }) {
+export default function PerformanceDashboard() {
   const [data, setData] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -13,13 +14,11 @@ export default function PerformanceDashboard({ pw }) {
 
   async function analyze() {
     setScanning(true); setData(null); setActions([]); setScanStep(0);
-    // Animate scan steps for CCleaner-Feel
     const animateUntil = Date.now() + 1500;
     const interval = setInterval(() => setScanStep((s) => s + 1), 130);
     try {
-      const r = await fetch(`/api/admin/performance?pw=${encodeURIComponent(pw)}`);
+      const r = await fetch("/api/admin/performance", { credentials: "include" });
       const d = await r.json();
-      // Mindestdauer für UX-Feeling
       while (Date.now() < animateUntil) await new Promise((res) => setTimeout(res, 50));
       setData(d);
     } finally {
@@ -32,10 +31,9 @@ export default function PerformanceDashboard({ pw }) {
     if (!confirm("Performance-Optimierungen anwenden? (Pragmas + ANALYZE + VACUUM + WAL-Checkpoint)")) return;
     setUpdating(true);
     try {
-      const r = await fetch(`/api/admin/performance?pw=${encodeURIComponent(pw)}`, { method: "POST" });
+      const r = await fetch("/api/admin/performance", { method: "POST", credentials: "include" });
       const d = await r.json();
       setActions(d.actions || []);
-      // Nach Update neu analysieren
       await new Promise((res) => setTimeout(res, 500));
       analyze();
     } finally { setUpdating(false); }
@@ -62,7 +60,7 @@ export default function PerformanceDashboard({ pw }) {
             <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>
               {scanning ? "Analysiere…" : !data ? "Bereit" : allOk ? "Alles optimal" : `${issues} Verbesserung${issues > 1 ? "en" : ""} möglich`}
             </div>
-            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
+            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.9)", marginTop: 4 }}>
               {scanning ? `Scan-Layer ${Math.min(scanStep, 6)} / 6` :
                !data ? 'Klick "Analysieren" für vollständigen Status.' :
                allOk ? "SQLite-Pragmas, Cache + WAL alle perfekt." :
@@ -70,13 +68,15 @@ export default function PerformanceDashboard({ pw }) {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={analyze} disabled={scanning || updating}
-              style={btnSecondary()}>
+            <button onClick={analyze} disabled={scanning || updating} style={btnSecondary()}>
               {scanning ? "⏳…" : "🔍 Analysieren"}
             </button>
             <button onClick={update} disabled={scanning || updating || !data}
               style={{ ...btnPrimary(), opacity: data && issues === 0 ? 0.7 : 1 }}>
               {updating ? "⏳…" : "⚡ Update"}
+            </button>
+            <button onClick={logout} style={btnGhost()}>
+              ↩ Logout
             </button>
           </div>
         </div>
@@ -84,15 +84,12 @@ export default function PerformanceDashboard({ pw }) {
 
       {/* Update-Ergebnisse */}
       {actions.length > 0 && (
-        <div style={{
-          background: "#fff", borderRadius: 14, padding: 18, marginBottom: 16,
-          border: "1px solid #e5e5e7",
-        }}>
-          <h3 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 900 }}>⚡ Update-Ergebnis</h3>
+        <div style={cardStyle()}>
+          <h3 style={cardHeadingStyle()}>⚡ Update-Ergebnis</h3>
           {actions.map((a, i) => (
             <div key={i} style={{
               display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
-              borderBottom: i < actions.length - 1 ? "1px solid #f1f5f9" : "none",
+              borderBottom: i < actions.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
             }}>
               <span style={{
                 width: 24, height: 24, borderRadius: 999,
@@ -100,8 +97,8 @@ export default function PerformanceDashboard({ pw }) {
                 color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
                 fontWeight: 900, fontSize: 13, flexShrink: 0,
               }}>{a.ok ? "✓" : "✗"}</span>
-              <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#1c1c1e" }}>{a.label}</div>
-              {a.error && <span style={{ fontSize: 11, color: "#991b1b" }}>{a.error}</span>}
+              <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#f1f1f5" }}>{a.label}</div>
+              {a.error && <span style={{ fontSize: 11, color: "#fca5a5" }}>{a.error}</span>}
             </div>
           ))}
         </div>
@@ -110,90 +107,184 @@ export default function PerformanceDashboard({ pw }) {
       {/* Pragma-Status */}
       {data?.pragmas && (
         <>
-          <h2 style={{ fontSize: 18, marginTop: 18, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>
-            ⚙ SQLite-Pragmas
-          </h2>
-          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e5e5e7" }}>
+          <h2 style={sectionHeadingStyle()}>⚙ SQLite-Pragmas</h2>
+          <div style={cardStyle()}>
             {data.pragmas.map((p, i) => (
-              <div key={p.key} style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "12px 16px",
-                borderBottom: i < data.pragmas.length - 1 ? "1px solid #f1f5f9" : "none",
-              }}>
-                <div style={{
-                  width: 26, height: 26, borderRadius: 999,
-                  background: p.ok ? "linear-gradient(135deg, #10b981, #059669)" : "#fbbf24",
-                  color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-                  fontWeight: 900, fontSize: 14, flexShrink: 0,
-                }}>{p.ok ? "✓" : "!"}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: "#1c1c1e" }}>{p.label}</div>
-                  <div style={{ fontSize: 11, color: "#64748b", fontFamily: "monospace" }}>{p.value}</div>
-                  {p.recommendation && (
-                    <div style={{ fontSize: 11.5, color: "#b45309", marginTop: 2, fontWeight: 600 }}>
-                      💡 {p.recommendation}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <PragmaRow key={p.key} pragma={p} isLast={i === data.pragmas.length - 1} />
             ))}
           </div>
         </>
       )}
 
-      {/* DB-Stats */}
-      {data?.dbStats && (
+      {/* DB-Größe */}
+      {data?.dbSize && (
         <>
-          <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>
-            💾 Datenbank-Größe
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10 }}>
-            <StatTile label="DB-Größe" value={`${data.dbStats.sizeMB} MB`} sub={`${data.dbStats.pages.toLocaleString("de-DE")} Pages`} />
-            <StatTile label="Freilassbar" value={`${(data.bytesFreeable / (1024 * 1024)).toFixed(1)} MB`} sub={`${data.dbStats.freePages.toLocaleString("de-DE")} freie Pages`} />
-            <StatTile label="Tabellen" value={data.tableCount} />
-            <StatTile label="Indizes" value={data.indexCount} />
+          <h2 style={sectionHeadingStyle()}>💾 Datenbank-Größe</h2>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: 12, marginBottom: 16,
+          }}>
+            <StatCard label="DB-Größe" value={`${data.dbSize.sizeMb} MB`} sub={`${data.dbSize.pages} Pages`} />
+            <StatCard label="Freilassbar" value={`${data.dbSize.freeMb} MB`} sub={`${data.dbSize.freePages} freie Pages`} />
+            {data.dbSize.tableCount && <StatCard label="Tabellen" value={data.dbSize.tableCount} />}
+            {data.dbSize.indexCount && <StatCard label="Indizes" value={data.dbSize.indexCount} />}
           </div>
         </>
       )}
 
-      {/* Tipps */}
-      <h2 style={{ fontSize: 18, marginTop: 22, marginBottom: 10, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>
-        💡 Was bewirken die Optimierungen?
-      </h2>
-      <ul style={{ background: "#fff", padding: "16px 32px", borderRadius: 14, border: "1px solid #e5e5e7", lineHeight: 1.7, fontSize: 13 }}>
-        <li><b>synchronous=NORMAL:</b> 2-3× schnellere Writes ohne nennenswerte Crash-Gefahr in WAL-Mode</li>
-        <li><b>cache_size=16MB:</b> Mehr Pages im RAM → weniger Disk-Reads bei wiederholten Queries</li>
-        <li><b>temp_store=MEMORY:</b> Temporäre Tabellen im RAM statt auf Disk</li>
-        <li><b>mmap_size=256MB:</b> Direct-Memory-Read der DB-Datei statt File-I/O</li>
-        <li><b>ANALYZE:</b> Aktualisiert Index-Statistiken → Query-Planer wählt bessere Pläne</li>
-        <li><b>VACUUM:</b> Gibt unbenutzten Speicher an OS zurück</li>
-        <li><b>WAL-Checkpoint:</b> Verkleinert die .wal-Datei (kann mit der Zeit GB groß werden)</li>
-      </ul>
+      {/* Erklärungen */}
+      <h2 style={sectionHeadingStyle()}>💡 Was bewirken die Optimierungen?</h2>
+      <div style={cardStyle()}>
+        <ExplainItem label="synchronous=NORMAL"
+          text="2-3× schnellere Writes ohne nennenswerte Crash-Gefahr in WAL-Mode" />
+        <ExplainItem label="cache_size=16MB"
+          text="Mehr Pages im RAM → weniger Disk-Reads bei wiederholten Queries" />
+        <ExplainItem label="temp_store=MEMORY"
+          text="Temporäre Tabellen im RAM statt auf Disk" />
+        <ExplainItem label="mmap_size=256MB"
+          text="Direct-Memory-Read der DB-Datei statt File-I/O" />
+        <ExplainItem label="ANALYZE"
+          text="Aktualisiert Index-Statistiken → Query-Planer wählt bessere Pläne" />
+        <ExplainItem label="VACUUM"
+          text="Gibt unbenutzten Speicher an OS zurück" />
+        <ExplainItem label="WAL-Checkpoint"
+          text="Verkleinert die .wal-Datei (kann mit der Zeit GB groß werden)" />
+      </div>
+    </div>
+  );
+
+  async function logout() {
+    try {
+      await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
+    } catch {}
+    window.location.href = "/admin/performance";
+  }
+}
+
+function PragmaRow({ pragma, isLast }) {
+  const ok = pragma.ok !== false;
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "12px 16px",
+      borderBottom: isLast ? "none" : "1px solid rgba(255,255,255,0.06)",
+    }}>
+      <span style={{
+        width: 26, height: 26, borderRadius: 999,
+        background: ok ? "#10b981" : "#f59e0b",
+        color: "#fff", display: "inline-flex",
+        alignItems: "center", justifyContent: "center",
+        fontWeight: 900, fontSize: 14, flexShrink: 0,
+      }}>{ok ? "✓" : "!"}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f1f5" }}>{pragma.label || pragma.key}</div>
+        {pragma.detail && (
+          <div style={{ fontSize: 12, color: "rgba(241,241,245,0.7)", marginTop: 2 }}>{pragma.detail}</div>
+        )}
+      </div>
+      <code style={{
+        fontSize: 12, fontFamily: "ui-monospace, Menlo, monospace",
+        color: "rgba(241,241,245,0.55)",
+        background: "rgba(255,255,255,0.05)",
+        padding: "2px 8px", borderRadius: 6,
+      }}>{String(pragma.value ?? "—")}</code>
     </div>
   );
 }
 
-function StatTile({ label, value, sub }) {
+function StatCard({ label, value, sub }) {
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 14, border: "1px solid #e5e5e7" }}>
-      <div style={{ fontSize: 10, letterSpacing: 1, color: "#94a3b8", fontWeight: 800, textTransform: "uppercase" }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 900, color: "#1c1c1e", marginTop: 4 }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{sub}</div>}
+    <div style={{
+      ...cardStyle(),
+      padding: 16,
+    }}>
+      <div style={{
+        fontSize: 10, fontWeight: 800,
+        color: "rgba(241,241,245,0.55)",
+        letterSpacing: "0.06em", textTransform: "uppercase",
+      }}>{label}</div>
+      <div style={{
+        fontSize: 26, fontWeight: 900,
+        color: "#f1f1f5", marginTop: 4, lineHeight: 1.1,
+      }}>{value}</div>
+      {sub && (
+        <div style={{ fontSize: 11, color: "rgba(241,241,245,0.5)", marginTop: 4 }}>{sub}</div>
+      )}
     </div>
   );
+}
+
+function ExplainItem({ label, text }) {
+  return (
+    <div style={{
+      padding: "10px 14px",
+      borderLeft: "3px solid rgba(168,85,247,0.4)",
+      marginBottom: 8,
+    }}>
+      <code style={{
+        fontSize: 12, fontFamily: "ui-monospace, Menlo, monospace",
+        color: "#a855f7", fontWeight: 700,
+      }}>{label}:</code>
+      <span style={{
+        marginLeft: 6,
+        fontSize: 13, color: "#f1f1f5", lineHeight: 1.5,
+      }}>{text}</span>
+    </div>
+  );
+}
+
+function cardStyle() {
+  return {
+    background: "rgba(18,18,30,0.6)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 14, padding: 18, marginBottom: 16,
+    color: "#f1f1f5",
+  };
+}
+
+function cardHeadingStyle() {
+  return { margin: "0 0 12px", fontSize: 15, fontWeight: 900, color: "#f1f1f5" };
+}
+
+function sectionHeadingStyle() {
+  return {
+    fontSize: 18, marginTop: 18, marginBottom: 10,
+    color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)",
+  };
 }
 
 function btnPrimary() {
   return {
-    padding: "10px 18px", borderRadius: 10,
-    background: "linear-gradient(135deg, #ec4899, #a855f7)", color: "#fff",
-    border: "none", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+    padding: "10px 18px",
+    background: "linear-gradient(135deg, #ec4899, #a855f7)",
+    color: "#fff", border: "none", borderRadius: 10,
+    fontSize: 13, fontWeight: 800,
+    cursor: "pointer", fontFamily: "inherit",
+    boxShadow: "0 4px 12px rgba(168,85,247,0.3)",
   };
 }
+
 function btnSecondary() {
   return {
-    padding: "10px 18px", borderRadius: 10,
-    background: "rgba(255,255,255,0.15)", color: "#fff",
-    border: "1px solid rgba(255,255,255,0.25)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+    padding: "10px 18px",
+    background: "rgba(255,255,255,0.1)",
+    color: "#fff", border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: 10,
+    fontSize: 13, fontWeight: 700,
+    cursor: "pointer", fontFamily: "inherit",
+  };
+}
+
+function btnGhost() {
+  return {
+    padding: "10px 14px",
+    background: "transparent",
+    color: "rgba(255,255,255,0.6)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 10,
+    fontSize: 12, fontWeight: 600,
+    cursor: "pointer", fontFamily: "inherit",
   };
 }
