@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./dark-2007.css";
 import Layout from "@/components/Layout";
 import EdgePanels from "@/components/EdgePanels";
 import PwaRegister from "@/components/PwaRegister";
