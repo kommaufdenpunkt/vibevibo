@@ -6,9 +6,10 @@
 // beim Friend-Request senden.
 //
 // Dieser Endpoint führt die Migration idempotent direkt auf der prod-DB aus.
-// → POST mit Admin-Cookie → läuft einmal → fertig.
+// → GET oder POST mit Admin-Cookie → läuft einmal → fertig.
 //
 // Idempotent: kann gefahrlos mehrfach aufgerufen werden (CREATE IF NOT EXISTS).
+// GET ist hier ok weil reine Schema-Migration, kein Data-Mutation.
 
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin";
@@ -34,11 +35,7 @@ function findDbPath() {
   return null;
 }
 
-export async function POST() {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ error: "Admin-Login nötig." }, { status: 401 });
-  }
-
+async function runMigration() {
   const dbPath = findDbPath();
   if (!dbPath) {
     return NextResponse.json({ error: "DB nicht gefunden." }, { status: 500 });
@@ -90,7 +87,6 @@ export async function POST() {
     `);
     actions.push({ step: "CREATE INDEX idx_fr_from_status", ok: true });
 
-    // Final-Check
     const after = db.prepare(
       "SELECT name FROM sqlite_master WHERE type='table' AND name='friend_requests'"
     ).get();
@@ -115,4 +111,18 @@ export async function POST() {
       : "friend_requests Tabelle wurde neu angelegt. Bug behoben.",
     actions,
   });
+}
+
+export async function GET() {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Admin-Login nötig." }, { status: 401 });
+  }
+  return runMigration();
+}
+
+export async function POST() {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Admin-Login nötig." }, { status: 401 });
+  }
+  return runMigration();
 }
