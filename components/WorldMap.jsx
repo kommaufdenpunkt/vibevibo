@@ -304,6 +304,9 @@ export default function WorldMap({ onPickup, compact = false, height }) {
   });
   // Lade-Status der Karten-Tiles: "idle" | "loading" | "ok" | "fallback" | "failed"
   const [tileStatus, setTileStatus] = useState("idle");
+  // 🗺 Wird true sobald die Leaflet-Karte erstellt ist → triggert den Tile-Effect erneut
+  // (sonst läuft die Fallback-Logik nie, weil sie beim Mount mit mapRef===null abbricht).
+  const [mapReady, setMapReady] = useState(false);
   const [tileMsg, setTileMsg] = useState("Karte wird geladen…");
 
   // OSM Deutschland: zeigt Gebaeude-Outlines (cremig-braun) + Strassennamen + Hausnummern
@@ -428,14 +431,21 @@ export default function WorldMap({ onPickup, compact = false, height }) {
     return () => {
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     };
-  }, [tileStyle]);
+  }, [tileStyle, mapReady]);
 
   useEffect(() => {
     if (!pos || mapRef.current) return;
     let cancelled = false;
     (async () => {
       const ok = await loadLeaflet();
-      if (!ok || cancelled || !containerRef.current) return;
+      if (!ok) {
+        if (!cancelled) {
+          setTileStatus("failed");
+          setTileMsg("⚠ Karten-Bibliothek (Leaflet) konnte nicht geladen werden — Internet/Adblocker prüfen oder unten ↻ tippen.");
+        }
+        return;
+      }
+      if (cancelled || !containerRef.current) return;
       const L = window.L;
       const map = L.map(containerRef.current, { zoomControl: true })
         .setView([pos.lat, pos.lng], 17);
@@ -452,6 +462,7 @@ export default function WorldMap({ onPickup, compact = false, height }) {
       poiLayerRef.current = L.layerGroup().addTo(map);
       watersLayerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
+      setMapReady(true); // 🗺 jetzt läuft der Tile-Effect mit Fallback-Handlern
 
       // Kontainer-Groesse erneut messen — wenn die Karte in einem Tab oder versteckten
       // Container geladen wird, hat Leaflet die Dimensionen oft noch nicht.
