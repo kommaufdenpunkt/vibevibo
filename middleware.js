@@ -63,6 +63,12 @@ function isAdminHost(hostname) {
   return h === "admin.vibevibo.de" || h.startsWith("admin.vibevibo.de:");
 }
 
+function isTippHost(hostname) {
+  if (!hostname) return false;
+  const h = hostname.toLowerCase();
+  return h === "tipp.vibevibo.de" || h.startsWith("tipp.vibevibo.de:");
+}
+
 function harden(req, res, { isMcp, isApi, isAdmin = false }) {
   applySecurityHeaders(res, { isMcp, isApi });
   applyHardeningV2(res, { isMcp, isApi, isAdmin });
@@ -79,6 +85,12 @@ export function middleware(req) {
   const isAdmin = isAdminHost(hostname)
     || pathname === "/adminpanel" || pathname.startsWith("/adminpanel/");
   const isApi = pathname.startsWith("/api/");
+
+  // === ⚽ Tipp-Subdomain → Redirect auf vibevibo.de/tipp ===
+  // (Login-Cookie gilt für vibevibo.de; daher Redirect statt Rewrite.)
+  if (isTippHost(hostname)) {
+    return NextResponse.redirect("https://vibevibo.de/tipp", 308);
+  }
 
   // === 🔐 Admin-Hostname-Routing — admin.vibevibo.de wird auf /adminpanel/* gemapped ===
   if (isAdminHost(hostname)) {
