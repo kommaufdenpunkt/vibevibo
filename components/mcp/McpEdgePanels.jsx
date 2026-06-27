@@ -44,6 +44,7 @@ const NAV_GROUP_LEAD = {
     { href: "/mcp/meldungen",      label: "Meldungen",      icon: "⚡", bg: "linear-gradient(135deg, #ef4444, #b91c1c)" },
     { href: "/mcp/multi-accounts", label: "Multi-Accounts", icon: "🕵", bg: "linear-gradient(135deg, #dc2626, #7f1d1d)" },
     { href: "/mcp/akte-audit",     label: "Akte-Audit",     icon: "📊", bg: "linear-gradient(135deg, #6366f1, #4338ca)" },
+    { href: "/mcp/coms-requests", label: "Coms-Anträge", icon: "🏘", bg: "linear-gradient(135deg, #db2777, #9d174d)" },
   ],
 };
 
