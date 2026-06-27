@@ -159,7 +159,13 @@
 }
 
 [data-theme="dark"] .vv-muted {
-  color: rgba(180, 195, 220, 0.65) !important;
+  color: rgba(202, 214, 238, 0.86) !important;   /* heller & lesbarer auf dunklen Karten */
+}
+
+/* Auf weißen Skin-Karten (Profil / Pinnwand) muss muted-Text DUNKEL sein —
+   sonst hellgrau auf weiß = unleserlich (Composer-Hint, Char-Counter, Meta-Zeilen). */
+[data-theme="dark"] .vv-skin .vv-muted {
+  color: #5a6a86 !important;
 }
 
 [data-theme="dark"] code {
