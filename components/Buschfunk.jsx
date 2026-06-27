@@ -15,6 +15,7 @@ import EmbeddedMedia from "./EmbeddedMedia";
 import Avatar from "./Avatar";
 import VoiceRecorder from "./VoiceRecorder";
 import VoiceMessage from "./VoiceMessage";
+import ReportButton from "./ReportButton";
 
 const COMMENT_REACTIONS = [
   { key: "like", emoji: "👍", color: "#3b82f6" },
@@ -380,6 +381,11 @@ function renderEvent(ev, i, isLast) {
           {isBoosted && <span className="vv-bf-card-boost-tag">📣 24h-Boost</span>}
           {isFresh && !isBoosted && <span className="vv-bf-card-new-tag">✨ NEU</span>}
           <span className="vv-bf-card-time">{relTime(ev.at)}</span>
+          {ev.postId > 0 && (
+            <span style={{ marginLeft: "auto", display: "inline-flex" }}>
+              <ReportButton targetType="buschfunk_post" targetId={ev.postId} contentSnapshot={ev.detail || ""} variant="icon" />
+            </span>
+          )}
         </div>
         <div className="vv-bf-card-text">{text}</div>
         {hasDetail && ev.type === "status" && (
