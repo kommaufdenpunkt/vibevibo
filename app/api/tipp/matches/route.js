@@ -1,5 +1,5 @@
 // GET /api/tipp/matches → { matches (mit Flaggen + importierten Tipps), myBets, me, isAdmin }
-// isAdmin = eingeloggter vibevibo-User mit Rolle admin/teamleitung/moderator (funktioniert auf vibevibo.de).
+// isAdmin = eingeloggter vibevibo-User mit Rolle admin/teamleitung/moderator ODER Owner (eyfahrlehrer).
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import * as vvdb from "@/lib/db";
@@ -7,10 +7,13 @@ import * as vvdb from "@/lib/db";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function isStaff(userId) {
-  if (!userId) return false;
-  try { if (typeof vvdb.isAdminRole === "function" && vvdb.isAdminRole(userId)) return true; } catch {}
-  try { if (typeof vvdb.isModeratorRole === "function" && vvdb.isModeratorRole(userId)) return true; } catch {}
+const OWNERS = new Set(["eyfahrlehrer"]);
+
+function isStaff(me) {
+  if (!me) return false;
+  if (me.username && OWNERS.has(String(me.username).toLowerCase())) return true;
+  try { if (typeof vvdb.isAdminRole === "function" && vvdb.isAdminRole(me.id)) return true; } catch {}
+  try { if (typeof vvdb.isModeratorRole === "function" && vvdb.isModeratorRole(me.id)) return true; } catch {}
   return false;
 }
 
@@ -37,6 +40,6 @@ export async function GET() {
   return NextResponse.json({
     ok: true, matches, myBets,
     me: me ? { id: me.id, username: me.username } : null,
-    isAdmin: me ? isStaff(me.id) : false,
+    isAdmin: isStaff(me),
   });
 }

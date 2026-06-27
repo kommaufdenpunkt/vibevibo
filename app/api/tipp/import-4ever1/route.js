@@ -1,6 +1,6 @@
 // POST /api/tipp/import-4ever1 — holt Teams/Spiele/Ergebnisse/Bestenliste/Tipps
 // direkt von tipp.4ever1.tv (öffentliche API) und schreibt sie nach vibevibo.
-// Freigabe: eingeloggter vibevibo-User mit Rolle admin/teamleitung/moderator.
+// Freigabe: Rolle admin/teamleitung/moderator ODER Owner (eyfahrlehrer).
 
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
@@ -11,11 +11,13 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const BASE = "https://tipp.4ever1.tv/api";
+const OWNERS = new Set(["eyfahrlehrer"]);
 
-function isStaff(userId) {
-  if (!userId) return false;
-  try { if (typeof vvdb.isAdminRole === "function" && vvdb.isAdminRole(userId)) return true; } catch {}
-  try { if (typeof vvdb.isModeratorRole === "function" && vvdb.isModeratorRole(userId)) return true; } catch {}
+function isStaff(me) {
+  if (!me) return false;
+  if (me.username && OWNERS.has(String(me.username).toLowerCase())) return true;
+  try { if (typeof vvdb.isAdminRole === "function" && vvdb.isAdminRole(me.id)) return true; } catch {}
+  try { if (typeof vvdb.isModeratorRole === "function" && vvdb.isModeratorRole(me.id)) return true; } catch {}
   return false;
 }
 
@@ -28,7 +30,7 @@ async function jget(url) {
 export async function POST() {
   const me = await getSessionUser();
   if (!me) return NextResponse.json({ error: "Bitte einloggen." }, { status: 401 });
-  if (!isStaff(me.id)) return NextResponse.json({ error: "Nur für Admin/Teamleitung/Mod." }, { status: 403 });
+  if (!isStaff(me)) return NextResponse.json({ error: "Nur für Admin/Teamleitung/Mod." }, { status: 403 });
   if (typeof vvdb.tippImport !== "function") {
     return NextResponse.json({ error: "Import-Funktion nicht verfügbar (Patch nicht aktiv?)." }, { status: 500 });
   }
