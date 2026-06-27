@@ -25,6 +25,7 @@ import Marquee from "@/components/Marquee";
 import FriendButton from "@/components/FriendButton";
 import SosButton from "@/components/SosButton";
 import BlockButton from "@/components/BlockButton";
+import ReportButton from "@/components/ReportButton";
 import LiveCallButton from "@/components/LiveCallButton";
 import KnowMeBestQuiz from "@/components/KnowMeBestQuiz";
 import MoodDisplay from "@/components/MoodDisplay";
@@ -186,6 +187,7 @@ export default function NostalgicProfileView({ profile, pinnwand, guestbook = []
           }}>
             <SosButton username={profile.username} />
             <BlockButton username={profile.username} compact />
+            <ReportButton targetType="profile" targetId={profile.id} targetOwnerId={profile.id} contentSnapshot={`@${profile.username} · ${profile.displayName}`} variant="text" title="Profil melden" />
           </div>
         )}
         {!me && (
