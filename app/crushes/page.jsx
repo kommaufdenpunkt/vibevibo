@@ -8,6 +8,9 @@
 //   - Slot füllen = Crush eintragen, andere User sieht NICHTS davon
 //   - Wenn er/sie dich auch einträgt → 💥 Match (Konfetti + Push)
 //   - Match wird ÖFFENTLICH in der Matches-Liste (für euch zwei sichtbar)
+//
+// 🎨 Dark-2007-Polish: Texte hell & lesbar auf dunklem Grund, Hero mit Glow,
+//    Slots mit sanftem Hover. Logik unverändert.
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -69,19 +72,33 @@ export default function CrushesPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "20px auto", padding: 12 }}>
+      {/* ★ HERO ★ */}
       <div style={{
-        background: "linear-gradient(135deg, rgba(236,72,153,0.15), rgba(168,85,247,0.12))",
-        border: "1px solid rgba(236,72,153,0.3)",
-        borderRadius: 16, padding: 20, marginBottom: 18, textAlign: "center",
+        position: "relative",
+        background: "linear-gradient(135deg, rgba(236,72,153,0.28), rgba(168,85,247,0.22))",
+        border: "1px solid rgba(244,114,182,0.45)",
+        borderRadius: 18, padding: "24px 20px", marginBottom: 18, textAlign: "center",
+        boxShadow: "0 12px 40px rgba(236,72,153,0.25), inset 0 1px 0 rgba(255,255,255,0.12)",
+        overflow: "hidden",
       }}>
-        <div style={{ fontSize: 38 }}>💕</div>
-        <h1 style={{ margin: "8px 0 4px", fontSize: 22, fontWeight: 900 }}>Geheimer Schwarm</h1>
-        <p style={{ fontSize: 13, color: "#475569", margin: "0 0 8px", lineHeight: 1.5 }}>
-          Trage <b>bis zu {slotsTotal} Personen</b> ein — alles bleibt geheim. Wenn jemand
-          dich auch einträgt: <b>💥 Es funkt!</b>
+        <div style={{ fontSize: 42, filter: "drop-shadow(0 3px 10px rgba(236,72,153,0.5))" }}>💕</div>
+        <h1 style={{
+          margin: "8px 0 6px", fontSize: 24, fontWeight: 900,
+          color: "#fff", textShadow: "0 2px 12px rgba(236,72,153,0.5)", letterSpacing: 0.3,
+        }}>
+          Geheimer Schwarm
+        </h1>
+        <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.92)", margin: "0 auto 10px", lineHeight: 1.55, maxWidth: 440 }}>
+          Trage <b style={{ color: "#ffd9ee" }}>bis zu {slotsTotal} Personen</b> ein — alles bleibt geheim.
+          Wenn jemand dich auch einträgt: <b style={{ color: "#ffd9ee" }}>💥 Es funkt!</b>
         </p>
-        <div style={{ fontSize: 11, color: "#94a3b8" }}>
-          {slotsUsed} von {slotsTotal} Slots vergeben · vergebene/verheiratete User werden ausgeblendet
+        <div style={{
+          display: "inline-block",
+          background: "rgba(0,0,0,0.22)", border: "1px solid rgba(255,255,255,0.14)",
+          borderRadius: 999, padding: "5px 14px",
+          fontSize: 11.5, fontWeight: 700, color: "rgba(255,255,255,0.85)",
+        }}>
+          {slotsUsed} von {slotsTotal} Slots vergeben · vergebene User werden ausgeblendet
         </div>
       </div>
 
@@ -104,6 +121,7 @@ export default function CrushesPage() {
           background: "linear-gradient(135deg, #fef3c7, #fde68a)",
           border: "2px dashed #f59e0b",
           borderRadius: 16, padding: 16, marginBottom: 20,
+          boxShadow: "0 10px 30px rgba(245,158,11,0.25)",
         }}>
           <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 900, color: "#7c2d12" }}>
             💥 Eure Matches ({matches.length})
@@ -133,12 +151,14 @@ export default function CrushesPage() {
 
       {/* Wer hat mich (Datenschutz: NICHT zeigen) */}
       <div style={{
-        background: "rgba(0,0,0,0.04)", padding: 12, borderRadius: 12,
-        fontSize: 11.5, color: "#64748b", textAlign: "center", lineHeight: 1.6,
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        padding: 14, borderRadius: 12,
+        fontSize: 12, color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 1.65,
       }}>
-        🔒 <b>Geheimhaltung:</b> Niemand sieht, wen du eingetragen hast — auch deine Crushes nicht.
-        Nur wenn ihr euch <b>gegenseitig</b> wählt, taucht der Match auf. Wenn du einen Slot
-        freiräumst, geht der Match dabei verloren.
+        🔒 <b style={{ color: "#fff" }}>Geheimhaltung:</b> Niemand sieht, wen du eingetragen hast —
+        auch deine Crushes nicht. Nur wenn ihr euch <b style={{ color: "#fff" }}>gegenseitig</b> wählt,
+        taucht der Match auf. Wenn du einen Slot freiräumst, geht der Match dabei verloren.
       </div>
 
       {searchOpen && (
@@ -163,6 +183,9 @@ function CrushSlot({ slot, onRemove }) {
         : "linear-gradient(135deg, #fce7f3, #fbcfe8)",
       border: isMatch ? "2px solid #f59e0b" : "1px solid rgba(236,72,153,0.4)",
       borderRadius: 14, padding: 14, textAlign: "center",
+      boxShadow: isMatch
+        ? "0 8px 24px rgba(245,158,11,0.3)"
+        : "0 8px 24px rgba(236,72,153,0.18)",
     }}>
       {isMatch && (
         <div style={{
@@ -195,17 +218,25 @@ function CrushSlot({ slot, onRemove }) {
 
 function EmptySlot({ onClick }) {
   return (
-    <button onClick={onClick} style={{
-      background: "rgba(255,255,255,0.5)",
-      border: "2px dashed rgba(236,72,153,0.4)",
+    <button onClick={onClick} className="vv-crush-empty" style={{
+      background: "rgba(255,255,255,0.07)",
+      border: "2px dashed rgba(244,114,182,0.5)",
       borderRadius: 14, padding: 24, textAlign: "center",
       cursor: "pointer", fontFamily: "inherit",
-      transition: "all 0.18s",
+      transition: "transform 0.18s, border-color 0.18s, background 0.18s",
+      color: "#fff",
     }}>
-      <div style={{ fontSize: 32, marginBottom: 6, opacity: 0.5 }}>+</div>
-      <div style={{ fontSize: 12, fontWeight: 700, color: "#831843" }}>
+      <div style={{ fontSize: 34, marginBottom: 6, color: "#f9a8d4" }}>＋</div>
+      <div style={{ fontSize: 12.5, fontWeight: 800, color: "#f9a8d4" }}>
         Slot frei — wähle einen Crush
       </div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .vv-crush-empty:hover {
+          transform: translateY(-2px);
+          border-color: rgba(244,114,182,0.85) !important;
+          background: rgba(244,114,182,0.12) !important;
+        }
+      ` }} />
     </button>
   );
 }
@@ -251,10 +282,10 @@ function CrushSearchModal({ onClose, onAdded }) {
         background: "#fff", padding: 22, borderRadius: 18, maxWidth: 480, width: "100%",
         maxHeight: "85vh", display: "flex", flexDirection: "column",
       }}>
-        <h3 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 900 }}>
+        <h3 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 900, color: "#831843" }}>
           💕 Wer ist dein geheimer Schwarm?
         </h3>
-        <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 4, marginBottom: 12 }}>
+        <p style={{ fontSize: 12, color: "#64748b", marginTop: 4, marginBottom: 12 }}>
           Gib mind. 2 Buchstaben ein. Personen die vergeben/verheiratet sind, werden nicht angezeigt.
         </p>
 
@@ -297,7 +328,7 @@ function CrushSearchModal({ onClose, onAdded }) {
                 className="vv-avatar vv-avatar-sm"
               />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>{u.displayName}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{u.displayName}</div>
                 <div style={{ fontSize: 11, color: "#94a3b8" }}>@{u.username}</div>
               </div>
               <span style={{ fontSize: 18 }}>💕</span>
@@ -307,7 +338,7 @@ function CrushSearchModal({ onClose, onAdded }) {
 
         <button onClick={onClose} disabled={busy} style={{
           marginTop: 12, padding: 12, borderRadius: 10,
-          background: "#f5f5f7", border: "1px solid #e5e5e7",
+          background: "#f5f5f7", border: "1px solid #e5e5e7", color: "#1e293b",
           fontFamily: "inherit", fontWeight: 700, cursor: "pointer",
         }}>Schließen</button>
       </div>
@@ -326,13 +357,13 @@ function ConfettiOverlay({ partner, onClose }) {
       {Array.from({ length: 60 }).map((_, i) => (
         <span key={i} style={{
           position: "absolute",
-          left: `${Math.random() * 100}%`,
+          left: `${(i * 37) % 100}%`,
           top: -20,
-          fontSize: 24 + Math.random() * 18,
-          animation: `vv-crush-fall ${2 + Math.random() * 2.5}s ${Math.random() * 1}s ease-in forwards`,
+          fontSize: 24 + ((i * 13) % 18),
+          animation: `vv-crush-fall ${2 + ((i * 7) % 25) / 10}s ${((i * 11) % 10) / 10}s ease-in forwards`,
           pointerEvents: "none",
         }}>
-          {["💕","💖","💗","💜","🎉","✨","🌟","💞"][Math.floor(Math.random() * 8)]}
+          {["💕","💖","💗","💜","🎉","✨","🌟","💞"][i % 8]}
         </span>
       ))}
 
