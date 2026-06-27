@@ -53,8 +53,8 @@ export default function MitgliederPage() {
   if (!me) {
     return (
       <div style={{ maxWidth: 500, margin: "40px auto", padding: 20, textAlign: "center" }}>
-        <h2 style={{ color: "#1c1c1e" }}>👥 Mitglieder</h2>
-        <p style={{ color: "#475569" }}>
+        <h2 style={{ color: "#ffffff" }}>👥 Mitglieder</h2>
+        <p style={{ color: "rgba(255,255,255,0.85)" }}>
           <Link href="/login?next=/mitglieder" style={{ color: "#a855f7", fontWeight: 700 }}>
             Bitte einloggen
           </Link>
@@ -70,12 +70,12 @@ export default function MitgliederPage() {
     <div style={{ maxWidth: 1100, margin: "20px auto", padding: 14 }}>
       {/* Header */}
       <h1 style={{
-        fontSize: 26, fontWeight: 900, color: "#1c1c1e", margin: "0 0 4px",
-        textShadow: "0 1px 2px rgba(255,255,255,0.5)",
+        fontSize: 26, fontWeight: 900, color: "#ffffff", margin: "0 0 4px",
+        textShadow: "0 2px 4px rgba(0,0,0,0.6)",
       }}>
         👥 Mitglieder
       </h1>
-      <p style={{ fontSize: 13, color: "#334155", margin: "0 0 14px", fontWeight: 500, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", margin: "0 0 14px", fontWeight: 500, lineHeight: 1.5 }}>
         Alle aktiven Mitglieder — sortiert nach letzter Aktivität.
         {data?.total != null && (
           <strong> {data.total} gesamt</strong>
@@ -122,7 +122,7 @@ export default function MitgliederPage() {
           borderRadius: 12, fontSize: 13, fontWeight: 700,
         }}>⚠ {data.error}</div>
       ) : !data ? (
-        <div style={{ padding: 30, textAlign: "center", color: "#475569" }}>Lädt…</div>
+        <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.7)" }}>Lädt…</div>
       ) : data.members.length === 0 ? (
         <div style={{
           padding: 40, textAlign: "center", color: "#475569",
@@ -158,7 +158,7 @@ export default function MitgliederPage() {
                 disabled={page <= 1 || busy}
                 style={pgBtn(page > 1 && !busy)}
               >← Zurück</button>
-              <span style={{ fontSize: 13, color: "#475569", fontWeight: 800 }}>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 800 }}>
                 Seite {page} von {totalPages}
               </span>
               <button
