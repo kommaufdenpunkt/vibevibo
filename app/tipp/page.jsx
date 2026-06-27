@@ -13,6 +13,9 @@ const INK = "#1c1c1e";
 const MUTED = "#475569";
 const FOUR = "https://tipp.4ever1.tv";
 
+// Dunkler Fußball-Hintergrund (Stadion bei Nacht: Königsblau → Rasengrün) + feine Rasen-Mähstreifen.
+const DARK_BG = "repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 70px, rgba(255,255,255,0) 70px 140px), radial-gradient(circle at 50% -8%, #1d3f73 0%, #102a4d 45%, #0b2017 100%)";
+
 function avatarUrl(a) {
   if (!a) return null;
   return a.startsWith("/uploads") ? FOUR + a : a;
@@ -77,7 +80,8 @@ export default function TippPage() {
   (data?.myBets || []).forEach((b) => { betMap[b.matchId] = b; });
 
   return (
-    <div style={{ maxWidth: 760, margin: "16px auto", padding: 14 }}>
+    <div style={{ background: DARK_BG, backgroundAttachment: "fixed", minHeight: "100vh", padding: "16px 0" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 14px" }}>
       <div style={{
         borderRadius: 16, padding: "18px 16px", marginBottom: 14,
         background: "linear-gradient(135deg, #1e40af, #3b82f6 55%, #f97316)",
@@ -151,6 +155,7 @@ export default function TippPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
