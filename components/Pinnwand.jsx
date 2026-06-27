@@ -8,6 +8,7 @@ import OnlineName from "./OnlineName";
 import MentionText from "./MentionText";
 import WallComposer from "./WallComposer";
 import EmbeddedMedia from "./EmbeddedMedia";
+import ReportButton from "./ReportButton";
 
 export default function Pinnwand({ profile, entries, onChange }) {
   const { me } = useMe();
@@ -50,6 +51,11 @@ export default function Pinnwand({ profile, entries, onChange }) {
                 </OnlineName>
                 {" · "}
                 <span>{relTime(entry.at)}</span>
+                {me && entry.from_username !== me.username && (
+                  <span style={{ marginLeft: 6, display: "inline-flex", verticalAlign: "middle" }}>
+                    <ReportButton targetType="pinnwand" targetId={entry.id} contentSnapshot={entry.text || ""} variant="icon" />
+                  </span>
+                )}
                 {canDelete && (
                   <a
                     href="#"
