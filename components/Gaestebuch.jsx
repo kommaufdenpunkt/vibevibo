@@ -8,6 +8,7 @@ import { ColoredName } from "./GenderAge";
 import OnlineName from "./OnlineName";
 import MentionText from "./MentionText";
 import InlineToolbar from "./InlineToolbar";
+import ReportButton from "./ReportButton";
 
 function fileToImage(file, maxDim = 700) {
   return new Promise((resolve, reject) => {
@@ -132,6 +133,11 @@ export default function Gaestebuch({ profile, initialEntries = [] }) {
                 </OnlineName>
                 {" · "}
                 <span>{relTime(entry.at)}</span>
+                {me && entry.from_username !== me.username && (
+                  <span style={{ marginLeft: 6, display: "inline-flex", verticalAlign: "middle" }}>
+                    <ReportButton targetType="guestbook" targetId={entry.id} contentSnapshot={entry.text || ""} variant="icon" />
+                  </span>
+                )}
                 {canDelete && (
                   <a href="#" style={{ marginLeft: 6, color: "#a00" }} onClick={(e) => { e.preventDefault(); remove(entry.id); }}>[löschen]</a>
                 )}
