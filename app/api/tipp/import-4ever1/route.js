@@ -1,8 +1,9 @@
 // POST /api/tipp/import-4ever1 — holt Teams/Spiele/Ergebnisse/Bestenliste/Tipps
 // direkt von tipp.4ever1.tv (öffentliche API) und schreibt sie nach vibevibo.
-// Nur Admin. Kein Login bei 4ever1 nötig (predictions sind öffentlich).
+// Freigabe: eingeloggter vibevibo-User mit Rolle admin/teamleitung/moderator.
 
 import { NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/auth";
 import * as vvdb from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -11,12 +12,11 @@ export const maxDuration = 300;
 
 const BASE = "https://tipp.4ever1.tv/api";
 
-async function requireAdmin() {
-  try {
-    const mod = await import("@/lib/adminAuth");
-    if (typeof mod.getAdminUser === "function") return await mod.getAdminUser();
-  } catch {}
-  return null;
+function isStaff(userId) {
+  if (!userId) return false;
+  try { if (typeof vvdb.isAdminRole === "function" && vvdb.isAdminRole(userId)) return true; } catch {}
+  try { if (typeof vvdb.isModeratorRole === "function" && vvdb.isModeratorRole(userId)) return true; } catch {}
+  return false;
 }
 
 async function jget(url) {
@@ -26,8 +26,9 @@ async function jget(url) {
 }
 
 export async function POST() {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ error: "Admin-Login nötig." }, { status: 401 });
+  const me = await getSessionUser();
+  if (!me) return NextResponse.json({ error: "Bitte einloggen." }, { status: 401 });
+  if (!isStaff(me.id)) return NextResponse.json({ error: "Nur für Admin/Teamleitung/Mod." }, { status: 403 });
   if (typeof vvdb.tippImport !== "function") {
     return NextResponse.json({ error: "Import-Funktion nicht verfügbar (Patch nicht aktiv?)." }, { status: 500 });
   }
@@ -42,7 +43,6 @@ export async function POST() {
     const matches = matchesD.matches || [];
     const ranking = rankingD.ranking || [];
 
-    // Tipps pro Spiel (öffentlich) — in Batches ziehen.
     const ids = matches.map((m) => m && m.id).filter((x) => x != null);
     const tips = [];
     const BATCH = 8;
