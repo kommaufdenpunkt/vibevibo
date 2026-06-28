@@ -242,7 +242,6 @@ export default function TippPage() {
         {/* TABS */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)" }}>
           <TabBtn active={tab === "spiele"} onClick={() => setTab("spiele")}>⚽ Spiele</TabBtn>
-          <TabBtn active={tab === "plan"} onClick={() => setTab("plan")}>📅 Plan</TabBtn>
           <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>⚡ Tabelle</TabBtn>
           <TabBtn active={tab === "auswertung"} onClick={() => setTab("auswertung")}>📊 Auswertung</TabBtn>
           <TabBtn active={tab === "orakel"} onClick={() => setTab("orakel")}>🔮 Orakel</TabBtn>
@@ -265,7 +264,6 @@ export default function TippPage() {
           </>
         )}
 
-        {tab === "plan" && <Spielplan matches={data?.matches || []} />}
         {tab === "tabelle" && <Blitztabelle board={board} matches={data?.matches || []} />}
 
         {tab === "auswertung" && <Auswertung />}
@@ -782,17 +780,17 @@ function SpieleListe({ matches, betMap, canTip, onSaved }) {
   const kommend = matches.filter((m) => matchState(m, now) === "upcoming").sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
   const DEADLINE = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
   const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id] && (!m.kickoffAt || m.kickoffAt > now + DEADLINE)) : [];
-  const groups = { live, zu: zuTippen, kommend, vorbei };
-  // Läuft gerade kommt immer zuerst.
-  const def = live.length ? "live" : zuTippen.length ? "zu" : kommend.length ? "kommend" : "vorbei";
+  const groups = { live, zu: zuTippen, vorbei };
+  // Läuft gerade kommt immer zuerst; sonst Plan als Überblick.
+  const def = live.length ? "live" : zuTippen.length ? "zu" : "plan";
   const [sel, setSel] = useState(def);
 
   const chips = [];
   if (live.length) chips.push(["live", "🔴 Läuft gerade", live.length]);
   if (canTip) chips.push(["zu", "🎯 Zu tippen", zuTippen.length]);
-  chips.push(["kommend", "⏳ Kommend", kommend.length]);
+  chips.push(["plan", "📅 Plan", matches.length]);
   chips.push(["vorbei", "✅ Vorbei", vorbei.length]);
-  const list = groups[sel] || [];
+  const list = sel === "plan" ? null : (groups[sel] || []);
 
   return (
     <>
@@ -808,8 +806,10 @@ function SpieleListe({ matches, betMap, canTip, onSaved }) {
           );
         })}
       </div>
-      {list.length === 0 ? (
-        <Muted>{sel === "live" ? "Gerade läuft kein Spiel." : sel === "zu" ? "Alles getippt — stark! 🎯" : sel === "kommend" ? "Keine anstehenden Spiele." : "Noch keine gespielten Spiele."}</Muted>
+      {sel === "plan" ? (
+        <Spielplan matches={matches} />
+      ) : list.length === 0 ? (
+        <Muted>{sel === "live" ? "Gerade läuft kein Spiel." : sel === "zu" ? "Alles getippt — stark! 🎯" : "Noch keine gespielten Spiele."}</Muted>
       ) : (
         list.map((m) => <MatchCard key={m.id} m={m} bet={betMap[m.id]} canTip={canTip} onSaved={onSaved} />)
       )}
