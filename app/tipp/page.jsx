@@ -138,6 +138,15 @@ export default function TippPage() {
     finally { setLoading(false); }
   }, []);
 
+  // Stilles Nachladen — KEIN Spinner, KEIN Flackern, Auswahl/Scroll bleiben.
+  const silentLoad = useCallback(async () => {
+    try {
+      const r = await fetch("/api/tipp/matches", { credentials: "include" });
+      const d = await r.json();
+      if (r.ok) setData(d);
+    } catch {}
+  }, []);
+
   const loadBoard = useCallback(async () => {
     try {
       const r = await fetch("/api/tipp/leaderboard", { credentials: "include" });
@@ -147,6 +156,15 @@ export default function TippPage() {
   }, []);
 
   useEffect(() => { load(); loadBoard(); }, [load, loadBoard]);
+
+  // Live: alle 45 s still aktualisieren + beim Zurückkehren zum Tab. So tauchen
+  // neue/laufende Spiele von selbst auf, ohne sichtbares Neuladen.
+  useEffect(() => {
+    const t = setInterval(() => { silentLoad(); loadBoard(); }, 45000);
+    const onFocus = () => { silentLoad(); loadBoard(); };
+    window.addEventListener("focus", onFocus);
+    return () => { clearInterval(t); window.removeEventListener("focus", onFocus); };
+  }, [silentLoad, loadBoard]);
 
   // Macht den globalen Header (.vv-banner) + Footer (.vv-footer) NUR auf /tipp dunkel.
   // Klasse am <html>; Cleanup beim Verlassen → Rest von vibevibo.de bleibt unverändert.
