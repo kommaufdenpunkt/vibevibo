@@ -56,6 +56,9 @@ const PHASE_LABEL = {
   qf: "Viertelfinale", sf: "Halbfinale", "3rd": "Spiel um Platz 3", third: "Spiel um Platz 3", final: "Finale",
 };
 
+// Tore-Auswahl im Tipp-Dropdown (0–10 reicht für jedes realistische Ergebnis).
+const SCORE_OPTS = Array.from({ length: 11 }, (_, i) => i);
+
 function fmtKickoff(ts) {
   if (!ts) return "Termin offen";
   try {
@@ -110,8 +113,11 @@ export default function TippPage() {
   (data?.myBets || []).forEach((b) => { betMap[b.matchId] = b; });
 
   return (
-    <div style={{ background: PAGE_BG, backgroundColor: "#0c0d0f", backgroundAttachment: "fixed", minHeight: "100vh", padding: "18px 0 44px", width: "100vw", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)" }}>
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 14px" }}>
+    <>
+      {/* Voll-Viewport-Hintergrund: deckt ALLES ab (auch hinter Footer/Werbung unter dem Inhalt). */}
+      <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: -1, background: PAGE_BG, backgroundColor: "#0c0d0f", backgroundAttachment: "fixed" }} />
+      <div style={{ minHeight: "100vh", padding: "18px 0 44px" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 14px" }}>
         <SongPlayer />
         {/* HERO */}
         <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14, background: CARD_SOLID, border: `1px solid ${BORDER}`, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
@@ -187,8 +193,9 @@ export default function TippPage() {
             )}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -206,7 +213,7 @@ function SongPlayer() {
       try {
         playerRef.current = new YT.Player(holderRef.current, {
           videoId: SONG.id,
-          width: "0", height: "0",
+          width: "1", height: "1",
           playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, mute: 1, playsinline: 1, start: SONG.start, end: SONG.end, rel: 0, modestbranding: 1 },
           events: {
             onReady: (e) => { try { e.target.mute(); e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {} },
@@ -231,7 +238,7 @@ function SongPlayer() {
 
   return (
     <div style={{ marginBottom: 14, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)", display: "flex", alignItems: "center", gap: 10, padding: "8px 12px" }}>
-      <div ref={holderRef} style={{ width: 0, height: 0, overflow: "hidden" }} />
+      <div ref={holderRef} style={{ position: "absolute", width: 1, height: 1, left: -9999, top: -9999, opacity: 0, pointerEvents: "none" }} />
       <span style={{ fontSize: 18 }}>🎵</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 12.5, fontWeight: 800, color: TXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{SONG.title}</div>
@@ -357,11 +364,17 @@ function MatchCard({ m, bet, canTip, onSaved }) {
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <input inputMode="numeric" value={h} disabled={locked || !canTip} maxLength={2}
-                onChange={(e) => setH(e.target.value.replace(/[^0-9]/g, ""))} style={scoreInput(locked || !canTip)} />
+              <select value={h} disabled={locked || !canTip}
+                onChange={(e) => setH(e.target.value)} style={scoreInput(locked || !canTip)} aria-label="Tore Heim">
+                <option value="">–</option>
+                {SCORE_OPTS.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
               <span style={{ color: MUT, fontWeight: 900 }}>:</span>
-              <input inputMode="numeric" value={a} disabled={locked || !canTip} maxLength={2}
-                onChange={(e) => setA(e.target.value.replace(/[^0-9]/g, ""))} style={scoreInput(locked || !canTip)} />
+              <select value={a} disabled={locked || !canTip}
+                onChange={(e) => setA(e.target.value)} style={scoreInput(locked || !canTip)} aria-label="Tore Auswärts">
+                <option value="">–</option>
+                {SCORE_OPTS.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
             </div>
           )}
           <div style={{ flex: 1, textAlign: "left", fontWeight: 800, fontSize: 15, color: TXT }}>
@@ -418,9 +431,11 @@ function MatchCard({ m, bet, canTip, onSaved }) {
 
 function scoreInput(locked) {
   return {
-    width: 42, height: 40, textAlign: "center", fontSize: 18, fontWeight: 900, borderRadius: 10,
+    width: 48, height: 40, textAlign: "center", textAlignLast: "center", fontSize: 18, fontWeight: 900, borderRadius: 10,
     border: `1.5px solid ${locked ? "rgba(255,255,255,0.12)" : "rgba(221,0,0,0.55)"}`,
     background: locked ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.3)", color: TXT, fontFamily: "inherit", boxSizing: "border-box",
+    appearance: "none", WebkitAppearance: "none", MozAppearance: "none",
+    cursor: locked ? "default" : "pointer", padding: "0 2px",
   };
 }
 
