@@ -59,6 +59,28 @@ const PHASE_LABEL = {
 // Tore-Auswahl im Tipp-Dropdown (0–10 reicht für jedes realistische Ergebnis).
 const SCORE_OPTS = Array.from({ length: 11 }, (_, i) => i);
 
+// Header (.vv-banner) + Footer (.vv-footer) dunkel — NUR wenn <html> die Klasse "tipp-dark" trägt.
+// Logo & Navigation bleiben (heller Text auf dunkler Fläche), Links bleiben gold lesbar.
+const TIPP_CHROME_CSS = `
+html.tipp-dark, html.tipp-dark body { background: #0c0d0f !important; }
+html.tipp-dark .vv-banner {
+  background: linear-gradient(180deg, #17181c 0%, #0c0d0f 100%) !important;
+  border: none !important;
+  border-bottom: 2px solid rgba(255,206,0,0.45) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.6) !important;
+}
+html.tipp-dark .vv-banner .vv-slogan { color: #c9ccd1 !important; }
+html.tipp-dark .vv-footer {
+  background: #0c0d0f !important;
+  color: #9aa0a6 !important;
+  border: none !important;
+  border-top: 2px solid rgba(221,0,0,0.4) !important;
+  box-shadow: none !important;
+}
+html.tipp-dark .vv-footer a { color: #ffce00 !important; }
+html.tipp-dark .vv-footer .vv-muted { color: #71767c !important; }
+`;
+
 function fmtKickoff(ts) {
   if (!ts) return "Termin offen";
   try {
@@ -109,11 +131,21 @@ export default function TippPage() {
 
   useEffect(() => { load(); loadBoard(); }, [load, loadBoard]);
 
+  // Macht den globalen Header (.vv-banner) + Footer (.vv-footer) NUR auf /tipp dunkel.
+  // Klasse am <html>; Cleanup beim Verlassen → Rest von vibevibo.de bleibt unverändert.
+  useEffect(() => {
+    const el = document.documentElement;
+    el.classList.add("tipp-dark");
+    return () => el.classList.remove("tipp-dark");
+  }, []);
+
   const betMap = {};
   (data?.myBets || []).forEach((b) => { betMap[b.matchId] = b; });
 
   return (
     <>
+      {/* Header + Footer NUR auf /tipp dunkel (greift über html.tipp-dark, Rest der Seite bleibt hell). */}
+      <style dangerouslySetInnerHTML={{ __html: TIPP_CHROME_CSS }} />
       {/* Voll-Viewport-Hintergrund: deckt ALLES ab (auch hinter Footer/Werbung unter dem Inhalt). */}
       <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: -1, background: PAGE_BG, backgroundColor: "#0c0d0f", backgroundAttachment: "fixed" }} />
       <div style={{ minHeight: "100vh", padding: "18px 0 44px" }}>
@@ -199,12 +231,21 @@ export default function TippPage() {
   );
 }
 
-// 🎵 Profil-Song-Loop (YouTube-Embed, Refrain-Schleife). Wegen Browser-Autoplay-Sperre
-// startet der Ton erst per Klick auf „🔊".
+// 🎵 Profil-Song-Loop (YouTube-Embed, Refrain-Schleife). Standardmäßig AN —
+// der Refrain läuft stumm los und wird bei der ERSTEN Nutzer-Geste (Klick/Tipp/Scroll)
+// hörbar (Browser-Autoplay-Sperre). Bleibt an, bis man bewusst auf „🔇 Aus" klickt.
 function SongPlayer() {
   const holderRef = useRef(null);
   const playerRef = useRef(null);
-  const [soundOn, setSoundOn] = useState(false);
+  const [soundOn, setSoundOn] = useState(true); // Wunsch-Zustand: AN
+  const soundOnRef = useRef(true);
+  soundOnRef.current = soundOn;
+
+  // Ton hörbar machen (sofern gewünscht).
+  function ensureAudible() {
+    const p = playerRef.current; if (!p || !soundOnRef.current) return;
+    try { p.unMute(); if (p.setVolume) p.setVolume(65); p.playVideo(); } catch {}
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -216,7 +257,8 @@ function SongPlayer() {
           width: "1", height: "1",
           playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, mute: 1, playsinline: 1, start: SONG.start, end: SONG.end, rel: 0, modestbranding: 1 },
           events: {
-            onReady: (e) => { try { e.target.mute(); e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {} },
+            // Stumm starten (immer erlaubt), dann gleich versuchen hörbar zu schalten.
+            onReady: (e) => { try { e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {}; ensureAudible(); },
             onStateChange: (e) => {
               const S = window.YT && window.YT.PlayerState;
               if (S && e.data === S.ENDED) { try { e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {} }
@@ -228,11 +270,29 @@ function SongPlayer() {
     return () => { cancelled = true; try { playerRef.current && playerRef.current.destroy && playerRef.current.destroy(); } catch {} };
   }, []);
 
+  // Erste Nutzer-Geste irgendwo auf der Seite → Ton freischalten (einmalig).
+  useEffect(() => {
+    function onFirstGesture() {
+      ensureAudible();
+      window.removeEventListener("pointerdown", onFirstGesture);
+      window.removeEventListener("keydown", onFirstGesture);
+      window.removeEventListener("touchstart", onFirstGesture);
+    }
+    window.addEventListener("pointerdown", onFirstGesture, { once: true });
+    window.addEventListener("keydown", onFirstGesture, { once: true });
+    window.addEventListener("touchstart", onFirstGesture, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", onFirstGesture);
+      window.removeEventListener("keydown", onFirstGesture);
+      window.removeEventListener("touchstart", onFirstGesture);
+    };
+  }, []);
+
   function toggle() {
     const p = playerRef.current; if (!p) return;
     try {
       if (soundOn) { p.mute(); setSoundOn(false); }
-      else { p.unMute(); if (p.setVolume) p.setVolume(65); p.seekTo(SONG.start, true); p.playVideo(); setSoundOn(true); }
+      else { soundOnRef.current = true; p.unMute(); if (p.setVolume) p.setVolume(65); p.seekTo(SONG.start, true); p.playVideo(); setSoundOn(true); }
     } catch {}
   }
 
