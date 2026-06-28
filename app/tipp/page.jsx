@@ -801,18 +801,11 @@ function MatchCard({ m, bet, canTip, onSaved }) {
       let body;
       if (h === "" || a === "") { setFlash("⚠ Bitte das Ergebnis (Tore) ausfüllen."); setBusy(false); return; }
       if (isKO) {
-        let effAdv, effDec;
-        if (Number(h) === Number(a)) {
-          // Unentschieden nach 90 Min → Verlängerung/Elfmeter entscheiden: beides nötig.
-          if (!adv) { setFlash("⚠ Unentschieden — wähle, wer weiterkommt."); setBusy(false); return; }
-          if (!dec || dec === "reg") { setFlash("⚠ Unentschieden — Verlängerung oder Elfmeter wählen."); setBusy(false); return; }
-          effAdv = adv; effDec = dec;
-        } else {
-          // Klarer Sieg in 90 Min → Weiterkommen + Entscheidung ergeben sich aus dem Ergebnis.
-          effAdv = Number(h) > Number(a) ? "home" : "away";
-          effDec = "reg";
-        }
-        body = { matchId: m.id, predHome: Number(h), predAway: Number(a), advPick: effAdv, decPick: effDec };
+        const drawTip = Number(h) === Number(a);
+        if (!dec) { setFlash("⚠ Wähle: 90 Min, Verlängerung oder Elfmeter."); setBusy(false); return; }
+        if (drawTip && dec === "reg") { setFlash("⚠ Unentschieden kann nicht in 90 Min entschieden werden — Verlängerung oder Elfmeter wählen."); setBusy(false); return; }
+        if (!adv) { setFlash("⚠ Wähle, wer weiterkommt."); setBusy(false); return; }
+        body = { matchId: m.id, predHome: Number(h), predAway: Number(a), advPick: adv, decPick: dec };
       } else {
         body = { matchId: m.id, predHome: Number(h), predAway: Number(a) };
       }
@@ -883,29 +876,18 @@ function MatchCard({ m, bet, canTip, onSaved }) {
           </div>
         </div>
 
-        {/* K.o.-Tipp: bei klarem Sieg ergibt sich alles aus dem Ergebnis;
-            nur bei Unentschieden fragen wir nach Weiterkommen + Verlängerung/Elfmeter. */}
+        {/* K.o.-Tipp: Tore (oben) + Wer kommt weiter + Entscheidung (90 Min/Verl./Elfmeter, je mit Punkten).
+            Bei Unentschieden ist „90 Min" gesperrt und es kommt ein Hinweis. Alles bis 20 Min vor Anpfiff änderbar. */}
         {isKO && canEdit && (() => {
           const bothFilled = h !== "" && a !== "";
-          if (!bothFilled) {
-            return (
-              <div style={{ marginTop: 10, fontSize: 11.5, color: MUT, lineHeight: 1.4 }}>
-                ⬆ Erst das Ergebnis tippen. Bei einem <b style={{ color: TXT }}>Unentschieden</b> fragen wir dann nach Verlängerung/Elfmeter.
-              </div>
-            );
-          }
-          if (Number(h) !== Number(a)) {
-            const winName = Number(h) > Number(a) ? `${m.homeFlag || ""} ${m.teamHome}` : `${m.awayFlag || ""} ${m.teamAway}`;
-            return (
-              <div style={{ marginTop: 12, padding: "9px 12px", borderRadius: 9, background: "rgba(74,222,128,0.10)", border: "1px solid rgba(74,222,128,0.35)", fontSize: 12, fontWeight: 700, color: "#86efac", lineHeight: 1.4 }}>
-                ✓ <b style={{ color: "#fff" }}>{winName}</b> kommt weiter · entschieden <b style={{ color: "#fff" }}>in 90 Min</b> <span style={{ color: MUT, fontWeight: 600 }}>— ergibt sich aus deinem Ergebnis</span>
-              </div>
-            );
-          }
-          // Unentschieden nach 90 Min → es geht in Verlängerung/Elfmeter.
+          const drawTip = bothFilled && Number(h) === Number(a);
           return (
             <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-              <div style={{ fontSize: 11.5, color: "#ffce00", fontWeight: 700 }}>⚖ Unentschieden nach 90 Min — es muss verlängert werden:</div>
+              {drawTip && (
+                <div style={{ fontSize: 11.5, color: "#ffce00", fontWeight: 700, lineHeight: 1.4, background: "rgba(255,206,0,0.10)", border: "1px solid rgba(255,206,0,0.35)", borderRadius: 9, padding: "8px 11px" }}>
+                  ⚖ <b>Unentschieden</b> nach 90 Min — es muss verlängert werden: wähle <b>Verlängerung</b> oder <b>Elfmeter</b> und <b>wer weiterkommt</b>.
+                </div>
+              )}
               <div>
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>➡ Wer kommt weiter? <span style={{ color: MUT, fontWeight: 600 }}>(+1)</span></div>
                 <div style={{ display: "flex", gap: 6 }}>
@@ -925,16 +907,19 @@ function MatchCard({ m, bet, canTip, onSaved }) {
               <div>
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>⏱ Wie fällt die Entscheidung? <span style={{ color: MUT, fontWeight: 600 }}>(richtig + / falsch −)</span></div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {["aet", "pen"].map((k) => {
-                    const active = dec === k;
+                  {DEC_ORDER.map((k) => {
+                    const disabled = drawTip && k === "reg"; // 90 Min bei Unentschieden nicht möglich
+                    const active = dec === k && !disabled;
                     return (
-                      <button key={k} type="button" onClick={() => setDec(k)} style={{
-                        flex: "1 1 120px", minWidth: 0, padding: "9px 6px", borderRadius: 9, fontFamily: "inherit", fontSize: 11.5, fontWeight: 800,
-                        cursor: "pointer", background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
+                      <button key={k} type="button" disabled={disabled} onClick={() => { if (!disabled) setDec(k); }} style={{
+                        flex: "1 1 100px", minWidth: 0, padding: "9px 6px", borderRadius: 9, fontFamily: "inherit", fontSize: 11.5, fontWeight: 800,
+                        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.4 : 1,
+                        background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
                         color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.35)" : `1px solid ${BORDER}`,
                         lineHeight: 1.25, textAlign: "center",
                       }}>
                         {DEC_LONG[k]}<br /><span style={{ fontSize: 10, color: active ? "#ffce00" : MUT }}>+{DEC_REWARD[k]} / {DEC_PENALTY[k]}</span>
+                        {disabled && <><br /><span style={{ fontSize: 9, color: MUT }}>bei Unent. nicht möglich</span></>}
                       </button>
                     );
                   })}
