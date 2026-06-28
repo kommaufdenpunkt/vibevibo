@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import * as vvdb from "@/lib/db";
+import { tippMaybeAutoSync } from "@/lib/tipp4ever1";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -19,6 +20,9 @@ function isStaff(me) {
 
 export async function GET() {
   const me = await getSessionUser();
+
+  // 🔄 Hintergrund-Sync von 4ever1 anstoßen (gedrosselt, fire-and-forget — blockiert nicht).
+  try { tippMaybeAutoSync(); } catch {}
 
   const matches = (typeof vvdb.tippMatchesRichKO === "function")
     ? vvdb.tippMatchesRichKO()
@@ -38,7 +42,8 @@ export async function GET() {
 
   let myBets = [];
   if (me) {
-    if (typeof vvdb.tippUserBetsKO === "function") myBets = vvdb.tippUserBetsKO(me.id);
+    if (typeof vvdb.tippUserBetsKO2 === "function") myBets = vvdb.tippUserBetsKO2(me.id);
+    else if (typeof vvdb.tippUserBetsKO === "function") myBets = vvdb.tippUserBetsKO(me.id);
     else if (typeof vvdb.tippUserBets === "function") myBets = vvdb.tippUserBets(me.id);
   }
 
