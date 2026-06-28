@@ -11,7 +11,7 @@ const FOUR = "https://tipp.4ever1.tv";
 // Beim Seitenaufruf wird ABWECHSELND der nächste Song gespielt (rotiert via localStorage).
 const SONGS = [
   { id: "W_ug7KQbTGo", start: 32, end: 67, title: "Wincent Weiss – Kurz für immer" },
-  { id: "SniCL4xbRqw", start: 38, end: 74, title: "Helene Fischer – Atemlos durch die Nacht" },
+  { id: "SniCL4xbRqw", start: 38, end: 74, title: "Helene Fischer – Heute Nacht" },
 ];
 function pickSong() {
   if (typeof window === "undefined") return SONGS[0];
