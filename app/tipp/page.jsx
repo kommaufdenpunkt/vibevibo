@@ -135,6 +135,24 @@ function tippBadge(p) {
   );
 }
 
+// 🔴 Einheitliche Spiel-Status-Erkennung — überall identisch genutzt.
+// Primär 4ever1-Status (läuft = Status ist weder 'scheduled' noch 'finished'),
+// Anstoßzeit nur als Notnagel (angepfiffen & plausibel < 2,5 h her).
+const LIVE_FALLBACK_MS = 150 * 60 * 1000;
+const _NOT_LIVE_STATUS = new Set(["", "scheduled", "upcoming", "pending", "ns", "postponed", "tbd"]);
+function matchFinished(m) { return m && m.status === "finished"; }
+function matchState(m, now) {
+  if (!m) return "upcoming";
+  if (m.status === "finished") return "finished";
+  const st = String(m.status || "").toLowerCase();
+  if (st && !_NOT_LIVE_STATUS.has(st)) return "live"; // 4ever1 sagt eindeutig: läuft
+  if (m.kickoffAt && m.kickoffAt <= now) {
+    return m.kickoffAt > now - LIVE_FALLBACK_MS ? "live" : "stale"; // angepfiffen: kurz=live, lange her=gespielt
+  }
+  return "upcoming";
+}
+function matchLive(m, now) { return matchState(m, now) === "live"; }
+
 export default function TippPage() {
   const [tab, setTab] = useState("spiele");
   const [data, setData] = useState(null);
@@ -273,7 +291,7 @@ function projGroupScore(ph, pa, sh, sa) {
 function Blitztabelle({ board, matches }) {
   const now = Date.now();
   const liveMatches = (matches || []).filter(
-    (m) => m.status !== "finished" && m.kickoffAt && m.kickoffAt <= now && m.scoreHome != null && m.scoreAway != null
+    (m) => matchLive(m, now) && m.scoreHome != null && m.scoreAway != null
   );
   const delta = {};
   for (const m of liveMatches) {
@@ -553,33 +571,50 @@ function NextUp({ matches }) {
   const [, force] = useState(0);
   useEffect(() => { const t = setInterval(() => force((x) => x + 1), 1000); return () => clearInterval(t); }, []);
   const now = Date.now();
+  const liveNow = (matches || []).filter((m) => matchLive(m, now)).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
   const upcoming = (matches || [])
-    .filter((m) => m.status !== "finished" && m.kickoffAt && m.kickoffAt > now)
+    .filter((m) => matchState(m, now) === "upcoming" && m.kickoffAt && m.kickoffAt > now)
     .sort((a, b) => a.kickoffAt - b.kickoffAt);
-  const next = upcoming[0];
+  // Alle Spiele mit der frühesten Anstoßzeit (auf die Minute) → zeitgleiche Spiele zusammen zeigen.
+  const firstMin = upcoming.length ? Math.floor(upcoming[0].kickoffAt / 60000) : null;
+  const nextGames = firstMin != null ? upcoming.filter((m) => Math.floor(m.kickoffAt / 60000) === firstMin) : [];
   const isDE = (m) => /deutschland|germany/i.test(m.teamHome || "") || /deutschland|germany/i.test(m.teamAway || "");
   const nextDE = upcoming.find(isDE);
-  if (!next && !nextDE) return null;
+  if (!liveNow.length && !nextGames.length && !nextDE) return null;
 
   function cd(ts) {
     const s = Math.max(0, Math.floor((ts - now) / 1000));
     const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
     return d > 0 ? `${d}T ${h}h ${m}m` : h > 0 ? `${h}h ${m}m ${ss}s` : `${m}m ${ss}s`;
   }
-  const Card = ({ label, m, accent }) => !m ? null : (
-    <div style={{ flex: "1 1 220px", minWidth: 0, borderRadius: 12, padding: "10px 12px", background: CARD, border: `1px solid ${BORDER}` }}>
+  const Card = ({ label, m, accent, live }) => !m ? null : (
+    <div style={{ flex: "1 1 220px", minWidth: 0, borderRadius: 12, padding: "10px 12px", background: CARD, border: `1px solid ${live ? "rgba(221,0,0,0.6)" : BORDER}` }}>
       <div style={{ fontSize: 10.5, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 13.5, fontWeight: 800, color: TXT, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {m.homeFlag || ""} {m.teamHome} – {m.teamAway} {m.awayFlag || ""}
       </div>
-      <div style={{ fontSize: 12, color: MUT, marginTop: 2 }}>{fmtKickoff(m.kickoffAt)}</div>
-      <div style={{ fontSize: 16, fontWeight: 900, color: accent, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>⏳ {cd(m.kickoffAt)}</div>
+      {live ? (
+        <div style={{ fontSize: 16, fontWeight: 900, color: "#ff5a55", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+          {m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway}` : "0:0"} <span style={{ fontSize: 10, fontWeight: 900 }}>● LIVE</span>
+        </div>
+      ) : (
+        <>
+          <div style={{ fontSize: 12, color: MUT, marginTop: 2 }}>{fmtKickoff(m.kickoffAt)}</div>
+          <div style={{ fontSize: 16, fontWeight: 900, color: accent, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>⏳ {cd(m.kickoffAt)}</div>
+        </>
+      )}
     </div>
   );
   return (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-      <Card label="Nächstes Spiel" m={next} accent="#ff6b66" />
-      {nextDE && (!next || nextDE.id !== next.id) && <Card label="Deutschland 🇩🇪" m={nextDE} accent="#ffce00" />}
+      {liveNow.map((m) => <Card key={"l" + m.id} label="🔴 Jetzt live" m={m} accent="#ff5a55" live />)}
+      {nextGames.map((m, i) => (
+        <Card key={"n" + m.id} m={m} accent="#ff6b66"
+          label={i === 0 ? (nextGames.length > 1 ? "Nächste Spiele" : "Nächstes Spiel") : "Zeitgleich"} />
+      ))}
+      {nextDE && !nextGames.some((x) => x.id === nextDE.id) && !liveNow.some((x) => x.id === nextDE.id) && (
+        <Card label="Deutschland 🇩🇪" m={nextDE} accent="#ffce00" />
+      )}
     </div>
   );
 }
@@ -677,13 +712,9 @@ function SongPlayer() {
 // Spiele in Gruppen: 🔴 Läuft · 🎯 Zu tippen · ⏳ Kommend · ✅ Vorbei — Schluss mit Endlos-Scrollen.
 function SpieleListe({ matches, betMap, canTip, onSaved }) {
   const now = Date.now();
-  const isFinished = (m) => m.status === "finished";
-  const isLive = (m) => !isFinished(m) && m.kickoffAt && m.kickoffAt <= now;          // angepfiffen, noch kein Ergebnis
-  const isUpcoming = (m) => !isFinished(m) && (!m.kickoffAt || m.kickoffAt > now);
-
-  const live = matches.filter(isLive).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
-  const vorbei = matches.filter(isFinished).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
-  const kommend = matches.filter(isUpcoming).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
+  const live = matches.filter((m) => matchState(m, now) === "live").sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
+  const vorbei = matches.filter((m) => { const s = matchState(m, now); return s === "finished" || s === "stale"; }).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
+  const kommend = matches.filter((m) => matchState(m, now) === "upcoming").sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
   const DEADLINE = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
   const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id] && (!m.kickoffAt || m.kickoffAt > now + DEADLINE)) : [];
   const groups = { live, zu: zuTippen, kommend, vorbei };
@@ -747,8 +778,10 @@ function Muted({ children, bare }) {
 function MatchCard({ m, bet, canTip, onSaved }) {
   const finished = m.status === "finished";
   const TIP_DEADLINE_MS = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
+  const state = matchState(m, Date.now());
   const locked = finished || (m.kickoffAt && m.kickoffAt <= Date.now() + TIP_DEADLINE_MS);
-  const live = !finished && !!m.kickoffAt && m.kickoffAt <= Date.now();
+  const live = state === "live";
+  const played = state !== "upcoming"; // beendet, live oder „gespielt ohne Ergebnis" → Spielstand statt Tipp-Felder
   const isKO = !!m.phase && m.phase !== "group";
 
   const [h, setH] = useState(bet && bet.predHome != null ? String(bet.predHome) : "");
@@ -768,9 +801,18 @@ function MatchCard({ m, bet, canTip, onSaved }) {
       let body;
       if (h === "" || a === "") { setFlash("⚠ Bitte das Ergebnis (Tore) ausfüllen."); setBusy(false); return; }
       if (isKO) {
-        if (!adv) { setFlash("⚠ Wähle, wer weiterkommt."); setBusy(false); return; }
-        if (!dec) { setFlash("⚠ Wähle, wie entschieden wird."); setBusy(false); return; }
-        body = { matchId: m.id, predHome: Number(h), predAway: Number(a), advPick: adv, decPick: dec };
+        let effAdv, effDec;
+        if (Number(h) === Number(a)) {
+          // Unentschieden nach 90 Min → Verlängerung/Elfmeter entscheiden: beides nötig.
+          if (!adv) { setFlash("⚠ Unentschieden — wähle, wer weiterkommt."); setBusy(false); return; }
+          if (!dec || dec === "reg") { setFlash("⚠ Unentschieden — Verlängerung oder Elfmeter wählen."); setBusy(false); return; }
+          effAdv = adv; effDec = dec;
+        } else {
+          // Klarer Sieg in 90 Min → Weiterkommen + Entscheidung ergeben sich aus dem Ergebnis.
+          effAdv = Number(h) > Number(a) ? "home" : "away";
+          effDec = "reg";
+        }
+        body = { matchId: m.id, predHome: Number(h), predAway: Number(a), advPick: effAdv, decPick: effDec };
       } else {
         body = { matchId: m.id, predHome: Number(h), predAway: Number(a) };
       }
@@ -807,7 +849,7 @@ function MatchCard({ m, bet, canTip, onSaved }) {
           <div style={{ flex: 1, textAlign: "right", fontWeight: 800, fontSize: 15, color: TXT, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
             {m.teamHome} {m.homeFlag || ""}
           </div>
-          {(finished || live) ? (
+          {played ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 22, color: live ? "#ff5a55" : "#fff", textShadow: live ? "0 0 10px rgba(221,0,0,0.5)" : "none" }}>
                 {hasScore ? <><span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span></> : <span style={{ color: MUT }}>{live ? "0:0" : "–"}</span>}
@@ -841,45 +883,66 @@ function MatchCard({ m, bet, canTip, onSaved }) {
           </div>
         </div>
 
-        {/* K.o.-Tipp: Weiterkommen + Entscheidungsart (mobilfreundlich) */}
-        {isKO && canEdit && (
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>➡ Wer kommt weiter? <span style={{ color: MUT, fontWeight: 600 }}>(+1)</span></div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {[["home", m.teamHome, m.homeFlag], ["away", m.teamAway, m.awayFlag]].map(([side, name, flag]) => {
-                  const active = adv === side;
-                  return (
-                    <button key={side} type="button" onClick={() => setAdv(side)} style={{
-                      flex: 1, minWidth: 0, padding: "10px 8px", borderRadius: 9, fontFamily: "inherit", fontSize: 12.5, fontWeight: 800,
-                      cursor: "pointer", background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
-                      color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.35)" : `1px solid ${BORDER}`,
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    }}>{active ? "✓ " : ""}{flag || ""} {name}</button>
-                  );
-                })}
+        {/* K.o.-Tipp: bei klarem Sieg ergibt sich alles aus dem Ergebnis;
+            nur bei Unentschieden fragen wir nach Weiterkommen + Verlängerung/Elfmeter. */}
+        {isKO && canEdit && (() => {
+          const bothFilled = h !== "" && a !== "";
+          if (!bothFilled) {
+            return (
+              <div style={{ marginTop: 10, fontSize: 11.5, color: MUT, lineHeight: 1.4 }}>
+                ⬆ Erst das Ergebnis tippen. Bei einem <b style={{ color: TXT }}>Unentschieden</b> fragen wir dann nach Verlängerung/Elfmeter.
+              </div>
+            );
+          }
+          if (Number(h) !== Number(a)) {
+            const winName = Number(h) > Number(a) ? `${m.homeFlag || ""} ${m.teamHome}` : `${m.awayFlag || ""} ${m.teamAway}`;
+            return (
+              <div style={{ marginTop: 12, padding: "9px 12px", borderRadius: 9, background: "rgba(74,222,128,0.10)", border: "1px solid rgba(74,222,128,0.35)", fontSize: 12, fontWeight: 700, color: "#86efac", lineHeight: 1.4 }}>
+                ✓ <b style={{ color: "#fff" }}>{winName}</b> kommt weiter · entschieden <b style={{ color: "#fff" }}>in 90 Min</b> <span style={{ color: MUT, fontWeight: 600 }}>— ergibt sich aus deinem Ergebnis</span>
+              </div>
+            );
+          }
+          // Unentschieden nach 90 Min → es geht in Verlängerung/Elfmeter.
+          return (
+            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+              <div style={{ fontSize: 11.5, color: "#ffce00", fontWeight: 700 }}>⚖ Unentschieden nach 90 Min — es muss verlängert werden:</div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>➡ Wer kommt weiter? <span style={{ color: MUT, fontWeight: 600 }}>(+1)</span></div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {[["home", m.teamHome, m.homeFlag], ["away", m.teamAway, m.awayFlag]].map(([side, name, flag]) => {
+                    const active = adv === side;
+                    return (
+                      <button key={side} type="button" onClick={() => setAdv(side)} style={{
+                        flex: 1, minWidth: 0, padding: "10px 8px", borderRadius: 9, fontFamily: "inherit", fontSize: 12.5, fontWeight: 800,
+                        cursor: "pointer", background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
+                        color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.35)" : `1px solid ${BORDER}`,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>{active ? "✓ " : ""}{flag || ""} {name}</button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>⏱ Wie fällt die Entscheidung? <span style={{ color: MUT, fontWeight: 600 }}>(richtig + / falsch −)</span></div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {["aet", "pen"].map((k) => {
+                    const active = dec === k;
+                    return (
+                      <button key={k} type="button" onClick={() => setDec(k)} style={{
+                        flex: "1 1 120px", minWidth: 0, padding: "9px 6px", borderRadius: 9, fontFamily: "inherit", fontSize: 11.5, fontWeight: 800,
+                        cursor: "pointer", background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
+                        color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.35)" : `1px solid ${BORDER}`,
+                        lineHeight: 1.25, textAlign: "center",
+                      }}>
+                        {DEC_LONG[k]}<br /><span style={{ fontSize: 10, color: active ? "#ffce00" : MUT }}>+{DEC_REWARD[k]} / {DEC_PENALTY[k]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>⏱ Wie fällt die Entscheidung? <span style={{ color: MUT, fontWeight: 600 }}>(richtig + / falsch −)</span></div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {DEC_ORDER.map((k) => {
-                  const active = dec === k;
-                  return (
-                    <button key={k} type="button" onClick={() => setDec(k)} style={{
-                      flex: "1 1 92px", minWidth: 0, padding: "9px 6px", borderRadius: 9, fontFamily: "inherit", fontSize: 11.5, fontWeight: 800,
-                      cursor: "pointer", background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
-                      color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.35)" : `1px solid ${BORDER}`,
-                      lineHeight: 1.25, textAlign: "center",
-                    }}>
-                      {DEC_LONG[k]}<br /><span style={{ fontSize: 10, color: active ? "#ffce00" : MUT }}>+{DEC_REWARD[k]} / {DEC_PENALTY[k]}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* K.o. abgeschlossen: wer ist weiter + Punkte */}
         {isKO && finished && m.winner && (
