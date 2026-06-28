@@ -2,6 +2,7 @@
 
 // 👥 Öffentliche Mitglieder-Page — Discovery mit Suche + Filter
 //    Respektiert alle Block-Filter automatisch via API.
+//    Farben auf Theme-Variablen umgestellt → dunkel im Dark-Mode, hell im Light-Mode.
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -68,7 +69,7 @@ export default function MitgliederPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: "20px auto", padding: 14 }}>
-      {/* Header */}
+      {/* Header (Text auf dunklem Body → hell) */}
       <h1 style={{
         fontSize: 26, fontWeight: 900, color: "#ffffff", margin: "0 0 4px",
         textShadow: "0 2px 4px rgba(0,0,0,0.6)",
@@ -89,9 +90,10 @@ export default function MitgliederPage() {
         placeholder="🔍 Name, @username, Stadt oder Schule…"
         style={{
           width: "100%", padding: "12px 16px", borderRadius: 12,
-          border: "1.5px solid #cbd5e1", fontSize: 14,
+          border: "1.5px solid var(--vv-border, #cbd5e1)", fontSize: 14,
           fontFamily: "inherit", boxSizing: "border-box",
-          background: "rgba(255,255,255,0.95)",
+          background: "var(--vv-card, rgba(255,255,255,0.95))",
+          color: "var(--vv-text, #1c1c1e)",
           marginBottom: 10,
         }}
       />
@@ -105,9 +107,9 @@ export default function MitgliederPage() {
           return (
             <button key={f.id} onClick={() => setFilter(f.id)} style={{
               padding: "8px 14px", borderRadius: 999, fontSize: 12, fontWeight: 800,
-              background: active ? "linear-gradient(135deg, #ec4899, #a855f7)" : "rgba(255,255,255,0.85)",
-              color: active ? "#fff" : "#475569",
-              border: active ? "1.5px ridge #fff" : "1.5px solid rgba(0,0,0,0.08)",
+              background: active ? "linear-gradient(135deg, #ec4899, #a855f7)" : "var(--vv-card, rgba(255,255,255,0.85))",
+              color: active ? "#fff" : "var(--vv-text, #475569)",
+              border: active ? "1.5px ridge #fff" : "1.5px solid var(--vv-border, rgba(0,0,0,0.08))",
               cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
               boxShadow: active ? "0 2px 6px rgba(236,72,153,0.3)" : "none",
             }}>{f.label}</button>
@@ -125,9 +127,9 @@ export default function MitgliederPage() {
         <div style={{ padding: 30, textAlign: "center", color: "rgba(255,255,255,0.7)" }}>Lädt…</div>
       ) : data.members.length === 0 ? (
         <div style={{
-          padding: 40, textAlign: "center", color: "#475569",
-          background: "rgba(255,255,255,0.7)", borderRadius: 14,
-          border: "1px dashed rgba(0,0,0,0.08)",
+          padding: 40, textAlign: "center", color: "var(--vv-text, #475569)",
+          background: "var(--vv-card, rgba(255,255,255,0.7))", borderRadius: 14,
+          border: "1px dashed var(--vv-border, rgba(0,0,0,0.08))",
         }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>🌸</div>
           <strong>Keine Mitglieder gefunden</strong>
@@ -177,7 +179,7 @@ export default function MitgliederPage() {
 function pgBtn(enabled) {
   return {
     padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 800,
-    background: enabled ? "linear-gradient(135deg, #ec4899, #a855f7)" : "#cbd5e1",
+    background: enabled ? "linear-gradient(135deg, #ec4899, #a855f7)" : "#64748b",
     color: "#fff", border: "none",
     cursor: enabled ? "pointer" : "not-allowed",
     fontFamily: "inherit",
@@ -192,10 +194,10 @@ function MemberCard({ m }) {
 
   return (
     <div style={{
-      background: "rgba(255,255,255,0.95)", borderRadius: 14, padding: 14,
-      border: "1.5px solid rgba(0,0,0,0.06)",
+      background: "var(--vv-card, rgba(255,255,255,0.95))", borderRadius: 14, padding: 14,
+      border: "1.5px solid var(--vv-border, rgba(0,0,0,0.06))",
       display: "flex", flexDirection: "column", gap: 10,
-      boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
     }}>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
         {/* Avatar */}
@@ -204,9 +206,9 @@ function MemberCard({ m }) {
           width: 56, height: 56, borderRadius: "50%",
           background: showAvatar
             ? `url(${m.avatarUrl}) center/cover no-repeat`
-            : "linear-gradient(135deg, #ddd6fe, #fce7f3)",
-          border: "2px solid #fff",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            : "linear-gradient(135deg, #5b21b6, #be185d)",
+          border: "2px solid rgba(255,255,255,0.15)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 26, textDecoration: "none",
         }}>
@@ -215,7 +217,7 @@ function MemberCard({ m }) {
             <span style={{
               position: "absolute", bottom: 0, right: 0,
               width: 14, height: 14, borderRadius: "50%",
-              background: "#22c55e", border: "2px solid #fff",
+              background: "#22c55e", border: "2px solid #0c0d0f",
             }} title="Online" />
           )}
           {hasVIP && (
@@ -229,20 +231,20 @@ function MemberCard({ m }) {
         {/* Name + meta */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <Link href={`/u/${m.username}`} style={{
-            fontSize: 14, fontWeight: 800, color: "#1c1c1e",
+            fontSize: 14, fontWeight: 800, color: "var(--vv-text, #1c1c1e)",
             textDecoration: "none", display: "block",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
             {m.displayName || m.username}
           </Link>
-          <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: "var(--vv-muted, #94a3b8)", marginTop: 2 }}>
             @{m.username}
             {age && (
               <> · {m.gender === "w" ? "♀" : m.gender === "m" ? "♂" : ""} {age}</>
             )}
           </div>
           {m.city && (
-            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2,
+            <div style={{ fontSize: 11, color: "var(--vv-muted, #94a3b8)", marginTop: 2,
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               📍 {m.city}
             </div>
@@ -253,7 +255,7 @@ function MemberCard({ m }) {
       {/* Actions */}
       <div style={{
         display: "flex", gap: 6, alignItems: "center", justifyContent: "space-between",
-        paddingTop: 8, borderTop: "1px solid rgba(0,0,0,0.06)",
+        paddingTop: 8, borderTop: "1px solid var(--vv-border, rgba(0,0,0,0.06))",
       }}>
         <FriendButton username={m.username} />
         <BlockButton username={m.username} compact />

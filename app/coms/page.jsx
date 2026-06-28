@@ -96,7 +96,7 @@ export default function GruppenPage() {
       {me && (
       <div className="vv-card">
         <div className="vv-row" style={{ alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 12, color: "#64748b" }}>
+          <div style={{ fontSize: 12, color: "var(--vv-muted, #94a3b8)" }}>
             Eine Com gründen kostet <b style={{ color: "#ec4899" }}>{createCost} ✨</b>
             {balance != null && (
               <> · Dein Kontostand: <b>{balance} ✨</b></>
@@ -138,7 +138,7 @@ export default function GruppenPage() {
 
       {/* Filter-Bar */}
       <div className="vv-card" style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--vv-muted, #94a3b8)", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
           Sortierung
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
@@ -153,7 +153,7 @@ export default function GruppenPage() {
             </button>
           ))}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--vv-muted, #94a3b8)", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>
           Kategorie
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
@@ -206,7 +206,7 @@ export default function GruppenPage() {
                     {g.name}
                     <code style={{
                       marginLeft: 8, fontSize: 11, fontWeight: 600,
-                      color: "#64748b", background: "#f1f5f9",
+                      color: "var(--vv-muted, #94a3b8)", background: "rgba(255,255,255,0.08)",
                       padding: "1px 6px", borderRadius: 4,
                       fontFamily: "ui-monospace, Menlo, monospace",
                     }}>/{g.slug}</code>
@@ -252,7 +252,7 @@ export default function GruppenPage() {
                     {g.name}
                     <code style={{
                       marginLeft: 8, fontSize: 11, fontWeight: 600,
-                      color: "#64748b", background: "#f1f5f9",
+                      color: "var(--vv-muted, #94a3b8)", background: "rgba(255,255,255,0.08)",
                       padding: "1px 6px", borderRadius: 4,
                       fontFamily: "ui-monospace, Menlo, monospace",
                     }}>/{g.slug}</code>
@@ -270,8 +270,8 @@ export default function GruppenPage() {
 
 function chipStyle(active, extra = {}) {
   return {
-    background: active ? "linear-gradient(135deg, #ec4899, #8b5cf6)" : "rgba(255,255,255,0.85)",
-    color: active ? "#fff" : "#475569",
+    background: active ? "linear-gradient(135deg, #ec4899, #8b5cf6)" : "rgba(255,255,255,0.06)",
+    color: active ? "#fff" : "var(--vv-text, #cbd5e1)",
     border: active ? "none" : "1px solid rgba(0,0,0,0.08)",
     padding: "5px 12px",
     borderRadius: 999,

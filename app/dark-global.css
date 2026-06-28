@@ -70,3 +70,25 @@
 }
 /* Einstellungs-Zeilen im Profil-Tab */
 [data-theme="dark"] .vv-msgapp-link-row { color: #e7ecff !important; }
+
+/* ── 🆕 /neu (Was ist neu) — Pastell → dunkel ── */
+[data-theme="dark"] .vv-neu-hero {
+  background: linear-gradient(135deg, #17181c, #0c0d0f) !important;
+  border-color: rgba(140, 170, 255, 0.15) !important;
+  color: #e7ecff !important;
+}
+[data-theme="dark"] .vv-neu-title { color: #ffffff !important; }
+[data-theme="dark"] .vv-neu-sub,
+[data-theme="dark"] .vv-neu-back { color: #aab2c5 !important; }
+[data-theme="dark"] .vv-neu-day-title { color: #ffce00 !important; }
+[data-theme="dark"] .vv-neu-item,
+[data-theme="dark"] .vv-neu-empty {
+  background: rgba(18, 22, 48, 0.55) !important;
+  border-color: rgba(140, 170, 255, 0.12) !important;
+  color: #e7ecff !important;
+}
+[data-theme="dark"] .vv-neu-itemtitle { color: #e7ecff !important; }
+[data-theme="dark"] .vv-neu-itemtime { color: #8b93a7 !important; }
+
+/* ── 👥 /coms — heller Anlege-Form-Hintergrund (#fff7d6) abdunkeln ── */
+[data-theme="dark"] [style*="#fff7d6"] { background: rgba(255, 206, 0, 0.08) !important; }
