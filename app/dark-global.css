@@ -1,0 +1,29 @@
+/* 🌙 Globales Dunkel — universelle Chrome-Flächen für ALLE Seiten.
+ * Lädt NACH dark-2007.css, greift nur unter [data-theme="dark"] (Default).
+ * Light-Mode bleibt komplett unberührt.
+ *
+ * Grund: dark-2007.css dämpft nur Body/.vv-card/MCP — Banner, Footer und der
+ * Seiten-Wrapper blieben hell und thronten auf jeder Seite. Das fixt das zentral.
+ */
+
+/* ── Banner (Kopf) — blau-orange → dunkel; Logo + Slogan bleiben hell ── */
+[data-theme="dark"] .vv-banner {
+  background: linear-gradient(180deg, #17181c 0%, #0c0d0f 100%) !important;
+  border: none !important;
+  border-bottom: 2px solid rgba(255, 206, 0, 0.28) !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .vv-banner .vv-slogan { color: #c9ccd1 !important; }
+
+/* ── Footer — heller Verlauf → dunkel; Links lesbar ── */
+[data-theme="dark"] .vv-footer {
+  background: #0c0d0f !important;
+  color: #9aa0a6 !important;
+  border: none !important;
+  border-top: 1px solid rgba(140, 170, 255, 0.12) !important;
+}
+[data-theme="dark"] .vv-footer a { color: #cbd5e1 !important; }
+[data-theme="dark"] .vv-footer .vv-muted { color: #71767c !important; }
+
+/* ── Seiten-Wrapper transparent, damit der dunkle Body durchscheint ── */
+[data-theme="dark"] .vv-page { background: transparent !important; }
