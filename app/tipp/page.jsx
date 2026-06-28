@@ -175,7 +175,7 @@ export default function TippPage() {
   // Live: alle 45 s still aktualisieren + beim Zurückkehren zum Tab. So tauchen
   // neue/laufende Spiele von selbst auf, ohne sichtbares Neuladen.
   useEffect(() => {
-    const t = setInterval(() => { silentLoad(); loadBoard(); }, 45000);
+    const t = setInterval(() => { silentLoad(); loadBoard(); }, 20000);
     const onFocus = () => { silentLoad(); loadBoard(); };
     window.addEventListener("focus", onFocus);
     return () => { clearInterval(t); window.removeEventListener("focus", onFocus); };
@@ -272,8 +272,9 @@ function projGroupScore(ph, pa, sh, sa) {
 // für aktuell LAUFENDE Spiele (was käme dazu, wenn sie jetzt so endeten).
 function Blitztabelle({ board, matches }) {
   const now = Date.now();
+  const LIVE_WINDOW = 150 * 60 * 1000; // nur echt laufende Spiele (~2,5 h nach Anpfiff) hochrechnen
   const liveMatches = (matches || []).filter(
-    (m) => m.status !== "finished" && m.kickoffAt && m.kickoffAt <= now && m.scoreHome != null && m.scoreAway != null
+    (m) => m.status !== "finished" && m.kickoffAt && m.kickoffAt <= now && m.kickoffAt > now - LIVE_WINDOW && m.scoreHome != null && m.scoreAway != null
   );
   const delta = {};
   for (const m of liveMatches) {
@@ -677,12 +678,14 @@ function SongPlayer() {
 // Spiele in Gruppen: 🔴 Läuft · 🎯 Zu tippen · ⏳ Kommend · ✅ Vorbei — Schluss mit Endlos-Scrollen.
 function SpieleListe({ matches, betMap, canTip, onSaved }) {
   const now = Date.now();
+  const LIVE_WINDOW = 150 * 60 * 1000; // nur ~2,5 h nach Anpfiff gilt ein Spiel als "live" (90 Min + Pause + Verl. + Puffer)
   const isFinished = (m) => m.status === "finished";
-  const isLive = (m) => !isFinished(m) && m.kickoffAt && m.kickoffAt <= now;          // Anpfiff war, noch kein Ergebnis
+  const isLive = (m) => !isFinished(m) && m.kickoffAt && m.kickoffAt <= now && m.kickoffAt > now - LIVE_WINDOW; // wirklich gerade im Gange
+  const isPastNoResult = (m) => !isFinished(m) && m.kickoffAt && m.kickoffAt <= now - LIVE_WINDOW; // angepfiffen, Fenster vorbei, kein Ergebnis → gilt als gespielt
   const isUpcoming = (m) => !isFinished(m) && (!m.kickoffAt || m.kickoffAt > now);
 
   const live = matches.filter(isLive).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
-  const vorbei = matches.filter(isFinished).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
+  const vorbei = matches.filter((m) => isFinished(m) || isPastNoResult(m)).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
   const kommend = matches.filter(isUpcoming).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
   const DEADLINE = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
   const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id] && (!m.kickoffAt || m.kickoffAt > now + DEADLINE)) : [];
@@ -747,8 +750,10 @@ function Muted({ children, bare }) {
 function MatchCard({ m, bet, canTip, onSaved }) {
   const finished = m.status === "finished";
   const TIP_DEADLINE_MS = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
+  const LIVE_WINDOW = 150 * 60 * 1000;    // nur ~2,5 h nach Anpfiff gilt ein Spiel als "live"
   const locked = finished || (m.kickoffAt && m.kickoffAt <= Date.now() + TIP_DEADLINE_MS);
-  const live = !finished && !!m.kickoffAt && m.kickoffAt <= Date.now();
+  const live = !finished && !!m.kickoffAt && m.kickoffAt <= Date.now() && m.kickoffAt > Date.now() - LIVE_WINDOW;
+  const pastNoResult = !finished && !!m.kickoffAt && m.kickoffAt <= Date.now() - LIVE_WINDOW; // gespielt, aber noch kein Ergebnis
   const isKO = !!m.phase && m.phase !== "group";
 
   const [h, setH] = useState(bet && bet.predHome != null ? String(bet.predHome) : "");
@@ -807,11 +812,12 @@ function MatchCard({ m, bet, canTip, onSaved }) {
           <div style={{ flex: 1, textAlign: "right", fontWeight: 800, fontSize: 15, color: TXT, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
             {m.teamHome} {m.homeFlag || ""}
           </div>
-          {finished ? (
+          {(finished || live || pastNoResult) ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 20, color: "#fff" }}>
-                {hasScore ? <><span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span></> : <span style={{ color: MUT }}>–</span>}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 22, color: live ? "#ff5a55" : "#fff", textShadow: live ? "0 0 10px rgba(221,0,0,0.5)" : "none" }}>
+                {hasScore ? <><span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span></> : <span style={{ color: MUT }}>{live ? "0:0" : "–"}</span>}
               </div>
+              {live && <span style={{ fontSize: 9.5, fontWeight: 900, color: "#ff5a55", letterSpacing: 0.5 }}>● LIVE</span>}
               {isKO && m.decision && m.decision !== "reg" && (
                 <span style={{ fontSize: 9.5, fontWeight: 800, color: "#ffce00", letterSpacing: 0.4, whiteSpace: "nowrap" }}>
                   {m.decision === "pen"
