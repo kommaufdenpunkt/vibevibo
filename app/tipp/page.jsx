@@ -160,7 +160,7 @@ export default function TippPage() {
               WM-TIPP 2026 <span style={{ fontStyle: "normal" }}>🇩🇪</span>
             </div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: MUT, marginTop: 5, lineHeight: 1.45 }}>
-              Tippe jedes Spiel. Punkte: <b style={{ color: TXT }}>exakt 4</b> · <b style={{ color: TXT }}>Tordifferenz 3</b> · <b style={{ color: TXT }}>Tendenz 2</b>. Tipp-Schluss ist immer der Anpfiff.
+              Tippe jedes Spiel. Punkte: <b style={{ color: TXT }}>exakt 4</b> · <b style={{ color: TXT }}>Tordifferenz 3</b> · <b style={{ color: TXT }}>Tendenz 2</b>. Tipp-Schluss ist immer der Anpfiff. K.o.-Spiele: gewertet wird das <b style={{ color: TXT }}>90-Min-Ergebnis</b> + <b style={{ color: "#ffce00" }}>1 Bonus</b> fürs richtige Weiterkommen.
             </div>
           </div>
           <FlagBand h={5} />
@@ -169,7 +169,7 @@ export default function TippPage() {
         {/* TABS */}
         <div style={{ display: "flex", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)" }}>
           <TabBtn active={tab === "spiele"} onClick={() => setTab("spiele")}>⚽ Spiele</TabBtn>
-          <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>🏆 Bestenliste</TabBtn>
+          <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>⚡ Blitztabelle</TabBtn>
         </div>
 
         {err && (
@@ -312,18 +312,24 @@ function SongPlayer() {
   );
 }
 
-// Spiele in Gruppen: 🎯 Zu tippen · ⏳ Kommend · ✅ Vorbei — Schluss mit Endlos-Scrollen.
+// Spiele in Gruppen: 🔴 Läuft · 🎯 Zu tippen · ⏳ Kommend · ✅ Vorbei — Schluss mit Endlos-Scrollen.
 function SpieleListe({ matches, betMap, canTip, onSaved }) {
   const now = Date.now();
-  const isStarted = (m) => m.status === "finished" || (m.kickoffAt && m.kickoffAt <= now);
-  const vorbei = matches.filter(isStarted).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
-  const kommend = matches.filter((m) => !isStarted(m)).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
+  const isFinished = (m) => m.status === "finished";
+  const isLive = (m) => !isFinished(m) && m.kickoffAt && m.kickoffAt <= now;          // Anpfiff war, noch kein Ergebnis
+  const isUpcoming = (m) => !isFinished(m) && (!m.kickoffAt || m.kickoffAt > now);
+
+  const live = matches.filter(isLive).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
+  const vorbei = matches.filter(isFinished).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
+  const kommend = matches.filter(isUpcoming).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
   const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id]) : [];
-  const groups = { zu: zuTippen, kommend, vorbei };
-  const def = zuTippen.length ? "zu" : kommend.length ? "kommend" : "vorbei";
+  const groups = { live, zu: zuTippen, kommend, vorbei };
+  // Läuft gerade kommt immer zuerst.
+  const def = live.length ? "live" : zuTippen.length ? "zu" : kommend.length ? "kommend" : "vorbei";
   const [sel, setSel] = useState(def);
 
   const chips = [];
+  if (live.length) chips.push(["live", "🔴 Läuft gerade", live.length]);
   if (canTip) chips.push(["zu", "🎯 Zu tippen", zuTippen.length]);
   chips.push(["kommend", "⏳ Kommend", kommend.length]);
   chips.push(["vorbei", "✅ Vorbei", vorbei.length]);
@@ -344,7 +350,7 @@ function SpieleListe({ matches, betMap, canTip, onSaved }) {
         })}
       </div>
       {list.length === 0 ? (
-        <Muted>{sel === "zu" ? "Alles getippt — stark! 🎯" : sel === "kommend" ? "Keine anstehenden Spiele." : "Noch keine gespielten Spiele."}</Muted>
+        <Muted>{sel === "live" ? "Gerade läuft kein Spiel." : sel === "zu" ? "Alles getippt — stark! 🎯" : sel === "kommend" ? "Keine anstehenden Spiele." : "Noch keine gespielten Spiele."}</Muted>
       ) : (
         list.map((m) => <MatchCard key={m.id} m={m} bet={betMap[m.id]} canTip={canTip} onSaved={onSaved} />)
       )}
@@ -378,21 +384,35 @@ function Muted({ children, bare }) {
 function MatchCard({ m, bet, canTip, onSaved }) {
   const finished = m.status === "finished";
   const locked = finished || (m.kickoffAt && m.kickoffAt <= Date.now());
+  const live = !finished && !!m.kickoffAt && m.kickoffAt <= Date.now();
   const [h, setH] = useState(bet ? String(bet.predHome) : "");
   const [a, setA] = useState(bet ? String(bet.predAway) : "");
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
   const [showTips, setShowTips] = useState(false);
+  const [adv, setAdv] = useState(bet?.advPick || "");
   const tips = m.importedTips || [];
+
+  // K.o.-Spiel? (alles außer Gruppenphase)
+  const isKO = !!m.phase && m.phase !== "group";
+  const nh = h === "" ? null : Number(h);
+  const na = a === "" ? null : Number(a);
+  const bothSet = nh != null && na != null;
+  const isDrawTip = bothSet && nh === na;
+  const impliedAdv = !bothSet ? "" : nh > na ? "home" : na > nh ? "away" : ""; // klares Ergebnis ⇒ Sieger
+  const effAdv = impliedAdv || adv; // bei Unentschieden zählt die manuelle Wahl
 
   async function save() {
     if (h === "" || a === "") { setFlash("⚠ Beide Felder ausfüllen."); return; }
+    if (isKO && isDrawTip && !adv) { setFlash("⚠ Unentschieden: bitte wähle, wer weiterkommt."); return; }
     setBusy(true); setFlash("");
     try {
+      const body = { matchId: m.id, predHome: Number(h), predAway: Number(a) };
+      if (isKO) body.advPick = effAdv || undefined;
       const r = await fetch("/api/tipp/bet", {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId: m.id, predHome: Number(h), predAway: Number(a) }),
+        body: JSON.stringify(body),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || "Speichern fehlgeschlagen.");
@@ -411,7 +431,11 @@ function MatchCard({ m, bet, canTip, onSaved }) {
           <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.5, color: "#ff6b66", textTransform: "uppercase" }}>
             {PHASE_LABEL[m.phase] || m.phase}{m.groupLetter ? ` · Gruppe ${m.groupLetter}` : ""}
           </span>
-          <span style={{ fontSize: 11, color: MUT }}>{fmtKickoff(m.kickoffAt)}</span>
+          {live ? (
+            <span style={{ fontSize: 10.5, fontWeight: 900, color: "#fff", background: "#DD0000", padding: "2px 8px", borderRadius: 999, letterSpacing: 0.5 }}>🔴 LÄUFT</span>
+          ) : (
+            <span style={{ fontSize: 11, color: MUT }}>{fmtKickoff(m.kickoffAt)}</span>
+          )}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -419,8 +443,17 @@ function MatchCard({ m, bet, canTip, onSaved }) {
             {m.teamHome} {m.homeFlag || ""}
           </div>
           {finished ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 20, color: "#fff" }}>
-              <span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 20, color: "#fff" }}>
+                <span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span>
+              </div>
+              {isKO && m.decision && m.decision !== "reg" && (
+                <span style={{ fontSize: 9.5, fontWeight: 800, color: "#ffce00", letterSpacing: 0.4, whiteSpace: "nowrap" }}>
+                  {m.decision === "pen"
+                    ? `i.E.${m.penHome != null && m.penAway != null ? ` ${m.penHome}:${m.penAway}` : ""}`
+                    : `n.V.${m.aetHome != null && m.aetAway != null ? ` ${m.aetHome}:${m.aetAway}` : ""}`}
+                </span>
+              )}
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -441,6 +474,39 @@ function MatchCard({ m, bet, canTip, onSaved }) {
             {m.awayFlag || ""} {m.teamAway}
           </div>
         </div>
+
+        {isKO && (finished ? (
+          m.winner ? (
+            <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: "#86efac", textAlign: "center" }}>
+              ✅ <b style={{ color: "#fff" }}>{m.winner === "home" ? m.teamHome : m.teamAway}</b> kommt weiter
+              {bet && bet.bonus ? <span style={{ color: GOLD }}> · dein Bonus +1 🎯</span> : null}
+            </div>
+          ) : null
+        ) : (!locked && canTip && bothSet) ? (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontSize: 11, color: MUT, marginBottom: 5 }}>
+              Wer kommt weiter? {isDrawTip
+                ? <b style={{ color: "#ffce00" }}>· Pflicht bei Unentschieden</b>
+                : <span style={{ opacity: 0.8 }}>(durch dein Ergebnis vorgegeben)</span>}
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {[["home", m.teamHome, m.homeFlag], ["away", m.teamAway, m.awayFlag]].map(([side, name, flag]) => {
+                const active = effAdv === side;
+                const forced = !isDrawTip && !!impliedAdv && impliedAdv !== side;
+                return (
+                  <button key={side} type="button" disabled={forced} onClick={() => setAdv(side)} style={{
+                    flex: 1, padding: "7px 8px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, fontWeight: 800,
+                    cursor: forced ? "not-allowed" : "pointer", opacity: forced ? 0.4 : 1,
+                    background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
+                    color: active ? "#fff" : MUT,
+                    border: active ? "1px solid rgba(255,255,255,0.3)" : `1px solid ${BORDER}`,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>{active ? "➡ " : ""}{flag || ""} {name}</button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null)}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 10, minHeight: 22, flexWrap: "wrap" }}>
           <div style={{ fontSize: 11.5, color: MUT }}>
@@ -536,7 +602,7 @@ function AdminPanel({ onChanged, matches }) {
   }
 
   async function runImport() {
-    if (!confirm("Alle Daten von tipp.4ever1.tv holen und übernehmen?\n(Teams, Spiele, Ergebnisse, Bestenliste, alle Tipps)")) return;
+    if (!confirm("Alle Daten von tipp.4ever1.tv holen und übernehmen?\n(Teams, Spiele, Ergebnisse, Blitztabelle, alle Tipps)")) return;
     setImporting(true); setImportMsg("⏳ Hole Daten von 4ever1 … das dauert ein paar Sekunden.");
     try {
       const r = await fetch("/api/tipp/import-4ever1", { method: "POST", credentials: "include" });
@@ -558,10 +624,31 @@ function AdminPanel({ onChanged, matches }) {
     finally { setBusy(false); }
   }
 
-  async function setResult(id) {
-    const sh = prompt("Tore Heim?"); if (sh === null) return;
-    const sa = prompt("Tore Auswärts?"); if (sa === null) return;
-    try { await post({ action: "set_result", matchId: id, scoreHome: Number(sh), scoreAway: Number(sa) }); onChanged?.(); }
+  async function setResult(m) {
+    const id = m.id;
+    const sh = prompt(`Tore ${m.teamHome} (nach 90 Min)?`, m.scoreHome ?? ""); if (sh === null) return;
+    const sa = prompt(`Tore ${m.teamAway} (nach 90 Min)?`, m.scoreAway ?? ""); if (sa === null) return;
+    const body = { action: "set_result", matchId: id, scoreHome: Number(sh), scoreAway: Number(sa) };
+    const isKO = m.phase && m.phase !== "group";
+    if (isKO) {
+      if (Number(sh) === Number(sa)) {
+        // Unentschieden nach 90 Min → Verlängerung/Elfmeter + Sieger
+        const dec = (prompt("Entschieden durch?  v = Verlängerung (n.V.)   ·   e = Elfmeter (i.E.)", "e") || "").toLowerCase();
+        body.decision = dec.startsWith("v") ? "aet" : "pen";
+        const w = (prompt(`Wer kommt weiter?  h = ${m.teamHome}   ·   a = ${m.teamAway}`, "h") || "").toLowerCase();
+        body.winner = w.startsWith("a") ? "away" : "home";
+        if (body.decision === "pen") {
+          const ph = prompt("Elfmeter-Endstand Heim? (optional)", ""); if (ph) body.penHome = Number(ph);
+          const pa = prompt("Elfmeter-Endstand Auswärts? (optional)", ""); if (pa) body.penAway = Number(pa);
+        } else {
+          const ah = prompt("Endstand nach Verlängerung Heim? (optional)", ""); if (ah) body.aetHome = Number(ah);
+          const aa = prompt("Endstand nach Verlängerung Auswärts? (optional)", ""); if (aa) body.aetAway = Number(aa);
+        }
+      } else {
+        body.decision = "reg"; // in 90 Min entschieden — Sieger = Führender (leitet das Backend ab)
+      }
+    }
+    try { await post(body); onChanged?.(); }
     catch (e) { alert("⚠ " + e.message); }
   }
 
@@ -583,7 +670,7 @@ function AdminPanel({ onChanged, matches }) {
           <div style={{ marginBottom: 12, padding: 12, borderRadius: 10, background: "rgba(0,0,0,0.28)", border: `1px solid ${BORDER}` }}>
             <div style={{ fontWeight: 800, fontSize: 13, color: TXT, marginBottom: 4 }}>📥 Von tipp.4ever1.tv übernehmen</div>
             <div style={{ fontSize: 11.5, color: MUT, marginBottom: 8, lineHeight: 1.4 }}>
-              Holt Teams, Spiele, Ergebnisse, Bestenliste und alle Tipps direkt von 4ever1. Mehrfach ausführbar (aktualisiert).
+              Holt Teams, Spiele, Ergebnisse, Blitztabelle und alle Tipps direkt von 4ever1. Mehrfach ausführbar (aktualisiert).
             </div>
             <button type="button" onClick={runImport} disabled={importing} style={{
               padding: "9px 14px", borderRadius: 9, border: "none", cursor: importing ? "wait" : "pointer",
@@ -612,9 +699,11 @@ function AdminPanel({ onChanged, matches }) {
             <div style={{ display: "flex", gap: 6 }}>
               <select value={phase} onChange={(e) => setPhase(e.target.value)} style={{ ...adminInput, flex: "0 0 150px" }}>
                 <option value="group">Gruppenphase</option>
+                <option value="r32">Sechzehntelfinale</option>
                 <option value="r16">Achtelfinale</option>
                 <option value="qf">Viertelfinale</option>
                 <option value="sf">Halbfinale</option>
+                <option value="3rd">Spiel um Platz 3</option>
                 <option value="final">Finale</option>
               </select>
               <input type="datetime-local" value={kickoff} onChange={(e) => setKickoff(e.target.value)} style={adminInput} />
@@ -635,7 +724,7 @@ function AdminPanel({ onChanged, matches }) {
                     <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {m.teamHome} – {m.teamAway} {m.status === "finished" ? `(${m.scoreHome}:${m.scoreAway})` : ""}
                     </span>
-                    <button type="button" onClick={() => setResult(m.id)} style={miniBtn("#60a5fa")}>Ergebnis</button>
+                    <button type="button" onClick={() => setResult(m)} style={miniBtn("#60a5fa")}>Ergebnis</button>
                     <button type="button" onClick={() => del(m.id)} style={miniBtn("#f87171")}>🗑</button>
                   </div>
                 ))}

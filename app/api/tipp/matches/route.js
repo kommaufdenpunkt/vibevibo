@@ -1,4 +1,4 @@
-// GET /api/tipp/matches → { matches (mit Flaggen + importierten Tipps), myBets, me, isAdmin }
+// GET /api/tipp/matches → { matches (Flaggen + K.o.-Details + importierte Tipps), myBets, me, isAdmin }
 // isAdmin = eingeloggter vibevibo-User mit Rolle admin/teamleitung/moderator ODER Owner (eyfahrlehrer).
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
@@ -20,9 +20,11 @@ function isStaff(me) {
 export async function GET() {
   const me = await getSessionUser();
 
-  const matches = (typeof vvdb.tippMatchesRich === "function")
-    ? vvdb.tippMatchesRich()
-    : (typeof vvdb.tippListMatches === "function" ? vvdb.tippListMatches() : []);
+  const matches = (typeof vvdb.tippMatchesRichKO === "function")
+    ? vvdb.tippMatchesRichKO()
+    : (typeof vvdb.tippMatchesRich === "function")
+      ? vvdb.tippMatchesRich()
+      : (typeof vvdb.tippListMatches === "function" ? vvdb.tippListMatches() : []);
 
   const allTips = (typeof vvdb.tippAllImportTips === "function") ? vvdb.tippAllImportTips() : [];
   const byMatch = {};
@@ -35,7 +37,10 @@ export async function GET() {
   }
 
   let myBets = [];
-  if (me && typeof vvdb.tippUserBets === "function") myBets = vvdb.tippUserBets(me.id);
+  if (me) {
+    if (typeof vvdb.tippUserBetsKO === "function") myBets = vvdb.tippUserBetsKO(me.id);
+    else if (typeof vvdb.tippUserBets === "function") myBets = vvdb.tippUserBets(me.id);
+  }
 
   return NextResponse.json({
     ok: true, matches, myBets,
