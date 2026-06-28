@@ -45,23 +45,22 @@ export async function POST(req) {
 
     if (action === "set_result") {
       const matchId = Number(b?.matchId);
-      const sh = Number(b?.scoreHome), sa = Number(b?.scoreAway);
-      if (!matchId || !Number.isInteger(sh) || !Number.isInteger(sa) || sh < 0 || sa < 0) {
-        return NextResponse.json({ error: "Ungültiges Ergebnis." }, { status: 400 });
-      }
+      if (!matchId) return NextResponse.json({ error: "matchId fehlt." }, { status: 400 });
+      // Ergebnis ist bei K.o. optional (dort zählen Sieger + Entscheidungsart) — die DB-Funktion prüft je Phase.
+      const opts = {
+        scoreHome: b?.scoreHome, scoreAway: b?.scoreAway,
+        decision: b?.decision,                         // 'reg' | 'aet' | 'pen'
+        winner: b?.winner,                             // 'home' | 'away'
+        aetHome: b?.aetHome, aetAway: b?.aetAway,
+        penHome: b?.penHome, penAway: b?.penAway,
+      };
       let ok;
-      if (typeof vvdb.tippSetResultKO === "function") {
-        ok = vvdb.tippSetResultKO(matchId, {
-          scoreHome: sh, scoreAway: sa,
-          decision: b?.decision,                       // 'reg' | 'aet' | 'pen'
-          winner: b?.winner,                           // 'home' | 'away'
-          aetHome: b?.aetHome, aetAway: b?.aetAway,
-          penHome: b?.penHome, penAway: b?.penAway,
-        });
-      } else if (typeof vvdb.tippSetResult === "function") {
-        ok = vvdb.tippSetResult(matchId, sh, sa);
-      } else throw new Error("n/a");
-      if (!ok) return NextResponse.json({ error: "Spiel nicht gefunden / ungültig." }, { status: 404 });
+      if (typeof vvdb.tippSetResultKO3 === "function") ok = vvdb.tippSetResultKO3(matchId, opts);
+      else if (typeof vvdb.tippSetResultKO2 === "function") ok = vvdb.tippSetResultKO2(matchId, opts);
+      else if (typeof vvdb.tippSetResultKO === "function") ok = vvdb.tippSetResultKO(matchId, opts);
+      else if (typeof vvdb.tippSetResult === "function") ok = vvdb.tippSetResult(matchId, Number(b?.scoreHome), Number(b?.scoreAway));
+      else throw new Error("n/a");
+      if (!ok) return NextResponse.json({ error: "Ungültig: Bei K.o. Sieger + Entscheidungsart nötig, bei Gruppe ein Ergebnis." }, { status: 400 });
       return NextResponse.json({ ok: true });
     }
 

@@ -186,6 +186,7 @@ export default function TippPage() {
       <div style={{ minHeight: "100vh", padding: "18px 0 44px" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 14px" }}>
         <SongPlayer />
+        <NextUp matches={data?.matches || []} />
         {/* HERO */}
         <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14, background: CARD_SOLID, border: `1px solid ${BORDER}`, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
           <FlagBand h={11} />
@@ -197,9 +198,9 @@ export default function TippPage() {
             <div style={{ fontSize: 12.5, fontWeight: 600, color: MUT, marginTop: 5, lineHeight: 1.5 }}>
               <b style={{ color: TXT }}>Gruppenphase:</b> Ergebnis tippen — exakt <b style={{ color: TXT }}>4</b> · Tordifferenz <b style={{ color: TXT }}>3</b> · Tendenz <b style={{ color: TXT }}>2</b>.
               <br />
-              <b style={{ color: "#ffce00" }}>K.o.-Runde – Sieg oder Aus:</b> kein Ergebnis mehr, dafür <b style={{ color: TXT }}>Wer kommt weiter?</b> (+1) und <b style={{ color: TXT }}>Wie wird entschieden?</b> — 90 Min <b style={{ color: TXT }}>+1</b> · Verlängerung <b style={{ color: TXT }}>+3</b> · Elfmeter <b style={{ color: TXT }}>+5</b>. Daneben kostet's <b style={{ color: "#f87171" }}>−2 / −3 / −4</b>. Je mutiger, desto fetter!
+              <b style={{ color: "#ffce00" }}>K.o.-Runde – Sieg oder Aus:</b> Ergebnis tippen (4/3/2) <b style={{ color: TXT }}>plus</b> <b style={{ color: TXT }}>Wer kommt weiter?</b> (+1) und <b style={{ color: TXT }}>Wie wird entschieden?</b> — 90 Min <b style={{ color: TXT }}>+1</b> · Verlängerung <b style={{ color: TXT }}>+3</b> · Elfmeter <b style={{ color: TXT }}>+5</b>. Daneben kostet's <b style={{ color: "#f87171" }}>−2 / −3 / −4</b>. Je mutiger, desto fetter!
               <br />
-              <span style={{ opacity: 0.85 }}>Tipp-Schluss ist immer der Anpfiff.</span>
+              <span style={{ opacity: 0.85 }}>Tipp-Schluss: <b style={{ color: TXT }}>20 Minuten vor Anpfiff</b>.</span>
             </div>
           </div>
           <FlagBand h={5} />
@@ -259,7 +260,7 @@ export default function TippPage() {
                         {u.displayName || u.username}<span style={{ color: MUT, fontSize: 11, fontWeight: 500 }}> · {u.bets} Tipps</span>
                       </Link>
                     )}
-                    <div style={{ fontWeight: 900, fontSize: 16, color: GOLD }}>{u.points}</div>
+                    <div style={{ fontWeight: 900, fontSize: 16, color: u.points > 0 ? "#4ade80" : u.points < 0 ? "#f87171" : MUT }}>{u.points > 0 ? "+" : ""}{u.points}</div>
                   </div>
                 ))}
               </div>
@@ -479,6 +480,42 @@ function PodiumOrakel({ canTip }) {
   );
 }
 
+// ⏱ Nächstes Spiel + nächstes Deutschland-Spiel mit Live-Countdown.
+function NextUp({ matches }) {
+  const [, force] = useState(0);
+  useEffect(() => { const t = setInterval(() => force((x) => x + 1), 1000); return () => clearInterval(t); }, []);
+  const now = Date.now();
+  const upcoming = (matches || [])
+    .filter((m) => m.status !== "finished" && m.kickoffAt && m.kickoffAt > now)
+    .sort((a, b) => a.kickoffAt - b.kickoffAt);
+  const next = upcoming[0];
+  const isDE = (m) => /deutschland|germany/i.test(m.teamHome || "") || /deutschland|germany/i.test(m.teamAway || "");
+  const nextDE = upcoming.find(isDE);
+  if (!next && !nextDE) return null;
+
+  function cd(ts) {
+    const s = Math.max(0, Math.floor((ts - now) / 1000));
+    const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return d > 0 ? `${d}T ${h}h ${m}m` : h > 0 ? `${h}h ${m}m ${ss}s` : `${m}m ${ss}s`;
+  }
+  const Card = ({ label, m, accent }) => !m ? null : (
+    <div style={{ flex: "1 1 220px", minWidth: 0, borderRadius: 12, padding: "10px 12px", background: CARD, border: `1px solid ${BORDER}` }}>
+      <div style={{ fontSize: 10.5, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
+      <div style={{ fontSize: 13.5, fontWeight: 800, color: TXT, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {m.homeFlag || ""} {m.teamHome} – {m.teamAway} {m.awayFlag || ""}
+      </div>
+      <div style={{ fontSize: 12, color: MUT, marginTop: 2 }}>{fmtKickoff(m.kickoffAt)}</div>
+      <div style={{ fontSize: 16, fontWeight: 900, color: accent, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>⏳ {cd(m.kickoffAt)}</div>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+      <Card label="Nächstes Spiel" m={next} accent="#ff6b66" />
+      {nextDE && (!next || nextDE.id !== next.id) && <Card label="Deutschland 🇩🇪" m={nextDE} accent="#ffce00" />}
+    </div>
+  );
+}
+
 // 🎵 Profil-Song-Loop (YouTube-Embed, Refrain-Schleife). Standardmäßig AN —
 // der Refrain läuft stumm los und wird bei der ERSTEN Nutzer-Geste (Klick/Tipp/Scroll)
 // hörbar (Browser-Autoplay-Sperre). Bleibt an, bis man bewusst auf „🔇 Aus" klickt.
@@ -570,7 +607,8 @@ function SpieleListe({ matches, betMap, canTip, onSaved }) {
   const live = matches.filter(isLive).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
   const vorbei = matches.filter(isFinished).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
   const kommend = matches.filter(isUpcoming).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
-  const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id]) : [];
+  const DEADLINE = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
+  const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id] && (!m.kickoffAt || m.kickoffAt > now + DEADLINE)) : [];
   const groups = { live, zu: zuTippen, kommend, vorbei };
   // Läuft gerade kommt immer zuerst.
   const def = live.length ? "live" : zuTippen.length ? "zu" : kommend.length ? "kommend" : "vorbei";
@@ -631,7 +669,8 @@ function Muted({ children, bare }) {
 
 function MatchCard({ m, bet, canTip, onSaved }) {
   const finished = m.status === "finished";
-  const locked = finished || (m.kickoffAt && m.kickoffAt <= Date.now());
+  const TIP_DEADLINE_MS = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
+  const locked = finished || (m.kickoffAt && m.kickoffAt <= Date.now() + TIP_DEADLINE_MS);
   const live = !finished && !!m.kickoffAt && m.kickoffAt <= Date.now();
   const isKO = !!m.phase && m.phase !== "group";
 
@@ -650,12 +689,12 @@ function MatchCard({ m, bet, canTip, onSaved }) {
     setBusy(true); setFlash("");
     try {
       let body;
+      if (h === "" || a === "") { setFlash("⚠ Bitte das Ergebnis (Tore) ausfüllen."); setBusy(false); return; }
       if (isKO) {
         if (!adv) { setFlash("⚠ Wähle, wer weiterkommt."); setBusy(false); return; }
         if (!dec) { setFlash("⚠ Wähle, wie entschieden wird."); setBusy(false); return; }
-        body = { matchId: m.id, advPick: adv, decPick: dec };
+        body = { matchId: m.id, predHome: Number(h), predAway: Number(a), advPick: adv, decPick: dec };
       } else {
-        if (h === "" || a === "") { setFlash("⚠ Beide Felder ausfüllen."); setBusy(false); return; }
         body = { matchId: m.id, predHome: Number(h), predAway: Number(a) };
       }
       const r = await fetch("/api/tipp/bet", {
@@ -704,8 +743,6 @@ function MatchCard({ m, bet, canTip, onSaved }) {
                 </span>
               )}
             </div>
-          ) : isKO ? (
-            <div style={{ fontSize: 18, fontWeight: 900, color: MUT, flexShrink: 0 }}>–</div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
               <select value={h} disabled={!canEdit}
@@ -778,7 +815,7 @@ function MatchCard({ m, bet, canTip, onSaved }) {
           <div style={{ fontSize: 11.5, color: MUT }}>
             {bet ? (
               isKO
-                ? <>Dein Tipp: <b style={{ color: TXT }}>{bet.advPick ? (bet.advPick === "home" ? m.teamHome : m.teamAway) : "—"}</b>{bet.decPick ? <> · {DEC_SHORT[bet.decPick]}</> : null}</>
+                ? <>Dein Tipp: <b style={{ color: TXT }}>{bet.predHome != null ? `${bet.predHome}:${bet.predAway}` : "—"}</b>{bet.advPick ? <> · {bet.advPick === "home" ? m.teamHome : m.teamAway}</> : null}{bet.decPick ? <> · {DEC_SHORT[bet.decPick]}</> : null}</>
                 : <>Dein Tipp: <b style={{ color: TXT }}>{bet.predHome}:{bet.predAway}</b></>
             ) : (canTip ? (locked ? "Kein Tipp abgegeben" : "Noch kein Tipp") : "")}
           </div>
@@ -915,7 +952,8 @@ function AdminPanel({ onChanged, matches }) {
           const aa = prompt("Endstand nach Verlängerung Auswärts? (optional)", ""); if (aa) body.aetAway = Number(aa);
         }
       } else {
-        body.decision = "reg"; // in 90 Min entschieden — Sieger = Führender (leitet das Backend ab)
+        body.decision = "reg"; // in 90 Min entschieden
+        body.winner = Number(sh) > Number(sa) ? "home" : "away"; // Sieger = Führender
       }
     }
     try { await post(body); onChanged?.(); }
