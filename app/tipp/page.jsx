@@ -7,8 +7,23 @@ import Link from "next/link";
 
 const FOUR = "https://tipp.4ever1.tv";
 
-// 🎵 Profil-Song (Refrain-Loop via YouTube-Embed, lizenzkonform)
-const SONG = { id: "W_ug7KQbTGo", start: 32, end: 67, title: "Wincent Weiss – Kurz für immer" };
+// 🎵 Profil-Songs (Refrain-Loop via YouTube-Embed, lizenzkonform).
+// Beim Seitenaufruf wird ABWECHSELND der nächste Song gespielt (rotiert via localStorage).
+const SONGS = [
+  { id: "W_ug7KQbTGo", start: 32, end: 67, title: "Wincent Weiss – Kurz für immer" },
+  { id: "SniCL4xbRqw", start: 38, end: 74, title: "Helene Fischer – Atemlos durch die Nacht" },
+];
+function pickSong() {
+  if (typeof window === "undefined") return SONGS[0];
+  let n = 0;
+  try {
+    const prev = parseInt(localStorage.getItem("vv_song_idx") || "-1", 10);
+    n = ((Number.isFinite(prev) ? prev : -1) + 1) % SONGS.length;
+    if (!Number.isFinite(n) || n < 0) n = 0;
+    localStorage.setItem("vv_song_idx", String(n));
+  } catch {}
+  return SONGS[n] || SONGS[0];
+}
 
 let _ytApiPromise = null;
 function loadYouTubeAPI() {
@@ -525,6 +540,12 @@ function SongPlayer() {
   const [soundOn, setSoundOn] = useState(true); // Wunsch-Zustand: AN
   const soundOnRef = useRef(true);
   soundOnRef.current = soundOn;
+  // Beim Seitenaufruf abwechselnd der nächste Song (rotiert via localStorage).
+  const [song, setSong] = useState(SONGS[0]);
+  const [chosen, setChosen] = useState(false);
+  const songRef = useRef(SONGS[0]);
+  songRef.current = song;
+  useEffect(() => { setSong(pickSong()); setChosen(true); }, []);
 
   // Ton hörbar machen (sofern gewünscht).
   function ensureAudible() {
@@ -532,28 +553,31 @@ function SongPlayer() {
     try { p.unMute(); if (p.setVolume) p.setVolume(65); p.playVideo(); } catch {}
   }
 
+  // Player erst bauen, wenn der (rotierte) Song feststeht — sonst Doppel-Init/Flackern.
   useEffect(() => {
+    if (!chosen) return;
     let cancelled = false;
+    const cur = songRef.current;
     loadYouTubeAPI().then((YT) => {
       if (cancelled || !YT || !holderRef.current) return;
       try {
         playerRef.current = new YT.Player(holderRef.current, {
-          videoId: SONG.id,
+          videoId: cur.id,
           width: "1", height: "1",
-          playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, mute: 1, playsinline: 1, start: SONG.start, end: SONG.end, rel: 0, modestbranding: 1 },
+          playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, mute: 1, playsinline: 1, start: cur.start, end: cur.end, rel: 0, modestbranding: 1 },
           events: {
             // Stumm starten (immer erlaubt), dann gleich versuchen hörbar zu schalten.
-            onReady: (e) => { try { e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {}; ensureAudible(); },
+            onReady: (e) => { try { e.target.seekTo(songRef.current.start, true); e.target.playVideo(); } catch {}; ensureAudible(); },
             onStateChange: (e) => {
               const S = window.YT && window.YT.PlayerState;
-              if (S && e.data === S.ENDED) { try { e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {} }
+              if (S && e.data === S.ENDED) { try { e.target.seekTo(songRef.current.start, true); e.target.playVideo(); } catch {} }
             },
           },
         });
       } catch {}
     });
     return () => { cancelled = true; try { playerRef.current && playerRef.current.destroy && playerRef.current.destroy(); } catch {} };
-  }, []);
+  }, [chosen]);
 
   // Erste Nutzer-Geste irgendwo auf der Seite → Ton freischalten (einmalig).
   useEffect(() => {
@@ -577,7 +601,7 @@ function SongPlayer() {
     const p = playerRef.current; if (!p) return;
     try {
       if (soundOn) { p.mute(); setSoundOn(false); }
-      else { soundOnRef.current = true; p.unMute(); if (p.setVolume) p.setVolume(65); p.seekTo(SONG.start, true); p.playVideo(); setSoundOn(true); }
+      else { soundOnRef.current = true; p.unMute(); if (p.setVolume) p.setVolume(65); p.seekTo(songRef.current.start, true); p.playVideo(); setSoundOn(true); }
     } catch {}
   }
 
@@ -586,7 +610,7 @@ function SongPlayer() {
       <div ref={holderRef} style={{ position: "absolute", width: 1, height: 1, left: -9999, top: -9999, opacity: 0, pointerEvents: "none" }} />
       <span style={{ fontSize: 18 }}>🎵</span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: TXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{SONG.title}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: TXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{song.title}</div>
         <div style={{ fontSize: 10.5, color: MUT }}>Refrain in Schleife · Profil-Song</div>
       </div>
       <button type="button" onClick={toggle} style={{
