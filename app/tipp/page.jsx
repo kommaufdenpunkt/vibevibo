@@ -323,6 +323,20 @@ function AdminPanel({ onChanged, matches }) {
   const [msg, setMsg] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState("");
+  const [backingUp, setBackingUp] = useState(false);
+  const [backupMsg, setBackupMsg] = useState("");
+
+  async function runBackup() {
+    setBackingUp(true); setBackupMsg("⏳ Erstelle Backup …");
+    try {
+      const r = await fetch("/api/tipp/backup", { method: "POST", credentials: "include" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.error || "Backup fehlgeschlagen.");
+      const kb = Math.round((d.size || 0) / 1024);
+      setBackupMsg(`✅ Backup erstellt (${kb} KB): ${d.path}`);
+    } catch (e) { setBackupMsg("⚠ " + e.message); }
+    finally { setBackingUp(false); }
+  }
 
   async function post(body) {
     const r = await fetch("/api/tipp/admin", {
@@ -389,6 +403,19 @@ function AdminPanel({ onChanged, matches }) {
               background: "linear-gradient(135deg, #141414, #DD0000)", color: "#fff", fontWeight: 800, fontSize: 13, fontFamily: "inherit",
             }}>{importing ? "⏳ Importiere …" : "⬇️ Jetzt von 4ever1 importieren"}</button>
             {importMsg && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: importMsg.startsWith("⚠") ? "#b91c1c" : importMsg.startsWith("✅") ? "#15803d" : MUT }}>{importMsg}</div>}
+          </div>
+
+          {/* 🛟 DB-BACKUP */}
+          <div style={{ marginBottom: 12, padding: 12, borderRadius: 10, background: "#f0fdf4", border: "1px solid rgba(22,163,74,0.35)" }}>
+            <div style={{ fontWeight: 800, fontSize: 13, color: INK, marginBottom: 4 }}>🛟 Datenbank-Backup</div>
+            <div style={{ fontSize: 11.5, color: MUT, marginBottom: 8, lineHeight: 1.4 }}>
+              Erstellt sofort eine konsistente Sicherungskopie der kompletten Live-Datenbank (Wiederherstellungspunkt). Die letzten 10 Backups bleiben erhalten.
+            </div>
+            <button type="button" onClick={runBackup} disabled={backingUp} style={{
+              padding: "9px 14px", borderRadius: 9, border: "none", cursor: backingUp ? "wait" : "pointer",
+              background: "linear-gradient(135deg, #16a34a, #15803d)", color: "#fff", fontWeight: 800, fontSize: 13, fontFamily: "inherit",
+            }}>{backingUp ? "⏳ Sichere …" : "🛟 Backup jetzt erstellen"}</button>
+            {backupMsg && <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, wordBreak: "break-all", color: backupMsg.startsWith("⚠") ? "#b91c1c" : backupMsg.startsWith("✅") ? "#15803d" : MUT }}>{backupMsg}</div>}
           </div>
 
           <div style={{ display: "grid", gap: 6, marginBottom: 8 }}>
