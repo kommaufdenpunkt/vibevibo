@@ -33,6 +33,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/coms",       label: "Coms",       icon: "🌐", bg: "linear-gradient(135deg, #06b6d4, #0891b2)" },
       { href: "/mitglieder", label: "Mitglieder", icon: "👥", bg: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
+      { href: "/tipp", label: "Tippspiel WM", icon: "⚽", bg: "linear-gradient(135deg, #141414, #DD0000)" },
       { href: "/karte",      label: "Karte",      icon: "🗺️", bg: "linear-gradient(135deg, #10b981, #047857)" },
       { href: "/fotos",      label: "Fotos",      icon: "📸", bg: "linear-gradient(135deg, #8b5cf6, #5b21b6)" },
     ],

@@ -59,6 +59,13 @@ const PHASE_LABEL = {
 // Tore-Auswahl im Tipp-Dropdown (0–10 reicht für jedes realistische Ergebnis).
 const SCORE_OPTS = Array.from({ length: 11 }, (_, i) => i);
 
+// K.o.-Entscheidungsart (4ever1-Wertung): Belohnung wenn richtig, Abzug wenn falsch.
+const DEC_LONG = { reg: "In 90 Minuten", aet: "Verlängerung", pen: "Elfmeterschießen" };
+const DEC_SHORT = { reg: "90 Min", aet: "n.V.", pen: "i.E." };
+const DEC_REWARD = { reg: 1, aet: 3, pen: 5 };
+const DEC_PENALTY = { reg: -2, aet: -3, pen: -4 };
+const DEC_ORDER = ["reg", "aet", "pen"];
+
 // Header (.vv-banner) + Footer (.vv-footer) dunkel — NUR wenn <html> die Klasse "tipp-dark" trägt.
 // Logo & Navigation bleiben (heller Text auf dunkler Fläche), Links bleiben gold lesbar.
 const TIPP_CHROME_CSS = `
@@ -99,6 +106,16 @@ function pointsBadge(p) {
   return (
     <span style={{ background: `${c}22`, color: c, border: `1px solid ${c}66`, padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
       +{p} · {label}
+    </span>
+  );
+}
+// Generischer Punkte-Badge (auch negativ — K.o.-Wertung mit Abzügen).
+function tippBadge(p) {
+  const n = Number(p) || 0;
+  const c = n > 0 ? "#4ade80" : n < 0 ? "#f87171" : "#cbd5e1";
+  return (
+    <span style={{ background: `${c}22`, color: c, border: `1px solid ${c}66`, padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
+      {n > 0 ? "+" : ""}{n} Pkt
     </span>
   );
 }
@@ -159,8 +176,12 @@ export default function TippPage() {
             <div style={{ fontSize: 28, fontWeight: 900, fontStyle: "italic", color: "#fff", marginTop: 2, letterSpacing: -0.5 }}>
               WM-TIPP 2026 <span style={{ fontStyle: "normal" }}>🇩🇪</span>
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: MUT, marginTop: 5, lineHeight: 1.45 }}>
-              Tippe jedes Spiel. Punkte: <b style={{ color: TXT }}>exakt 4</b> · <b style={{ color: TXT }}>Tordifferenz 3</b> · <b style={{ color: TXT }}>Tendenz 2</b>. Tipp-Schluss ist immer der Anpfiff. K.o.-Spiele: gewertet wird das <b style={{ color: TXT }}>90-Min-Ergebnis</b> + <b style={{ color: "#ffce00" }}>1 Bonus</b> fürs richtige Weiterkommen.
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: MUT, marginTop: 5, lineHeight: 1.5 }}>
+              <b style={{ color: TXT }}>Gruppenphase:</b> Ergebnis tippen — exakt <b style={{ color: TXT }}>4</b> · Tordifferenz <b style={{ color: TXT }}>3</b> · Tendenz <b style={{ color: TXT }}>2</b>.
+              <br />
+              <b style={{ color: "#ffce00" }}>K.o.-Runde – Sieg oder Aus:</b> kein Ergebnis mehr, dafür <b style={{ color: TXT }}>Wer kommt weiter?</b> (+1) und <b style={{ color: TXT }}>Wie wird entschieden?</b> — 90 Min <b style={{ color: TXT }}>+1</b> · Verlängerung <b style={{ color: TXT }}>+3</b> · Elfmeter <b style={{ color: TXT }}>+5</b>. Daneben kostet's <b style={{ color: "#f87171" }}>−2 / −3 / −4</b>. Je mutiger, desto fetter!
+              <br />
+              <span style={{ opacity: 0.85 }}>Tipp-Schluss ist immer der Anpfiff.</span>
             </div>
           </div>
           <FlagBand h={5} />
@@ -169,7 +190,8 @@ export default function TippPage() {
         {/* TABS */}
         <div style={{ display: "flex", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)" }}>
           <TabBtn active={tab === "spiele"} onClick={() => setTab("spiele")}>⚽ Spiele</TabBtn>
-          <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>⚡ Blitztabelle</TabBtn>
+          <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>⚡ Tabelle</TabBtn>
+          <TabBtn active={tab === "orakel"} onClick={() => setTab("orakel")}>🔮 Orakel</TabBtn>
         </div>
 
         {err && (
@@ -225,9 +247,129 @@ export default function TippPage() {
             )}
           </div>
         )}
+
+        {tab === "orakel" && <PodiumOrakel canTip={!!data?.me} />}
         </div>
       </div>
     </>
+  );
+}
+
+// 🔮 Podium Orakel — Top 3 tippen (Weltmeister / Vize / Platz 3)
+function PodiumOrakel({ canTip }) {
+  const [teams, setTeams] = useState([]);
+  const [pick, setPick] = useState({ champion: "", second: "", third: "" });
+  const [board, setBoard] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch("/api/tipp/podium", { credentials: "include" });
+      const d = await r.json();
+      if (r.ok) {
+        setTeams(d.teams || []);
+        if (d.podium) setPick({ champion: d.podium.champion || "", second: d.podium.second || "", third: d.podium.third || "" });
+        setBoard(d.board || []);
+      }
+    } catch {}
+    finally { setLoaded(true); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const teamName = (code) => { const t = teams.find((x) => x.code === code); return t ? `${t.flag || ""} ${t.name}` : (code || "—"); };
+  function setSlot(slot, code) { setPick((p) => ({ ...p, [slot]: code })); }
+  function optionsFor(slot) {
+    const used = new Set(["champion", "second", "third"].filter((k) => k !== slot).map((k) => pick[k]).filter(Boolean));
+    return teams.filter((t) => !used.has(t.code));
+  }
+
+  async function save() {
+    setBusy(true); setMsg("");
+    try {
+      const r = await fetch("/api/tipp/podium", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pick),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.error || "Speichern fehlgeschlagen.");
+      setMsg("✅ Orakel gespeichert!");
+      setTimeout(() => setMsg(""), 2500);
+      load();
+    } catch (e) { setMsg("⚠ " + e.message); }
+    finally { setBusy(false); }
+  }
+
+  const SLOTS = [
+    { key: "champion", label: "🥇 Weltmeister", color: GOLD },
+    { key: "second", label: "🥈 Vize-Weltmeister", color: "#cbd5e1" },
+    { key: "third", label: "🥉 Platz 3", color: "#d8a657" },
+  ];
+
+  return (
+    <div>
+      <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14, background: CARD_SOLID, border: `1px solid ${BORDER}`, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
+        <FlagBand h={8} />
+        <div style={{ padding: "16px 16px 18px" }}>
+          <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.4, color: "#ff6b66" }}>🔮 PODIUM ORAKEL</div>
+          <div style={{ fontSize: 13, color: MUT, marginTop: 4, lineHeight: 1.45 }}>
+            Wer holt den Pokal? Tippe dein <b style={{ color: TXT }}>Top-3-Podium</b> der WM 2026.
+          </div>
+          {teams.length === 0 ? (
+            <Muted>{loaded ? "Noch keine Teams da — der Admin muss zuerst die 4ever1-Daten importieren. ⚽" : "⏳ Lädt …"}</Muted>
+          ) : (
+            <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+              {SLOTS.map((s) => (
+                <div key={s.key}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: s.color, marginBottom: 5 }}>{s.label}</div>
+                  <select value={pick[s.key]} disabled={!canTip || busy}
+                    onChange={(e) => setSlot(s.key, e.target.value)}
+                    style={{ width: "100%", padding: "11px 12px", borderRadius: 10, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box",
+                      background: "rgba(0,0,0,0.3)", color: TXT, border: `1.5px solid ${BORDER}` }}>
+                    <option value="">— Team wählen —</option>
+                    {optionsFor(s.key).map((t) => <option key={t.code} value={t.code}>{t.flag || ""} {t.name}</option>)}
+                  </select>
+                </div>
+              ))}
+              {canTip ? (
+                <button type="button" onClick={save} disabled={busy} style={{
+                  marginTop: 4, padding: "11px 16px", borderRadius: 10, border: "none", cursor: busy ? "wait" : "pointer",
+                  background: "linear-gradient(135deg, #FFCE00, #e0b400)", color: "#141414", fontWeight: 900, fontSize: 14, fontFamily: "inherit",
+                }}>{busy ? "…" : "🔮 Orakel speichern"}</button>
+              ) : (
+                <Muted>Zum Orakeln bitte einloggen.</Muted>
+              )}
+              {msg && <div style={{ fontSize: 12, fontWeight: 700, color: msg.startsWith("⚠") ? "#fca5a5" : "#86efac" }}>{msg}</div>}
+            </div>
+          )}
+        </div>
+        <FlagBand h={5} />
+      </div>
+
+      {board.length > 0 && (
+        <div style={{ borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD_SOLID }}>
+          <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 800, color: MUT, borderBottom: `1px solid ${BORDER}` }}>👁 Was die anderen orakeln ({board.length})</div>
+          <div style={{ padding: 8 }}>
+            {board.map((u, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderBottom: `1px solid ${BORDER}` }}>
+                {avatarUrl(u.avatarUrl) ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={avatarUrl(u.avatarUrl)} alt="" style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                ) : <span style={{ width: 26, textAlign: "center" }}>👤</span>}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: TXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.displayName || u.username}</div>
+                  <div style={{ fontSize: 11.5, color: MUT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    🥇 {teamName(u.champion)} · 🥈 {teamName(u.second)} · 🥉 {teamName(u.third)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -385,30 +527,31 @@ function MatchCard({ m, bet, canTip, onSaved }) {
   const finished = m.status === "finished";
   const locked = finished || (m.kickoffAt && m.kickoffAt <= Date.now());
   const live = !finished && !!m.kickoffAt && m.kickoffAt <= Date.now();
-  const [h, setH] = useState(bet ? String(bet.predHome) : "");
-  const [a, setA] = useState(bet ? String(bet.predAway) : "");
+  const isKO = !!m.phase && m.phase !== "group";
+
+  const [h, setH] = useState(bet && bet.predHome != null ? String(bet.predHome) : "");
+  const [a, setA] = useState(bet && bet.predAway != null ? String(bet.predAway) : "");
+  const [adv, setAdv] = useState(bet?.advPick || "");   // K.o.: wer kommt weiter
+  const [dec, setDec] = useState(bet?.decPick || "");   // K.o.: wie entschieden (reg/aet/pen)
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
   const [showTips, setShowTips] = useState(false);
-  const [adv, setAdv] = useState(bet?.advPick || "");
   const tips = m.importedTips || [];
-
-  // K.o.-Spiel? (alles außer Gruppenphase)
-  const isKO = !!m.phase && m.phase !== "group";
-  const nh = h === "" ? null : Number(h);
-  const na = a === "" ? null : Number(a);
-  const bothSet = nh != null && na != null;
-  const isDrawTip = bothSet && nh === na;
-  const impliedAdv = !bothSet ? "" : nh > na ? "home" : na > nh ? "away" : ""; // klares Ergebnis ⇒ Sieger
-  const effAdv = impliedAdv || adv; // bei Unentschieden zählt die manuelle Wahl
+  const canEdit = !locked && canTip;
+  const hasScore = m.scoreHome != null && m.scoreAway != null;
 
   async function save() {
-    if (h === "" || a === "") { setFlash("⚠ Beide Felder ausfüllen."); return; }
-    if (isKO && isDrawTip && !adv) { setFlash("⚠ Unentschieden: bitte wähle, wer weiterkommt."); return; }
     setBusy(true); setFlash("");
     try {
-      const body = { matchId: m.id, predHome: Number(h), predAway: Number(a) };
-      if (isKO) body.advPick = effAdv || undefined;
+      let body;
+      if (isKO) {
+        if (!adv) { setFlash("⚠ Wähle, wer weiterkommt."); setBusy(false); return; }
+        if (!dec) { setFlash("⚠ Wähle, wie entschieden wird."); setBusy(false); return; }
+        body = { matchId: m.id, advPick: adv, decPick: dec };
+      } else {
+        if (h === "" || a === "") { setFlash("⚠ Beide Felder ausfüllen."); setBusy(false); return; }
+        body = { matchId: m.id, predHome: Number(h), predAway: Number(a) };
+      }
       const r = await fetch("/api/tipp/bet", {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -427,25 +570,25 @@ function MatchCard({ m, bet, canTip, onSaved }) {
     <div style={{ marginBottom: 10, borderRadius: 14, overflow: "hidden", background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)", boxShadow: "0 2px 10px rgba(0,0,0,0.3)", display: "flex" }}>
       <div aria-hidden style={{ width: 6, background: FLAG_STRIPE, flexShrink: 0 }} />
       <div style={{ flex: 1, padding: 14, minWidth: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 6 }}>
           <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.5, color: "#ff6b66", textTransform: "uppercase" }}>
-            {PHASE_LABEL[m.phase] || m.phase}{m.groupLetter ? ` · Gruppe ${m.groupLetter}` : ""}
+            {PHASE_LABEL[m.phase] || m.phase}{m.groupLetter ? ` · Gruppe ${m.groupLetter}` : ""}{isKO ? " · Sieg oder Aus" : ""}
           </span>
           {live ? (
-            <span style={{ fontSize: 10.5, fontWeight: 900, color: "#fff", background: "#DD0000", padding: "2px 8px", borderRadius: 999, letterSpacing: 0.5 }}>🔴 LÄUFT</span>
+            <span style={{ fontSize: 10.5, fontWeight: 900, color: "#fff", background: "#DD0000", padding: "2px 8px", borderRadius: 999, letterSpacing: 0.5, whiteSpace: "nowrap" }}>🔴 LÄUFT</span>
           ) : (
-            <span style={{ fontSize: 11, color: MUT }}>{fmtKickoff(m.kickoffAt)}</span>
+            <span style={{ fontSize: 11, color: MUT, whiteSpace: "nowrap" }}>{fmtKickoff(m.kickoffAt)}</span>
           )}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ flex: 1, textAlign: "right", fontWeight: 800, fontSize: 15, color: TXT }}>
+          <div style={{ flex: 1, textAlign: "right", fontWeight: 800, fontSize: 15, color: TXT, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
             {m.teamHome} {m.homeFlag || ""}
           </div>
           {finished ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 20, color: "#fff" }}>
-                <span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span>
+                {hasScore ? <><span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span></> : <span style={{ color: MUT }}>–</span>}
               </div>
               {isKO && m.decision && m.decision !== "reg" && (
                 <span style={{ fontSize: 9.5, fontWeight: 800, color: "#ffce00", letterSpacing: 0.4, whiteSpace: "nowrap" }}>
@@ -455,67 +598,88 @@ function MatchCard({ m, bet, canTip, onSaved }) {
                 </span>
               )}
             </div>
+          ) : isKO ? (
+            <div style={{ fontSize: 18, fontWeight: 900, color: MUT, flexShrink: 0 }}>–</div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <select value={h} disabled={locked || !canTip}
-                onChange={(e) => setH(e.target.value)} style={scoreInput(locked || !canTip)} aria-label="Tore Heim">
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              <select value={h} disabled={!canEdit}
+                onChange={(e) => setH(e.target.value)} style={scoreInput(!canEdit)} aria-label="Tore Heim">
                 <option value="">–</option>
                 {SCORE_OPTS.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
               <span style={{ color: MUT, fontWeight: 900 }}>:</span>
-              <select value={a} disabled={locked || !canTip}
-                onChange={(e) => setA(e.target.value)} style={scoreInput(locked || !canTip)} aria-label="Tore Auswärts">
+              <select value={a} disabled={!canEdit}
+                onChange={(e) => setA(e.target.value)} style={scoreInput(!canEdit)} aria-label="Tore Auswärts">
                 <option value="">–</option>
                 {SCORE_OPTS.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
           )}
-          <div style={{ flex: 1, textAlign: "left", fontWeight: 800, fontSize: 15, color: TXT }}>
+          <div style={{ flex: 1, textAlign: "left", fontWeight: 800, fontSize: 15, color: TXT, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
             {m.awayFlag || ""} {m.teamAway}
           </div>
         </div>
 
-        {isKO && (finished ? (
-          m.winner ? (
-            <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: "#86efac", textAlign: "center" }}>
-              ✅ <b style={{ color: "#fff" }}>{m.winner === "home" ? m.teamHome : m.teamAway}</b> kommt weiter
-              {bet && bet.bonus ? <span style={{ color: GOLD }}> · dein Bonus +1 🎯</span> : null}
+        {/* K.o.-Tipp: Weiterkommen + Entscheidungsart (mobilfreundlich) */}
+        {isKO && canEdit && (
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>➡ Wer kommt weiter? <span style={{ color: MUT, fontWeight: 600 }}>(+1)</span></div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[["home", m.teamHome, m.homeFlag], ["away", m.teamAway, m.awayFlag]].map(([side, name, flag]) => {
+                  const active = adv === side;
+                  return (
+                    <button key={side} type="button" onClick={() => setAdv(side)} style={{
+                      flex: 1, minWidth: 0, padding: "10px 8px", borderRadius: 9, fontFamily: "inherit", fontSize: 12.5, fontWeight: 800,
+                      cursor: "pointer", background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
+                      color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.35)" : `1px solid ${BORDER}`,
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>{active ? "✓ " : ""}{flag || ""} {name}</button>
+                  );
+                })}
+              </div>
             </div>
-          ) : null
-        ) : (!locked && canTip && bothSet) ? (
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontSize: 11, color: MUT, marginBottom: 5 }}>
-              Wer kommt weiter? {isDrawTip
-                ? <b style={{ color: "#ffce00" }}>· Pflicht bei Unentschieden</b>
-                : <span style={{ opacity: 0.8 }}>(durch dein Ergebnis vorgegeben)</span>}
-            </div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {[["home", m.teamHome, m.homeFlag], ["away", m.teamAway, m.awayFlag]].map(([side, name, flag]) => {
-                const active = effAdv === side;
-                const forced = !isDrawTip && !!impliedAdv && impliedAdv !== side;
-                return (
-                  <button key={side} type="button" disabled={forced} onClick={() => setAdv(side)} style={{
-                    flex: 1, padding: "7px 8px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, fontWeight: 800,
-                    cursor: forced ? "not-allowed" : "pointer", opacity: forced ? 0.4 : 1,
-                    background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
-                    color: active ? "#fff" : MUT,
-                    border: active ? "1px solid rgba(255,255,255,0.3)" : `1px solid ${BORDER}`,
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  }}>{active ? "➡ " : ""}{flag || ""} {name}</button>
-                );
-              })}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#ff6b66", marginBottom: 5 }}>⏱ Wie fällt die Entscheidung? <span style={{ color: MUT, fontWeight: 600 }}>(richtig + / falsch −)</span></div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {DEC_ORDER.map((k) => {
+                  const active = dec === k;
+                  return (
+                    <button key={k} type="button" onClick={() => setDec(k)} style={{
+                      flex: "1 1 92px", minWidth: 0, padding: "9px 6px", borderRadius: 9, fontFamily: "inherit", fontSize: 11.5, fontWeight: 800,
+                      cursor: "pointer", background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.05)",
+                      color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.35)" : `1px solid ${BORDER}`,
+                      lineHeight: 1.25, textAlign: "center",
+                    }}>
+                      {DEC_LONG[k]}<br /><span style={{ fontSize: 10, color: active ? "#ffce00" : MUT }}>+{DEC_REWARD[k]} / {DEC_PENALTY[k]}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : null)}
+        )}
+
+        {/* K.o. abgeschlossen: wer ist weiter + Punkte */}
+        {isKO && finished && m.winner && (
+          <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: "#86efac", textAlign: "center" }}>
+            ✅ <b style={{ color: "#fff" }}>{m.winner === "home" ? m.teamHome : m.teamAway}</b> kommt weiter
+            <span style={{ color: MUT, fontWeight: 600 }}> · entschieden {DEC_SHORT[m.decision] || "—"}</span>
+          </div>
+        )}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 10, minHeight: 22, flexWrap: "wrap" }}>
           <div style={{ fontSize: 11.5, color: MUT }}>
-            {bet ? <>Dein Tipp: <b style={{ color: TXT }}>{bet.predHome}:{bet.predAway}</b></> : (canTip ? (locked ? "Kein Tipp abgegeben" : "Noch kein Tipp") : "")}
+            {bet ? (
+              isKO
+                ? <>Dein Tipp: <b style={{ color: TXT }}>{bet.advPick ? (bet.advPick === "home" ? m.teamHome : m.teamAway) : "—"}</b>{bet.decPick ? <> · {DEC_SHORT[bet.decPick]}</> : null}</>
+                : <>Dein Tipp: <b style={{ color: TXT }}>{bet.predHome}:{bet.predAway}</b></>
+            ) : (canTip ? (locked ? "Kein Tipp abgegeben" : "Noch kein Tipp") : "")}
           </div>
-          {finished && bet ? pointsBadge(bet.points) : null}
-          {!locked && canTip && (
+          {finished && bet ? (isKO ? tippBadge(bet.points) : pointsBadge(bet.points)) : null}
+          {canEdit && (
             <button type="button" onClick={save} disabled={busy} style={{
-              padding: "7px 16px", borderRadius: 9, border: "none", cursor: busy ? "wait" : "pointer",
+              padding: "8px 18px", borderRadius: 9, border: "none", cursor: busy ? "wait" : "pointer",
               background: "linear-gradient(135deg, #DD0000, #a30000)", color: "#fff", fontWeight: 800, fontSize: 12.5,
               fontFamily: "inherit", boxShadow: "0 2px 6px rgba(221,0,0,0.35)",
             }}>{busy ? "…" : bet ? "Ändern" : "Tippen"}</button>

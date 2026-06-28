@@ -27,3 +27,46 @@
 
 /* ── Seiten-Wrapper transparent, damit der dunkle Body durchscheint ── */
 [data-theme="dark"] .vv-page { background: transparent !important; }
+
+/* ── 💬 Messenger (/messenger) — weißes Panel → dunkel ── */
+[data-theme="dark"] .vv-messenger-desktop-frame {
+  background: rgba(18, 22, 48, 0.55) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(140, 170, 255, 0.12) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+/* Such-Feld (type=search wird von dark-2007 nicht erfasst) */
+[data-theme="dark"] .vv-msgapp-search-input,
+[data-theme="dark"] input[type="search"] {
+  background: rgba(12, 16, 36, 0.65) !important;
+  border: 1px solid rgba(140, 170, 255, 0.18) !important;
+  color: #e7ecff !important;
+}
+[data-theme="dark"] .vv-msgapp-search-wrap { background: transparent !important; }
+/* Filter-Pillen */
+[data-theme="dark"] .vv-msgapp-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(140, 170, 255, 0.18) !important;
+}
+[data-theme="dark"] .vv-msgapp-chip.active {
+  background: linear-gradient(135deg, #5e3da3, #3a2470) !important;
+  color: #ffffff !important;
+  border-color: rgba(160, 190, 255, 0.4) !important;
+}
+/* Texte lesbar auf dunkel */
+[data-theme="dark"] .vv-msgapp-header-title,
+[data-theme="dark"] .vv-msgapp-section,
+[data-theme="dark"] .vv-msgapp-row-name { color: #e7ecff !important; }
+[data-theme="dark"] .vv-msgapp-row-preview,
+[data-theme="dark"] .vv-msgapp-row-time { color: #aab2c5 !important; }
+/* Tab-Leiste unten */
+[data-theme="dark"] .vv-msgapp-tabbar {
+  background: rgba(10, 14, 32, 0.9) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  border-top: 1px solid rgba(140, 170, 255, 0.1) !important;
+}
+/* Einstellungs-Zeilen im Profil-Tab */
+[data-theme="dark"] .vv-msgapp-link-row { color: #e7ecff !important; }
