@@ -206,9 +206,10 @@ export default function TippPage() {
         </div>
 
         {/* TABS */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)" }}>
           <TabBtn active={tab === "spiele"} onClick={() => setTab("spiele")}>⚽ Spiele</TabBtn>
           <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>⚡ Tabelle</TabBtn>
+          <TabBtn active={tab === "auswertung"} onClick={() => setTab("auswertung")}>📊 Auswertung</TabBtn>
           <TabBtn active={tab === "orakel"} onClick={() => setTab("orakel")}>🔮 Orakel</TabBtn>
         </div>
 
@@ -266,10 +267,97 @@ export default function TippPage() {
           </div>
         )}
 
+        {tab === "auswertung" && <Auswertung />}
         {tab === "orakel" && <PodiumOrakel canTip={!!data?.me} />}
         </div>
       </div>
     </>
+  );
+}
+
+// 📊 Auswertung — alle Tipps öffentlich, pro Spiel, mit Punkten (erst ab Anpfiff sichtbar).
+function Auswertung() {
+  const [data, setData] = useState(null);
+  const [open, setOpen] = useState({});
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch("/api/tipp/evaluation", { credentials: "include" });
+        const d = await r.json();
+        if (r.ok) setData(d);
+      } catch {}
+    })();
+  }, []);
+  if (!data) return <Muted>⏳ Lädt …</Muted>;
+  const now = Date.now();
+  const byExt = {};
+  (data.importedTips || []).forEach((t) => { (byExt[t.extMatchId] = byExt[t.extMatchId] || []).push(t); });
+  const byReal = {};
+  (data.realBets || []).forEach((b) => { (byReal[b.matchId] = byReal[b.matchId] || []).push(b); });
+  const matches = (data.matches || []).slice().sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
+  if (matches.length === 0) return <Muted>Noch keine Spiele. Importiere oben die 4ever1-Daten! ⚽</Muted>;
+
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div style={{ fontSize: 12, color: MUT, marginBottom: 2 }}>📊 Alle Tipps öffentlich — pro Spiel, mit Punkten. Tipps werden erst <b style={{ color: TXT }}>ab Anpfiff</b> sichtbar.</div>
+      {matches.map((m) => {
+        const started = m.status === "finished" || (m.kickoffAt && m.kickoffAt <= now);
+        const isKO = m.phase && m.phase !== "group";
+        const imp = byExt[m.extId] || [];
+        const real = byReal[m.id] || [];
+        const count = imp.length + real.length;
+        const isOpen = !!open[m.id];
+        return (
+          <div key={m.id} style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD }}>
+            <button type="button" onClick={() => setOpen((o) => ({ ...o, [m.id]: !o[m.id] }))} style={{
+              width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+              padding: "10px 12px", color: TXT, display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <span style={{ fontSize: 10, fontWeight: 800, color: "#ff6b66", textTransform: "uppercase", flexShrink: 0 }}>{(PHASE_LABEL[m.phase] || m.phase || "").slice(0, 4)}</span>
+              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 800, fontSize: 13 }}>{m.homeFlag || ""} {m.teamHome} – {m.teamAway} {m.awayFlag || ""}</span>
+              {m.status === "finished" && m.scoreHome != null && <span style={{ fontWeight: 900, color: "#fff", flexShrink: 0 }}>{m.scoreHome}:{m.scoreAway}</span>}
+              <span style={{ color: MUT, fontSize: 11, flexShrink: 0 }}>{isOpen ? "▲" : "▼"} {count}</span>
+            </button>
+            {isOpen && (
+              <div style={{ padding: "0 12px 10px" }}>
+                {!started ? (
+                  <div style={{ fontSize: 12, color: MUT, padding: "6px 0" }}>🔒 Tipps sichtbar ab Anpfiff.</div>
+                ) : count === 0 ? (
+                  <div style={{ fontSize: 12, color: MUT, padding: "6px 0" }}>Keine Tipps.</div>
+                ) : (
+                  <div style={{ display: "grid", gap: 4 }}>
+                    {imp.map((t, i) => (
+                      <AuswRow key={"i" + i} name={t.tipper} avatar={t.avatar} tip={`${t.home}:${t.away}`} joker={t.joker} pts={m.status === "finished" ? t.points : null} />
+                    ))}
+                    {real.map((b, i) => (
+                      <AuswRow key={"r" + i} name={b.displayName || b.username} avatar={b.avatarUrl}
+                        tip={isKO
+                          ? `${b.advPick ? (b.advPick === "home" ? m.teamHome : m.teamAway) : "—"}${b.decPick ? " · " + (DEC_SHORT[b.decPick] || "") : ""}`
+                          : `${b.predHome}:${b.predAway}`}
+                        pts={m.status === "finished" ? b.points : null} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function AuswRow({ name, avatar, tip, joker, pts }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: TXT }}>
+      {avatarUrl(avatar) ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={avatarUrl(avatar)} alt="" style={{ width: 20, height: 20, borderRadius: "50%", objectFit: "cover" }} />
+      ) : <span style={{ width: 20, textAlign: "center" }}>👤</span>}
+      <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+      <b style={{ whiteSpace: "nowrap" }}>{tip}</b>{joker ? <span title="Joker">🃏</span> : null}
+      {pts != null && <span style={{ color: pts > 0 ? "#4ade80" : pts < 0 ? "#f87171" : "#cbd5e1", fontWeight: 800, fontSize: 11 }}>{pts > 0 ? "+" : ""}{pts}</span>}
+    </div>
   );
 }
 
