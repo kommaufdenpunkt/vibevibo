@@ -2,10 +2,28 @@
 
 // ⚽ WM-Tipp 2026 — „Deutschland 1990 bei Flutlicht" (dunkel + Schwarz-Rot-Gold-Zickzackbande).
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 const FOUR = "https://tipp.4ever1.tv";
+
+// 🎵 Profil-Song (Refrain-Loop via YouTube-Embed, lizenzkonform)
+const SONG = { id: "W_ug7KQbTGo", start: 32, end: 67, title: "Wincent Weiss – Kurz für immer" };
+
+let _ytApiPromise = null;
+function loadYouTubeAPI() {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (_ytApiPromise) return _ytApiPromise;
+  _ytApiPromise = new Promise((resolve) => {
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { try { prev && prev(); } catch {} resolve(window.YT); };
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+  });
+  return _ytApiPromise;
+}
 
 // Palette (dunkel + Deutschland-Flagge)
 const SCHWARZ = "#0e0e11";
@@ -92,8 +110,9 @@ export default function TippPage() {
   (data?.myBets || []).forEach((b) => { betMap[b.matchId] = b; });
 
   return (
-    <div style={{ background: PAGE_BG, backgroundAttachment: "fixed", minHeight: "100vh", padding: "18px 0 44px" }}>
+    <div style={{ background: PAGE_BG, backgroundColor: "#0c0d0f", backgroundAttachment: "fixed", minHeight: "100vh", padding: "18px 0 44px", width: "100vw", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 14px" }}>
+        <SongPlayer />
         {/* HERO */}
         <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14, background: CARD_SOLID, border: `1px solid ${BORDER}`, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
           <FlagBand h={11} />
@@ -127,9 +146,7 @@ export default function TippPage() {
             ) : (data?.matches || []).length === 0 ? (
               <Muted>Noch keine Spiele. {data?.isAdmin ? "Importiere oben die Daten von 4ever1 oder leg Spiele an! ⚽" : "Bald geht's los! ⚽"}</Muted>
             ) : (
-              (data.matches).map((m) => (
-                <MatchCard key={m.id} m={m} bet={betMap[m.id]} canTip={!!data?.me} onSaved={() => load()} />
-              ))
+              <SpieleListe matches={data.matches} betMap={betMap} canTip={!!data?.me} onSaved={() => load()} />
             )}
           </>
         )}
@@ -172,6 +189,99 @@ export default function TippPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// 🎵 Profil-Song-Loop (YouTube-Embed, Refrain-Schleife). Wegen Browser-Autoplay-Sperre
+// startet der Ton erst per Klick auf „🔊".
+function SongPlayer() {
+  const holderRef = useRef(null);
+  const playerRef = useRef(null);
+  const [soundOn, setSoundOn] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadYouTubeAPI().then((YT) => {
+      if (cancelled || !YT || !holderRef.current) return;
+      try {
+        playerRef.current = new YT.Player(holderRef.current, {
+          videoId: SONG.id,
+          width: "0", height: "0",
+          playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, mute: 1, playsinline: 1, start: SONG.start, end: SONG.end, rel: 0, modestbranding: 1 },
+          events: {
+            onReady: (e) => { try { e.target.mute(); e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {} },
+            onStateChange: (e) => {
+              const S = window.YT && window.YT.PlayerState;
+              if (S && e.data === S.ENDED) { try { e.target.seekTo(SONG.start, true); e.target.playVideo(); } catch {} }
+            },
+          },
+        });
+      } catch {}
+    });
+    return () => { cancelled = true; try { playerRef.current && playerRef.current.destroy && playerRef.current.destroy(); } catch {} };
+  }, []);
+
+  function toggle() {
+    const p = playerRef.current; if (!p) return;
+    try {
+      if (soundOn) { p.mute(); setSoundOn(false); }
+      else { p.unMute(); if (p.setVolume) p.setVolume(65); p.seekTo(SONG.start, true); p.playVideo(); setSoundOn(true); }
+    } catch {}
+  }
+
+  return (
+    <div style={{ marginBottom: 14, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)", display: "flex", alignItems: "center", gap: 10, padding: "8px 12px" }}>
+      <div ref={holderRef} style={{ width: 0, height: 0, overflow: "hidden" }} />
+      <span style={{ fontSize: 18 }}>🎵</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: TXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{SONG.title}</div>
+        <div style={{ fontSize: 10.5, color: MUT }}>Refrain in Schleife · Profil-Song</div>
+      </div>
+      <button type="button" onClick={toggle} style={{
+        padding: "8px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit", fontWeight: 800, fontSize: 12.5,
+        background: soundOn ? "linear-gradient(135deg,#16a34a,#15803d)" : "linear-gradient(135deg,#141414,#DD0000)", color: "#fff",
+      }}>{soundOn ? "🔊 An" : "🔇 Aus"}</button>
+    </div>
+  );
+}
+
+// Spiele in Gruppen: 🎯 Zu tippen · ⏳ Kommend · ✅ Vorbei — Schluss mit Endlos-Scrollen.
+function SpieleListe({ matches, betMap, canTip, onSaved }) {
+  const now = Date.now();
+  const isStarted = (m) => m.status === "finished" || (m.kickoffAt && m.kickoffAt <= now);
+  const vorbei = matches.filter(isStarted).sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
+  const kommend = matches.filter((m) => !isStarted(m)).sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
+  const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id]) : [];
+  const groups = { zu: zuTippen, kommend, vorbei };
+  const def = zuTippen.length ? "zu" : kommend.length ? "kommend" : "vorbei";
+  const [sel, setSel] = useState(def);
+
+  const chips = [];
+  if (canTip) chips.push(["zu", "🎯 Zu tippen", zuTippen.length]);
+  chips.push(["kommend", "⏳ Kommend", kommend.length]);
+  chips.push(["vorbei", "✅ Vorbei", vorbei.length]);
+  const list = groups[sel] || [];
+
+  return (
+    <>
+      <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+        {chips.map(([k, label, n]) => {
+          const active = sel === k;
+          return (
+            <button key={k} type="button" onClick={() => setSel(k)} style={{
+              padding: "8px 13px", borderRadius: 999, fontFamily: "inherit", fontSize: 12.5, fontWeight: 800, cursor: "pointer",
+              background: active ? "linear-gradient(135deg,#141414,#DD0000)" : "rgba(255,255,255,0.06)",
+              color: active ? "#fff" : MUT, border: active ? "1px solid rgba(255,255,255,0.25)" : `1px solid ${BORDER}`,
+            }}>{label} <span style={{ opacity: 0.85 }}>({n})</span></button>
+          );
+        })}
+      </div>
+      {list.length === 0 ? (
+        <Muted>{sel === "zu" ? "Alles getippt — stark! 🎯" : sel === "kommend" ? "Keine anstehenden Spiele." : "Noch keine gespielten Spiele."}</Muted>
+      ) : (
+        list.map((m) => <MatchCard key={m.id} m={m} bet={betMap[m.id]} canTip={canTip} onSaved={onSaved} />)
+      )}
+    </>
   );
 }
 
