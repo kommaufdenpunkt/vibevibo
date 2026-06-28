@@ -242,6 +242,7 @@ export default function TippPage() {
         {/* TABS */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)" }}>
           <TabBtn active={tab === "spiele"} onClick={() => setTab("spiele")}>⚽ Spiele</TabBtn>
+          <TabBtn active={tab === "plan"} onClick={() => setTab("plan")}>📅 Plan</TabBtn>
           <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>⚡ Tabelle</TabBtn>
           <TabBtn active={tab === "auswertung"} onClick={() => setTab("auswertung")}>📊 Auswertung</TabBtn>
           <TabBtn active={tab === "orakel"} onClick={() => setTab("orakel")}>🔮 Orakel</TabBtn>
@@ -264,6 +265,7 @@ export default function TippPage() {
           </>
         )}
 
+        {tab === "plan" && <Spielplan matches={data?.matches || []} />}
         {tab === "tabelle" && <Blitztabelle board={board} matches={data?.matches || []} />}
 
         {tab === "auswertung" && <Auswertung />}
@@ -284,6 +286,69 @@ function projGroupScore(ph, pa, sh, sa) {
   const sgn = (x) => (x > 0 ? 1 : x < 0 ? -1 : 0);
   if (sgn(PH - PA) === sgn(SH - SA)) return 2;   // Tendenz
   return 0;
+}
+
+// 📅 Spielplan — alle Spiele nach Runde gruppiert (wann spielt wer), aktualisiert sich automatisch.
+function Spielplan({ matches }) {
+  const now = Date.now();
+  const order = ["group", "r32", "r16", "qf", "sf", "third", "3rd", "final"];
+  const byPhase = {};
+  for (const m of (matches || [])) { const p = m.phase || "group"; (byPhase[p] = byPhase[p] || []).push(m); }
+  const phases = Object.keys(byPhase).sort((a, b) => {
+    const ia = order.indexOf(a), ib = order.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+  if (!phases.length) return <Muted>Noch keine Spiele — der Plan füllt sich automatisch von 4ever1. ⚽</Muted>;
+  const dateShort = (ts) => ts ? new Date(ts).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" }) : "offen";
+  const timeShort = (ts) => ts ? new Date(ts).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) : "";
+
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      <div style={{ fontSize: 12, color: MUT }}>📅 Kompletter Spielplan — wird automatisch von 4ever1 aktualisiert.</div>
+      {phases.map((p) => {
+        const games = byPhase[p].slice().sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
+        const dated = games.filter((g) => g.kickoffAt);
+        let range = "Termin offen";
+        if (dated.length) {
+          const first = dateShort(dated[0].kickoffAt), last = dateShort(dated[dated.length - 1].kickoffAt);
+          range = first + (last !== first ? " – " + last : "");
+        }
+        return (
+          <div key={p} style={{ borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD_SOLID }}>
+            <FlagBand h={5} />
+            <div style={{ padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, borderBottom: `1px solid ${BORDER}` }}>
+              <span style={{ fontSize: 13.5, fontWeight: 900, color: "#fff" }}>{PHASE_LABEL[p] || p}</span>
+              <span style={{ fontSize: 11, color: MUT, fontWeight: 700, whiteSpace: "nowrap" }}>{range} · {games.length} Spiele</span>
+            </div>
+            <div style={{ padding: 8, display: "grid", gap: 4 }}>
+              {games.map((m) => {
+                const st = matchState(m, now);
+                return (
+                  <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)" }}>
+                    <div style={{ width: 88, flexShrink: 0, fontSize: 10.5, color: MUT, lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>
+                      {m.kickoffAt ? <>{dateShort(m.kickoffAt)}<br />{timeShort(m.kickoffAt)} Uhr</> : "Termin offen"}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, color: TXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {m.homeFlag || ""} {m.teamHome} – {m.teamAway} {m.awayFlag || ""}
+                    </div>
+                    <div style={{ flexShrink: 0, textAlign: "right", minWidth: 56 }}>
+                      {st === "finished" ? (
+                        <span style={{ fontWeight: 900, color: "#fff", fontSize: 13 }}>{m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway}` : "–"}</span>
+                      ) : st === "live" ? (
+                        <span style={{ fontWeight: 900, color: "#ff5a55", fontSize: 11.5, whiteSpace: "nowrap" }}>{m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway} ` : ""}● LIVE</span>
+                      ) : (
+                        <span style={{ fontSize: 11, color: MUT }}>—</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 // ⚡ Blitztabelle — Gesamtpunkte in WEISS, daneben Live-Hochrechnung „+X → neue Summe"
