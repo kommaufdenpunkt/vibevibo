@@ -246,48 +246,101 @@ export default function TippPage() {
           </>
         )}
 
-        {tab === "tabelle" && (
-          <div style={{ borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}` }}>
-            <FlagBand h={6} />
-            {board.length === 0 ? (
-              <div style={{ background: CARD_SOLID }}><Muted bare>Noch keine Punkte. Importiere oben die 4ever1-Daten oder tippe los! ⚽</Muted></div>
-            ) : (
-              <div style={{ background: CARD_SOLID, padding: 8 }}>
-                {board.map((u, i) => (
-                  <div key={u.id} style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", marginBottom: 6, borderRadius: 10,
-                    background: i < 3 ? "rgba(255,206,0,0.14)" : "rgba(255,255,255,0.04)",
-                    border: `1px solid ${i < 3 ? "rgba(255,206,0,0.5)" : BORDER}`,
-                  }}>
-                    <div style={{ width: 26, textAlign: "center", fontSize: 18, fontWeight: 900, color: i === 0 ? GOLD : i === 1 ? "#cbd5e1" : i === 2 ? "#d8a657" : MUT }}>
-                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
-                    </div>
-                    {avatarUrl(u.avatarUrl) && (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={avatarUrl(u.avatarUrl)} alt="" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(255,255,255,0.2)" }} />
-                    )}
-                    {u.imported ? (
-                      <div style={{ flex: 1, color: TXT, fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {u.displayName}<span style={{ color: MUT, fontSize: 11, fontWeight: 500 }}> · {u.bets} Spiele</span>
-                      </div>
-                    ) : (
-                      <Link href={`/u/${u.username}`} style={{ flex: 1, color: TXT, textDecoration: "none", fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {u.displayName || u.username}<span style={{ color: MUT, fontSize: 11, fontWeight: 500 }}> · {u.bets} Tipps</span>
-                      </Link>
-                    )}
-                    <div style={{ fontWeight: 900, fontSize: 16, color: u.points > 0 ? "#4ade80" : u.points < 0 ? "#f87171" : MUT }}>{u.points > 0 ? "+" : ""}{u.points}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {tab === "tabelle" && <Blitztabelle board={board} matches={data?.matches || []} />}
 
         {tab === "auswertung" && <Auswertung />}
         {tab === "orakel" && <PodiumOrakel canTip={!!data?.me} />}
         </div>
       </div>
     </>
+  );
+}
+
+// Provisorische Punkte (Gruppen-Wertung 4/3/2) für die Live-Hochrechnung.
+function projGroupScore(ph, pa, sh, sa) {
+  if (ph == null || pa == null || sh == null || sa == null) return 0;
+  const PH = Number(ph), PA = Number(pa), SH = Number(sh), SA = Number(sa);
+  if (![PH, PA, SH, SA].every(Number.isFinite)) return 0;
+  if (PH === SH && PA === SA) return 4;          // exaktes Ergebnis
+  if (PH - PA === SH - SA) return 3;             // Tordifferenz
+  const sgn = (x) => (x > 0 ? 1 : x < 0 ? -1 : 0);
+  if (sgn(PH - PA) === sgn(SH - SA)) return 2;   // Tendenz
+  return 0;
+}
+
+// ⚡ Blitztabelle — Gesamtpunkte in WEISS, daneben Live-Hochrechnung „+X → neue Summe"
+// für aktuell LAUFENDE Spiele (was käme dazu, wenn sie jetzt so endeten).
+function Blitztabelle({ board, matches }) {
+  const now = Date.now();
+  const liveMatches = (matches || []).filter(
+    (m) => m.status !== "finished" && m.kickoffAt && m.kickoffAt <= now && m.scoreHome != null && m.scoreAway != null
+  );
+  const delta = {};
+  for (const m of liveMatches) {
+    for (const t of (m.importedTips || [])) {
+      const p = projGroupScore(t.home, t.away, m.scoreHome, m.scoreAway);
+      if (!p || !t.tipper) continue;
+      delta[t.tipper] = (delta[t.tipper] || 0) + p;
+    }
+  }
+  const anyLive = liveMatches.length > 0;
+
+  return (
+    <div style={{ borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}` }}>
+      <FlagBand h={6} />
+      {board.length === 0 ? (
+        <div style={{ background: CARD_SOLID }}><Muted bare>Noch keine Punkte. Importiere oben die 4ever1-Daten oder tippe los! ⚽</Muted></div>
+      ) : (
+        <div style={{ background: CARD_SOLID, padding: 8 }}>
+          {anyLive && (
+            <div style={{ fontSize: 11.5, color: "#ffce00", fontWeight: 700, padding: "4px 8px 10px", lineHeight: 1.4 }}>
+              ⚡ Live-Hochrechnung: laufende Spiele sind als <b style={{ color: "#4ade80" }}>+Punkte</b> <span style={{ color: MUT }}>→</span> <b style={{ color: "#fff" }}>neue Summe</b> eingerechnet.
+            </div>
+          )}
+          {board.map((u, i) => {
+            const d = delta[u.displayName] || delta[u.username] || 0;
+            const newTotal = (Number(u.points) || 0) + d;
+            const rankColor = i === 0 ? GOLD : i === 1 ? "#cbd5e1" : i === 2 ? "#d8a657" : MUT;
+            return (
+              <div key={u.id} style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", marginBottom: 6, borderRadius: 12,
+                background: i < 3 ? "linear-gradient(135deg, rgba(255,206,0,0.16), rgba(255,255,255,0.03))" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${i < 3 ? "rgba(255,206,0,0.45)" : BORDER}`,
+                boxShadow: i < 3 ? "0 2px 10px rgba(0,0,0,0.35)" : "none",
+              }}>
+                <div style={{ width: 26, textAlign: "center", fontSize: 18, fontWeight: 900, color: rankColor }}>
+                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                </div>
+                {avatarUrl(u.avatarUrl) && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={avatarUrl(u.avatarUrl)} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(255,255,255,0.2)" }} />
+                )}
+                {u.imported ? (
+                  <div style={{ flex: 1, color: TXT, fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {u.displayName}<span style={{ color: MUT, fontSize: 11, fontWeight: 500 }}> · {u.bets} Spiele</span>
+                  </div>
+                ) : (
+                  <Link href={`/u/${u.username}`} style={{ flex: 1, color: TXT, textDecoration: "none", fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {u.displayName || u.username}<span style={{ color: MUT, fontSize: 11, fontWeight: 500 }}> · {u.bets} Tipps</span>
+                  </Link>
+                )}
+                {/* Punkte: Summe in WEISS, daneben +Zuwachs → neue Summe (nur bei Live-Spielen) */}
+                <div style={{ textAlign: "right", flexShrink: 0, minWidth: 54 }}>
+                  <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{u.points}</div>
+                  {d > 0 && (
+                    <div style={{ fontSize: 11.5, fontWeight: 800, marginTop: 3, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+                      <span style={{ color: "#4ade80" }}>+{d}</span>
+                      <span style={{ color: MUT }}> → </span>
+                      <span style={{ color: "#fff" }}>{newTotal}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
