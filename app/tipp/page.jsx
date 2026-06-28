@@ -1,25 +1,28 @@
 "use client";
 
-// ⚽ WM-Tipp 2026 — „Deutschland 1990" Retro-Look.
-//   Trikot-Weiß + schräge Schwarz-Rot-Gold-Zickzack-Bande (Adidas '90), dunkle lesbare Schrift.
+// ⚽ WM-Tipp 2026 — „Deutschland 1990 bei Flutlicht" (dunkel + Schwarz-Rot-Gold-Zickzackbande).
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 const FOUR = "https://tipp.4ever1.tv";
 
-// Deutschland-Flagge
-const SCHWARZ = "#141414";
-const ROT = "#DD0000";
+// Palette (dunkel + Deutschland-Flagge)
+const SCHWARZ = "#0e0e11";
+const ROT = "#e0241f";
 const GOLD = "#FFCE00";
-const INK = "#15181d";
-const MUT = "#5b6472";
-const BORDER = "rgba(0,0,0,0.1)";
+const TXT = "#eef1f3";
+const MUT = "rgba(238,241,243,0.6)";
+const CARD = "rgba(26,26,31,0.72)";
+const CARD_SOLID = "rgba(22,22,27,0.92)";
+const BORDER = "rgba(255,255,255,0.12)";
 
 // Die ikonische 90er-Zickzack-Bande (Schwarz-Rot-Gold, diagonal).
 const FLAG_STRIPE = "repeating-linear-gradient(115deg, #141414 0 8px, #DD0000 8px 16px, #FFCE00 16px 24px)";
-// Heller Trikot-Hintergrund mit Hauch Diagonale.
-const PAGE_BG = "linear-gradient(180deg, #eef1f5 0%, #e2e7ee 100%)";
+// Dunkler Hintergrund (Flutlicht-Nacht) mit Hauch Diagonale.
+const PAGE_BG =
+  "repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0 60px, rgba(255,255,255,0) 60px 120px)," +
+  "linear-gradient(180deg, #141519 0%, #101013 55%, #0c0d0f 100%)";
 
 function FlagBand({ h = 8 }) {
   return <div aria-hidden style={{ height: h, background: FLAG_STRIPE }} />;
@@ -45,13 +48,13 @@ function fmtKickoff(ts) {
 }
 
 function ptColor(p) {
-  return p === 4 ? "#15803d" : p === 3 ? "#1d4ed8" : p === 2 ? "#b45309" : "#6b7280";
+  return p === 4 ? "#4ade80" : p === 3 ? "#60a5fa" : p === 2 ? "#fcd34d" : "#cbd5e1";
 }
 function pointsBadge(p) {
   const label = { 4: "Volltreffer", 3: "Tordifferenz", 2: "Tendenz", 0: "Daneben" }[p] || "Daneben";
   const c = ptColor(p);
   return (
-    <span style={{ background: `${c}18`, color: c, border: `1px solid ${c}55`, padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
+    <span style={{ background: `${c}22`, color: c, border: `1px solid ${c}66`, padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
       +{p} · {label}
     </span>
   );
@@ -89,31 +92,31 @@ export default function TippPage() {
   (data?.myBets || []).forEach((b) => { betMap[b.matchId] = b; });
 
   return (
-    <div style={{ background: PAGE_BG, minHeight: "100vh", padding: "18px 0 40px" }}>
+    <div style={{ background: PAGE_BG, backgroundAttachment: "fixed", minHeight: "100vh", padding: "18px 0 44px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 14px" }}>
-        {/* HERO — Trikot-Weiß mit Flaggen-Bande */}
-        <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14, background: "#ffffff", border: `1px solid ${BORDER}`, boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }}>
+        {/* HERO */}
+        <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14, background: CARD_SOLID, border: `1px solid ${BORDER}`, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
           <FlagBand h={11} />
           <div style={{ padding: "16px 18px 18px" }}>
-            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.6, color: ROT }}>⚽ VIBE★VIBO TIPPSPIEL · ANNO '90</div>
-            <div style={{ fontSize: 28, fontWeight: 900, fontStyle: "italic", color: SCHWARZ, marginTop: 2, letterSpacing: -0.5 }}>
+            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.6, color: "#ff6b66" }}>⚽ VIBE★VIBO TIPPSPIEL · ANNO '90</div>
+            <div style={{ fontSize: 28, fontWeight: 900, fontStyle: "italic", color: "#fff", marginTop: 2, letterSpacing: -0.5 }}>
               WM-TIPP 2026 <span style={{ fontStyle: "normal" }}>🇩🇪</span>
             </div>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: MUT, marginTop: 5, lineHeight: 1.45 }}>
-              Tippe jedes Spiel. Punkte: <b style={{ color: INK }}>exakt 4</b> · <b style={{ color: INK }}>Tordifferenz 3</b> · <b style={{ color: INK }}>Tendenz 2</b>. Tipp-Schluss ist immer der Anpfiff.
+              Tippe jedes Spiel. Punkte: <b style={{ color: TXT }}>exakt 4</b> · <b style={{ color: TXT }}>Tordifferenz 3</b> · <b style={{ color: TXT }}>Tendenz 2</b>. Tipp-Schluss ist immer der Anpfiff.
             </div>
           </div>
           <FlagBand h={5} />
         </div>
 
         {/* TABS */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: "#ffffff", border: `1px solid ${BORDER}`, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, padding: 5, borderRadius: 12, background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)" }}>
           <TabBtn active={tab === "spiele"} onClick={() => setTab("spiele")}>⚽ Spiele</TabBtn>
           <TabBtn active={tab === "tabelle"} onClick={() => { setTab("tabelle"); loadBoard(); }}>🏆 Bestenliste</TabBtn>
         </div>
 
         {err && (
-          <div style={{ padding: 14, borderRadius: 10, background: "#fee2e2", border: "1px solid #fecaca", color: "#991b1b", fontWeight: 700, marginBottom: 12 }}>⚠ {err}</div>
+          <div style={{ padding: 14, borderRadius: 10, background: "rgba(239,68,68,0.16)", border: "1px solid rgba(239,68,68,0.45)", color: "#fecaca", fontWeight: 700, marginBottom: 12 }}>⚠ {err}</div>
         )}
 
         {tab === "spiele" && (
@@ -132,35 +135,35 @@ export default function TippPage() {
         )}
 
         {tab === "tabelle" && (
-          <div style={{ borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}`, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <div style={{ borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}` }}>
             <FlagBand h={6} />
             {board.length === 0 ? (
-              <div style={{ background: "#fff" }}><Muted bare>Noch keine Punkte. Importiere oben die 4ever1-Daten oder tippe los! ⚽</Muted></div>
+              <div style={{ background: CARD_SOLID }}><Muted bare>Noch keine Punkte. Importiere oben die 4ever1-Daten oder tippe los! ⚽</Muted></div>
             ) : (
-              <div style={{ background: "#fff", padding: 8 }}>
+              <div style={{ background: CARD_SOLID, padding: 8 }}>
                 {board.map((u, i) => (
                   <div key={u.id} style={{
                     display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", marginBottom: 6, borderRadius: 10,
-                    background: i < 3 ? "#fffbeb" : "#f8fafc",
-                    border: `1px solid ${i < 3 ? "rgba(255,206,0,0.55)" : BORDER}`,
+                    background: i < 3 ? "rgba(255,206,0,0.14)" : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${i < 3 ? "rgba(255,206,0,0.5)" : BORDER}`,
                   }}>
-                    <div style={{ width: 26, textAlign: "center", fontSize: 18, fontWeight: 900, color: i === 0 ? "#caa204" : i === 1 ? "#64748b" : i === 2 ? "#b45309" : "#94a3b8" }}>
+                    <div style={{ width: 26, textAlign: "center", fontSize: 18, fontWeight: 900, color: i === 0 ? GOLD : i === 1 ? "#cbd5e1" : i === 2 ? "#d8a657" : MUT }}>
                       {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                     </div>
                     {avatarUrl(u.avatarUrl) && (
                       /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={avatarUrl(u.avatarUrl)} alt="" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(0,0,0,0.12)" }} />
+                      <img src={avatarUrl(u.avatarUrl)} alt="" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(255,255,255,0.2)" }} />
                     )}
                     {u.imported ? (
-                      <div style={{ flex: 1, color: INK, fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <div style={{ flex: 1, color: TXT, fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {u.displayName}<span style={{ color: MUT, fontSize: 11, fontWeight: 500 }}> · {u.bets} Spiele</span>
                       </div>
                     ) : (
-                      <Link href={`/u/${u.username}`} style={{ flex: 1, color: INK, textDecoration: "none", fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <Link href={`/u/${u.username}`} style={{ flex: 1, color: TXT, textDecoration: "none", fontWeight: 700, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {u.displayName || u.username}<span style={{ color: MUT, fontSize: 11, fontWeight: 500 }}> · {u.bets} Tipps</span>
                       </Link>
                     )}
-                    <div style={{ fontWeight: 900, fontSize: 16, color: ROT }}>{u.points}</div>
+                    <div style={{ fontWeight: 900, fontSize: 16, color: GOLD }}>{u.points}</div>
                   </div>
                 ))}
               </div>
@@ -176,11 +179,11 @@ function TabBtn({ active, onClick, children }) {
   return (
     <button type="button" onClick={onClick} style={{
       flex: 1, padding: "11px 12px", borderRadius: 9, fontFamily: "inherit",
-      background: active ? "linear-gradient(135deg, #141414, #DD0000)" : "#ffffff",
+      background: active ? "linear-gradient(135deg, #141414, #DD0000)" : "transparent",
       color: active ? "#fff" : MUT,
-      border: active ? "1px solid rgba(0,0,0,0.2)" : "1px solid rgba(0,0,0,0.1)",
+      border: active ? "1px solid rgba(255,255,255,0.25)" : "1px solid transparent",
       fontSize: 14, fontWeight: 800, cursor: "pointer",
-      boxShadow: active ? "0 2px 8px rgba(221,0,0,0.3)" : "none",
+      boxShadow: active ? "0 2px 10px rgba(221,0,0,0.4)" : "none",
     }}>{children}</button>
   );
 }
@@ -191,7 +194,7 @@ function Muted({ children, bare }) {
   );
   if (bare) return inner;
   return (
-    <div style={{ background: "#fff", borderRadius: 14, border: `1px dashed ${BORDER}` }}>{inner}</div>
+    <div style={{ background: CARD, borderRadius: 14, border: `1px dashed ${BORDER}`, backdropFilter: "blur(6px)" }}>{inner}</div>
   );
 }
 
@@ -224,66 +227,65 @@ function MatchCard({ m, bet, canTip, onSaved }) {
   }
 
   return (
-    <div style={{ marginBottom: 10, borderRadius: 14, overflow: "hidden", background: "#ffffff", border: `1px solid ${BORDER}`, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", display: "flex" }}>
-      {/* Linke Flaggen-Kante */}
+    <div style={{ marginBottom: 10, borderRadius: 14, overflow: "hidden", background: CARD, border: `1px solid ${BORDER}`, backdropFilter: "blur(6px)", boxShadow: "0 2px 10px rgba(0,0,0,0.3)", display: "flex" }}>
       <div aria-hidden style={{ width: 6, background: FLAG_STRIPE, flexShrink: 0 }} />
       <div style={{ flex: 1, padding: 14, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.5, color: ROT, textTransform: "uppercase" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.5, color: "#ff6b66", textTransform: "uppercase" }}>
             {PHASE_LABEL[m.phase] || m.phase}{m.groupLetter ? ` · Gruppe ${m.groupLetter}` : ""}
           </span>
           <span style={{ fontSize: 11, color: MUT }}>{fmtKickoff(m.kickoffAt)}</span>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ flex: 1, textAlign: "right", fontWeight: 800, fontSize: 15, color: INK }}>
+          <div style={{ flex: 1, textAlign: "right", fontWeight: 800, fontSize: 15, color: TXT }}>
             {m.teamHome} {m.homeFlag || ""}
           </div>
           {finished ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 20, color: SCHWARZ }}>
-              <span>{m.scoreHome}</span><span style={{ color: "#94a3b8" }}>:</span><span>{m.scoreAway}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: 20, color: "#fff" }}>
+              <span>{m.scoreHome}</span><span style={{ color: MUT }}>:</span><span>{m.scoreAway}</span>
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <input inputMode="numeric" value={h} disabled={locked || !canTip} maxLength={2}
                 onChange={(e) => setH(e.target.value.replace(/[^0-9]/g, ""))} style={scoreInput(locked || !canTip)} />
-              <span style={{ color: "#94a3b8", fontWeight: 900 }}>:</span>
+              <span style={{ color: MUT, fontWeight: 900 }}>:</span>
               <input inputMode="numeric" value={a} disabled={locked || !canTip} maxLength={2}
                 onChange={(e) => setA(e.target.value.replace(/[^0-9]/g, ""))} style={scoreInput(locked || !canTip)} />
             </div>
           )}
-          <div style={{ flex: 1, textAlign: "left", fontWeight: 800, fontSize: 15, color: INK }}>
+          <div style={{ flex: 1, textAlign: "left", fontWeight: 800, fontSize: 15, color: TXT }}>
             {m.awayFlag || ""} {m.teamAway}
           </div>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 10, minHeight: 22, flexWrap: "wrap" }}>
           <div style={{ fontSize: 11.5, color: MUT }}>
-            {bet ? <>Dein Tipp: <b style={{ color: INK }}>{bet.predHome}:{bet.predAway}</b></> : (canTip ? (locked ? "Kein Tipp abgegeben" : "Noch kein Tipp") : "")}
+            {bet ? <>Dein Tipp: <b style={{ color: TXT }}>{bet.predHome}:{bet.predAway}</b></> : (canTip ? (locked ? "Kein Tipp abgegeben" : "Noch kein Tipp") : "")}
           </div>
           {finished && bet ? pointsBadge(bet.points) : null}
           {!locked && canTip && (
             <button type="button" onClick={save} disabled={busy} style={{
               padding: "7px 16px", borderRadius: 9, border: "none", cursor: busy ? "wait" : "pointer",
               background: "linear-gradient(135deg, #DD0000, #a30000)", color: "#fff", fontWeight: 800, fontSize: 12.5,
-              fontFamily: "inherit", boxShadow: "0 2px 6px rgba(221,0,0,0.3)",
+              fontFamily: "inherit", boxShadow: "0 2px 6px rgba(221,0,0,0.35)",
             }}>{busy ? "…" : bet ? "Ändern" : "Tippen"}</button>
           )}
         </div>
-        {flash && <div style={{ marginTop: 6, fontSize: 11.5, fontWeight: 700, color: flash.startsWith("⚠") ? "#b91c1c" : "#15803d" }}>{flash}</div>}
+        {flash && <div style={{ marginTop: 6, fontSize: 11.5, fontWeight: 700, color: flash.startsWith("⚠") ? "#fca5a5" : "#86efac" }}>{flash}</div>}
 
         {tips.length > 0 && (
           <div style={{ marginTop: 8, borderTop: `1px solid ${BORDER}`, paddingTop: 8 }}>
             <button type="button" onClick={() => setShowTips((s) => !s)} style={{
               background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
-              color: ROT, fontSize: 12, fontWeight: 800, padding: 0,
+              color: "#ff6b66", fontSize: 12, fontWeight: 800, padding: 0,
             }}>
               {showTips ? "▲" : "▼"} 👁 {tips.length} Tipps der Runde
             </button>
             {showTips && (
               <div style={{ marginTop: 6, display: "grid", gap: 4 }}>
                 {tips.map((t, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: INK }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: TXT }}>
                     {avatarUrl(t.avatar) ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img src={avatarUrl(t.avatar)} alt="" style={{ width: 20, height: 20, borderRadius: "50%", objectFit: "cover" }} />
@@ -307,8 +309,8 @@ function MatchCard({ m, bet, canTip, onSaved }) {
 function scoreInput(locked) {
   return {
     width: 42, height: 40, textAlign: "center", fontSize: 18, fontWeight: 900, borderRadius: 10,
-    border: `1.5px solid ${locked ? "rgba(0,0,0,0.12)" : "rgba(221,0,0,0.5)"}`,
-    background: locked ? "#f1f5f9" : "#fff", color: INK, fontFamily: "inherit", boxSizing: "border-box",
+    border: `1.5px solid ${locked ? "rgba(255,255,255,0.12)" : "rgba(221,0,0,0.55)"}`,
+    background: locked ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.3)", color: TXT, fontFamily: "inherit", boxSizing: "border-box",
   };
 }
 
@@ -385,16 +387,16 @@ function AdminPanel({ onChanged, matches }) {
   }
 
   return (
-    <div style={{ marginBottom: 14, borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}`, background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+    <div style={{ marginBottom: 14, borderRadius: 14, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD_SOLID, boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
       <FlagBand h={5} />
       <button type="button" onClick={() => setOpen((o) => !o)} style={{
         width: "100%", padding: "11px 14px", textAlign: "left", cursor: "pointer",
-        background: "none", border: "none", color: SCHWARZ, fontWeight: 800, fontSize: 13.5, fontFamily: "inherit",
+        background: "none", border: "none", color: "#fff", fontWeight: 800, fontSize: 13.5, fontFamily: "inherit",
       }}>🛠 Admin: Import & Spiele {open ? "▲" : "▼"}</button>
       {open && (
         <div style={{ padding: "0 14px 14px" }}>
-          <div style={{ marginBottom: 12, padding: 12, borderRadius: 10, background: "#f8fafc", border: `1px solid ${BORDER}` }}>
-            <div style={{ fontWeight: 800, fontSize: 13, color: INK, marginBottom: 4 }}>📥 Von tipp.4ever1.tv übernehmen</div>
+          <div style={{ marginBottom: 12, padding: 12, borderRadius: 10, background: "rgba(0,0,0,0.28)", border: `1px solid ${BORDER}` }}>
+            <div style={{ fontWeight: 800, fontSize: 13, color: TXT, marginBottom: 4 }}>📥 Von tipp.4ever1.tv übernehmen</div>
             <div style={{ fontSize: 11.5, color: MUT, marginBottom: 8, lineHeight: 1.4 }}>
               Holt Teams, Spiele, Ergebnisse, Bestenliste und alle Tipps direkt von 4ever1. Mehrfach ausführbar (aktualisiert).
             </div>
@@ -402,20 +404,19 @@ function AdminPanel({ onChanged, matches }) {
               padding: "9px 14px", borderRadius: 9, border: "none", cursor: importing ? "wait" : "pointer",
               background: "linear-gradient(135deg, #141414, #DD0000)", color: "#fff", fontWeight: 800, fontSize: 13, fontFamily: "inherit",
             }}>{importing ? "⏳ Importiere …" : "⬇️ Jetzt von 4ever1 importieren"}</button>
-            {importMsg && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: importMsg.startsWith("⚠") ? "#b91c1c" : importMsg.startsWith("✅") ? "#15803d" : MUT }}>{importMsg}</div>}
+            {importMsg && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: importMsg.startsWith("⚠") ? "#fca5a5" : importMsg.startsWith("✅") ? "#86efac" : MUT }}>{importMsg}</div>}
           </div>
 
-          {/* 🛟 DB-BACKUP */}
-          <div style={{ marginBottom: 12, padding: 12, borderRadius: 10, background: "#f0fdf4", border: "1px solid rgba(22,163,74,0.35)" }}>
-            <div style={{ fontWeight: 800, fontSize: 13, color: INK, marginBottom: 4 }}>🛟 Datenbank-Backup</div>
+          <div style={{ marginBottom: 12, padding: 12, borderRadius: 10, background: "rgba(22,101,52,0.18)", border: "1px solid rgba(22,163,74,0.4)" }}>
+            <div style={{ fontWeight: 800, fontSize: 13, color: TXT, marginBottom: 4 }}>🛟 Datenbank-Backup</div>
             <div style={{ fontSize: 11.5, color: MUT, marginBottom: 8, lineHeight: 1.4 }}>
-              Erstellt sofort eine konsistente Sicherungskopie der kompletten Live-Datenbank (Wiederherstellungspunkt). Die letzten 10 Backups bleiben erhalten.
+              Erstellt sofort eine konsistente Sicherungskopie der kompletten Live-Datenbank. Die letzten 10 Backups bleiben erhalten.
             </div>
             <button type="button" onClick={runBackup} disabled={backingUp} style={{
               padding: "9px 14px", borderRadius: 9, border: "none", cursor: backingUp ? "wait" : "pointer",
               background: "linear-gradient(135deg, #16a34a, #15803d)", color: "#fff", fontWeight: 800, fontSize: 13, fontFamily: "inherit",
             }}>{backingUp ? "⏳ Sichere …" : "🛟 Backup jetzt erstellen"}</button>
-            {backupMsg && <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, wordBreak: "break-all", color: backupMsg.startsWith("⚠") ? "#b91c1c" : backupMsg.startsWith("✅") ? "#15803d" : MUT }}>{backupMsg}</div>}
+            {backupMsg && <div style={{ marginTop: 8, fontSize: 11.5, fontWeight: 700, wordBreak: "break-all", color: backupMsg.startsWith("⚠") ? "#fca5a5" : backupMsg.startsWith("✅") ? "#86efac" : MUT }}>{backupMsg}</div>}
           </div>
 
           <div style={{ display: "grid", gap: 6, marginBottom: 8 }}>
@@ -437,7 +438,7 @@ function AdminPanel({ onChanged, matches }) {
               padding: "9px 14px", borderRadius: 9, border: "none", cursor: "pointer",
               background: "linear-gradient(135deg, #FFCE00, #e0b400)", color: "#141414", fontWeight: 800, fontSize: 13, fontFamily: "inherit",
             }}>{busy ? "…" : "➕ Spiel manuell anlegen"}</button>
-            {msg && <div style={{ fontSize: 11.5, fontWeight: 700, color: msg.startsWith("⚠") ? "#b91c1c" : "#15803d" }}>{msg}</div>}
+            {msg && <div style={{ fontSize: 11.5, fontWeight: 700, color: msg.startsWith("⚠") ? "#fca5a5" : "#86efac" }}>{msg}</div>}
           </div>
 
           {(matches || []).length > 0 && (
@@ -445,12 +446,12 @@ function AdminPanel({ onChanged, matches }) {
               <div style={{ fontSize: 11, fontWeight: 800, color: MUT, marginBottom: 4 }}>SPIELE VERWALTEN ({matches.length})</div>
               <div style={{ maxHeight: 240, overflowY: "auto" }}>
                 {matches.map((m) => (
-                  <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 0", fontSize: 12, color: INK, borderBottom: `1px solid ${BORDER}` }}>
+                  <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 0", fontSize: 12, color: TXT, borderBottom: `1px solid ${BORDER}` }}>
                     <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {m.teamHome} – {m.teamAway} {m.status === "finished" ? `(${m.scoreHome}:${m.scoreAway})` : ""}
                     </span>
-                    <button type="button" onClick={() => setResult(m.id)} style={miniBtn("#1d4ed8")}>Ergebnis</button>
-                    <button type="button" onClick={() => del(m.id)} style={miniBtn("#dc2626")}>🗑</button>
+                    <button type="button" onClick={() => setResult(m.id)} style={miniBtn("#60a5fa")}>Ergebnis</button>
+                    <button type="button" onClick={() => del(m.id)} style={miniBtn("#f87171")}>🗑</button>
                   </div>
                 ))}
               </div>
@@ -464,12 +465,12 @@ function AdminPanel({ onChanged, matches }) {
 
 const adminInput = {
   flex: 1, padding: "9px 11px", borderRadius: 8, fontSize: 12.5, minWidth: 0,
-  border: "1px solid rgba(0,0,0,0.15)", background: "#fff", color: INK, fontFamily: "inherit", boxSizing: "border-box",
+  border: "1px solid rgba(255,255,255,0.18)", background: "rgba(0,0,0,0.3)", color: TXT, fontFamily: "inherit", boxSizing: "border-box",
 };
 
 function miniBtn(color) {
   return {
-    padding: "4px 9px", borderRadius: 7, border: `1px solid ${color}55`,
-    background: `${color}14`, color, fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+    padding: "4px 9px", borderRadius: 7, border: `1px solid ${color}66`,
+    background: `${color}22`, color, fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
   };
 }
