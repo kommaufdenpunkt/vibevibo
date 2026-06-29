@@ -1,6 +1,6 @@
 "use client";
 
-// 🆕 Was-ist-neu-Seite — Public, Timeline, Emoji-Reaktionen.
+// 🆕 Was-ist-neu-Seite — Public, Timeline, Emoji-Reaktionen. DUNKEL (selbst-enthalten).
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -9,6 +9,41 @@ import { useMe } from "@/lib/useMe";
 import ChangelogReactions from "@/components/ChangelogReactions";
 
 const SEEN_KEY = "vv_changelog_seen";
+
+// Dunkles Overlay nur für /neu — überschreibt die hellen .vv-neu-*-Farben.
+const NEU_DARK_CSS = `
+.vv-neu-page { background: transparent !important; color: #eef1f3 !important; }
+.vv-neu-hero {
+  background: linear-gradient(180deg, #17181c 0%, #0c0d0f 100%) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+}
+.vv-neu-back { color: #ffce00 !important; }
+.vv-neu-title { color: #ffffff !important; }
+.vv-neu-sub { color: rgba(238,241,243,0.65) !important; }
+.vv-neu-day-title { color: #ff6b66 !important; }
+.vv-neu-timeline::before, .vv-neu-day::before { background: rgba(255,255,255,0.12) !important; }
+.vv-neu-item {
+  background: rgba(26,26,31,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important;
+}
+.vv-neu-itemtitle { color: #eef1f3 !important; }
+.vv-neu-itemtime { color: rgba(238,241,243,0.5) !important; }
+.vv-neu-empty { color: rgba(238,241,243,0.7) !important; }
+/* Reaktions-Buttons (weiße Kreise) abdunkeln */
+.vv-neu-item button {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  color: #eef1f3 !important;
+}
+.vv-neu-tipplink {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+  padding: 8px 14px; border-radius: 999px; font-weight: 800; font-size: 13px;
+  text-decoration: none; color: #141414;
+  background: linear-gradient(135deg, #FFCE00, #e0b400);
+}
+`;
 
 export default function NeuPage() {
   const { me } = useMe();
@@ -41,12 +76,17 @@ export default function NeuPage() {
 
   return (
     <div className="vv-neu-page">
+      {/* /neu dunkel — selbst-enthalten, ohne globales CSS anzufassen */}
+      <style dangerouslySetInnerHTML={{ __html: NEU_DARK_CSS }} />
+      <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: -1, background: "linear-gradient(180deg,#141519 0%,#0c0d0f 100%)", backgroundColor: "#0c0d0f" }} />
+
       <div className="vv-neu-hero">
         <Link href="/" className="vv-neu-back">← Start</Link>
         <h1 className="vv-neu-title">🆕 Was ist neu auf VibeVibo?</h1>
         <p className="vv-neu-sub">
           Chronologische Timeline mit Datum und Uhrzeit — und Reaktionen auf jeden Beitrag ✿
         </p>
+        <Link href="/tipp" className="vv-neu-tipplink">⚽ Zum WM-Tippspiel →</Link>
       </div>
 
       {groups.length === 0 ? (
