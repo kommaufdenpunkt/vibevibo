@@ -464,9 +464,56 @@ function Auswertung() {
   });
   const tippers = Object.values(tip).sort((a, b) => b.total - a.total);
 
+  // 🏅 Bester Tipper je Runde (nur beendete Spiele)
+  const phaseOrder = ["group", "r32", "r16", "qf", "sf", "third", "3rd", "final"];
+  const finById = {}, finByExt = {};
+  matches.forEach((m) => {
+    const fin = m.status === "finished";
+    finById[m.id] = { phase: m.phase || "group", fin };
+    if (m.extId != null) finByExt[m.extId] = { phase: m.phase || "group", fin };
+  });
+  const perPhase = {};
+  tippers.forEach((u) => {
+    for (const ext in u.ext) {
+      const t = u.ext[ext], info = finByExt[ext];
+      if (!info || !info.fin || t.points == null) continue;
+      (perPhase[info.phase] = perPhase[info.phase] || {});
+      perPhase[info.phase][u.name] = (perPhase[info.phase][u.name] || 0) + Number(t.points || 0);
+    }
+    for (const mid in u.real) {
+      const b = u.real[mid], info = finById[mid];
+      if (!info || !info.fin || b.points == null) continue;
+      (perPhase[info.phase] = perPhase[info.phase] || {});
+      perPhase[info.phase][u.name] = (perPhase[info.phase][u.name] || 0) + Number(b.points || 0);
+    }
+  });
+  const roundWinners = phaseOrder.filter((ph) => perPhase[ph]).map((ph) => {
+    const entries = Object.entries(perPhase[ph]).sort((a, b) => b[1] - a[1]);
+    return { phase: ph, name: entries[0][0], pts: entries[0][1] };
+  });
+
   return (
     <div style={{ display: "grid", gap: 8 }}>
-      <div style={{ fontSize: 12, color: MUT, marginBottom: 2 }}>📊 Alle Tipper — wer wie viele Punkte hat. Tipps je Spiel erst <b style={{ color: TXT }}>ab Anpfiff</b> sichtbar.</div>
+      <div style={{ fontSize: 12.5, color: TXT, fontWeight: 700, marginBottom: 2 }}>Wer hat was getippt — und wie kamen die Punkte zustande? <span style={{ color: MUT, fontWeight: 500 }}>Fremde Tipps erst ab Anpfiff.</span></div>
+      <div style={{ fontSize: 10.5, color: MUT, lineHeight: 1.5, padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, marginBottom: 2 }}>
+        🎯 <b style={{ color: TXT }}>4</b> exakt · <b style={{ color: TXT }}>3</b> Tordiff. · <b style={{ color: TXT }}>2</b> Tendenz · ➡️ Weiterkommen <b style={{ color: TXT }}>+1</b> · ⏱️ 90 Min/Verl./Elfm. <b style={{ color: "#4ade80" }}>+1/+3/+5</b> <b style={{ color: "#f87171" }}>−2/−3/−4</b> · 🔮 Podium-Orakel
+      </div>
+
+      {/* 🏅 Tipper der Runde */}
+      {roundWinners.length > 0 && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD_SOLID, marginBottom: 4 }}>
+          <div style={{ padding: "9px 12px", fontSize: 12, fontWeight: 800, color: MUT, borderBottom: `1px solid ${BORDER}` }}>🏅 Tipper der Runde</div>
+          <div style={{ padding: 8, display: "grid", gap: 3 }}>
+            {roundWinners.map((w) => (
+              <div key={w.phase} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: TXT, padding: "5px 6px" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#ff6b66", textTransform: "uppercase", width: 84, flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{PHASE_LABEL[w.phase] || w.phase}</span>
+                <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 700 }}>🏅 {w.name}</span>
+                <b style={{ color: w.pts > 0 ? "#4ade80" : w.pts < 0 ? "#f87171" : "#cbd5e1", fontVariantNumeric: "tabular-nums" }}>{w.pts > 0 ? "+" : ""}{w.pts}</b>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 🏅 Gesamtpunkte aller Tipper */}
       {tippers.length > 0 && (
@@ -507,16 +554,25 @@ function Auswertung() {
           }
           return { u, tipStr, joker, pts, has };
         }).sort((a, b) => (b.pts ?? -1e9) - (a.pts ?? -1e9));
+        const tipCount = rows.filter((r) => r.has).length;
+        const stateM = matchState(m, now);
+        const metaLeft = m.phase === "group" && m.groupLetter ? `Gr. ${m.groupLetter}` : (PHASE_LABEL[m.phase] || m.phase || "");
         return (
           <div key={m.id} style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD }}>
             <button type="button" onClick={() => setOpen((o) => ({ ...o, [m.id]: !o[m.id] }))} style={{
               width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
               padding: "10px 12px", color: TXT, display: "flex", alignItems: "center", gap: 8,
             }}>
-              <span style={{ fontSize: 10, fontWeight: 800, color: "#ff6b66", textTransform: "uppercase", flexShrink: 0 }}>{(PHASE_LABEL[m.phase] || m.phase || "").slice(0, 4)}</span>
-              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 800, fontSize: 13 }}>{m.homeFlag || ""} {m.teamHome} – {m.teamAway} {m.awayFlag || ""}</span>
-              {m.status === "finished" && m.scoreHome != null && <span style={{ fontWeight: 900, color: "#fff", flexShrink: 0 }}>{m.scoreHome}:{m.scoreAway}</span>}
-              <span style={{ color: MUT, fontSize: 11, flexShrink: 0 }}>{isOpen ? "▲" : "▼"} {tippers.length}</span>
+              <span style={{ fontSize: 15, flexShrink: 0 }}>{stateM === "finished" ? "✅" : stateM === "live" ? "🔴" : "⏳"}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 800, fontSize: 13 }}>
+                  {m.homeFlag || ""} {m.teamHome} <b style={{ color: "#fff" }}>{stateM === "finished" && m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway}` : stateM === "live" && m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway}` : "–:–"}</b> {m.teamAway} {m.awayFlag || ""}
+                </div>
+                <div style={{ fontSize: 10.5, color: MUT, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {metaLeft} · {fmtKickoff(m.kickoffAt)} · {tipCount} Tipp(s)
+                </div>
+              </div>
+              <span style={{ color: MUT, fontSize: 11, flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</span>
             </button>
             {isOpen && (
               <div style={{ padding: "0 12px 10px" }}>
@@ -679,9 +735,9 @@ function NextUp({ matches }) {
   const upcoming = (matches || [])
     .filter((m) => matchState(m, now) === "upcoming" && m.kickoffAt && m.kickoffAt > now)
     .sort((a, b) => a.kickoffAt - b.kickoffAt);
-  // Alle Spiele mit der frühesten Anstoßzeit (auf die Minute) → zeitgleiche Spiele zusammen zeigen.
+  // Die nächsten Spiele zeigen (nicht nur eins) — bis zu 6 anstehende.
+  const nextGames = upcoming.slice(0, 6);
   const firstMin = upcoming.length ? Math.floor(upcoming[0].kickoffAt / 60000) : null;
-  const nextGames = firstMin != null ? upcoming.filter((m) => Math.floor(m.kickoffAt / 60000) === firstMin) : [];
   const isDE = (m) => /deutschland|germany/i.test(m.teamHome || "") || /deutschland|germany/i.test(m.teamAway || "");
   const nextDE = upcoming.find(isDE);
   if (!liveNow.length && !nextGames.length && !nextDE) return null;
@@ -712,10 +768,13 @@ function NextUp({ matches }) {
   return (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
       {liveNow.map((m) => <Card key={"l" + m.id} label="🔴 Jetzt live" m={m} accent="#ff5a55" live />)}
-      {nextGames.map((m, i) => (
-        <Card key={"n" + m.id} m={m} accent="#ff6b66"
-          label={i === 0 ? (nextGames.length > 1 ? "Nächste Spiele" : "Nächstes Spiel") : "Zeitgleich"} />
-      ))}
+      {nextGames.map((m, i) => {
+        const sameAsFirst = firstMin != null && Math.floor(m.kickoffAt / 60000) === firstMin;
+        return (
+          <Card key={"n" + m.id} m={m} accent="#ff6b66"
+            label={i === 0 ? "Nächstes Spiel" : sameAsFirst ? "Zeitgleich" : "Danach"} />
+        );
+      })}
       {nextDE && !nextGames.some((x) => x.id === nextDE.id) && !liveNow.some((x) => x.id === nextDE.id) && (
         <Card label="Deutschland 🇩🇪" m={nextDE} accent="#ffce00" />
       )}
