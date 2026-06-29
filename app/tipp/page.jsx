@@ -264,7 +264,12 @@ export default function TippPage() {
           </>
         )}
 
-        {tab === "tabelle" && <Blitztabelle board={board} matches={data?.matches || []} />}
+        {tab === "tabelle" && (
+          <>
+            <TipperDesSpieltags matches={data?.matches || []} />
+            <Blitztabelle board={board} matches={data?.matches || []} />
+          </>
+        )}
 
         {tab === "auswertung" && <Auswertung />}
         {tab === "orakel" && <PodiumOrakel canTip={!!data?.me} />}
@@ -354,6 +359,74 @@ function Spielplan({ matches, betMap = {}, canTip, onSaved }) {
 
 // ⚡ Blitztabelle — Gesamtpunkte in WEISS, daneben Live-Hochrechnung „+X → neue Summe"
 // für aktuell LAUFENDE Spiele (was käme dazu, wenn sie jetzt so endeten).
+// 🏅 Tipper des Spieltags + 🏆 Öfter vorn — pro Kalendertag, aus den importierten Tipps.
+function TipperDesSpieltags({ matches }) {
+  const fin = (matches || []).filter((m) => m.status === "finished" && m.kickoffAt && (m.importedTips || []).length);
+  if (!fin.length) return null;
+  const dayKey = (ts) => new Date(ts).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "2-digit" });
+  const avatarOf = {};
+  const days = {};
+  for (const m of fin) {
+    const k = dayKey(m.kickoffAt);
+    const d = days[k] = days[k] || { ts: 0, games: 0, pts: {} };
+    if (m.kickoffAt > d.ts) d.ts = m.kickoffAt;
+    d.games++;
+    for (const t of (m.importedTips || [])) {
+      if (!t.tipper || t.points == null) continue;
+      d.pts[t.tipper] = (d.pts[t.tipper] || 0) + Number(t.points || 0);
+      if (t.avatar && !avatarOf[t.tipper]) avatarOf[t.tipper] = t.avatar;
+    }
+  }
+  const dayList = Object.entries(days).map(([k, v]) => ({ k, ...v })).sort((a, b) => b.ts - a.ts);
+  if (!dayList.length) return null;
+
+  // 🏆 Öfter vorn: Tagessieger zählen
+  const winCount = {};
+  for (const d of dayList) {
+    const entries = Object.entries(d.pts);
+    if (!entries.length) continue;
+    const max = Math.max(...entries.map((e) => e[1]));
+    if (max <= 0) continue;
+    for (const [name, p] of entries) if (p === max) winCount[name] = (winCount[name] || 0) + 1;
+  }
+  const oefter = Object.entries(winCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  const latest = dayList[0];
+  const rank = Object.entries(latest.pts).sort((a, b) => b[1] - a[1]);
+  const medal = ["🥇", "🥈", "🥉"];
+
+  return (
+    <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,206,0,0.45)", background: "linear-gradient(135deg, rgba(255,206,0,0.12), rgba(255,255,255,0.03))", marginBottom: 12, boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }}>
+      <div style={{ padding: "10px 14px", borderBottom: `1px solid ${BORDER}` }}>
+        <span style={{ fontSize: 13.5, fontWeight: 900, color: "#fff" }}>🏅 Tipper des Spieltags</span>
+        <span style={{ fontSize: 11, color: MUT, fontWeight: 700 }}> · {latest.k} · {latest.games} Spiele</span>
+      </div>
+      <div style={{ padding: 8, display: "grid", gap: 4 }}>
+        {rank.length === 0 ? (
+          <div style={{ fontSize: 12, color: MUT, padding: "6px 8px" }}>Noch keine Punkte an diesem Tag.</div>
+        ) : rank.map(([name, p], i) => (
+          <div key={name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 9, fontSize: 13, color: TXT, background: i === 0 ? "rgba(255,206,0,0.14)" : "transparent" }}>
+            <span style={{ width: 22, textAlign: "center", fontWeight: 900 }}>{medal[i] || (i + 1 + ".")}</span>
+            {avatarUrl(avatarOf[name]) ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={avatarUrl(avatarOf[name])} alt="" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} />
+            ) : <span style={{ width: 24, textAlign: "center", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "rgba(255,255,255,0.08)", height: 24, fontSize: 12 }}>👤</span>}
+            <span style={{ flex: 1, fontWeight: i === 0 ? 800 : 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+            <b style={{ color: i === 0 ? GOLD : TXT, fontVariantNumeric: "tabular-nums" }}>{p} Pkt</b>
+          </div>
+        ))}
+        {oefter.length > 0 && (
+          <div style={{ fontSize: 11.5, color: MUT, padding: "6px 8px 2px", lineHeight: 1.5 }}>
+            🏆 Öfter vorn: {oefter.map(([n, c], i) => (
+              <span key={n}>{i > 0 ? " · " : ""}<b style={{ color: TXT }}>{n}</b> {c}×</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Blitztabelle({ board, matches }) {
   const now = Date.now();
   const liveMatches = (matches || []).filter(
