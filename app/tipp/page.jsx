@@ -447,18 +447,23 @@ function Auswertung() {
   if (matches.length === 0) return <Muted>Noch keine Spiele. Importiere oben die 4ever1-Daten! ⚽</Muted>;
 
   // ALLE Tipper sammeln (8 importierte + echte) — mit Gesamtpunkten + Tipp je Spiel.
+  // Tipper nach NAME (klein, getrimmt) zusammenführen — so wird der echte Account
+  // automatisch mit dem importierten 4ever1-Tipper gleichen Namens verknüpft (kein Doppel).
   const tip = {};
+  const norm = (s) => String(s || "").trim().toLowerCase();
   (data.importedTips || []).forEach((t) => {
     if (!t.tipper) return;
-    const k = "i:" + t.tipper;
+    const k = norm(t.tipper);
     tip[k] = tip[k] || { key: k, name: t.tipper, avatar: t.avatar, total: 0, ext: {}, real: {} };
+    if (!tip[k].avatar && t.avatar) tip[k].avatar = t.avatar;
     if (t.points != null) tip[k].total += Number(t.points) || 0;
     tip[k].ext[t.extMatchId] = t;
   });
   (data.realBets || []).forEach((b) => {
     const nm = b.displayName || b.username; if (!nm) return;
-    const k = "r:" + (b.username || nm);
+    const k = norm(b.username || nm);
     tip[k] = tip[k] || { key: k, name: nm, avatar: b.avatarUrl, total: 0, ext: {}, real: {} };
+    if (!tip[k].avatar && b.avatarUrl) tip[k].avatar = b.avatarUrl;
     if (b.points != null) tip[k].total += Number(b.points) || 0;
     tip[k].real[b.matchId] = b;
   });
@@ -880,16 +885,17 @@ function SpieleListe({ matches, betMap, canTip, onSaved }) {
   const kommend = matches.filter((m) => matchState(m, now) === "upcoming").sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
   const DEADLINE = 20 * 60 * 1000; // Tipp-Schluss 20 Min vor Anpfiff
   const zuTippen = canTip ? kommend.filter((m) => !betMap[m.id] && (!m.kickoffAt || m.kickoffAt > now + DEADLINE)) : [];
-  const groups = { live, zu: zuTippen, vorbei };
-  // Läuft gerade kommt immer zuerst; sonst Plan als Überblick.
+  // 📅 Plan zeigt NUR Spiele, die noch gespielt werden müssen (anstehend + live).
+  // Fertige Spiele leben in der Auswertung ("wer hat was getippt + Punkte") — wie auf 4ever1.
+  const planMatches = matches.filter((m) => { const s = matchState(m, now); return s === "upcoming" || s === "live"; });
+  const groups = { live, zu: zuTippen };
   const def = live.length ? "live" : zuTippen.length ? "zu" : "plan";
   const [sel, setSel] = useState(def);
 
   const chips = [];
   if (live.length) chips.push(["live", "🔴 Läuft gerade", live.length]);
   if (canTip) chips.push(["zu", "🎯 Zu tippen", zuTippen.length]);
-  chips.push(["plan", "📅 Plan", matches.length]);
-  chips.push(["vorbei", "✅ Vorbei", vorbei.length]);
+  chips.push(["plan", "📅 Plan", planMatches.length]);
   const list = sel === "plan" ? null : (groups[sel] || []);
 
   return (
@@ -907,9 +913,11 @@ function SpieleListe({ matches, betMap, canTip, onSaved }) {
         })}
       </div>
       {sel === "plan" ? (
-        <Spielplan matches={matches} betMap={betMap} canTip={canTip} onSaved={onSaved} />
+        planMatches.length === 0
+          ? <Muted>Alle Spiele gespielt — die Ergebnisse + Tipps findest du in der 📊 Auswertung.</Muted>
+          : <Spielplan matches={planMatches} betMap={betMap} canTip={canTip} onSaved={onSaved} />
       ) : list.length === 0 ? (
-        <Muted>{sel === "live" ? "Gerade läuft kein Spiel." : sel === "zu" ? "Alles getippt — stark! 🎯" : "Noch keine gespielten Spiele."}</Muted>
+        <Muted>{sel === "live" ? "Gerade läuft kein Spiel." : "Alles getippt — stark! 🎯"}</Muted>
       ) : (
         list.map((m) => <MatchCard key={m.id} m={m} bet={betMap[m.id]} canTip={canTip} onSaved={onSaved} />)
       )}
