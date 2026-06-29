@@ -287,7 +287,7 @@ function projGroupScore(ph, pa, sh, sa) {
 }
 
 // 📅 Spielplan — alle Spiele nach Runde gruppiert (wann spielt wer), aktualisiert sich automatisch.
-function Spielplan({ matches }) {
+function Spielplan({ matches, betMap = {}, canTip, onSaved }) {
   const now = Date.now();
   const order = ["group", "r32", "r16", "qf", "sf", "third", "3rd", "final"];
   const byPhase = {};
@@ -302,7 +302,7 @@ function Spielplan({ matches }) {
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
-      <div style={{ fontSize: 12, color: MUT }}>📅 Kompletter Spielplan — wird automatisch von 4ever1 aktualisiert.</div>
+      <div style={{ fontSize: 12, color: MUT }}>📅 Kompletter Spielplan — <b style={{ color: TXT }}>anstehende Spiele kannst du hier direkt tippen</b>. Auto-Update von 4ever1.</div>
       {phases.map((p) => {
         const games = byPhase[p].slice().sort((a, b) => (a.kickoffAt || 0) - (b.kickoffAt || 0));
         const dated = games.filter((g) => g.kickoffAt);
@@ -321,6 +321,11 @@ function Spielplan({ matches }) {
             <div style={{ padding: 8, display: "grid", gap: 4 }}>
               {games.map((m) => {
                 const st = matchState(m, now);
+                // Anstehende Spiele → volle Tipp-Karte (tippbar bis 20 Min vor Anpfiff)
+                if (st === "upcoming") {
+                  return <MatchCard key={m.id} m={m} bet={betMap[m.id]} canTip={canTip} onSaved={onSaved} />;
+                }
+                // Gespielte / laufende Spiele → kompakte Zeile mit Ergebnis/Live-Stand
                 return (
                   <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)" }}>
                     <div style={{ width: 88, flexShrink: 0, fontSize: 10.5, color: MUT, lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>
@@ -332,10 +337,8 @@ function Spielplan({ matches }) {
                     <div style={{ flexShrink: 0, textAlign: "right", minWidth: 56 }}>
                       {st === "finished" ? (
                         <span style={{ fontWeight: 900, color: "#fff", fontSize: 13 }}>{m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway}` : "–"}</span>
-                      ) : st === "live" ? (
-                        <span style={{ fontWeight: 900, color: "#ff5a55", fontSize: 11.5, whiteSpace: "nowrap" }}>{m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway} ` : ""}● LIVE</span>
                       ) : (
-                        <span style={{ fontSize: 11, color: MUT }}>—</span>
+                        <span style={{ fontWeight: 900, color: "#ff5a55", fontSize: 11.5, whiteSpace: "nowrap" }}>{m.scoreHome != null ? `${m.scoreHome}:${m.scoreAway} ` : ""}● LIVE</span>
                       )}
                     </div>
                   </div>
@@ -440,23 +443,70 @@ function Auswertung() {
   }, []);
   if (!data) return <Muted>⏳ Lädt …</Muted>;
   const now = Date.now();
-  const byExt = {};
-  (data.importedTips || []).forEach((t) => { (byExt[t.extMatchId] = byExt[t.extMatchId] || []).push(t); });
-  const byReal = {};
-  (data.realBets || []).forEach((b) => { (byReal[b.matchId] = byReal[b.matchId] || []).push(b); });
   const matches = (data.matches || []).slice().sort((a, b) => (b.kickoffAt || 0) - (a.kickoffAt || 0));
   if (matches.length === 0) return <Muted>Noch keine Spiele. Importiere oben die 4ever1-Daten! ⚽</Muted>;
 
+  // ALLE Tipper sammeln (8 importierte + echte) — mit Gesamtpunkten + Tipp je Spiel.
+  const tip = {};
+  (data.importedTips || []).forEach((t) => {
+    if (!t.tipper) return;
+    const k = "i:" + t.tipper;
+    tip[k] = tip[k] || { key: k, name: t.tipper, avatar: t.avatar, total: 0, ext: {}, real: {} };
+    if (t.points != null) tip[k].total += Number(t.points) || 0;
+    tip[k].ext[t.extMatchId] = t;
+  });
+  (data.realBets || []).forEach((b) => {
+    const nm = b.displayName || b.username; if (!nm) return;
+    const k = "r:" + (b.username || nm);
+    tip[k] = tip[k] || { key: k, name: nm, avatar: b.avatarUrl, total: 0, ext: {}, real: {} };
+    if (b.points != null) tip[k].total += Number(b.points) || 0;
+    tip[k].real[b.matchId] = b;
+  });
+  const tippers = Object.values(tip).sort((a, b) => b.total - a.total);
+
   return (
     <div style={{ display: "grid", gap: 8 }}>
-      <div style={{ fontSize: 12, color: MUT, marginBottom: 2 }}>📊 Alle Tipps öffentlich — pro Spiel, mit Punkten. Tipps werden erst <b style={{ color: TXT }}>ab Anpfiff</b> sichtbar.</div>
+      <div style={{ fontSize: 12, color: MUT, marginBottom: 2 }}>📊 Alle Tipper — wer wie viele Punkte hat. Tipps je Spiel erst <b style={{ color: TXT }}>ab Anpfiff</b> sichtbar.</div>
+
+      {/* 🏅 Gesamtpunkte aller Tipper */}
+      {tippers.length > 0 && (
+        <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD_SOLID, marginBottom: 4 }}>
+          <div style={{ padding: "9px 12px", fontSize: 12, fontWeight: 800, color: MUT, borderBottom: `1px solid ${BORDER}` }}>🏅 Punkte gesamt ({tippers.length})</div>
+          <div style={{ padding: 8, display: "grid", gap: 3 }}>
+            {tippers.map((u, i) => (
+              <div key={u.key} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: TXT, padding: "5px 6px" }}>
+                <span style={{ width: 20, textAlign: "center", fontWeight: 900, color: i === 0 ? GOLD : i === 1 ? "#cbd5e1" : i === 2 ? "#d8a657" : MUT }}>{i + 1}</span>
+                {avatarUrl(u.avatar) ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={avatarUrl(u.avatar)} alt="" style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }} />
+                ) : <span style={{ width: 22, textAlign: "center" }}>👤</span>}
+                <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 700 }}>{u.name}</span>
+                <b style={{ color: u.total > 0 ? "#4ade80" : u.total < 0 ? "#f87171" : "#cbd5e1", fontVariantNumeric: "tabular-nums" }}>{u.total > 0 ? "+" : ""}{u.total}</b>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Pro Spiel: ALLE Tipper mit ihren Punkten (nach Punkten sortiert) */}
       {matches.map((m) => {
         const started = m.status === "finished" || (m.kickoffAt && m.kickoffAt <= now);
+        const finishedM = m.status === "finished";
         const isKO = m.phase && m.phase !== "group";
-        const imp = byExt[m.extId] || [];
-        const real = byReal[m.id] || [];
-        const count = imp.length + real.length;
         const isOpen = !!open[m.id];
+        const rows = tippers.map((u) => {
+          const t = u.ext[m.extId], b = u.real[m.id];
+          let tipStr = "nicht getippt", joker = false, pts = null, has = false;
+          if (t) { has = true; tipStr = `${t.home}:${t.away}`; joker = !!t.joker; pts = finishedM ? t.points : null; }
+          else if (b) {
+            has = true;
+            tipStr = isKO
+              ? `${b.advPick ? (b.advPick === "home" ? m.teamHome : m.teamAway) : "—"}${b.decPick ? " · " + (DEC_SHORT[b.decPick] || "") : ""}`
+              : `${b.predHome}:${b.predAway}`;
+            pts = finishedM ? b.points : null;
+          }
+          return { u, tipStr, joker, pts, has };
+        }).sort((a, b) => (b.pts ?? -1e9) - (a.pts ?? -1e9));
         return (
           <div key={m.id} style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${BORDER}`, background: CARD }}>
             <button type="button" onClick={() => setOpen((o) => ({ ...o, [m.id]: !o[m.id] }))} style={{
@@ -466,25 +516,16 @@ function Auswertung() {
               <span style={{ fontSize: 10, fontWeight: 800, color: "#ff6b66", textTransform: "uppercase", flexShrink: 0 }}>{(PHASE_LABEL[m.phase] || m.phase || "").slice(0, 4)}</span>
               <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 800, fontSize: 13 }}>{m.homeFlag || ""} {m.teamHome} – {m.teamAway} {m.awayFlag || ""}</span>
               {m.status === "finished" && m.scoreHome != null && <span style={{ fontWeight: 900, color: "#fff", flexShrink: 0 }}>{m.scoreHome}:{m.scoreAway}</span>}
-              <span style={{ color: MUT, fontSize: 11, flexShrink: 0 }}>{isOpen ? "▲" : "▼"} {count}</span>
+              <span style={{ color: MUT, fontSize: 11, flexShrink: 0 }}>{isOpen ? "▲" : "▼"} {tippers.length}</span>
             </button>
             {isOpen && (
               <div style={{ padding: "0 12px 10px" }}>
                 {!started ? (
                   <div style={{ fontSize: 12, color: MUT, padding: "6px 0" }}>🔒 Tipps sichtbar ab Anpfiff.</div>
-                ) : count === 0 ? (
-                  <div style={{ fontSize: 12, color: MUT, padding: "6px 0" }}>Keine Tipps.</div>
                 ) : (
                   <div style={{ display: "grid", gap: 4 }}>
-                    {imp.map((t, i) => (
-                      <AuswRow key={"i" + i} name={t.tipper} avatar={t.avatar} tip={`${t.home}:${t.away}`} joker={t.joker} pts={m.status === "finished" ? t.points : null} />
-                    ))}
-                    {real.map((b, i) => (
-                      <AuswRow key={"r" + i} name={b.displayName || b.username} avatar={b.avatarUrl}
-                        tip={isKO
-                          ? `${b.advPick ? (b.advPick === "home" ? m.teamHome : m.teamAway) : "—"}${b.decPick ? " · " + (DEC_SHORT[b.decPick] || "") : ""}`
-                          : `${b.predHome}:${b.predAway}`}
-                        pts={m.status === "finished" ? b.points : null} />
+                    {rows.map((r) => (
+                      <AuswRow key={r.u.key} name={r.u.name} avatar={r.u.avatar} tip={r.tipStr} joker={r.joker} pts={r.pts} />
                     ))}
                   </div>
                 )}
@@ -807,7 +848,7 @@ function SpieleListe({ matches, betMap, canTip, onSaved }) {
         })}
       </div>
       {sel === "plan" ? (
-        <Spielplan matches={matches} />
+        <Spielplan matches={matches} betMap={betMap} canTip={canTip} onSaved={onSaved} />
       ) : list.length === 0 ? (
         <Muted>{sel === "live" ? "Gerade läuft kein Spiel." : sel === "zu" ? "Alles getippt — stark! 🎯" : "Noch keine gespielten Spiele."}</Muted>
       ) : (
