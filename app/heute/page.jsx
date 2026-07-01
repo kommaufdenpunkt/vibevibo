@@ -345,6 +345,7 @@ export default function HeutePage() {
             { href: "/geschenke", color1: "#f97316", color2: "#ea580c", icon: "🎁", title: "Geschenke", sub: "Verschicken" },
             { href: "/fotos",     color1: "#1e40af", color2: "#1e3a8a", icon: "📸", title: "Fotos", sub: "Galerie" },
             { href: "/freunde",   color1: "#3b82f6", color2: "#1e40af", icon: "👯", title: "Freunde", sub: "Wer ist online?" },
+            { href: "/verknallt", color1: "#ec4899", color2: "#be123c", icon: "💘", title: "Verknallt", sub: "Heimlich wählen" },
             { href: "/zeitkapsel", color1: "#a855f7", color2: "#6d28d9", icon: "⏳", title: "Zeitkapsel", sub: "Brief ans Ich" },
           ]} />
         </div>
@@ -611,6 +612,7 @@ function UserTiles({ fallback }) {
 
   // Map von App-IDs zu Tile-Konfigs (gleiche IDs wie in app/apps/page.jsx)
   const APP_TILES = {
+    verknallt:   { href: "/verknallt", icon: "💘", title: "Verknallt", sub: "Heimlich wählen", color1: "#ec4899", color2: "#be123c" },
     zeitkapsel:  { href: "/zeitkapsel", icon: "⏳", title: "Zeitkapsel", sub: "Brief ans Ich", color1: "#a855f7", color2: "#6d28d9" },
     heute:       { href: "/heute",       icon: "🏠", title: "Startseite",    sub: "Tages-Übersicht",  color1: "#fbbf24", color2: "#ea580c" },
     profile:     { href: "/profile",     icon: "🪪", title: "Mein Profil",    sub: "Deine Seite",      color1: "#1e40af", color2: "#1e3a8a" },
