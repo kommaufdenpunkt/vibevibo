@@ -86,7 +86,6 @@ export default function NeuPage() {
         <p className="vv-neu-sub">
           Chronologische Timeline mit Datum und Uhrzeit — und Reaktionen auf jeden Beitrag ✿
         </p>
-        <Link href="/tipp" className="vv-neu-tipplink">⚽ Zum WM-Tippspiel →</Link>
       </div>
 
       {groups.length === 0 ? (
